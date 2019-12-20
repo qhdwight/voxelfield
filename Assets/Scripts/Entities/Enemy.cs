@@ -1,6 +1,6 @@
 namespace Entities
 {
-    public class Enemy : Entity
+    public struct EnemyComponent
     {
         
     }
