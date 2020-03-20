@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -7,10 +8,9 @@ public class ArmIk : MonoBehaviour
 {
     private const int BoneCount = 3, HandIndex = 0, ForearmIndex = 1, UpperArmIndex = 2;
 
-    [SerializeField] private Transform m_LeftHand, m_RightHand, m_LeftTarget, m_RightTarget;
+    [SerializeField] private Transform m_RightHand, m_RightTarget;
 
-    private readonly Transform[] m_LeftArm = new Transform[BoneCount], m_RightArm = new Transform[BoneCount];
-    private float m_RightUpperArmLength, m_RightForearmLength;
+    private readonly Transform[] m_RightArm = new Transform[BoneCount];
     private bool m_IsSetup;
 
     private static bool SetupArm(Transform hand, IList<Transform> arm)
@@ -28,25 +28,28 @@ public class ArmIk : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (SetupArm(m_RightHand, m_RightArm) && m_RightTarget != null)
+        if (!SetupArm(m_RightHand, m_RightArm) || m_RightTarget == null) return;
+        float rightForearmLength = Vector3.Distance(m_RightArm[HandIndex].position, m_RightArm[ForearmIndex].position),
+              rightUpperArmLength = Vector3.Distance(m_RightArm[ForearmIndex].position, m_RightArm[UpperArmIndex].position),
+              lengthToTarget = Vector3.Distance(m_RightTarget.position, m_RightArm[UpperArmIndex].position);
         {
-            m_RightForearmLength = Vector3.Distance(m_RightArm[HandIndex].position, m_RightArm[ForearmIndex].position);
-            m_RightUpperArmLength = Vector3.Distance(m_RightArm[ForearmIndex].position, m_RightArm[UpperArmIndex].position);
-            float lengthToTarget = Vector3.Distance(m_RightTarget.position, m_RightArm[UpperArmIndex].position);
-
             Transform upperArm = m_RightArm[UpperArmIndex];
             Vector3 direction = m_RightTarget.localPosition - upperArm.localPosition;
             float z = Mathf.Rad2Deg * Mathf.Atan2(-direction.x, direction.y);
-            float y = GetCAngle(m_RightUpperArmLength, lengthToTarget, m_RightForearmLength);
-            upperArm.localRotation = Quaternion.Euler(0.0f, -y, z);
-
-            Transform forearm = m_RightArm[ForearmIndex];
-            float x = GetCAngle(m_RightUpperArmLength, m_RightForearmLength, lengthToTarget);
-            forearm.localRotation = Quaternion.Euler(x, 0.0f, 0.0f);
+            float x = GetAngleFromTriangle(rightUpperArmLength, lengthToTarget, rightForearmLength) + Mathf.Rad2Deg * Mathf.Atan2(-direction.z, -direction.y);
+            if (!double.IsNaN(x) && !double.IsNaN(z))
+                upperArm.localRotation = Quaternion.Euler(0.0f, 0.0f, z) * Quaternion.Euler(360 - x, 0.0f, 0.0f);
         }
+        {
+            Transform forearm = m_RightArm[ForearmIndex];
+            float x = GetAngleFromTriangle(rightUpperArmLength, rightForearmLength, lengthToTarget);
+            if (!double.IsNaN(x))
+                forearm.localRotation = Quaternion.Euler(180 - x, 0.0f, 0.0f);
+        }
+        m_RightArm[HandIndex].rotation = m_RightTarget.rotation;
     }
 
-    private static float GetCAngle(float a, float b, float c)
+    private static float GetAngleFromTriangle(float a, float b, float c)
     {
         return Mathf.Rad2Deg * Mathf.Acos((Mathf.Pow(a, 2) + Mathf.Pow(b, 2) - Mathf.Pow(c, 2)) / (2 * a * b));
     }
