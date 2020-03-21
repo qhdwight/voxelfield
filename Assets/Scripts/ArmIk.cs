@@ -1,52 +1,66 @@
 using System;
-using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 
 [ExecuteInEditMode]
 public class ArmIk : MonoBehaviour
 {
+    [Serializable]
+    private class Arm
+    {
+        public Transform hand, target;
+        [NonSerialized] public Transform[] bones;
+    }
+
     private const int BoneCount = 3, HandIndex = 0, ForearmIndex = 1, UpperArmIndex = 2;
 
-    [SerializeField] private Transform m_RightHand, m_RightTarget;
+    [SerializeField] private Arm m_Left, m_Right;
 
-    private readonly Transform[] m_RightArm = new Transform[BoneCount];
-    private bool m_IsSetup;
-
-    private static bool SetupArm(Transform hand, IList<Transform> arm)
+    private static bool SetupArm(Arm arm)
     {
+        Transform hand = arm.hand;
         if (hand == null) return false;
         Transform current = hand;
         for (var boneIndex = 0; boneIndex < BoneCount; boneIndex++)
         {
             if (current == null) return false;
-            arm[boneIndex] = current;
+            if (arm.bones == null) arm.bones = new Transform[BoneCount];
+            arm.bones[boneIndex] = current;
             current = current.parent;
         }
         return true;
     }
 
-    private void LateUpdate()
+    private static void HandleArm(Arm arm)
     {
-        if (!SetupArm(m_RightHand, m_RightArm) || m_RightTarget == null) return;
-        float rightForearmLength = Vector3.Distance(m_RightArm[HandIndex].position, m_RightArm[ForearmIndex].position),
-              rightUpperArmLength = Vector3.Distance(m_RightArm[ForearmIndex].position, m_RightArm[UpperArmIndex].position),
-              lengthToTarget = Vector3.Distance(m_RightTarget.position, m_RightArm[UpperArmIndex].position);
+        Transform target = arm.target;    
+        if (!SetupArm(arm) || target == null) return; 
+        Transform[] bones = arm.bones;
+        float rightForearmLength = Vector3.Distance(bones[HandIndex].position, bones[ForearmIndex].position),
+              rightUpperArmLength = Vector3.Distance(bones[ForearmIndex].position, bones[UpperArmIndex].position),
+              lengthToTarget = Vector3.Distance(target.position, bones[UpperArmIndex].position);
         {
-            Transform upperArm = m_RightArm[UpperArmIndex];
-            Vector3 direction = m_RightTarget.localPosition - upperArm.localPosition;
-            float z = Mathf.Rad2Deg * Mathf.Atan2(-direction.x, direction.y);
-            float x = GetAngleFromTriangle(rightUpperArmLength, lengthToTarget, rightForearmLength) + Mathf.Rad2Deg * Mathf.Atan2(-direction.z, -direction.y);
+            Transform upperArm = bones[UpperArmIndex];
+            Vector3 direction = target.position - upperArm.position;
+            float z = Mathf.Rad2Deg * Mathf.Atan2(-direction.x, -direction.z);
+            float x = GetAngleFromTriangle(rightUpperArmLength, lengthToTarget, rightForearmLength);
+            // x += Mathf.Rad2Deg * Mathf.Atan2(-direction.y, direction.z);
+            x += Mathf.Rad2Deg * Mathf.Atan2(-direction.y, Vector3.Distance(upperArm.position, new Vector3 {x = target.position.x, y = upperArm.position.y, z = target.position.z}));
             if (!double.IsNaN(x) && !double.IsNaN(z))
-                upperArm.localRotation = Quaternion.Euler(0.0f, 0.0f, z) * Quaternion.Euler(360 - x, 0.0f, 0.0f);
+                upperArm.localRotation = Quaternion.Euler(0.0f, 0.0f, z) * Quaternion.Euler(360.0f - x, 0.0f, 0.0f);
         }
         {
-            Transform forearm = m_RightArm[ForearmIndex];
+            Transform forearm = bones[ForearmIndex];
             float x = GetAngleFromTriangle(rightUpperArmLength, rightForearmLength, lengthToTarget);
             if (!double.IsNaN(x))
-                forearm.localRotation = Quaternion.Euler(180 - x, 0.0f, 0.0f);
+                forearm.localRotation = Quaternion.Euler(180.0f - x, 0.0f, 0.0f);
         }
-        m_RightArm[HandIndex].rotation = m_RightTarget.rotation;
+        bones[HandIndex].rotation = target.rotation;
+    }
+
+    private void LateUpdate()
+    {
+        HandleArm(m_Left);
+        HandleArm(m_Right);
     }
 
     private static float GetAngleFromTriangle(float a, float b, float c)
