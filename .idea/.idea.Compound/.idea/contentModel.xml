@@ -9,21 +9,12 @@
       <e p="Assets" t="Include">
         <e p="Scripts" t="Include">
           <e p="ArmIK.cs" t="Include" />
-          <e p="Entities" t="Include">
-            <e p="Enemy.cs" t="Include" />
-            <e p="Entities.asmdef" t="Include" />
-            <e p="EntityComponent.cs" t="Include" />
-            <e p="MoveSystem.cs" t="Include" />
-            <e p="PlayerComponent.cs" t="Include" />
-          </e>
           <e p="GameState.cs" t="Include" />
           <e p="Interfaces" t="Include">
             <e p="InterfaceBehavior.cs" t="Include" />
             <e p="Interfaces.asmdef" t="Include" />
           </e>
-          <e p="InverseKinematics.cs" t="Include" />
-          <e p="TestPipeline.cs" t="Include" />
-          <e p="TestPipelineAsset.cs" t="Include" />
+          <e p="TestBehavior.cs" t="Include" />
         </e>
         <e p="TextMesh Pro" t="Include">
           <e p="Fonts" t="Include">
@@ -55,7 +46,6 @@
         </e>
       </e>
       <e p="Compound.sln" t="IncludeFlat" />
-      <e p="Entities.csproj" t="IncludeRecursive" />
       <e p="Interfaces.csproj" t="IncludeRecursive" />
       <e p="obj" t="ExcludeRecursive" />
       <e p="packages" t="ExcludeRecursive" />
