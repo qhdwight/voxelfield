@@ -14,7 +14,7 @@ public class ArmIk : MonoBehaviour
     private const int BoneCount = 3, HandIndex = 0, ForearmIndex = 1, UpperArmIndex = 2;
 
     [SerializeField] private Arm m_Left, m_Right;
-    
+
     private static bool SetupArm(Arm arm)
     {
         Transform hand = arm.hand;
@@ -30,7 +30,7 @@ public class ArmIk : MonoBehaviour
         return true;
     }
 
-    private void PositionArm(Arm arm)
+    private static void PositionArm(Arm arm)
     {
         Transform target = arm.target;
         if (!SetupArm(arm) || target == null) return;
@@ -38,18 +38,18 @@ public class ArmIk : MonoBehaviour
         Vector3 targetPosition = target.position;
         float forearmLength = Vector3.Distance(bones[HandIndex].position, bones[ForearmIndex].position),
               upperArmLength = Vector3.Distance(bones[ForearmIndex].position, bones[UpperArmIndex].position),
-              lengthToTarget = Vector3.Distance(targetPosition, bones[UpperArmIndex].position);
+              distanceToTarget = Vector3.Distance(targetPosition, bones[UpperArmIndex].position);
         {
             Transform upperArm = bones[UpperArmIndex];
             Vector3 upperArmPosition = upperArm.position,
                     directionToTarget = targetPosition - upperArmPosition;
-            float upperArmAngle = GetAngleFromTriangle(upperArmLength, lengthToTarget, forearmLength);
+            float upperArmAngle = GetAngleFromTriangle(upperArmLength, distanceToTarget, forearmLength);
             if (!double.IsNaN(upperArmAngle))
                 upperArm.rotation = Quaternion.LookRotation(directionToTarget) * Quaternion.AngleAxis(upperArmAngle, Vector3.right);
         }
         {
             Transform forearm = bones[ForearmIndex];
-            float x = GetAngleFromTriangle(upperArmLength, forearmLength, lengthToTarget);
+            float x = GetAngleFromTriangle(upperArmLength, forearmLength, distanceToTarget);
             if (!double.IsNaN(x))
                 forearm.localRotation = Quaternion.AngleAxis(x + 180.0f, Vector3.right);
         }

@@ -3,10 +3,8 @@
   <component name="ContentModelUserStore">
     <attachedFolders />
     <explicitIncludes>
-      <Path>Library/PackageCache/com.unity.code-analysis@0.1.0-preview.2</Path>
       <Path>Library/PackageCache/com.unity.ext.nunit@1.0.0</Path>
       <Path>Library/PackageCache/com.unity.ide.rider@1.1.4</Path>
-      <Path>Library/PackageCache/com.unity.immediate-window@1.1.0-preview.3</Path>
       <Path>Library/PackageCache/com.unity.probuilder@4.2.3</Path>
       <Path>Library/PackageCache/com.unity.quicksearch@1.5.2</Path>
       <Path>Library/PackageCache/com.unity.settings-manager@1.0.0</Path>

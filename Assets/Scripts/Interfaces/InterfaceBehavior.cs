@@ -14,7 +14,7 @@ namespace Interfaces
         protected virtual void Awake()
         {
             m_CanvasGroup = GetComponent<CanvasGroup>();
-            IsActive      = m_CanvasGroup.interactable;
+            IsActive = m_CanvasGroup.interactable;
             // SetInterfaceActive(m_Active);
         }
 
@@ -26,9 +26,9 @@ namespace Interfaces
         public virtual void SetInterfaceActive(bool active)
         {
             if (IsActive == active) return;
-            IsActive                     = active;
-            m_CanvasGroup.alpha          = active ? OPAQUE_ALPHA : INVISIBLE_ALPHA;
-            m_CanvasGroup.interactable   = active;
+            IsActive = active;
+            m_CanvasGroup.alpha = active ? OPAQUE_ALPHA : INVISIBLE_ALPHA;
+            m_CanvasGroup.interactable = active;
             m_CanvasGroup.blocksRaycasts = active;
         }
     }
