@@ -7,6 +7,6 @@ namespace Session
 
     public interface ISessionModifier
     {
-        void Modify(SessionState session);
+        void Modify(SessionState state, SessionCommands commands);
     }
 }

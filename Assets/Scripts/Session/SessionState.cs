@@ -1,14 +1,9 @@
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
+using Session.Player;
 
 namespace Session
 {
-    public class PlayerData
-    {
-        public int id;
-        public Vector3 position;
-    }
-
     public class GameSettings
     {
         public string mapName;
@@ -18,9 +13,11 @@ namespace Session
     {
         public uint tick;
         public byte? localPlayerId;
-        public List<PlayerData> playerData;
+        public List<PlayerData> playerData = Enumerable.Range(1, PlayerManager.MaxPlayers).Select(i => i == 1 ? new PlayerData() : null).ToList();
         public GameSettings settings;
 
         public PlayerData LocalPlayerData => localPlayerId == null ? null : playerData[localPlayerId.Value];
+
+        public HashSet<byte> PlayerIds => new HashSet<byte>(playerData.Where(player => player != null).Select((player, id) => (byte) id));
     }
 }

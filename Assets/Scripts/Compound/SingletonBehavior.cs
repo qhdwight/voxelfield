@@ -1,15 +1,18 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public class SingletonBehavior<TSingleton> : MonoBehaviour where TSingleton : MonoBehaviour
+namespace Compound
 {
-    public static TSingleton Singleton { get; private set; }
-
-    protected virtual void Awake()
+    [DisallowMultipleComponent]
+    public class SingletonBehavior<TSingleton> : MonoBehaviour where TSingleton : MonoBehaviour
     {
-        if (Singleton)
-            Destroy(gameObject);
-        else
-            Singleton = FindObjectOfType<TSingleton>();
+        public static TSingleton Singleton { get; private set; }
+
+        protected virtual void Awake()
+        {
+            if (Singleton)
+                Destroy(gameObject);
+            else
+                Singleton = FindObjectOfType<TSingleton>();
+        }
     }
 }

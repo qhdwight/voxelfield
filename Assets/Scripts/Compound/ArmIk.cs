@@ -44,14 +44,15 @@ public class ArmIk : MonoBehaviour
             Vector3 upperArmPosition = upperArm.position,
                     directionToTarget = targetPosition - upperArmPosition;
             float upperArmAngle = GetAngleFromTriangle(upperArmLength, distanceToTarget, forearmLength);
+            Quaternion upperArmRotation = Quaternion.LookRotation(directionToTarget);
             if (!double.IsNaN(upperArmAngle))
-                upperArm.rotation = Quaternion.LookRotation(directionToTarget) * Quaternion.AngleAxis(upperArmAngle, Vector3.right);
+                upperArmRotation *= Quaternion.AngleAxis(upperArmAngle, Vector3.right);
+            upperArm.rotation = upperArmRotation;
         }
         {
             Transform forearm = bones[ForearmIndex];
             float x = GetAngleFromTriangle(upperArmLength, forearmLength, distanceToTarget);
-            if (!double.IsNaN(x))
-                forearm.localRotation = Quaternion.AngleAxis(x + 180.0f, Vector3.right);
+            forearm.localRotation = double.IsNaN(x) ? Quaternion.identity : Quaternion.AngleAxis(x + 180.0f, Vector3.right);
         }
         bones[HandIndex].rotation = target.rotation;
     }
@@ -62,9 +63,12 @@ public class ArmIk : MonoBehaviour
         PositionArm(m_Right);
     }
 
+    /// <summary>
+    /// Law of cosines to find angle given three known side lengths.
+    /// </summary>
+    /// <returns>Angle in degrees across from c</returns>
     private static float GetAngleFromTriangle(float a, float b, float c)
     {
-        // Law of cosines to find angle given three known side lengths
         return Mathf.Rad2Deg * Mathf.Acos((a * a + b * b - c * c) / (2 * a * b));
     }
 }

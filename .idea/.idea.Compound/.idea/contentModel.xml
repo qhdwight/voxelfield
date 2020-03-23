@@ -11,7 +11,9 @@
             <e p="ArmIK.cs" t="Include" />
             <e p="Compound.asmdef" t="Include" />
             <e p="CyclicArray.cs" t="Include" />
+            <e p="GameObjectMapper.cs" t="Include" />
             <e p="InputProvider.cs" t="Include" />
+            <e p="Pool.cs" t="Include" />
             <e p="SingletonBehavior.cs" t="Include" />
             <e p="TestBehavior.cs" t="Include" />
           </e>
@@ -22,11 +24,15 @@
           <e p="Session" t="Include">
             <e p="ISession.cs" t="Include" />
             <e p="Player" t="Include">
-              <e p="PlayerBehavior.cs" t="Include" />
+              <e p="PlayerCommands.cs" t="Include" />
+              <e p="PlayerData.cs" t="Include" />
               <e p="PlayerManager.cs" t="Include" />
+              <e p="PlayerModifierBehavior.cs" t="Include" />
               <e p="PlayerMovement.cs" t="Include" />
+              <e p="PlayerVisualsBehavior.cs" t="Include" />
             </e>
             <e p="Session.asmdef" t="Include" />
+            <e p="SessionCommands.cs" t="Include" />
             <e p="SessionManager.cs" t="Include" />
             <e p="SessionState.cs" t="Include" />
             <e p="SessionStates.cs" t="Include" />

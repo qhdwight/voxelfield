@@ -5,7 +5,7 @@ namespace Interfaces
     [RequireComponent(typeof(CanvasGroup))]
     public class InterfaceBehavior : MonoBehaviour
     {
-        protected const float INVISIBLE_ALPHA = 0.0f, OPAQUE_ALPHA = 1.0f;
+        protected const float InvisibleAlpha = 0.0f, OpaqueAlpha = 1.0f;
 
         private CanvasGroup m_CanvasGroup;
 
@@ -27,7 +27,7 @@ namespace Interfaces
         {
             if (IsActive == active) return;
             IsActive = active;
-            m_CanvasGroup.alpha = active ? OPAQUE_ALPHA : INVISIBLE_ALPHA;
+            m_CanvasGroup.alpha = active ? OpaqueAlpha : InvisibleAlpha;
             m_CanvasGroup.interactable = active;
             m_CanvasGroup.blocksRaycasts = active;
         }
