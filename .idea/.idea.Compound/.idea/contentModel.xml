@@ -24,6 +24,7 @@
           <e p="Session" t="Include">
             <e p="ISession.cs" t="Include" />
             <e p="Player" t="Include">
+              <e p="PlayerCamera.cs" t="Include" />
               <e p="PlayerCommands.cs" t="Include" />
               <e p="PlayerData.cs" t="Include" />
               <e p="PlayerManager.cs" t="Include" />

@@ -6,7 +6,7 @@ namespace Compound
 {
     public class GameObjectMapper<T1, T2> : Pool<T2> where T2 : class
     {
-        public Dictionary<T1, T2> m_Dictionary = new Dictionary<T1, T2>();
+        private readonly Dictionary<T1, T2> m_Dictionary = new Dictionary<T1, T2>();
 
         public GameObjectMapper(int capacity, Func<T2> constructor, Action<T2, bool> usageChanged) : base(capacity, constructor, usageChanged)
         {

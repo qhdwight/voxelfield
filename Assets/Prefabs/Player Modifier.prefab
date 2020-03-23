@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3621098284609304105}
   - component: {fileID: 3621098284609304119}
   - component: {fileID: 3621098284609304118}
+  - component: {fileID: 5689005421655001698}
   m_Layer: 0
   m_Name: Player Modifier
   m_TagString: Untagged
@@ -57,12 +58,12 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 2
   m_Height: 2
-  m_Radius: 0.5
+  m_Radius: 0.35
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &3621098284609304118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73,5 +74,34 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cd149499ea6047a396d07cbac1c5562b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_GroundMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_Acceleration: 10
+  m_AirAcceleration: 20
+  m_AirSpeedCap: 2
+  m_MaxSpeed: 6
+  m_MaxAirSpeed: 8
+  m_Friction: 10
+  m_FrictionCutoff: 0.1
+  m_StopSpeed: 1
+  m_JumpSpeed: 8.5
+  m_ForwardSpeed: 30
+  m_SideSpeed: 30
+  m_GravityFactor: 23
+  m_SlopeAngleLimit: 45
+  m_MaxStickDistance: 0.25
+--- !u!114 &5689005421655001698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3621098284609304107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 350a4a3ec78f49bab367bc43f58bd4a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

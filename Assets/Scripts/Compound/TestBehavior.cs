@@ -1,9 +1,12 @@
 using UnityEngine;
 
-[ExecuteInEditMode]
-public class TestBehavior : MonoBehaviour
+namespace Compound
 {
-    private void LateUpdate()
+    [ExecuteInEditMode]
+    public class TestBehavior : MonoBehaviour
     {
+        private void LateUpdate()
+        {
+        }
     }
 }

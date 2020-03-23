@@ -7,7 +7,7 @@ namespace Session.Player
     {
         public const int MaxPlayers = 100;
 
-        [SerializeField] private GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
+        [SerializeField] private GameObject m_PlayerModifierPrefab = default, m_PlayerVisualsPrefab = default;
 
         private GameObjectMapper<byte, PlayerVisualsBehavior> m_VisualMapper;
         private GameObjectMapper<byte, PlayerModifierBehavior> m_ModifierMapper;
@@ -32,10 +32,7 @@ namespace Session.Player
 
         public void Modify(SessionState state, SessionCommands commands)
         {
-            m_ModifierMapper.Evaluate(state.PlayerIds, (id, modifier) =>
-            {
-                modifier.Modify(state.playerData[id], commands.playerCommands[id]);
-            });
+            m_ModifierMapper.Evaluate(state.PlayerIds, (id, modifier) => { modifier.Modify(state.playerData[id], commands.playerCommands[id]); });
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +9,14 @@ namespace Compound
         Forward,
         Backward,
         Left,
-        Right
+        Right,
+        Jump
+    }
+
+    public enum MouseMovement
+    {
+        X,
+        Y
     }
 
     public class InputSettings
@@ -29,7 +37,8 @@ namespace Compound
                     [InputType.Forward] = KeyCode.W,
                     [InputType.Backward] = KeyCode.S,
                     [InputType.Left] = KeyCode.A,
-                    [InputType.Right] = KeyCode.D
+                    [InputType.Right] = KeyCode.D,
+                    [InputType.Jump] = KeyCode.Space
                 }
             };
         }
@@ -47,6 +56,24 @@ namespace Compound
         public float GetAxis(InputType positive, InputType negative)
         {
             return (GetInput(positive) ? 1.0f : 0.0f) + (GetInput(negative) ? -1.0f : 0.0f);
+        }
+
+        public static float GetMouseInput(MouseMovement mouseMovement)
+        {
+            switch (mouseMovement)
+            {
+                case MouseMovement.X:
+                    return Input.GetAxisRaw("Mouse X");
+                case MouseMovement.Y:
+                    return Input.GetAxisRaw("Mouse Y");
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mouseMovement), mouseMovement, null);
+            }
+        }
+
+        public static float GetMouseScrollWheel()
+        {
+            return Input.GetAxisRaw("Mouse ScrollWheel");
         }
     }
 }
