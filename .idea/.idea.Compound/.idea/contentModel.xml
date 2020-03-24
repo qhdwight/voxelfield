@@ -11,8 +11,8 @@
             <e p="ArmIK.cs" t="Include" />
             <e p="Compound.asmdef" t="Include" />
             <e p="CyclicArray.cs" t="Include" />
-            <e p="GameObjectMapper.cs" t="Include" />
             <e p="InputProvider.cs" t="Include" />
+            <e p="Mapper.cs" t="Include" />
             <e p="Pool.cs" t="Include" />
             <e p="SingletonBehavior.cs" t="Include" />
             <e p="TestBehavior.cs" t="Include" />
@@ -21,8 +21,16 @@
             <e p="InterfaceBehavior.cs" t="Include" />
             <e p="Interfaces.asmdef" t="Include" />
           </e>
+          <e p="Serialization" t="Include">
+            <e p="Copier.cs" t="Include" />
+            <e p="Serialization.asmdef" t="Include" />
+            <e p="Tests" t="Include">
+              <e p="CopierTests.cs" t="Include" />
+              <e p="SerializationTests.asmdef" t="Include" />
+            </e>
+          </e>
           <e p="Session" t="Include">
-            <e p="ISession.cs" t="Include" />
+            <e p="ClientSession.cs" t="Include" />
             <e p="Player" t="Include">
               <e p="PlayerCamera.cs" t="Include" />
               <e p="PlayerCommands.cs" t="Include" />
@@ -32,8 +40,9 @@
               <e p="PlayerMovement.cs" t="Include" />
               <e p="PlayerVisualsBehavior.cs" t="Include" />
             </e>
+            <e p="ServerSession.cs" t="Include" />
             <e p="Session.asmdef" t="Include" />
-            <e p="SessionCommands.cs" t="Include" />
+            <e p="SessionBase.cs" t="Include" />
             <e p="SessionManager.cs" t="Include" />
             <e p="SessionState.cs" t="Include" />
             <e p="SessionStates.cs" t="Include" />
@@ -45,8 +54,10 @@
       <e p="Interfaces.csproj" t="IncludeRecursive" />
       <e p="obj" t="ExcludeRecursive" />
       <e p="packages" t="ExcludeRecursive" />
+      <e p="Serialization.csproj" t="IncludeRecursive" />
       <e p="Session.csproj" t="IncludeRecursive" />
       <e p="Temp\bin" t="ExcludeRecursive" />
+      <e p="Tests.csproj" t="IncludeRecursive" />
     </e>
   </component>
 </project>
