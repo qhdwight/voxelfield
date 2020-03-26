@@ -27,7 +27,7 @@ namespace Session
 
         private void FixedUpdate()
         {
-            m_Session?.Tick();
+            m_Session?.FixedUpdate();
         }
     }
 }

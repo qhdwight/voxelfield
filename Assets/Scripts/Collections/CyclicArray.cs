@@ -1,4 +1,6 @@
-namespace Compound
+using System;
+
+namespace Collections
 {
     /// <summary>
     /// An array that loops back to the first element and overwrites existing ones when the end is reached.
@@ -21,14 +23,14 @@ namespace Compound
         /// Create a new cyclic array with the given size and optional default value for each element.
         /// </summary>
         /// <param name="size">Size of the internal array</param>
-        /// <param name="defaultValue">Default value for each element in the array</param>
-        public CyclicArray(int size, TElement defaultValue = default)
+        /// <param name="constructor">Default value for each element in the array</param>
+        public CyclicArray(int size, Func<TElement> constructor = null)
         {
             m_Pointer = m_Size - 1; // This makes it so that the first item added goes to index zero
             m_Size = size;
             m_InternalArray = new TElement[size];
             for (var i = 0; i < size; i++)
-                m_InternalArray[i] = defaultValue;
+                m_InternalArray[i] = constructor == null ? default : constructor();
         }
 
         /// <summary>
@@ -37,6 +39,12 @@ namespace Compound
         public void Advance()
         {
             m_Pointer = Wrap(m_Pointer + 1);
+        }
+
+        public TElement ClaimNext()
+        {
+            Advance();
+            return Peek();
         }
 
         /// <summary>

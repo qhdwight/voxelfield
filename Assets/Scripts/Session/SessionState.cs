@@ -1,12 +1,11 @@
 using System.Collections.Generic;
-using System.Linq;
+using Collections;
 using Session.Player;
 
 namespace Session
 {
     public class SessionSettings
     {
-        public string mapName;
     }
 
     public class SessionState
@@ -14,11 +13,9 @@ namespace Session
         public uint tick;
         public float time, duration;
         public byte? localPlayerId;
-        public List<PlayerData> playerData = Enumerable.Range(1, PlayerManager.MaxPlayers).Select(i => i == 1 ? new PlayerData() : null).ToList();
-        public SessionSettings settings;
+        public readonly List<PlayerState> playerStates = ListFactory.Repeat(() => new PlayerState(), PlayerManager.MaxPlayers);
+        public SessionSettings settings = new SessionSettings();
 
-        public PlayerData LocalPlayerData => localPlayerId == null ? null : playerData[localPlayerId.Value];
-
-        public HashSet<byte> PlayerIds => new HashSet<byte>(playerData.Where(player => player != null).Select((player, id) => (byte) id));
+        public PlayerState LocalPlayerState => localPlayerId == null ? null : playerStates[localPlayerId.Value];
     }
 }

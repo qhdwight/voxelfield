@@ -1,40 +1,26 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Session.Player
 {
-    internal interface IPlayerModifier
+    [RequireComponent(typeof(PlayerCamera), typeof(PlayerMovement))]
+    public class PlayerModifierBehavior : MonoBehaviour
     {
-        void Modify(PlayerData data, PlayerCommands commands);
-    }
+        private PlayerCamera m_Camera;
+        private PlayerMovement m_Movement;
 
-    public class PlayerModifierBehavior : MonoBehaviour, IPlayerModifier
-    {
-        private List<IPlayerModifier> m_Modifiers;
+        public PlayerCamera Camera => m_Camera;
 
-        private void Awake()
+        public void Setup()
         {
-            m_Modifiers = GetInterfaces<IPlayerModifier>();
-            m_Modifiers.Remove(this);
+            m_Camera = GetComponent<PlayerCamera>();
+            m_Movement = GetComponent<PlayerMovement>();
+            m_Movement.Setup();
         }
 
-        public void Modify(PlayerData data, PlayerCommands commands)
+        public void Modify(PlayerState state, PlayerCommands commands)
         {
-            foreach (IPlayerModifier modifier in m_Modifiers)
-            {
-                modifier.Modify(data, commands);
-            }
-        }
-
-        private List<TComponent> GetInterfaces<TComponent>() where TComponent : class
-        {
-            var components = new List<TComponent>();
-            foreach (Component component in GetComponents<Component>())
-            {
-                if (component is TComponent subComponent)
-                    components.Add(subComponent);
-            }
-            return components;
+            m_Camera.Modify(state, commands);
+            m_Movement.Modify(state, commands);
         }
     }
 }

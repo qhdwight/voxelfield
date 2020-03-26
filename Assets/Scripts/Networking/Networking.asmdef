@@ -1,9 +1,8 @@
 {
-    "name": "Session",
+    "name": "Networking",
     "references": [
-        "GUID:8d8964d7c54e4ae469547e4206e84024",
-        "GUID:81857b576808e14478a8d6078a0f4760",
-        "GUID:f3a68b7e3f7640a4d8d06a2fdadbcd13"
+        "GUID:f3a68b7e3f7640a4d8d06a2fdadbcd13",
+        "GUID:81857b576808e14478a8d6078a0f4760"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -13,5 +12,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": false
+    "noEngineReferences": true
 }

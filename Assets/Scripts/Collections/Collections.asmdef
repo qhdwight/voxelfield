@@ -1,10 +1,6 @@
 {
-    "name": "Session",
-    "references": [
-        "GUID:8d8964d7c54e4ae469547e4206e84024",
-        "GUID:81857b576808e14478a8d6078a0f4760",
-        "GUID:f3a68b7e3f7640a4d8d06a2fdadbcd13"
-    ],
+    "name": "Collections",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -13,5 +9,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": false
+    "noEngineReferences": true
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Compound
+namespace Collections
 {
     public class Pool<T> where T : class
     {
@@ -24,7 +24,7 @@ namespace Compound
 
         public void Return(T toReturn)
         {
-            m_UsageChanged(toReturn, false);
+            m_UsageChanged?.Invoke(toReturn, false);
             m_InUse.Remove(toReturn);
             m_Pool.Push(toReturn);
         }
@@ -33,7 +33,7 @@ namespace Compound
         {
             foreach (T item in m_InUse)
             {
-                m_UsageChanged(item, false);
+                m_UsageChanged?.Invoke(item, false);
                 m_Pool.Push(item);
             }
             m_InUse.Clear();
@@ -42,7 +42,7 @@ namespace Compound
         public T Obtain()
         {
             T obtainedItem = m_Pool.Count > 0 ? m_Pool.Pop() : GetItemWhenEmpty();
-            m_UsageChanged(obtainedItem, true);
+            m_UsageChanged?.Invoke(obtainedItem, true);
             m_InUse.AddLast(obtainedItem);
             return obtainedItem;
         }

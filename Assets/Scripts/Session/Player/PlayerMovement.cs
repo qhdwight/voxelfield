@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Session.Player
 {
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerMovement : MonoBehaviour, IPlayerModifier
+    public class PlayerMovement : MonoBehaviour
     {
         private const float DefaultDownSpeed = -1.0f;
 
@@ -27,31 +27,29 @@ namespace Session.Player
             m_SlopeAngleLimit = 45.0f,
             m_MaxStickDistance = 0.25f;
 
-        [Header("State")] private float m_LateralSpeed, m_SlopeAngle;
+        private float m_SlopeAngle;
         private byte m_GroundTick;
-        private float m_TimeSinceLastFootstep;
         private Vector3 m_Velocity;
         private ControllerColliderHit m_Hit;
         private bool m_IsGrounded;
-        private byte m_State;
-        private uint m_TimeInStateUs;
         private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
 
-        private void Awake()
+        public void Setup()
         {
             m_Controller = GetComponent<CharacterController>();
         }
 
-        public void Modify(PlayerData data, PlayerCommands commands)
+        public void Modify(PlayerState state, PlayerCommands commands)
         {
+            transform.position = state.position;
             FullMove(commands);
-            data.position = transform.position;
+            state.position = transform.position;
         }
 
         private void FullMove(PlayerCommands commands)
         {
             Vector3 initialVelocity = m_Velocity;
-            m_LateralSpeed = LateralMagnitude(m_Velocity);
+            float lateralSpeed = LateralMagnitude(m_Velocity);
             m_IsGrounded = m_Controller.isGrounded;
             bool withinAngleLimit = m_SlopeAngle < m_SlopeAngleLimit;
             // TODO make speed slow down based on slope angle
@@ -76,7 +74,7 @@ namespace Session.Player
             {
                 if (m_GroundTick >= 1)
                 {
-                    if (m_LateralSpeed > m_FrictionCutoff) Friction(commands.duration);
+                    if (lateralSpeed > m_FrictionCutoff) Friction(lateralSpeed, commands.duration);
                     else if (Mathf.Approximately(wishSpeed, 0.0f)) m_Velocity = Vector3.zero;
                     m_Velocity.y = DefaultDownSpeed;
                 }
@@ -110,13 +108,13 @@ namespace Session.Player
             m_SlopeAngle = m_IsGrounded ? Vector3.Angle(m_Hit?.normal ?? Vector3.up, Vector3.up) : 0.0f;
         }
 
-        private void Friction(float time)
+        private void Friction(float lateralSpeed, float time)
         {
-            float control = m_LateralSpeed < m_StopSpeed ? m_StopSpeed : m_LateralSpeed;
+            float control = lateralSpeed < m_StopSpeed ? m_StopSpeed : lateralSpeed;
             float drop = control * m_Friction * time;
-            float newSpeed = m_LateralSpeed - drop;
+            float newSpeed = lateralSpeed - drop;
             if (newSpeed < 0) newSpeed = 0;
-            newSpeed /= m_LateralSpeed;
+            newSpeed /= lateralSpeed;
             m_Velocity.x *= newSpeed;
             m_Velocity.z *= newSpeed;
         }

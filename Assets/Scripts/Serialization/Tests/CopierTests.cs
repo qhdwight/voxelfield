@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -9,25 +11,35 @@ namespace Serialization.Tests
         {
             internal class InnerClass
             {
-                public uint unsignedInteger;
+                public uint @uint;
             }
 
-            public int integer;
-            public double floatingPoint;
+            public int @int;
+            public double @double;
             public Vector3 vector;
-            public InnerClass inner;
+            public InnerClass inner = new InnerClass();
+            public string @string;
+            public List<int> listOfInts = Enumerable.Repeat(0, 2).ToList();
+            public List<string> listOfStrings = Enumerable.Repeat((string) null, 1).ToList();
         }
 
         [Test]
         public void TestCopier()
         {
-            var source = new OuterClass {integer = 2, floatingPoint = 3.7f, vector = new Vector3(3.0f, 2.0f, 1.0f), inner = new OuterClass.InnerClass {unsignedInteger = 3}};
-            var destination = new OuterClass {inner = new OuterClass.InnerClass()};
+            var source = new OuterClass
+            {
+                @int = 2, @double = 3.7f, vector = new Vector3(3.0f, 2.0f, 1.0f), inner = new OuterClass.InnerClass {@uint = 3}, @string = "Test",
+                listOfInts = new List<int> {1, 2}, listOfStrings = new List<string> {"Test"}
+            };
+            var destination = new OuterClass();
             Copier.CopyTo(source, destination);
-            Assert.AreEqual(source.integer, destination.integer);
-            Assert.AreEqual(source.floatingPoint, destination.floatingPoint);
+            Assert.AreEqual(source.@int, destination.@int);
+            Assert.AreEqual(source.@double, destination.@double);
             Assert.AreEqual(source.vector, destination.vector);
-            Assert.AreEqual(source.inner.unsignedInteger, destination.inner.unsignedInteger);
+            Assert.AreEqual(source.@string, destination.@string);
+            Assert.AreEqual(source.inner.@uint, destination.inner.@uint);
+            Assert.AreEqual(source.listOfInts, destination.listOfInts);
+            Assert.AreEqual(source.listOfStrings, destination.listOfStrings);
         }
     }
 }
