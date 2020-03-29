@@ -1,15 +1,16 @@
-using Compound;
+using Session;
 using UnityEngine;
+using Util;
 
-namespace Session
+namespace Compound.Session
 {
     public class SessionManager : SingletonBehavior<SessionManager>
     {
-        private SessionBase m_Session;
+        private SessionBase<SessionState> m_Session;
 
         private void StartSession()
         {
-            m_Session = new ClientSession();
+            m_Session = new Client();
             Time.fixedDeltaTime = 1.0f / 60.0f;
         }
 

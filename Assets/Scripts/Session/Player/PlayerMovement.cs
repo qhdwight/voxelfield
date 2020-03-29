@@ -1,9 +1,10 @@
+using Compound;
 using UnityEngine;
 
 namespace Session.Player
 {
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerMovement : MonoBehaviour
+    public class PlayerMovement : PlayerModifierBehaviorBase
     {
         private const float DefaultDownSpeed = -1.0f;
 
@@ -34,16 +35,24 @@ namespace Session.Player
         private bool m_IsGrounded;
         private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
 
-        public void Setup()
+        internal override void Setup()
         {
             m_Controller = GetComponent<CharacterController>();
         }
 
-        public void Modify(PlayerState state, PlayerCommands commands)
+        internal override void ModifyChecked(PlayerState state, PlayerCommands commands)
         {
             transform.position = state.position;
             FullMove(commands);
             state.position = transform.position;
+        }
+
+        internal override void ModifyCommands(PlayerCommands commandsToModify)
+        {
+            InputProvider input = InputProvider.Singleton;
+            commandsToModify.hInput = input.GetAxis(InputType.Right, InputType.Left);
+            commandsToModify.vInput = input.GetAxis(InputType.Forward, InputType.Backward);
+            commandsToModify.jumpInput = input.GetInput(InputType.Jump);
         }
 
         private void FullMove(PlayerCommands commands)

@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using Collections;
-using Compound;
 using UnityEngine;
+using Util;
 
 namespace Session.Player
 {
@@ -12,8 +11,8 @@ namespace Session.Player
 
         [SerializeField] private GameObject m_PlayerModifierPrefab = default, m_PlayerVisualsPrefab = default;
 
-        private List<PlayerVisualsBehavior> m_Visuals;
-        private List<PlayerModifierBehavior> m_Modifier;
+        private PlayerVisualsBehavior[] m_Visuals;
+        private PlayerModifierDispatcherBehavior[] m_Modifier;
 
         private static T Instantiate<T>(GameObject prefab, Action<T> setup)
         {
@@ -25,20 +24,30 @@ namespace Session.Player
         protected override void Awake()
         {
             base.Awake();
-            m_Visuals = ListFactory.Repeat(() => Instantiate<PlayerVisualsBehavior>(m_PlayerVisualsPrefab, visuals => visuals.Setup()), MaxPlayers);
-            m_Modifier = ListFactory.Repeat(() => Instantiate<PlayerModifierBehavior>(m_PlayerModifierPrefab, modifier => modifier.Setup()), MaxPlayers);
+            m_Visuals = ArrayFactory.Repeat(() => Instantiate<PlayerVisualsBehavior>(m_PlayerVisualsPrefab, visuals => visuals.Setup()), MaxPlayers);
+            m_Modifier = ArrayFactory.Repeat(() => Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, modifier => modifier.Setup()), MaxPlayers);
         }
 
-        public void Visualize(SessionState session)
+        public void Visualize(SessionStateBase session)
         {
             SceneCamera.Singleton.SetEnabled(!session.LocalPlayerState?.isAlive ?? true);
-            for (var playerId = 0; playerId < session.playerStates.Count; playerId++)
+            for (var playerId = 0; playerId < session.playerStates.Length; playerId++)
                 m_Visuals[playerId].Visualize(session.playerStates[playerId], playerId == session.localPlayerId);
         }
 
-        public void Modify(byte playerId, PlayerState state, PlayerCommands commands)
+        public void ModifyCommands(byte playerId, PlayerCommands commandsToModify)
         {
-            m_Modifier[playerId].Modify(state, commands);
+            m_Modifier[playerId].ModifyCommands(commandsToModify);
+        }
+
+        public void ModifyTrusted(byte playerId, PlayerState stateToModify, PlayerCommands commands)
+        {
+            m_Modifier[playerId].ModifyTrusted(stateToModify, commands);
+        }
+
+        public void ModifyChecked(byte playerId, PlayerState stateToModify, PlayerCommands commands)
+        {
+            m_Modifier[playerId].ModifyChecked(stateToModify, commands);
         }
     }
 }

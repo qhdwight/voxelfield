@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Compound
+namespace Util
 {
     [DisallowMultipleComponent]
     public class SingletonBehavior<TSingleton> : MonoBehaviour where TSingleton : MonoBehaviour

@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace Serialization
@@ -10,32 +7,27 @@ namespace Serialization
     {
         public static void CopyTo(object source, object destination)
         {
-            void RecurseCopy(object src, object dest, Type type)
+            void RecurseCopy(object _source, object _destination, Type type)
             {
                 foreach (FieldInfo fieldInfo in Cache.GetFieldInfo(type))
                 {
                     Type fieldType = fieldInfo.FieldType;
                     if (fieldType.IsValueType)
-                        fieldInfo.SetValue(dest, fieldInfo.GetValue(src));
-                    else if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>))
+                        fieldInfo.SetValue(_destination, fieldInfo.GetValue(_source));
+                    else if (fieldType.IsArray)
                     {
-                        var sourceList = (IList) fieldInfo.GetValue(src);
-                        var destinationList = (IList) fieldInfo.GetValue(dest);
-                        Type elementType = fieldType.GetGenericArguments().First();
-                        for (var i = 0; i < sourceList.Count; i++)
-                        {
-                            if (elementType.IsValueType)
-                                destinationList[i] = sourceList[i];
-                            else if (elementType == typeof(string))
-                                destinationList[i] = string.Copy((string) sourceList[i]);
-                            else
-                                CopyTo(sourceList[i], destinationList[i]);
-                        }
+                        var sourceArray = (Array) fieldInfo.GetValue(_source);
+                        var destinationArray = (Array) fieldInfo.GetValue(_destination);
+                        if (sourceArray.Length != destinationArray.Length) throw new Exception("Unequal array lengths");
+                        Type elementType = sourceArray.GetType().GetElementType();
+                        if (elementType.IsValueType)
+                            Array.Copy(sourceArray, destinationArray, sourceArray.Length);
+                        else
+                            for (var i = 0; i < sourceArray.Length; i++)
+                                CopyTo(sourceArray.GetValue(i), destinationArray.GetValue(i));
                     }
-                    else if (fieldType == typeof(string))
-                        fieldInfo.SetValue(dest, string.Copy((string) fieldInfo.GetValue(src)));
                     else
-                        RecurseCopy(fieldInfo.GetValue(src), fieldInfo.GetValue(dest), fieldType);
+                        RecurseCopy(fieldInfo.GetValue(_source), fieldInfo.GetValue(_destination), fieldType);
                 }
             }
             RecurseCopy(source, destination, source.GetType());

@@ -1,31 +1,23 @@
+using Compound;
 using UnityEngine;
 
 namespace Session.Player
 {
-    public class PlayerCamera : MonoBehaviour
+    public class PlayerCamera : PlayerModifierBehaviorBase
     {
         [SerializeField] private float m_Sensitivity = 10.0f;
 
-        private float m_Pitch, m_Yaw;
-
-        public void Look(float mouseX, float mouseY, PlayerCommands commands)
+        internal override void ModifyTrusted(PlayerState stateToModify, PlayerCommands commands)
         {
-            m_Pitch -= mouseX * m_Sensitivity;
-            m_Yaw += mouseY * m_Sensitivity;
-            commands.pitch = m_Pitch;
-            commands.yaw = m_Yaw;
-        }
-        
-        public void Modify(PlayerState state, PlayerCommands commands)
-        {
-            state.pitch = commands.pitch;
-            state.yaw = commands.yaw;
-            SetYaw(state.yaw);
+            stateToModify.yaw += commands.mouseDeltaX * m_Sensitivity;
+            stateToModify.pitch -= commands.mouseDeltaY * m_Sensitivity;
+            transform.rotation = Quaternion.AngleAxis(stateToModify.yaw, Vector3.up);
         }
 
-        private void SetYaw(float yaw)
+        internal override void ModifyCommands(PlayerCommands commandsToModify)
         {
-            transform.rotation = Quaternion.AngleAxis(yaw, Vector3.up);
+            commandsToModify.mouseDeltaX = InputProvider.GetMouseInput(MouseMovement.X);
+            commandsToModify.mouseDeltaY = InputProvider.GetMouseInput(MouseMovement.Y);
         }
     }
 }

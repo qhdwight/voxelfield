@@ -5,6 +5,6 @@ namespace Session.Player
         public bool jumpInput;
         public float vInput, hInput;
         public float duration;
-        public float yaw, pitch;
+        public float mouseDeltaX, mouseDeltaY;
     }
 }

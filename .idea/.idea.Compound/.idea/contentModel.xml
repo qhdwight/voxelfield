@@ -8,18 +8,23 @@
       <e p="Assets" t="Include">
         <e p="Scripts" t="Include">
           <e p="Collections" t="Include">
+            <e p="ArrayFactory.cs" t="Include" />
             <e p="Collections.asmdef" t="Include" />
             <e p="CyclicArray.cs" t="Include" />
-            <e p="ListFactory.cs" t="Include" />
             <e p="Pool.cs" t="Include" />
           </e>
           <e p="Compound" t="Include">
-            <e p="ArmIK.cs" t="Include" />
             <e p="Compound.asmdef" t="Include" />
+            <e p="Session" t="Include">
+              <e p="Client.cs" t="Include" />
+              <e p="Session.cs" t="Include" />
+              <e p="SessionManager.cs" t="Include" />
+              <e p="SessionState.cs" t="Include" />
+            </e>
+          </e>
+          <e p="Input" t="Include">
+            <e p="Input.asmdef" t="Include" />
             <e p="InputProvider.cs" t="Include" />
-            <e p="SceneCamera.cs" t="Include" />
-            <e p="SingletonBehavior.cs" t="Include" />
-            <e p="TestBehavior.cs" t="Include" />
           </e>
           <e p="Interfaces" t="Include">
             <e p="InterfaceBehavior.cs" t="Include" />
@@ -35,33 +40,42 @@
             <e p="Serialization.asmdef" t="Include" />
             <e p="Serializer.cs" t="Include" />
             <e p="Tests" t="Include">
+              <e p="Common.cs" t="Include" />
               <e p="CopierTests.cs" t="Include" />
               <e p="SerializationTests.asmdef" t="Include" />
+              <e p="SerializerTests.cs" t="Include" />
             </e>
           </e>
           <e p="Session" t="Include">
-            <e p="ClientSession.cs" t="Include" />
+            <e p="ClientBase.cs" t="Include" />
             <e p="Player" t="Include">
               <e p="PlayerCamera.cs" t="Include" />
               <e p="PlayerCommands.cs" t="Include" />
               <e p="PlayerManager.cs" t="Include" />
-              <e p="PlayerModifierBehavior.cs" t="Include" />
+              <e p="PlayerModifierBehaviorBase.cs" t="Include" />
+              <e p="PlayerModifierDispatcherBehavior.cs" t="Include" />
               <e p="PlayerMovement.cs" t="Include" />
               <e p="PlayerState.cs" t="Include" />
               <e p="PlayerVisualsBehavior.cs" t="Include" />
             </e>
-            <e p="ServerSession.cs" t="Include" />
+            <e p="SceneCamera.cs" t="Include" />
+            <e p="ServerSessionBase.cs" t="Include" />
             <e p="Session.asmdef" t="Include" />
             <e p="SessionBase.cs" t="Include" />
-            <e p="SessionManager.cs" t="Include" />
-            <e p="SessionState.cs" t="Include" />
+            <e p="SessionStateBase.cs" t="Include" />
             <e p="SessionStates.cs" t="Include" />
+          </e>
+          <e p="Util" t="Include">
+            <e p="ArmIK.cs" t="Include" />
+            <e p="SingletonBehavior.cs" t="Include" />
+            <e p="Util.asmdef" t="Include" />
           </e>
         </e>
       </e>
       <e p="Collections.csproj" t="IncludeRecursive" />
       <e p="Compound.csproj" t="IncludeRecursive" />
       <e p="Compound.sln" t="IncludeFlat" />
+      <e p="Input.csproj" t="IncludeRecursive" />
       <e p="Interfaces.csproj" t="IncludeRecursive" />
       <e p="Networking.csproj" t="IncludeRecursive" />
       <e p="obj" t="ExcludeRecursive" />
@@ -70,6 +84,7 @@
       <e p="Session.csproj" t="IncludeRecursive" />
       <e p="Temp\bin" t="ExcludeRecursive" />
       <e p="Tests.csproj" t="IncludeRecursive" />
+      <e p="Util.csproj" t="IncludeRecursive" />
     </e>
   </component>
 </project>

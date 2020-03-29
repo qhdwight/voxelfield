@@ -1,6 +1,7 @@
 using UnityEngine;
+using Util;
 
-namespace Compound
+namespace Session
 {
     [RequireComponent(typeof(Camera))]
     public class SceneCamera : SingletonBehavior<SceneCamera>

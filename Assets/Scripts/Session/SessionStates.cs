@@ -1,10 +1,11 @@
+using System;
 using Collections;
 
 namespace Session
 {
-    public class SessionStates : CyclicArray<SessionState>
+    public class SessionStates<TSessionState> : CyclicArray<TSessionState> where TSessionState : SessionStateBase
     {
-        public SessionStates(int size) : base(size, () => new SessionState())
+        public SessionStates() : base(250, Activator.CreateInstance<TSessionState>)
         {
         }
     }

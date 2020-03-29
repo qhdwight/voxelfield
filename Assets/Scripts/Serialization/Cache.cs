@@ -10,7 +10,7 @@ namespace Serialization
 
         internal static FieldInfo[] GetFieldInfo(Type type)
         {
-            if (!FieldCache.ContainsKey(type)) FieldCache.Add(type, type.GetFields());
+            if (!FieldCache.ContainsKey(type)) FieldCache.Add(type, type.GetFields(BindingFlags.Instance | BindingFlags.Public));
             return FieldCache[type];
         }
     }

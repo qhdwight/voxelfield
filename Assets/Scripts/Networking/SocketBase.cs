@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using Collections;
@@ -13,7 +14,7 @@ namespace Networking
 
         private readonly Dictionary<Type, byte> m_Codes;
         private readonly UdpClient m_NetworkClient;
-        private readonly Pool<byte[]> m_Buffers = new Pool<byte[]>(10, () => new byte[BufferSize], null);
+        private readonly Pool<MemoryStream> m_Streams = new Pool<MemoryStream>(10, () => new MemoryStream(BufferSize), null);
 
         protected SocketBase(IPEndPoint endpoint, Dictionary<Type, byte> codes)
         {
@@ -23,11 +24,11 @@ namespace Networking
 
         public bool Send(object message)
         {
-            byte[] buffer = m_Buffers.Obtain();
-            int length = Serializer.Serialize(message, buffer);
+            MemoryStream stream = m_Streams.Obtain();
+            Serializer.Serialize(message, stream);
             try
             {
-                m_NetworkClient.Send(buffer, length);
+                m_NetworkClient.Send(stream.GetBuffer(), (int) stream.Position);
                 return true;
             }
             catch (Exception)
