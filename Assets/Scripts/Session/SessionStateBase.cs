@@ -1,26 +1,20 @@
-using Collections;
+using Components;
 using Session.Player;
 
 namespace Session
 {
-    public class SessionSettings
+    public class SessionSettings : ComponentBase
     {
     }
 
-    public abstract class SessionStateBase
+    public abstract class SessionStateBase : ComponentBase
     {
-        public uint tick;
-        public float time, duration;
-        public byte? localPlayerId;
-        public readonly PlayerState[] playerStates = ArrayFactory.Repeat(() => new PlayerState(), PlayerManager.MaxPlayers);
-        public SessionSettings settings = new SessionSettings();
+        public Property<uint> tick;
+        public Property<float> time, duration;
+        public OptionalProperty<byte> localPlayerId;
+        public readonly ArrayProperty<PlayerState> playerStates = new ArrayProperty<PlayerState>(PlayerManager.MaxPlayers);
+        public SessionSettings settings;
 
         public PlayerState LocalPlayerState => localPlayerId.HasValue ? playerStates[localPlayerId.Value] : null;
-
-        public bool TryGetLocalState(out PlayerState localState)
-        {
-            localState = LocalPlayerState;
-            return localState != null;
-        }
     }
 }

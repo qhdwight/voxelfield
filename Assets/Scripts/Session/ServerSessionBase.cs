@@ -13,8 +13,8 @@ namespace Session
             var state = Activator.CreateInstance<TSessionState>();
             state.localPlayerId = 0;
             state.time = currentTime;
-            state.duration = currentTime - m_States.Peek()?.time ?? 0.0f;
-            state.tick = m_States.Peek()?.tick ?? 0 + 1;
+            state.duration = currentTime - m_States.Peek().time;
+            state.tick = m_States.Peek().tick + 1;
 
             m_States.Add(state);
         }

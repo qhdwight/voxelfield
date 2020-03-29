@@ -25,7 +25,7 @@ namespace Session.Player
             m_Head.localRotation = Quaternion.AngleAxis(state.pitch, Vector3.right);
             m_Camera.transform.localRotation = Quaternion.AngleAxis(state.pitch, Vector3.right);
             m_Camera.enabled = isLocalPlayer;
-            SetVisible(state.isAlive, isLocalPlayer);
+            SetVisible(state.health != 0, isLocalPlayer);
         }
 
         private void SetVisible(bool isVisible, bool isListenerEnabled)

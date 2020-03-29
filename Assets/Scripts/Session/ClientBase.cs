@@ -1,5 +1,5 @@
 using System;
-using Serialization;
+using Components;
 using Session.Player;
 
 namespace Session
@@ -26,8 +26,8 @@ namespace Session
         public override void Render()
         {
             m_RenderSessionState.localPlayerId = LocalPlayerId;
-            PlayerState predictedState = m_States.Peek().LocalPlayerState,
-                        renderState = m_RenderSessionState.LocalPlayerState;
+            PlayerState predictedState = m_States.Peek().playerStates[LocalPlayerId],
+                        renderState = m_RenderSessionState.playerStates[LocalPlayerId];
             if (predictedState == null || renderState == null) return;
             Copier.CopyTo(predictedState, renderState);
             renderState.yaw = m_TrustedState.yaw;
@@ -47,8 +47,8 @@ namespace Session
             state.time = time;
             state.duration = time - lastTickTime;
             state.localPlayerId = LocalPlayerId;
-            PlayerState playerState = state.LocalPlayerState;
-            playerState.isAlive = true;
+            PlayerState playerState = state.playerStates[LocalPlayerId];
+            playerState.health = 100;
             m_Commands.duration = state.duration;
             PlayerManager.Singleton.ModifyChecked(LocalPlayerId, playerState, m_Commands);
         }

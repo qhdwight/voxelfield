@@ -1,11 +1,12 @@
+using Components;
 using UnityEngine;
 
 namespace Session.Player
 {
-    public class PlayerState
+    public class PlayerState : ComponentBase
     {
-        public bool isAlive;
-        public Vector3 position;
-        public float yaw, pitch;
+        public Property<byte> health;
+        public Property<Vector3> position;
+        public Property<float> yaw, pitch;
     }
 }

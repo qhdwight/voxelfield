@@ -1,14 +1,23 @@
 using System;
 using System.Reflection;
 
-namespace Serialization
+namespace Components
 {
+    [AttributeUsage(AttributeTargets.Field)]
+    public class Copy : Attribute
+    {
+    }
+
     public static class Copier
     {
         public static void CopyTo(object source, object destination)
         {
             void RecurseCopy(object _source, object _destination, Type type)
             {
+                if (_source == null || _destination == null)
+                {
+                    return;
+                }
                 foreach (FieldInfo fieldInfo in Cache.GetFieldInfo(type))
                 {
                     Type fieldType = fieldInfo.FieldType;

@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 
-namespace Serialization
+namespace Components
 {
     public static class Serializer
     {

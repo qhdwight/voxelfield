@@ -40,11 +40,11 @@ namespace Session.Player
             m_Controller = GetComponent<CharacterController>();
         }
 
-        internal override void ModifyChecked(PlayerState state, PlayerCommands commands)
+        internal override void ModifyChecked(PlayerState stateToModify, PlayerCommands commands)
         {
-            transform.position = state.position;
+            base.ModifyChecked(stateToModify, commands);
             FullMove(commands);
-            state.position = transform.position;
+            stateToModify.position = transform.position;
         }
 
         internal override void ModifyCommands(PlayerCommands commandsToModify)
@@ -53,6 +53,11 @@ namespace Session.Player
             commandsToModify.hInput = input.GetAxis(InputType.Right, InputType.Left);
             commandsToModify.vInput = input.GetAxis(InputType.Forward, InputType.Backward);
             commandsToModify.jumpInput = input.GetInput(InputType.Jump);
+        }
+
+        protected override void SynchronizeBehavior(PlayerState stateToApply)
+        {
+            transform.position = stateToApply.position;
         }
 
         private void FullMove(PlayerCommands commands)

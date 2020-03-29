@@ -1,17 +1,17 @@
 using System.IO;
 using NUnit.Framework;
 
-namespace Serialization.Tests
+namespace Components.Tests
 {
     public class SerializerTests
     {
         [Test]
         public void TestSerializer()
         {
-            OuterClass arbitrary = OuterClass.Arbitrary;
+            OuterComponent arbitrary = OuterComponent.Arbitrary;
             var stream = new MemoryStream();
             Serializer.Serialize(arbitrary, stream);
-            var deserialized = new OuterClass();
+            var deserialized = new OuterComponent();
             Serializer.DeserializeInto(deserialized, stream);
             Assert.AreEqual(arbitrary.@int, deserialized.@int);
             Assert.AreEqual(arbitrary.@double, deserialized.@double);

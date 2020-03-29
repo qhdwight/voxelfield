@@ -13,6 +13,7 @@ namespace Session.Player
         /// </summary>
         internal virtual void ModifyChecked(PlayerState stateToModify, PlayerCommands commands)
         {
+            SynchronizeBehavior(stateToModify);
         }
 
         /// <summary>
@@ -20,9 +21,14 @@ namespace Session.Player
         /// </summary>
         internal virtual void ModifyTrusted(PlayerState stateToModify, PlayerCommands commands)
         {
+            SynchronizeBehavior(stateToModify);
         }
 
         internal virtual void ModifyCommands(PlayerCommands commandsToModify)
+        {
+        }
+
+        protected virtual void SynchronizeBehavior(PlayerState stateToApply)
         {
         }
     }

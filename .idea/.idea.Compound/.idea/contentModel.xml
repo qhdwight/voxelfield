@@ -13,6 +13,22 @@
             <e p="CyclicArray.cs" t="Include" />
             <e p="Pool.cs" t="Include" />
           </e>
+          <e p="Components" t="Include">
+            <e p="ArrayProperty.cs" t="Include" />
+            <e p="Cache.cs" t="Include" />
+            <e p="ComponentBase.cs" t="Include" />
+            <e p="Components.asmdef" t="Include" />
+            <e p="Copier.cs" t="Include" />
+            <e p="OptionalProperty.cs" t="Include" />
+            <e p="Property.cs" t="Include" />
+            <e p="Serializer.cs" t="Include" />
+            <e p="Tests" t="Include">
+              <e p="Common.cs" t="Include" />
+              <e p="CopierTests.cs" t="Include" />
+              <e p="SerializationTests.asmdef" t="Include" />
+              <e p="SerializerTests.cs" t="Include" />
+            </e>
+          </e>
           <e p="Compound" t="Include">
             <e p="Compound.asmdef" t="Include" />
             <e p="Session" t="Include">
@@ -33,18 +49,6 @@
           <e p="Networking" t="Include">
             <e p="Networking.asmdef" t="Include" />
             <e p="SocketBase.cs" t="Include" />
-          </e>
-          <e p="Serialization" t="Include">
-            <e p="Cache.cs" t="Include" />
-            <e p="Copier.cs" t="Include" />
-            <e p="Serialization.asmdef" t="Include" />
-            <e p="Serializer.cs" t="Include" />
-            <e p="Tests" t="Include">
-              <e p="Common.cs" t="Include" />
-              <e p="CopierTests.cs" t="Include" />
-              <e p="SerializationTests.asmdef" t="Include" />
-              <e p="SerializerTests.cs" t="Include" />
-            </e>
           </e>
           <e p="Session" t="Include">
             <e p="ClientBase.cs" t="Include" />
@@ -73,6 +77,7 @@
         </e>
       </e>
       <e p="Collections.csproj" t="IncludeRecursive" />
+      <e p="Components.csproj" t="IncludeRecursive" />
       <e p="Compound.csproj" t="IncludeRecursive" />
       <e p="Compound.sln" t="IncludeFlat" />
       <e p="Input.csproj" t="IncludeRecursive" />
@@ -80,7 +85,6 @@
       <e p="Networking.csproj" t="IncludeRecursive" />
       <e p="obj" t="ExcludeRecursive" />
       <e p="packages" t="ExcludeRecursive" />
-      <e p="Serialization.csproj" t="IncludeRecursive" />
       <e p="Session.csproj" t="IncludeRecursive" />
       <e p="Temp\bin" t="ExcludeRecursive" />
       <e p="Tests.csproj" t="IncludeRecursive" />

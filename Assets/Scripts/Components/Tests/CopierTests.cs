@@ -1,14 +1,14 @@
 using NUnit.Framework;
 
-namespace Serialization.Tests
+namespace Components.Tests
 {
     public class CopierTests
     {
         [Test]
         public void TestCopier()
         {
-            OuterClass source = OuterClass.Arbitrary;
-            var destination = new OuterClass();
+            OuterComponent source = OuterComponent.Arbitrary;
+            var destination = new OuterComponent();
             Copier.CopyTo(source, destination);
             Assert.AreEqual(source.@int, destination.@int);
             Assert.AreEqual(source.@double, destination.@double);
