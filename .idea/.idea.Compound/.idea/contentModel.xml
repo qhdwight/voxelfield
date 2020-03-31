@@ -20,11 +20,13 @@
             <e p="Components.asmdef" t="Include" />
             <e p="Copier.cs" t="Include" />
             <e p="Extensions.cs" t="Include" />
+            <e p="Interpolator.cs" t="Include" />
             <e p="Property.cs" t="Include" />
             <e p="Serializer.cs" t="Include" />
             <e p="Tests" t="Include">
               <e p="Common.cs" t="Include" />
               <e p="CopierTests.cs" t="Include" />
+              <e p="InterpolatorTests.cs" t="Include" />
               <e p="MergeTests.cs" t="Include" />
               <e p="SerializationTests.asmdef" t="Include" />
               <e p="SerializerTests.cs" t="Include" />

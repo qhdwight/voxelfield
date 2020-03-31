@@ -22,7 +22,7 @@ namespace Components
 
         public static void Navigate(object o1, object o2, Action<PropertyBase, PropertyBase> visitProperty)
         {
-            void NavigateRecursive(object _o1, object _o2, Type _type)
+            void NavigateRecursively(object _o1, object _o2, Type _type)
             {
                 if (_o1 == null || _o2 == null)
                     throw new NullReferenceException("Null member");
@@ -37,7 +37,7 @@ namespace Components
                             visitProperty(sourceProperty, mergedProperty);
                         }
                         else
-                            NavigateRecursive(field.GetValue(_o1), field.GetValue(_o2), fieldType);
+                            NavigateRecursively(field.GetValue(_o1), field.GetValue(_o2), fieldType);
                     }
                 else if (_type.IsArrayProperty())
                 {
@@ -56,13 +56,13 @@ namespace Components
                             visitProperty(sourceElement, mergedElement);
                         }
                         else
-                            NavigateRecursive(sourceArray.GetValue(i), mergedArray.GetValue(i), elementType);
+                            NavigateRecursively(sourceArray.GetValue(i), mergedArray.GetValue(i), elementType);
                     }
                 }
                 else
                     throw new Exception("Expected component or array");
             }
-            NavigateRecursive(o1, o2, o1.GetType());
+            NavigateRecursively(o1, o2, o1.GetType());
         }
     }
 }

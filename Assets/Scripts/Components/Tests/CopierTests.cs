@@ -11,7 +11,7 @@ namespace Components.Tests
             var destination = new OuterComponent();
             Copier.CopyTo(source, destination);
             Assert.AreEqual(source.@int, destination.@int);
-            Assert.AreEqual(source.@double, destination.@double);
+            Assert.AreEqual(source.@float, destination.@float);
             Assert.AreEqual(source.vector, destination.vector);
             Assert.AreNotSame(source.inner, destination.inner);
             Assert.AreEqual(source.inner.@uint, destination.inner.@uint);

@@ -12,14 +12,14 @@ namespace Components.Tests
         }
 
         public Property<int> @int;
-        public Property<double> @double;
+        public Property<float> @float;
         public Property<Vector3> vector;
         public InnerComponent inner;
         public IntArrayProperty intArray = new IntArrayProperty(2);
 
         internal static OuterComponent Arbitrary => new OuterComponent
         {
-            @int = 2, @double = 3.7f, vector = new Vector3(3.0f, 2.0f, 1.0f), inner = new InnerComponent {@uint = 3},
+            @int = 2, @float = 3.7f, vector = new Vector3(3.0f, 2.0f, 1.0f), inner = new InnerComponent {@uint = 3},
             intArray = IntArrayProperty.From(1, 2)
         };
     }

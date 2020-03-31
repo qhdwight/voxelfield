@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Components
 {
-    public static class Serializer
+    public static class  Serializer
     {
         private static readonly MemoryStream Stream = new MemoryStream(1 << 16);
         private static readonly BinaryWriter Writer = new BinaryWriter(Stream);

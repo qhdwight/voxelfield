@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace Components
 {
@@ -13,7 +14,9 @@ namespace Components
 
         public abstract void SetValue(object value);
 
-        public abstract void SetIfPresent(PropertyBase other);
+        public abstract void SetFromIfPresent(PropertyBase other);
+
+        public abstract void InterpolateFromIfPresent(PropertyBase other, float interpolation);
     }
 
     public class Property<T> : PropertyBase where T : struct
@@ -98,12 +101,28 @@ namespace Components
             m_Value = newValue;
         }
 
-        public override void SetIfPresent(PropertyBase other)
+        public override void SetFromIfPresent(PropertyBase other)
         {
             if (!(other is Property<T> otherProperty))
                 throw new ArgumentException("Other property is not of the same type");
             if (otherProperty.HasValue)
                 Value = otherProperty.Value;
+        }
+
+        public override void InterpolateFromIfPresent(PropertyBase other, float interpolation)
+        { 
+            if (!(other is Property<T> otherProperty))
+                throw new ArgumentException("Other property is not of the same type");
+            if (!otherProperty.HasValue) return;
+            switch (GetValue())
+            {
+                case Vector3 sourceVector:
+                    SetValue(Vector3.Lerp(sourceVector, (Vector3) otherProperty.GetValue(), interpolation));
+                    break;
+                case float sourceFloat:
+                    SetValue(Mathf.Lerp(sourceFloat, (float) otherProperty.GetValue(), interpolation));
+                    break;
+            }
         }
     }
 }

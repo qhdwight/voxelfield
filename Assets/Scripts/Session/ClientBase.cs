@@ -1,16 +1,20 @@
 using System;
+using Collections;
 using Components;
 using Session.Player;
 
 namespace Session
 {
-    public abstract class ClientBase<TSessionState> : SessionBase<TSessionState> where TSessionState : SessionStateComponentBase
+    public abstract class ClientBase<TSessionState>
+        : SessionBase<TSessionState>
+        where TSessionState : SessionStateComponentBase
     {
         private const int LocalPlayerId = 0;
 
         private readonly PlayerCommands m_Commands = new PlayerCommands();
-        private readonly PlayerStateComponent m_TrustedState = new PlayerStateComponent();
+        private readonly PlayerStateComponent m_TrustedPlayerState = new PlayerStateComponent();
         private readonly TSessionState m_RenderSessionState = Activator.CreateInstance<TSessionState>();
+        private readonly CyclicArray<StampedPlayerStateComponent> m_PredictedPlayerStates = new CyclicArray<StampedPlayerStateComponent>(250, () => new StampedPlayerStateComponent());
 
         private void ReadLocalInputs()
         {
@@ -20,17 +24,15 @@ namespace Session
         public override void HandleInput()
         {
             ReadLocalInputs();
-            PlayerManager.Singleton.ModifyTrusted(LocalPlayerId, m_TrustedState, m_Commands);
+            PlayerManager.Singleton.ModifyTrusted(LocalPlayerId, m_TrustedPlayerState, m_Commands);
         }
 
         public override void Render()
         {
             m_RenderSessionState.localPlayerId.Value = LocalPlayerId;
-            PlayerStateComponent predictedState = m_States.Peek().playerStates[LocalPlayerId],
-                                 renderState = m_RenderSessionState.playerStates[LocalPlayerId];
-            if (predictedState == null || renderState == null) return;
-            Copier.CopyTo(predictedState, renderState);
-            Copier.CopyTo(m_TrustedState, renderState);
+            PlayerStateComponent renderState = m_RenderSessionState.playerStates[LocalPlayerId];
+            InterpolateHistoryInto(renderState, m_PredictedPlayerStates, 0.5f, 0.0f);
+            Copier.CopyTo(m_TrustedPlayerState, renderState);
             PlayerManager.Singleton.Visualize(m_RenderSessionState);
         }
 
@@ -38,19 +40,18 @@ namespace Session
         {
             base.Tick(tick, time);
             ReadLocalInputs();
-            SessionStateComponentBase lastState = m_States.Peek();
-            float lastTickTime = lastState.time;
-            SessionStateComponentBase state = m_States.ClaimNext();
-            Copier.CopyTo(lastState, state);
-            state.tick.Value = m_Tick;
-            state.time.Value = time;
-            state.duration.Value = time - lastTickTime;
-            state.localPlayerId.Value = LocalPlayerId;
-            PlayerStateComponent playerState = state.playerStates[LocalPlayerId];
-            playerState.health.Value = 100;
-            m_Commands.duration = state.duration;
-            Copier.CopyTo(m_TrustedState, playerState);
-            PlayerManager.Singleton.ModifyChecked(LocalPlayerId, playerState, m_Commands);
+            StampedPlayerStateComponent lastPredictedState = m_PredictedPlayerStates.Peek();
+            float lastTickTime = lastPredictedState.time.OrElse(time);
+            StampedPlayerStateComponent predictedState = m_PredictedPlayerStates.ClaimNext();
+            Copier.CopyTo(lastPredictedState, predictedState);
+            predictedState.tick.Value = m_Tick;
+            predictedState.time.Value = time;
+            float duration = time - lastTickTime;
+            predictedState.duration.Value = duration;
+            predictedState.state.health.Value = 100;
+            m_Commands.duration = duration;
+            Copier.CopyTo(m_TrustedPlayerState, predictedState.state);
+            PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedState.state, m_Commands);
         }
     }
 }
