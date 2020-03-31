@@ -46,7 +46,7 @@ namespace Components
         {
             if (other is null) throw new ArgumentException("Other in equality comparison was null");
             if (ReferenceEquals(this, other)) return true;
-            return other.GetType() == GetType() && Equals((Property<T>) other);
+            return other.GetType() == ValueType && m_Value.Equals(other) || other.GetType() == GetType() && Equals((Property<T>) other);
         }
 
         public static implicit operator Property<T>(T property)

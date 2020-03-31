@@ -30,8 +30,7 @@ namespace Session
                                  renderState = m_RenderSessionState.playerStates[LocalPlayerId];
             if (predictedState == null || renderState == null) return;
             Copier.CopyTo(predictedState, renderState);
-            renderState.yaw = m_TrustedState.yaw;
-            renderState.pitch = m_TrustedState.pitch;
+            Copier.CopyTo(m_TrustedState, renderState);
             PlayerManager.Singleton.Visualize(m_RenderSessionState);
         }
 
@@ -50,6 +49,7 @@ namespace Session
             PlayerStateComponent playerState = state.playerStates[LocalPlayerId];
             playerState.health.Value = 100;
             m_Commands.duration = state.duration;
+            Copier.CopyTo(m_TrustedState, playerState);
             PlayerManager.Singleton.ModifyChecked(LocalPlayerId, playerState, m_Commands);
         }
     }

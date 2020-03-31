@@ -10,8 +10,8 @@ namespace Session.Player
         internal override void ModifyTrusted(PlayerStateComponent stateToModify, PlayerCommands commands)
         {
             base.ModifyTrusted(stateToModify, commands);
-            stateToModify.yaw.Value += commands.mouseDeltaX * m_Sensitivity;
-            stateToModify.pitch.Value -= commands.mouseDeltaY * m_Sensitivity;
+            stateToModify.yaw.Value = Mathf.Repeat(stateToModify.yaw + commands.mouseDeltaX * m_Sensitivity, 360.0f);
+            stateToModify.pitch.Value = Mathf.Clamp(stateToModify.pitch - commands.mouseDeltaY * m_Sensitivity, -90.0f, 90.0f);
         }
 
         internal override void ModifyCommands(PlayerCommands commandsToModify)
