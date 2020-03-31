@@ -1,4 +1,4 @@
-using Compound;
+using Input;
 using UnityEngine;
 
 namespace Session.Player
@@ -40,11 +40,11 @@ namespace Session.Player
             m_Controller = GetComponent<CharacterController>();
         }
 
-        internal override void ModifyChecked(PlayerState stateToModify, PlayerCommands commands)
+        internal override void ModifyChecked(PlayerStateComponent stateToModify, PlayerCommands commands)
         {
             base.ModifyChecked(stateToModify, commands);
             FullMove(commands);
-            stateToModify.position = transform.position;
+            stateToModify.position.Value = transform.position;
         }
 
         internal override void ModifyCommands(PlayerCommands commandsToModify)
@@ -55,7 +55,7 @@ namespace Session.Player
             commandsToModify.jumpInput = input.GetInput(InputType.Jump);
         }
 
-        protected override void SynchronizeBehavior(PlayerState stateToApply)
+        protected override void SynchronizeBehavior(PlayerStateComponent stateToApply)
         {
             transform.position = stateToApply.position;
         }

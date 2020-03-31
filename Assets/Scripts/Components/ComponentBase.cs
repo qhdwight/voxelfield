@@ -11,9 +11,7 @@ namespace Components
             foreach (FieldInfo fieldInfo in fieldInfos)
             {
                 Type fieldType = fieldInfo.FieldType;
-                bool isProperty = fieldType.IsSubclassOf(typeof(PropertyBase)),
-                     isComponent = fieldType.IsSubclassOf(typeof(ComponentBase));
-                if (isProperty || isComponent)
+                if (fieldType.IsProperty() || fieldType.IsComponent())
                     fieldInfo.SetValue(this, Activator.CreateInstance(fieldType));
             }
         }

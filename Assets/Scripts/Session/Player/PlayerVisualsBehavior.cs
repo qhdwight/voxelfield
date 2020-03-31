@@ -18,7 +18,7 @@ namespace Session.Player
             SetVisible(false, false);
         }
 
-        public void Visualize(PlayerState state, bool isLocalPlayer)
+        public void Visualize(PlayerStateComponent state, bool isLocalPlayer)
         {
             transform.position = state.position;
             transform.rotation = Quaternion.AngleAxis(state.yaw, Vector3.up);

@@ -19,12 +19,13 @@
             <e p="ComponentBase.cs" t="Include" />
             <e p="Components.asmdef" t="Include" />
             <e p="Copier.cs" t="Include" />
-            <e p="OptionalProperty.cs" t="Include" />
+            <e p="Extensions.cs" t="Include" />
             <e p="Property.cs" t="Include" />
             <e p="Serializer.cs" t="Include" />
             <e p="Tests" t="Include">
               <e p="Common.cs" t="Include" />
               <e p="CopierTests.cs" t="Include" />
+              <e p="MergeTests.cs" t="Include" />
               <e p="SerializationTests.asmdef" t="Include" />
               <e p="SerializerTests.cs" t="Include" />
             </e>
@@ -59,14 +60,14 @@
               <e p="PlayerModifierBehaviorBase.cs" t="Include" />
               <e p="PlayerModifierDispatcherBehavior.cs" t="Include" />
               <e p="PlayerMovement.cs" t="Include" />
-              <e p="PlayerState.cs" t="Include" />
+              <e p="PlayerStateComponent.cs" t="Include" />
               <e p="PlayerVisualsBehavior.cs" t="Include" />
             </e>
             <e p="SceneCamera.cs" t="Include" />
             <e p="ServerSessionBase.cs" t="Include" />
             <e p="Session.asmdef" t="Include" />
             <e p="SessionBase.cs" t="Include" />
-            <e p="SessionStateBase.cs" t="Include" />
+            <e p="SessionStateComponentBase.cs" t="Include" />
             <e p="SessionStates.cs" t="Include" />
           </e>
           <e p="Util" t="Include">

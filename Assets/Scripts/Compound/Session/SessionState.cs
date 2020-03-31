@@ -2,7 +2,7 @@ using Session;
 
 namespace Compound.Session
 {
-    public class SessionState : SessionStateBase
+    public class SessionState : SessionStateComponentBase
     {
     }
 }

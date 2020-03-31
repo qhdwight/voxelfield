@@ -1,19 +1,36 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Components
 {
     public abstract class PropertyBase
     {
+        public bool HasValue { get; protected set; }
+
+        public abstract Type ValueType { get; }
+
+        public abstract object GetValue();
+
+        public abstract void SetValue(object value);
+
+        public abstract void SetIfPresent(PropertyBase other);
     }
 
-    [DebuggerDisplay("{m_Value}")]
     public class Property<T> : PropertyBase where T : struct
     {
-        [Copy] protected T m_Value;
+        [Copy] private T m_Value;
 
-        public T Value => m_Value;
+        public T Value
+        {
+            get => m_Value;
+            set
+            {
+                m_Value = value;
+                HasValue = true;
+            }
+        }
+
+        public override Type ValueType => typeof(T);
 
         public override int GetHashCode()
         {
@@ -34,7 +51,7 @@ namespace Components
 
         public static implicit operator Property<T>(T property)
         {
-            return new Property<T> {m_Value = property};
+            return new Property<T> {m_Value = property, HasValue = true};
         }
 
         public static implicit operator T(Property<T> property)
@@ -51,6 +68,42 @@ namespace Components
         public static bool operator !=(Property<T> p1, Property<T> p2)
         {
             return !(p1 == p2);
+        }
+
+        public Property<T> IfPresent(Action<T> action)
+        {
+            if (HasValue) action(m_Value);
+            return this;
+        }
+
+        public T OrElse(T @default)
+        {
+            return HasValue ? m_Value : @default;
+        }
+
+        public override string ToString()
+        {
+            return m_Value.ToString();
+        }
+
+        public override object GetValue()
+        {
+            return m_Value;
+        }
+
+        public override void SetValue(object value)
+        {
+            if (!(value is T newValue))
+                throw new ArgumentException("Value is not of the proper type");
+            m_Value = newValue;
+        }
+
+        public override void SetIfPresent(PropertyBase other)
+        {
+            if (!(other is Property<T> otherProperty))
+                throw new ArgumentException("Other property is not of the same type");
+            if (otherProperty.HasValue)
+                Value = otherProperty.Value;
         }
     }
 }

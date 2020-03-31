@@ -28,7 +28,7 @@ namespace Session.Player
             m_Modifier = ArrayFactory.Repeat(() => Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, modifier => modifier.Setup()), MaxPlayers);
         }
 
-        public void Visualize(SessionStateBase session)
+        public void Visualize(SessionStateComponentBase session)
         {
             SceneCamera.Singleton.SetEnabled(!session.localPlayerId.HasValue || session.LocalPlayerState.health == 0);
             for (var playerId = 0; playerId < session.playerStates.Length; playerId++)
@@ -40,12 +40,12 @@ namespace Session.Player
             m_Modifier[playerId].ModifyCommands(commandsToModify);
         }
 
-        public void ModifyTrusted(byte playerId, PlayerState stateToModify, PlayerCommands commands)
+        public void ModifyTrusted(byte playerId, PlayerStateComponent stateToModify, PlayerCommands commands)
         {
             m_Modifier[playerId].ModifyTrusted(stateToModify, commands);
         }
 
-        public void ModifyChecked(byte playerId, PlayerState stateToModify, PlayerCommands commands)
+        public void ModifyChecked(byte playerId, PlayerStateComponent stateToModify, PlayerCommands commands)
         {
             m_Modifier[playerId].ModifyChecked(stateToModify, commands);
         }

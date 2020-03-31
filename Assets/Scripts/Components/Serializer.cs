@@ -12,10 +12,24 @@ namespace Components
         private static readonly BinaryWriter Writer = new BinaryWriter(Stream);
         private static readonly BinaryReader Reader = new BinaryReader(Stream);
 
-        private static void WriteValue(object primitive)
+        private static readonly Dictionary<Type, Func<object>> Readers = new Dictionary<Type, Func<object>>
+        {
+            [typeof(int)] = () => Reader.ReadInt32(),
+            [typeof(uint)] = () => Reader.ReadUInt32(),
+            [typeof(float)] = () => Reader.ReadSingle(),
+            [typeof(double)] = () => Reader.ReadDouble(),
+            [typeof(Vector3)] = () => new Vector3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle())
+        };
+
+        private static void ReadIntoProperty(PropertyBase property)
+        {
+            property.SetValue(Readers[property.ValueType]());
+        }
+
+        private static void WriteFromProperty(PropertyBase property)
         {
             // @formatter:off
-            switch (primitive)
+            switch (property.GetValue())
             {
                 case int @int: Writer.Write(@int); break;
                 case uint @uint: Writer.Write(@uint); break;
@@ -27,76 +41,65 @@ namespace Components
             // @formatter:on
         }
 
-        private static readonly Dictionary<Type, Func<object>> Readers = new Dictionary<Type, Func<object>>
+        private static void Navigate(object @object, Action<PropertyBase> visitProperty)
         {
-            [typeof(int)] = () => Reader.ReadInt32(),
-            [typeof(uint)] = () => Reader.ReadUInt32(),
-            [typeof(float)] = () => Reader.ReadSingle(),
-            [typeof(double)] = () => Reader.ReadDouble(),
-            [typeof(Vector3)] = () => new Vector3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle()),
-        };
-
-        private static object ReadValue(Type type)
-        {
-            return Readers[type]();
-        }
-
-        public static void Serialize(object @object, Stream stream)
-        {
-            Stream.Seek(0, SeekOrigin.Begin);
-            void RecurseSerialize(object _object, Type _type)
+            void NavigateRecursively(object _object, Type _type)
             {
-                foreach (FieldInfo fieldInfo in Cache.GetFieldInfo(_type))
+                if (_object == null)
+                    throw new NullReferenceException("Null member");
+                if (_type.IsComponent())
                 {
-                    Type fieldType = fieldInfo.FieldType;
-                    if (fieldType.IsValueType)
-                        WriteValue(fieldInfo.GetValue(_object));
-                    else if (fieldType.IsArray)
+                    foreach (FieldInfo field in Cache.GetFieldInfo(_type))
                     {
-                        var array = (Array) fieldInfo.GetValue(_object);
-                        Type elementType = array.GetType().GetElementType();
-                        Writer.Write(array.Length);
-                        for (var i = 0; i < array.Length; i++)
-                            if (elementType.IsValueType)
-                                WriteValue(array.GetValue(i));
-                            else
-                                Serialize(array.GetValue(i), stream);
+                        Type fieldType = field.FieldType;
+                        if (fieldType.IsProperty())
+                        {
+                            var property = (PropertyBase) field.GetValue(_object);
+                            visitProperty(property);
+                        }
+                        else
+                        {
+                            NavigateRecursively(field.GetValue(_object), fieldType);
+                        }
                     }
-                    else
-                        RecurseSerialize(fieldInfo.GetValue(_object), fieldType);
+                }
+                else if (_type.IsArrayProperty())
+                {
+                    var array = (ArrayPropertyBase) _object;
+                    Type elementType = array.GetElementType();
+                    for (var i = 0; i < array.Length; i++)
+                        if (elementType.IsProperty())
+                        {
+                            var property = (PropertyBase) array.GetValue(i);
+                            visitProperty(property);
+                        }
+                        else
+                        {
+                            NavigateRecursively(array.GetValue(i), elementType);
+                        }
                 }
             }
-            RecurseSerialize(@object, @object.GetType());
-            Stream.CopyTo(stream);
+            NavigateRecursively(@object, @object.GetType());
+        }
+
+        public static void SerializeFrom(object @object, Stream stream)
+        {
+            Stream.Position = 0;
+            Navigate(@object, WriteFromProperty);
+            var length = (int) Stream.Position;
+            Stream.Position = 0;
+            stream.Position = 0;
+            Stream.CopyTo(stream, length);
         }
 
         public static void DeserializeInto(object @object, Stream stream)
         {
-            stream.CopyTo(Stream);
-            Stream.Seek(0, SeekOrigin.Begin);
-            void RecurseDeserialize(object _object)
-            {
-                foreach (FieldInfo fieldInfo in Cache.GetFieldInfo(_object.GetType()))
-                {
-                    Type fieldType = fieldInfo.FieldType;
-                    if (fieldType.IsValueType)
-                        fieldInfo.SetValue(_object, ReadValue(fieldType));
-                    else if (fieldType.IsArray)
-                    {
-                        var array = (Array) fieldInfo.GetValue(_object);
-                        Type elementType = array.GetType().GetElementType();
-                        int length = Reader.ReadInt32();
-                        for (var i = 0; i < length; i++)
-                            if (elementType.IsValueType)
-                                array.SetValue(ReadValue(elementType), i);
-                            else
-                                Serialize(array.GetValue(i), stream);
-                    }
-                    else
-                        RecurseDeserialize(fieldInfo.GetValue(_object));
-                }
-            }
-            RecurseDeserialize(@object);
+            var length = (int) stream.Position;
+            stream.Position = 0;
+            Stream.Position = 0;
+            stream.CopyTo(Stream, length);
+            Stream.Position = 0;
+            Navigate(@object, ReadIntoProperty);
         }
     }
 }

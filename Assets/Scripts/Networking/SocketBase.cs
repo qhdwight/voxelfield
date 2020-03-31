@@ -25,7 +25,7 @@ namespace Networking
         public bool Send(object message)
         {
             MemoryStream stream = m_Streams.Obtain();
-            Serializer.Serialize(message, stream);
+            Serializer.SerializeFrom(message, stream);
             try
             {
                 m_NetworkClient.Send(stream.GetBuffer(), (int) stream.Position);

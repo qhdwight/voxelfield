@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Session
 {
-    public class ServerSessionBase<TSessionState> : SessionBase<TSessionState> where TSessionState : SessionStateBase
+    public class ServerSessionBase<TSessionState> : SessionBase<TSessionState> where TSessionState : SessionStateComponentBase
     {
         protected override void Tick(uint tick, float time)
         {
@@ -11,10 +11,10 @@ namespace Session
 
             float currentTime = Time.realtimeSinceStartup;
             var state = Activator.CreateInstance<TSessionState>();
-            state.localPlayerId = 0;
-            state.time = currentTime;
-            state.duration = currentTime - m_States.Peek().time;
-            state.tick = m_States.Peek().tick + 1;
+            state.localPlayerId.Value = 0;
+            state.time.Value = currentTime;
+            state.duration.Value = currentTime - m_States.Peek().time;
+            state.tick.Value = m_States.Peek().tick + 1;
 
             m_States.Add(state);
         }

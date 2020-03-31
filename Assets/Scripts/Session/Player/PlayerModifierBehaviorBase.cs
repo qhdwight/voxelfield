@@ -11,7 +11,7 @@ namespace Session.Player
         /// <summary>
         /// Called in FixedUpdate() based on game tick rate
         /// </summary>
-        internal virtual void ModifyChecked(PlayerState stateToModify, PlayerCommands commands)
+        internal virtual void ModifyChecked(PlayerStateComponent stateToModify, PlayerCommands commands)
         {
             SynchronizeBehavior(stateToModify);
         }
@@ -19,7 +19,7 @@ namespace Session.Player
         /// <summary>
         /// Called in Update() right after inputs are sampled
         /// </summary>
-        internal virtual void ModifyTrusted(PlayerState stateToModify, PlayerCommands commands)
+        internal virtual void ModifyTrusted(PlayerStateComponent stateToModify, PlayerCommands commands)
         {
             SynchronizeBehavior(stateToModify);
         }
@@ -28,7 +28,7 @@ namespace Session.Player
         {
         }
 
-        protected virtual void SynchronizeBehavior(PlayerState stateToApply)
+        protected virtual void SynchronizeBehavior(PlayerStateComponent stateToApply)
         {
         }
     }

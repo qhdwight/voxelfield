@@ -4,12 +4,12 @@ using Session.Player;
 
 namespace Session
 {
-    public abstract class ClientBase<TSessionState> : SessionBase<TSessionState> where TSessionState : SessionStateBase
+    public abstract class ClientBase<TSessionState> : SessionBase<TSessionState> where TSessionState : SessionStateComponentBase
     {
         private const int LocalPlayerId = 0;
 
         private readonly PlayerCommands m_Commands = new PlayerCommands();
-        private readonly PlayerState m_TrustedState = new PlayerState();
+        private readonly PlayerStateComponent m_TrustedState = new PlayerStateComponent();
         private readonly TSessionState m_RenderSessionState = Activator.CreateInstance<TSessionState>();
 
         private void ReadLocalInputs()
@@ -25,9 +25,9 @@ namespace Session
 
         public override void Render()
         {
-            m_RenderSessionState.localPlayerId = LocalPlayerId;
-            PlayerState predictedState = m_States.Peek().playerStates[LocalPlayerId],
-                        renderState = m_RenderSessionState.playerStates[LocalPlayerId];
+            m_RenderSessionState.localPlayerId.Value = LocalPlayerId;
+            PlayerStateComponent predictedState = m_States.Peek().playerStates[LocalPlayerId],
+                                 renderState = m_RenderSessionState.playerStates[LocalPlayerId];
             if (predictedState == null || renderState == null) return;
             Copier.CopyTo(predictedState, renderState);
             renderState.yaw = m_TrustedState.yaw;
@@ -39,16 +39,16 @@ namespace Session
         {
             base.Tick(tick, time);
             ReadLocalInputs();
-            SessionStateBase lastState = m_States.Peek();
+            SessionStateComponentBase lastState = m_States.Peek();
             float lastTickTime = lastState.time;
-            SessionStateBase state = m_States.ClaimNext();
+            SessionStateComponentBase state = m_States.ClaimNext();
             Copier.CopyTo(lastState, state);
-            state.tick = m_Tick;
-            state.time = time;
-            state.duration = time - lastTickTime;
-            state.localPlayerId = LocalPlayerId;
-            PlayerState playerState = state.playerStates[LocalPlayerId];
-            playerState.health = 100;
+            state.tick.Value = m_Tick;
+            state.time.Value = time;
+            state.duration.Value = time - lastTickTime;
+            state.localPlayerId.Value = LocalPlayerId;
+            PlayerStateComponent playerState = state.playerStates[LocalPlayerId];
+            playerState.health.Value = 100;
             m_Commands.duration = state.duration;
             PlayerManager.Singleton.ModifyChecked(LocalPlayerId, playerState, m_Commands);
         }

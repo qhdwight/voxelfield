@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Session.Player
 {
-    public class PlayerState : ComponentBase
+    public class PlayerStateComponent : ComponentBase
     {
         public Property<byte> health;
         public Property<Vector3> position;

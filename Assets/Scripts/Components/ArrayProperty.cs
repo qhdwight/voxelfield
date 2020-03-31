@@ -5,7 +5,16 @@ using System.Linq;
 
 namespace Components
 {
-    public class ArrayProperty<T> : IEnumerable<T>
+    public abstract class ArrayPropertyBase
+    {
+        public abstract int Length { get; }
+
+        public abstract object GetValue(int index);
+
+        public abstract Type GetElementType();
+    }
+
+    public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T>
     {
         [Copy] private readonly T[] m_Values;
 
@@ -24,7 +33,8 @@ namespace Components
             get => m_Values[index];
             set => m_Values[index] = value;
         }
-        public int Length => m_Values.Length;
+
+        public override int Length => m_Values.Length;
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -34,6 +44,21 @@ namespace Components
         IEnumerator IEnumerable.GetEnumerator()
         {
             return m_Values.GetEnumerator();
+        }
+
+        public override object GetValue(int index)
+        {
+            return this[index];
+        }
+
+        public override Type GetElementType()
+        {
+            return typeof(T);
+        }
+
+        public static ArrayProperty<T> From(params T[] elements)
+        {
+            return new ArrayProperty<T>(elements);
         }
 
         public static implicit operator ArrayProperty<T>(T[] values)

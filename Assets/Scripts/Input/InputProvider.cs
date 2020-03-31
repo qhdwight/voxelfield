@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Util;
 
-namespace Compound
+namespace Input
 {
     public enum InputType
     {
@@ -51,7 +51,7 @@ namespace Compound
 
         public bool GetInput(InputType type)
         {
-            return Input.GetKey(m_Settings.Get(type));
+            return UnityEngine.Input.GetKey(m_Settings.Get(type));
         }
 
         public float GetAxis(InputType positive, InputType negative)
@@ -64,9 +64,9 @@ namespace Compound
             switch (mouseMovement)
             {
                 case MouseMovement.X:
-                    return Input.GetAxisRaw("Mouse X");
+                    return UnityEngine.Input.GetAxisRaw("Mouse X");
                 case MouseMovement.Y:
-                    return Input.GetAxisRaw("Mouse Y");
+                    return UnityEngine.Input.GetAxisRaw("Mouse Y");
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mouseMovement), mouseMovement, null);
             }
@@ -74,7 +74,7 @@ namespace Compound
 
         public static float GetMouseScrollWheel()
         {
-            return Input.GetAxisRaw("Mouse ScrollWheel");
+            return UnityEngine.Input.GetAxisRaw("Mouse ScrollWheel");
         }
     }
 }

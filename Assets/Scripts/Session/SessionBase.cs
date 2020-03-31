@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Session
 {
-    public abstract class SessionBase<TSessionState> where TSessionState : SessionStateBase
+    public abstract class SessionBase<TSessionState> where TSessionState : SessionStateComponentBase
     {
         protected readonly SessionStates<TSessionState> m_States;
         protected uint m_Tick;

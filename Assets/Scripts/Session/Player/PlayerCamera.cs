@@ -1,4 +1,4 @@
-using Compound;
+using Input;
 using UnityEngine;
 
 namespace Session.Player
@@ -7,11 +7,11 @@ namespace Session.Player
     {
         [SerializeField] private float m_Sensitivity = 10.0f;
 
-        internal override void ModifyTrusted(PlayerState stateToModify, PlayerCommands commands)
+        internal override void ModifyTrusted(PlayerStateComponent stateToModify, PlayerCommands commands)
         {
             base.ModifyTrusted(stateToModify, commands);
-            stateToModify.yaw += commands.mouseDeltaX * m_Sensitivity;
-            stateToModify.pitch -= commands.mouseDeltaY * m_Sensitivity;
+            stateToModify.yaw.Value += commands.mouseDeltaX * m_Sensitivity;
+            stateToModify.pitch.Value -= commands.mouseDeltaY * m_Sensitivity;
         }
 
         internal override void ModifyCommands(PlayerCommands commandsToModify)
@@ -20,7 +20,7 @@ namespace Session.Player
             commandsToModify.mouseDeltaY = InputProvider.GetMouseInput(MouseMovement.Y);
         }
 
-        protected override void SynchronizeBehavior(PlayerState stateToApply)
+        protected override void SynchronizeBehavior(PlayerStateComponent stateToApply)
         {
             transform.rotation = Quaternion.AngleAxis(stateToApply.yaw, Vector3.up);
         }
