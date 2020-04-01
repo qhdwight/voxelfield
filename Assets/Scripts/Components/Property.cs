@@ -16,7 +16,7 @@ namespace Components
 
         public abstract void SetFromIfPresent(PropertyBase other);
 
-        public abstract void InterpolateFromIfPresent(PropertyBase other, float interpolation);
+        public abstract void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation);
     }
 
     public class Property<T> : PropertyBase where T : struct
@@ -109,20 +109,16 @@ namespace Components
                 Value = otherProperty.Value;
         }
 
-        public override void InterpolateFromIfPresent(PropertyBase other, float interpolation)
-        { 
-            if (!(other is Property<T> otherProperty))
-                throw new ArgumentException("Other property is not of the same type");
-            if (!otherProperty.HasValue) return;
+        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation)
+        {
+            if (!p1.HasValue || !p2.HasValue) return;
+            // @formatter:off
             switch (GetValue())
             {
-                case Vector3 sourceVector:
-                    SetValue(Vector3.Lerp(sourceVector, (Vector3) otherProperty.GetValue(), interpolation));
-                    break;
-                case float sourceFloat:
-                    SetValue(Mathf.Lerp(sourceFloat, (float) otherProperty.GetValue(), interpolation));
-                    break;
+                case Vector3 _: SetValue(Vector3.Lerp((Vector3) p1.GetValue(), (Vector3) p2.GetValue(), interpolation)); break;
+                case float   _: SetValue(  Mathf.Lerp(( float ) p1.GetValue(), ( float ) p2.GetValue(), interpolation)); break;
             }
+            // @formatter:on
         }
     }
 }

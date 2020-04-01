@@ -5,7 +5,7 @@ namespace Session.Player
 {
     public class PlayerStateComponent : ComponentBase
     {
-        public Property<byte> health;
+        [NoInterpolate] public Property<byte> health;
         public Property<Vector3> position;
         public Property<float> yaw, pitch;
     }

@@ -31,7 +31,8 @@ namespace Session
         {
             m_RenderSessionState.localPlayerId.Value = LocalPlayerId;
             PlayerStateComponent renderState = m_RenderSessionState.playerStates[LocalPlayerId];
-            InterpolateHistoryInto(renderState, m_PredictedPlayerStates, 0.5f, 0.0f);
+            if (!InterpolateHistoryInto(renderState, m_PredictedPlayerStates, 1.0f / 60.0f, 0.0f))
+                Copier.CopyTo(m_PredictedPlayerStates.Peek(), renderState);
             Copier.CopyTo(m_TrustedPlayerState, renderState);
             PlayerManager.Singleton.Visualize(m_RenderSessionState);
         }

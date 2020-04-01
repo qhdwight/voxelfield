@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
+using System.Linq;
 using UnityEngine;
 
 namespace Components
@@ -41,51 +41,10 @@ namespace Components
             // @formatter:on
         }
 
-        private static void Navigate(object @object, Action<PropertyBase> visitProperty)
-        {
-            void NavigateRecursively(object _object, Type _type)
-            {
-                if (_object == null)
-                    throw new NullReferenceException("Null member");
-                if (_type.IsComponent())
-                {
-                    foreach (FieldInfo field in Cache.GetFieldInfo(_type))
-                    {
-                        Type fieldType = field.FieldType;
-                        if (fieldType.IsProperty())
-                        {
-                            var property = (PropertyBase) field.GetValue(_object);
-                            visitProperty(property);
-                        }
-                        else
-                        {
-                            NavigateRecursively(field.GetValue(_object), fieldType);
-                        }
-                    }
-                }
-                else if (_type.IsArrayProperty())
-                {
-                    var array = (ArrayPropertyBase) _object;
-                    Type elementType = array.GetElementType();
-                    for (var i = 0; i < array.Length; i++)
-                        if (elementType.IsProperty())
-                        {
-                            var property = (PropertyBase) array.GetValue(i);
-                            visitProperty(property);
-                        }
-                        else
-                        {
-                            NavigateRecursively(array.GetValue(i), elementType);
-                        }
-                }
-            }
-            NavigateRecursively(@object, @object.GetType());
-        }
-
         public static void SerializeFrom(object @object, Stream stream)
         {
             Stream.Position = 0;
-            Navigate(@object, WriteFromProperty);
+            Extensions.Navigate((_, properties) => WriteFromProperty(properties.First()), @object);
             var length = (int) Stream.Position;
             Stream.Position = 0;
             stream.Position = 0;
@@ -99,7 +58,7 @@ namespace Components
             Stream.Position = 0;
             stream.CopyTo(Stream, length);
             Stream.Position = 0;
-            Navigate(@object, ReadIntoProperty);
+            Extensions.Navigate((_, properties) => ReadIntoProperty(properties.First()), @object);
         }
     }
 }

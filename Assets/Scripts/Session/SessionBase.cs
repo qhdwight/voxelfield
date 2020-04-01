@@ -39,14 +39,14 @@ namespace Session
         }
 
         protected bool InterpolateHistoryInto(PlayerStateComponent stateToInterpolate, CyclicArray<StampedPlayerStateComponent> stateHistory,
-                                       float rollback, float timeSinceLastUpdate)
+                                              float rollback, float timeSinceLastUpdate)
         {
             StampedPlayerStateComponent fromState = null, toState = null;
             var durationCount = 0.0f;
             for (var stateHistoryIndex = 0; stateHistoryIndex < stateHistory.Size; stateHistoryIndex++)
             {
-                toState = stateHistory.Get(-stateHistoryIndex);
                 fromState = stateHistory.Get(-stateHistoryIndex - 1);
+                toState = stateHistory.Get(-stateHistoryIndex);
                 durationCount += toState.duration;
                 if (durationCount >= rollback - timeSinceLastUpdate)
                     break;
@@ -64,7 +64,7 @@ namespace Session
             }
             else
                 interpolation = 0.0f;
-            Interpolator.InterpolateInto(fromState.state, stateToInterpolate, interpolation);
+            Interpolator.InterpolateInto(fromState.state, toState.state, stateToInterpolate, interpolation);
             return true;
         }
     }

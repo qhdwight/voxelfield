@@ -11,7 +11,7 @@ namespace Components
     {
         public static void CopyTo(object source, object destination)
         {
-            Extensions.Navigate(source, destination, (_source, _destination) => _destination.SetFromIfPresent(_source));
+            Extensions.Navigate((_, properties) => properties[1].SetFromIfPresent(properties[0]), source, destination);
         }
     }
 }

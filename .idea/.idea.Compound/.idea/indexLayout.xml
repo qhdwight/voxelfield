@@ -3,6 +3,8 @@
   <component name="ContentModelUserStore">
     <attachedFolders />
     <explicitIncludes>
+      <Path>../../../Library/Unity/cache/packages/packages.unity.com/com.unity.quicksearch@1.5.2</Path>
+      <Path>../../../Library/Unity/cache/packages/packages.unity.com/com.unity.test-framework@1.1.13</Path>
       <Path>Library/PackageCache/com.unity.ext.nunit@1.0.0</Path>
       <Path>Library/PackageCache/com.unity.ide.rider@1.1.4</Path>
       <Path>Library/PackageCache/com.unity.probuilder@4.2.3</Path>

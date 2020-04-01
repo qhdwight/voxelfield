@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace Components
@@ -20,49 +21,42 @@ namespace Components
             return type.IsSubclassOf(typeof(ArrayPropertyBase));
         }
 
-        public static void Navigate(object o1, object o2, Action<PropertyBase, PropertyBase> visitProperty)
+        public static void Navigate(Action<FieldInfo, PropertyBase[]> visitProperty, params object[] objects)
         {
-            void NavigateRecursively(object _o1, object _o2, Type _type)
+            void NavigateRecursively(object[] _objects, Type _type, FieldInfo _field)
             {
-                if (_o1 == null || _o2 == null)
+                if (_objects.Any(_object => _object == null))
                     throw new NullReferenceException("Null member");
                 if (_type.IsComponent())
                     foreach (FieldInfo field in Cache.GetFieldInfo(_type))
                     {
                         Type fieldType = field.FieldType;
                         if (fieldType.IsProperty())
-                        {
-                            var sourceProperty = (PropertyBase) field.GetValue(_o1);
-                            var mergedProperty = (PropertyBase) field.GetValue(_o2);
-                            visitProperty(sourceProperty, mergedProperty);
-                        }
+                            visitProperty(field, _objects.Select(_object => (PropertyBase) field.GetValue(_object)).ToArray());
                         else
-                            NavigateRecursively(field.GetValue(_o1), field.GetValue(_o2), fieldType);
+                            NavigateRecursively(_objects.Select(_object => field.GetValue(_object)).ToArray(), fieldType, field);
                     }
                 else if (_type.IsArrayProperty())
                 {
-                    var sourceArray = (ArrayPropertyBase) _o1;
-                    var mergedArray = (ArrayPropertyBase) _o2;
-                    if (sourceArray.Length != mergedArray.Length)
-                        throw new Exception("Unequal array lengths");
-                    Type elementType = sourceArray.GetElementType();
+                    ArrayPropertyBase[] arrays = _objects.Cast<ArrayPropertyBase>().ToArray();
+                    Type elementType = arrays.First().GetElementType();
                     bool isProperty = elementType.IsProperty();
-                    for (var i = 0; i < sourceArray.Length; i++)
+                    for (var i = 0; i < arrays.First().Length; i++)
                     {
                         if (isProperty)
                         {
-                            var sourceElement = (PropertyBase) sourceArray.GetValue(i);
-                            var mergedElement = (PropertyBase) mergedArray.GetValue(i);
-                            visitProperty(sourceElement, mergedElement);
+                            PropertyBase[] properties = arrays.Select(array => (PropertyBase) array.GetValue(i)).ToArray();
+                            visitProperty(_field, properties);
                         }
                         else
-                            NavigateRecursively(sourceArray.GetValue(i), mergedArray.GetValue(i), elementType);
+                            NavigateRecursively(arrays.Select(array => array.GetValue(i)).ToArray(), elementType, _field);
                     }
                 }
                 else
                     throw new Exception("Expected component or array");
             }
-            NavigateRecursively(o1, o2, o1.GetType());
+            Type type = objects.First().GetType();
+            NavigateRecursively(objects, type, null);
         }
     }
 }
