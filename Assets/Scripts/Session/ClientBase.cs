@@ -28,11 +28,12 @@ namespace Session
             PlayerManager.Singleton.ModifyTrusted(LocalPlayerId, m_TrustedPlayerState, m_Commands);
         }
 
-        public override void Render()
+        protected override void Render(float timeSinceTick)
         {
             m_RenderSessionState.localPlayerId.Value = LocalPlayerId;
             PlayerStateComponent renderState = m_RenderSessionState.playerStates[LocalPlayerId];
-            if (!InterpolateHistoryInto(renderState, m_PredictedPlayerStates, 1.0f / 60.0f, 0.0f))
+            // if (!InterpolateHistoryInto(renderState, m_PredictedPlayerStates, 1.0f / m_Settings.tickRate * 1.2f, timeSinceTick))
+            if (!InterpolateHistoryInto(renderState, m_PredictedPlayerStates, DebugBehavior.Singleton.Rollback, timeSinceTick))
                 Copier.CopyTo(m_PredictedPlayerStates.Peek().state, renderState);
             Copier.CopyTo(m_TrustedPlayerState, renderState);
             PlayerManager.Singleton.Visualize(m_RenderSessionState);

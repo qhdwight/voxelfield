@@ -15,18 +15,33 @@ namespace Session
 
         protected readonly SessionStates<TSessionState> m_States;
         protected uint m_Tick;
+        protected SessionSettingsComponent m_Settings = new SessionSettingsComponent();
+        private float m_FixedUpdateTime;
+
+        public SessionSettingsComponent Settings
+        {
+            get => m_Settings;
+            set => m_Settings = value;
+        }
 
         protected SessionBase()
         {
             m_States = new SessionStates<TSessionState>();
         }
 
-        public virtual void Render()
+        public void Render()
+        {
+            Render(Time.realtimeSinceStartup - m_FixedUpdateTime);
+        }
+
+        protected virtual void Render(float timeSinceTick)
         {
         }
 
         protected virtual void Tick(uint tick, float time)
         {
+            m_Settings.tickRate = DebugBehavior.Singleton.TickRate;
+            Time.fixedDeltaTime = 1.0f / m_Settings.tickRate;
         }
 
         public virtual void HandleInput()
@@ -35,7 +50,7 @@ namespace Session
 
         public void FixedUpdate()
         {
-            Tick(m_Tick++, Time.realtimeSinceStartup);
+            Tick(m_Tick++, m_FixedUpdateTime = Time.realtimeSinceStartup);
         }
 
         protected bool InterpolateHistoryInto(PlayerStateComponent stateToInterpolate, CyclicArray<StampedPlayerStateComponent> stateHistory,

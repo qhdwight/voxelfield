@@ -5,6 +5,7 @@ namespace Session
 {
     public class SessionSettingsComponent : ComponentBase
     {
+        public Property<byte> tickRate;
     }
 
     public class StampComponent : ComponentBase

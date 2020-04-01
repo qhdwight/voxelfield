@@ -55,6 +55,7 @@
           </e>
           <e p="Session" t="Include">
             <e p="ClientBase.cs" t="Include" />
+            <e p="DebugBehavior.cs" t="Include" />
             <e p="Player" t="Include">
               <e p="PlayerCamera.cs" t="Include" />
               <e p="PlayerCommands.cs" t="Include" />

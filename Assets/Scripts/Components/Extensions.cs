@@ -117,20 +117,15 @@ namespace Components
                 }
                 set
                 {
+                    // @formatter:off
                     switch (index)
                     {
-                        case 0:
-                            o1 = value;
-                            break;
-                        case 1:
-                            o2 = value;
-                            break;
-                        case 2:
-                            o3 = value;
-                            break;
-                        default:
-                            throw new IndexOutOfRangeException();
+                        case 0: o1 = value; break;
+                        case 1: o2 = value; break;
+                        case 2: o3 = value; break;
+                        default: throw new IndexOutOfRangeException();
                     }
+                    // @formatter:on
                 }
             }
         }
