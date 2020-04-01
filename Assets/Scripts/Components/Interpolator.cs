@@ -10,15 +10,14 @@ namespace Components
 
     public static class Interpolator
     {
-        public static void InterpolateInto(object o1, object o2, object destination, float interpolation)
+        public static void InterpolateInto<T>(T o1, T o2, T destination, float interpolation)
         {
-            Extensions.Navigate((field, properties) =>
+            Extensions.NavigateZipped((field, _o1, _o2, _destination) =>
             {
-                PropertyBase destinationProperty = properties[2];
                 if (field.IsDefined(typeof(NoInterpolate)))
-                    destinationProperty.SetFromIfPresent(properties[1]);
+                    _destination.SetFromIfPresent(_o2);
                 else
-                    destinationProperty.InterpolateFromIfPresent(properties[0], properties[1], interpolation);
+                    _destination.InterpolateFromIfPresent(_o1, _o2, interpolation);
             }, o1, o2, destination);
         }
     }

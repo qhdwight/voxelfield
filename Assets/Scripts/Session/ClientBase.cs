@@ -14,7 +14,8 @@ namespace Session
         private readonly PlayerCommands m_Commands = new PlayerCommands();
         private readonly PlayerStateComponent m_TrustedPlayerState = new PlayerStateComponent();
         private readonly TSessionState m_RenderSessionState = Activator.CreateInstance<TSessionState>();
-        private readonly CyclicArray<StampedPlayerStateComponent> m_PredictedPlayerStates = new CyclicArray<StampedPlayerStateComponent>(250, () => new StampedPlayerStateComponent());
+        private readonly CyclicArray<StampedPlayerStateComponent> m_PredictedPlayerStates =
+            new CyclicArray<StampedPlayerStateComponent>(250, () => new StampedPlayerStateComponent());
 
         private void ReadLocalInputs()
         {
@@ -32,7 +33,7 @@ namespace Session
             m_RenderSessionState.localPlayerId.Value = LocalPlayerId;
             PlayerStateComponent renderState = m_RenderSessionState.playerStates[LocalPlayerId];
             if (!InterpolateHistoryInto(renderState, m_PredictedPlayerStates, 1.0f / 60.0f, 0.0f))
-                Copier.CopyTo(m_PredictedPlayerStates.Peek(), renderState);
+                Copier.CopyTo(m_PredictedPlayerStates.Peek().state, renderState);
             Copier.CopyTo(m_TrustedPlayerState, renderState);
             PlayerManager.Singleton.Visualize(m_RenderSessionState);
         }

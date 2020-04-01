@@ -12,7 +12,7 @@ namespace Collections
 
         public int Remaining => m_Pool.Count;
 
-        public Pool(int capacity, Func<T> constructor, Action<T, bool> usageChanged)
+        public Pool(int capacity, Func<T> constructor, Action<T, bool> usageChanged = null)
         {
             m_Constructor = constructor;
             m_UsageChanged = usageChanged;
