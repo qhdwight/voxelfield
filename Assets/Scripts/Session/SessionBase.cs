@@ -15,14 +15,8 @@ namespace Session
 
         protected readonly SessionStates<TSessionState> m_States;
         protected uint m_Tick;
-        protected SessionSettingsComponent m_Settings = new SessionSettingsComponent();
+        protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
         private float m_FixedUpdateTime;
-
-        public SessionSettingsComponent Settings
-        {
-            get => m_Settings;
-            set => m_Settings = value;
-        }
 
         protected SessionBase()
         {
@@ -40,7 +34,6 @@ namespace Session
 
         protected virtual void Tick(uint tick, float time)
         {
-            m_Settings.tickRate = DebugBehavior.Singleton.TickRate;
             Time.fixedDeltaTime = 1.0f / m_Settings.tickRate;
         }
 

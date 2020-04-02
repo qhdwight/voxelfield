@@ -7,12 +7,12 @@
     </attachedFolders>
     <explicitIncludes>
       <Path>Library/PackageCache/com.unity.ext.nunit@1.0.0</Path>
-      <Path>Library/PackageCache/com.unity.ide.rider@1.1.4</Path>
+      <Path>Library/PackageCache/com.unity.ide.rider@1.2.1</Path>
       <Path>Library/PackageCache/com.unity.probuilder@4.2.3</Path>
-      <Path>Library/PackageCache/com.unity.quicksearch@1.5.2</Path>
+      <Path>Library/PackageCache/com.unity.quicksearch@1.5.3</Path>
       <Path>Library/PackageCache/com.unity.settings-manager@1.0.0</Path>
       <Path>Library/PackageCache/com.unity.test-framework@1.1.13</Path>
-      <Path>Library/PackageCache/com.unity.textmeshpro@2.0.1</Path>
+      <Path>Library/PackageCache/com.unity.textmeshpro@3.0.0-preview.8</Path>
       <Path>Library/PackageCache/com.unity.timeline@1.2.7</Path>
       <Path>Packages</Path>
       <Path>ProjectSettings</Path>

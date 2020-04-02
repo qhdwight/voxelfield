@@ -19,9 +19,10 @@ namespace Components
         public abstract void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation);
     }
 
+    [Serializable]
     public class Property<T> : PropertyBase where T : struct
     {
-        [Copy] private T m_Value;
+        [Copy, SerializeField] private T m_Value;
 
         public T Value
         {

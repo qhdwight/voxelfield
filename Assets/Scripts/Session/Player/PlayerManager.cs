@@ -30,7 +30,7 @@ namespace Session.Player
 
         public void Visualize(SessionStateComponentBase session)
         {
-            SceneCamera.Singleton.SetEnabled(!session.localPlayerId.HasValue || session.LocalPlayerState.health == 0);
+            SceneCamera.Singleton.SetEnabled(!session.localPlayerId.HasValue || session.LocalPlayerState.IsDead);
             for (var playerId = 0; playerId < session.playerStates.Length; playerId++)
                 m_Visuals[playerId].Visualize(session.playerStates[playerId], playerId == session.localPlayerId);
         }

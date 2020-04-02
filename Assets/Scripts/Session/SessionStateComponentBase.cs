@@ -1,8 +1,10 @@
+using System;
 using Components;
 using Session.Player;
 
 namespace Session
 {
+    [Serializable]
     public class SessionSettingsComponent : ComponentBase
     {
         public Property<byte> tickRate;

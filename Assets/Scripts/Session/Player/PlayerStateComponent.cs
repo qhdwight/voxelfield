@@ -8,5 +8,8 @@ namespace Session.Player
         [NoInterpolate] public Property<byte> health;
         public Property<Vector3> position;
         public Property<float> yaw, pitch;
+
+        public bool IsAlive => !IsDead;
+        public bool IsDead => health == 0;
     }
 }

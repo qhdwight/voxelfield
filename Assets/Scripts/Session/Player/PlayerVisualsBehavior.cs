@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Session.Player
 {
@@ -25,7 +26,7 @@ namespace Session.Player
             m_Head.localRotation = Quaternion.AngleAxis(state.pitch, Vector3.right);
             m_Camera.transform.localRotation = Quaternion.AngleAxis(state.pitch, Vector3.right);
             m_Camera.enabled = isLocalPlayer;
-            SetVisible(state.health != 0, isLocalPlayer);
+            SetVisible(state.IsAlive, isLocalPlayer);
         }
 
         private void SetVisible(bool isVisible, bool isListenerEnabled)
@@ -34,8 +35,9 @@ namespace Session.Player
             foreach (Renderer render in m_Renders)
             {
                 render.enabled = isVisible;
-                gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
+                render.shadowCastingMode = isListenerEnabled ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             }
+            gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
         }
     }
 }

@@ -38,6 +38,7 @@ namespace Session.Player
         internal override void Setup()
         {
             m_Controller = GetComponent<CharacterController>();
+            m_Controller.enabled = false;
         }
 
         internal override void ModifyChecked(PlayerStateComponent stateToModify, PlayerCommands commands)
@@ -58,6 +59,7 @@ namespace Session.Player
         protected override void SynchronizeBehavior(PlayerStateComponent stateToApply)
         {
             transform.position = stateToApply.position;
+            m_Controller.enabled = stateToApply.IsAlive;
         }
 
         private void FullMove(PlayerCommands commands)
