@@ -4,9 +4,15 @@ using UnityEngine;
 
 namespace Components
 {
+    [Serializable]
     public abstract class PropertyBase
     {
-        public bool HasValue { get; protected set; }
+        [SerializeField] private bool m_HasValue;
+        public bool HasValue
+        {
+            get => m_HasValue;
+            protected set => m_HasValue = value;
+        }
 
         public abstract Type ValueType { get; }
 
@@ -22,7 +28,7 @@ namespace Components
     [Serializable]
     public class Property<T> : PropertyBase where T : struct
     {
-        [Copy, SerializeField] private T m_Value;
+        [CopyField, SerializeField] private T m_Value;
 
         public T Value
         {

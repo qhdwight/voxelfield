@@ -1,6 +1,6 @@
 namespace Session
 {
-    public class ServerSessionBase<TSessionState> : SessionBase<TSessionState> where TSessionState : SessionStateComponentBase
+    public class ServerSessionBase<TSessionComponent> : SessionBase<TSessionComponent> where TSessionComponent : SessionComponentBase
     {
         protected override void Tick(uint tick, float time)
         {

@@ -5,7 +5,7 @@ namespace Compound.Session
 {
     public class SessionManager : SingletonBehavior<SessionManager>
     {
-        private SessionBase<SessionState> m_Session;
+        private SessionBase<SessionComponent> m_Session;
 
         private void StartSession()
         {

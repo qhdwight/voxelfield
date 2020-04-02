@@ -1,16 +1,14 @@
 using Input;
+using Session.Player.Components;
 using UnityEngine;
 
-namespace Session.Player
+namespace Session.Player.Modifiers
 {
     [RequireComponent(typeof(CharacterController))]
     public class PlayerMovement : PlayerModifierBehaviorBase
     {
         private const float DefaultDownSpeed = -1.0f;
-
-        private CharacterController m_Controller;
-
-        [Header("Movement")] [SerializeField] private LayerMask m_GroundMask = default;
+        private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
 
         [SerializeField] private float
             m_Acceleration = 10.0f,
@@ -28,12 +26,15 @@ namespace Session.Player
             m_SlopeAngleLimit = 45.0f,
             m_MaxStickDistance = 0.25f;
 
-        private float m_SlopeAngle;
+        private CharacterController m_Controller;
+
+        [Header("Movement")] [SerializeField] private LayerMask m_GroundMask = default;
         private byte m_GroundTick;
-        private Vector3 m_Velocity;
         private ControllerColliderHit m_Hit;
         private bool m_IsGrounded;
-        private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
+
+        private float m_SlopeAngle;
+        private Vector3 m_Velocity;
 
         internal override void Setup()
         {
@@ -41,11 +42,11 @@ namespace Session.Player
             m_Controller.enabled = false;
         }
 
-        internal override void ModifyChecked(PlayerStateComponent stateToModify, PlayerCommands commands)
+        internal override void ModifyChecked(PlayerComponent componentToModify, PlayerCommands commands)
         {
-            base.ModifyChecked(stateToModify, commands);
+            base.ModifyChecked(componentToModify, commands);
             FullMove(commands);
-            stateToModify.position.Value = transform.position;
+            componentToModify.position.Value = transform.position;
         }
 
         internal override void ModifyCommands(PlayerCommands commandsToModify)
@@ -56,10 +57,10 @@ namespace Session.Player
             commandsToModify.jumpInput = input.GetInput(InputType.Jump);
         }
 
-        protected override void SynchronizeBehavior(PlayerStateComponent stateToApply)
+        protected override void SynchronizeBehavior(PlayerComponent componentToApply)
         {
-            transform.position = stateToApply.position;
-            m_Controller.enabled = stateToApply.IsAlive;
+            transform.position = componentToApply.position;
+            m_Controller.enabled = componentToApply.IsAlive;
         }
 
         private void FullMove(PlayerCommands commands)

@@ -1,3 +1,4 @@
+using Session.Player.Components;
 using UnityEngine;
 using Util;
 
@@ -8,5 +9,7 @@ namespace Session
         [Range(0.0f, 1.0f)] public float Rollback;
 
         public SessionSettingsComponent Settings;
+
+        public PlayerComponent RenderOverride;
     }
 }

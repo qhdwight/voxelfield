@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Components
 {
@@ -14,9 +15,10 @@ namespace Components
         public abstract Type GetElementType();
     }
 
+    [Serializable]
     public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T>
     {
-        [Copy] private readonly T[] m_Values;
+        [CopyField, SerializeField] private T[] m_Values;
 
         private ArrayProperty(T[] values)
         {

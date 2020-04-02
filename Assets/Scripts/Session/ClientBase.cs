@@ -2,20 +2,21 @@ using System;
 using Collections;
 using Components;
 using Session.Player;
+using Session.Player.Components;
 
 namespace Session
 {
-    public abstract class ClientBase<TSessionState>
-        : SessionBase<TSessionState>
-        where TSessionState : SessionStateComponentBase
+    public abstract class ClientBase<TSessionComponent>
+        : SessionBase<TSessionComponent>
+        where TSessionComponent : SessionComponentBase
     {
         private const int LocalPlayerId = 0;
 
         private readonly PlayerCommands m_Commands = new PlayerCommands();
-        private readonly PlayerStateComponent m_TrustedPlayerState = new PlayerStateComponent();
-        private readonly TSessionState m_RenderSessionState = Activator.CreateInstance<TSessionState>();
-        private readonly CyclicArray<StampedPlayerStateComponent> m_PredictedPlayerStates =
-            new CyclicArray<StampedPlayerStateComponent>(250, () => new StampedPlayerStateComponent());
+        private readonly CyclicArray<StampedPlayerComponent> m_PredictedPlayerComponents =
+            new CyclicArray<StampedPlayerComponent>(250, () => new StampedPlayerComponent());
+        private readonly TSessionComponent m_RenderSessionComponent = Activator.CreateInstance<TSessionComponent>();
+        private readonly PlayerComponent m_TrustedPlayerComponent = new PlayerComponent();
 
         private void ReadLocalInputs()
         {
@@ -25,36 +26,36 @@ namespace Session
         public override void HandleInput()
         {
             ReadLocalInputs();
-            PlayerManager.Singleton.ModifyTrusted(LocalPlayerId, m_TrustedPlayerState, m_Commands);
+            PlayerManager.Singleton.ModifyTrusted(LocalPlayerId, m_TrustedPlayerComponent, m_Commands);
         }
 
         protected override void Render(float timeSinceTick)
         {
-            m_RenderSessionState.localPlayerId.Value = LocalPlayerId;
-            PlayerStateComponent renderState = m_RenderSessionState.playerStates[LocalPlayerId];
-            // if (!InterpolateHistoryInto(renderState, m_PredictedPlayerStates, 1.0f / m_Settings.tickRate * 1.2f, timeSinceTick))
-            if (!InterpolateHistoryInto(renderState, m_PredictedPlayerStates, DebugBehavior.Singleton.Rollback, timeSinceTick))
-                Copier.CopyTo(m_PredictedPlayerStates.Peek().state, renderState);
-            Copier.CopyTo(m_TrustedPlayerState, renderState);
-            PlayerManager.Singleton.Visualize(m_RenderSessionState);
+            m_RenderSessionComponent.localPlayerId.Value = LocalPlayerId;
+            PlayerComponent localPlayerRenderComponent = m_RenderSessionComponent.playerComponents[LocalPlayerId];
+            // InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, 1.0f / m_Settings.tickRate * 1.2f, timeSinceTick);
+            InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, DebugBehavior.Singleton.Rollback, timeSinceTick);
+            Copier.CopyTo(m_TrustedPlayerComponent, localPlayerRenderComponent);
+            Copier.CopyTo(DebugBehavior.Singleton.RenderOverride, localPlayerRenderComponent);
+            PlayerManager.Singleton.Visualize(m_RenderSessionComponent);
         }
 
         protected override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
             ReadLocalInputs();
-            StampedPlayerStateComponent lastPredictedState = m_PredictedPlayerStates.Peek();
-            float lastTickTime = lastPredictedState.time.OrElse(time);
-            StampedPlayerStateComponent predictedState = m_PredictedPlayerStates.ClaimNext();
-            Copier.CopyTo(lastPredictedState, predictedState);
-            predictedState.tick.Value = m_Tick;
-            predictedState.time.Value = time;
+            StampedPlayerComponent lastPredictedPlayerComponent = m_PredictedPlayerComponents.Peek();
+            float lastTickTime = lastPredictedPlayerComponent.time.OrElse(time);
+            StampedPlayerComponent predictedPlayerComponent = m_PredictedPlayerComponents.ClaimNext();
+            Copier.CopyTo(lastPredictedPlayerComponent, predictedPlayerComponent);
+            predictedPlayerComponent.tick.Value = m_Tick;
+            predictedPlayerComponent.time.Value = time;
             float duration = time - lastTickTime;
-            predictedState.duration.Value = duration;
-            predictedState.state.health.Value = 100;
+            predictedPlayerComponent.duration.Value = duration;
+            predictedPlayerComponent.component.health.Value = 100;
             m_Commands.duration = duration;
-            Copier.CopyTo(m_TrustedPlayerState, predictedState.state);
-            PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedState.state, m_Commands);
+            Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);
+            PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedPlayerComponent.component, m_Commands);
         }
     }
 }

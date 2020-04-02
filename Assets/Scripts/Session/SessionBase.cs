@@ -1,26 +1,21 @@
 using System;
 using Collections;
 using Components;
-using Session.Player;
+using Session.Player.Components;
 using UnityEngine;
 
 namespace Session
 {
-    public abstract class SessionBase<TSessionState> where TSessionState : SessionStateComponentBase
+    public abstract class SessionBase<TSessionComponent> where TSessionComponent : SessionComponentBase
     {
-        protected class StampedPlayerStateComponent : StampComponent
-        {
-            public PlayerStateComponent state;
-        }
-
-        protected readonly SessionStates<TSessionState> m_States;
-        protected uint m_Tick;
-        protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
+        protected readonly SessionComponents<TSessionComponent> m_SessionComponents;
         private float m_FixedUpdateTime;
+        protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
+        protected uint m_Tick;
 
         protected SessionBase()
         {
-            m_States = new SessionStates<TSessionState>();
+            m_SessionComponents = new SessionComponents<TSessionComponent>();
         }
 
         public void Render()
@@ -46,34 +41,41 @@ namespace Session
             Tick(m_Tick++, m_FixedUpdateTime = Time.realtimeSinceStartup);
         }
 
-        protected bool InterpolateHistoryInto(PlayerStateComponent stateToInterpolate, CyclicArray<StampedPlayerStateComponent> stateHistory,
+        protected bool InterpolateHistoryInto(PlayerComponent componentToInterpolate, CyclicArray<StampedPlayerComponent> componentHistory,
                                               float rollback, float timeSinceLastUpdate)
         {
-            StampedPlayerStateComponent fromState = null, toState = null;
+            StampedPlayerComponent fromComponent = null, toComponent = null;
             var durationCount = 0.0f;
-            for (var stateHistoryIndex = 0; stateHistoryIndex < stateHistory.Size; stateHistoryIndex++)
+            for (var componentHistoryIndex = 0; componentHistoryIndex < componentHistory.Size; componentHistoryIndex++)
             {
-                fromState = stateHistory.Get(-stateHistoryIndex - 1);
-                toState = stateHistory.Get(-stateHistoryIndex);
-                durationCount += toState.duration;
-                if (durationCount >= rollback - timeSinceLastUpdate)
-                    break;
-                if (stateHistoryIndex == stateHistory.Size - 1)
-                    // We have reached the end of the cyclic array
-                    return false;
+                fromComponent = componentHistory.Get(-componentHistoryIndex - 1);
+                toComponent = componentHistory.Get(-componentHistoryIndex);
+                durationCount += toComponent.duration;
+                if (durationCount >= rollback - timeSinceLastUpdate) break;
+                if (componentHistoryIndex != componentHistory.Size - 1) continue;
+                // We do not have enough history. Copy the most recent instead
+                Copier.CopyTo(componentHistory.Peek().component, componentToInterpolate);
+                return false;
             }
-            if (toState == null)
+            if (toComponent == null)
                 throw new ArgumentException("Cyclic array is not big enough");
             float interpolation;
-            if (toState.duration > 0.0f)
+            if (toComponent.duration > 0.0f)
             {
-                float timeIntoStateUs = durationCount - rollback + timeSinceLastUpdate;
-                interpolation = timeIntoStateUs / toState.duration;
+                float elapsedTimeIntoComponent = durationCount - rollback + timeSinceLastUpdate;
+                interpolation = elapsedTimeIntoComponent / toComponent.duration;
             }
             else
+            {
                 interpolation = 0.0f;
-            Interpolator.InterpolateInto(fromState.state, toState.state, stateToInterpolate, interpolation);
+            }
+            Interpolator.InterpolateInto(fromComponent.component, toComponent.component, componentToInterpolate, interpolation);
             return true;
+        }
+
+        protected class StampedPlayerComponent : StampComponent
+        {
+            public PlayerComponent component;
         }
     }
 }

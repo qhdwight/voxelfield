@@ -1,26 +1,27 @@
+using Session.Player.Components;
 using UnityEngine;
 
-namespace Session.Player
+namespace Session.Player.Modifiers
 {
-    [RequireComponent(typeof(PlayerCamera), typeof(PlayerMovement))]
+    [RequireComponent(typeof(PlayerCameraBehavior), typeof(PlayerMovement))]
     public class PlayerModifierDispatcherBehavior : MonoBehaviour
     {
         private PlayerModifierBehaviorBase[] m_Modifiers;
 
-        public void Setup()
+        internal void Setup()
         {
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
         }
 
-        internal void ModifyChecked(PlayerStateComponent stateToModify, PlayerCommands commands)
+        internal void ModifyChecked(PlayerComponent componentToModify, PlayerCommands commands)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(stateToModify, commands);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(componentToModify, commands);
         }
 
-        internal void ModifyTrusted(PlayerStateComponent stateToModify, PlayerCommands commands)
+        internal void ModifyTrusted(PlayerComponent componentToModify, PlayerCommands commands)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(stateToModify, commands);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(componentToModify, commands);
         }
 
         // public List<TComponent> GetInterfaces<TComponent>() where TComponent : class

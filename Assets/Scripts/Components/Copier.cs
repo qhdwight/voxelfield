@@ -3,7 +3,7 @@ using System;
 namespace Components
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class Copy : Attribute
+    public class CopyField : Attribute
     {
     }
 

@@ -1,6 +1,7 @@
 using System;
 using Components;
 using Session.Player;
+using Session.Player.Components;
 
 namespace Session
 {
@@ -16,13 +17,13 @@ namespace Session
         public Property<float> time, duration;
     }
 
-    public abstract class SessionStateComponentBase : ComponentBase
+    public abstract class SessionComponentBase : ComponentBase
     {
-        public StampComponent stamp;
         public Property<byte> localPlayerId;
-        public ArrayProperty<PlayerStateComponent> playerStates = new ArrayProperty<PlayerStateComponent>(PlayerManager.MaxPlayers);
+        public ArrayProperty<PlayerComponent> playerComponents = new ArrayProperty<PlayerComponent>(PlayerManager.MaxPlayers);
         public SessionSettingsComponent settings;
+        public StampComponent stamp;
 
-        public PlayerStateComponent LocalPlayerState => localPlayerId.HasValue ? playerStates[localPlayerId.Value] : null;
+        public PlayerComponent LocalPlayerComponent => localPlayerId.HasValue ? playerComponents[localPlayerId.Value] : null;
     }
 }

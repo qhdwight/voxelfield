@@ -6,8 +6,8 @@ namespace Session
     [RequireComponent(typeof(Camera))]
     public class SceneCamera : SingletonBehavior<SceneCamera>
     {
-        private Camera m_Camera;
         private AudioListener m_AudioListener;
+        private Camera m_Camera;
 
         protected override void Awake()
         {
