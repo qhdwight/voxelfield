@@ -19,13 +19,13 @@ namespace Session.Items
         public float movementFactor = 1.0f;
         [SerializeField] private ItemStatusModiferProperties[] m_StatusModiferProperties = default;
 
-        private Dictionary<ItemStatus, ItemStatusModiferProperties> m_StatusModifierProperties;
+        private Dictionary<ItemStatusId, ItemStatusModiferProperties> m_StatusModifierProperties;
 
-        public ItemStatusModiferProperties GetStatusModifierProperties(ItemStatus status) => m_StatusModifierProperties[status];
+        public ItemStatusModiferProperties GetStatusModifierProperties(ItemStatusId statusId) => m_StatusModifierProperties[statusId];
 
         private void OnEnable()
         {
-            m_StatusModifierProperties = m_StatusModiferProperties.ToEnumDictionary<ItemStatus, ItemStatusModiferProperties>();
+            m_StatusModifierProperties = m_StatusModiferProperties.ToEnumDictionary<ItemStatusId, ItemStatusModiferProperties>();
         }
     }
 }

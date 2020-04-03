@@ -3,25 +3,27 @@ using UnityEngine;
 
 namespace Session.Player.Modifiers
 {
+    using PlayerModifier = ModifierBehaviorBase<PlayerComponent>;
+    
     [RequireComponent(typeof(PlayerCameraBehavior), typeof(PlayerMovement))]
     public class PlayerModifierDispatcherBehavior : MonoBehaviour
     {
-        private PlayerModifierBehaviorBase[] m_Modifiers;
+        private PlayerModifier[] m_Modifiers;
 
         internal void Setup()
         {
-            m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
+            m_Modifiers = GetComponents<PlayerModifier>();
+            foreach (PlayerModifier modifier in m_Modifiers) modifier.Setup();
         }
 
-        internal void ModifyChecked(PlayerComponent componentToModify, PlayerCommands commands)
+        internal void ModifyChecked(PlayerComponent componentToModify, PlayerCommandsComponent commands)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(componentToModify, commands);
+            foreach (PlayerModifier modifier in m_Modifiers) modifier.ModifyChecked(componentToModify, commands);
         }
 
-        internal void ModifyTrusted(PlayerComponent componentToModify, PlayerCommands commands)
+        internal void ModifyTrusted(PlayerComponent componentToModify, PlayerCommandsComponent commands)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(componentToModify, commands);
+            foreach (PlayerModifier modifier in m_Modifiers) modifier.ModifyTrusted(componentToModify, commands);
         }
 
         // public List<TComponent> GetInterfaces<TComponent>() where TComponent : class
@@ -34,9 +36,9 @@ namespace Session.Player.Modifiers
         //     }
         //     return components;
         // }
-        internal void ModifyCommands(PlayerCommands commandsToModify)
+        internal void ModifyCommands(PlayerCommandsComponent commandsToModify)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(commandsToModify);
+            foreach (PlayerModifier modifier in m_Modifiers) modifier.ModifyCommands(commandsToModify);
         }
     }
 }

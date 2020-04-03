@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Session.Player.Modifiers
 {
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerMovement : PlayerModifierBehaviorBase
+    public class PlayerMovement : ModifierBehaviorBase<PlayerComponent>
     {
         private const float DefaultDownSpeed = -1.0f;
         private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
@@ -42,19 +42,19 @@ namespace Session.Player.Modifiers
             m_Controller.enabled = false;
         }
 
-        internal override void ModifyChecked(PlayerComponent componentToModify, PlayerCommands commands)
+        public override void ModifyChecked(PlayerComponent componentToModify, PlayerCommandsComponent commands)
         {
             base.ModifyChecked(componentToModify, commands);
             FullMove(commands);
             componentToModify.position.Value = transform.position;
         }
 
-        internal override void ModifyCommands(PlayerCommands commandsToModify)
+        public override void ModifyCommands(PlayerCommandsComponent commandsToModify)
         {
             InputProvider input = InputProvider.Singleton;
-            commandsToModify.hInput = input.GetAxis(InputType.Right, InputType.Left);
-            commandsToModify.vInput = input.GetAxis(InputType.Forward, InputType.Backward);
-            commandsToModify.jumpInput = input.GetInput(InputType.Jump);
+            commandsToModify.hInput.Value = input.GetAxis(InputType.Right, InputType.Left);
+            commandsToModify.vInput.Value = input.GetAxis(InputType.Forward, InputType.Backward);
+            commandsToModify.jumpInput.Value = input.GetInput(InputType.Jump);
         }
 
         protected override void SynchronizeBehavior(PlayerComponent componentToApply)
@@ -63,7 +63,7 @@ namespace Session.Player.Modifiers
             m_Controller.enabled = componentToApply.IsAlive;
         }
 
-        private void FullMove(PlayerCommands commands)
+        private void FullMove(PlayerCommandsComponent commands)
         {
             Vector3 initialVelocity = m_Velocity;
             float lateralSpeed = LateralMagnitude(m_Velocity);

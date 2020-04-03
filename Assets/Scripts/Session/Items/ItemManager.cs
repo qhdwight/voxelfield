@@ -36,7 +36,7 @@ namespace Session.Items
                                                    }));
         }
 
-        public ItemVisualBehavior ObtainVisuals(ItemId itemId, PlayerItemAnimatorBehavior playerItemAnimator, PlayableGraph playerGraph)
+        public ItemVisualBehavior ObtainVisuals(ItemId itemId, PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {
             Pool<ItemVisualBehavior> pool = m_ItemVisualsPool[itemId];
             ItemVisualBehavior visual = pool.Obtain();

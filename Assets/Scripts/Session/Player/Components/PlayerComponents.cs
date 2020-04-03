@@ -23,7 +23,7 @@ namespace Session.Player.Components
     public class ItemStatusComponent : ComponentBase
     {
         public Property<float> elapsedTime;
-        public Property<ItemStatus> id;
+        public Property<ItemStatusId> id;
     }
 
     [Serializable]

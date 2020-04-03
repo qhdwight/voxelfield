@@ -32,15 +32,17 @@ namespace Session.Player.Visualization
     {
         [SerializeField] private ItemId m_Id = default;
         [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default;
+        [SerializeField] private Vector3 m_Offset = default;
 
         private AnimationClipPlayable[] m_Animations;
         private PlayableGraph m_PlayerGraph;
         private AnimationMixerPlayable m_Mixer;
         private PlayerItemAnimatorBehavior m_PlayerItemAnimator;
         private Renderer[] m_Renders;
-        private Dictionary<ItemStatus, ItemStatusVisualProperties> m_StatusToVisualProperties;
+        private Dictionary<ItemStatusId, ItemStatusVisualProperties> m_StatusToVisualProperties;
 
         public ItemId Id => m_Id;
+        public Vector3 Offset => m_Offset;
 
         public ItemStatusVisualProperties[] StatusVisualProperties => m_StatusVisualProperties;
         public ItemModiferProperties ModiferProperties { get; private set; }
@@ -48,12 +50,13 @@ namespace Session.Player.Visualization
         internal void Setup(PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {
             m_PlayerItemAnimator = playerItemAnimator;
-            m_Renders = GetComponentsInChildren<Renderer>();
             m_PlayerGraph = playerGraph;
+            m_Renders = GetComponentsInChildren<Renderer>();
+            playerItemAnimator.ArmIk.SetTargets(transform.Find("IK.L"), transform.Find("IK.R"));
             m_Mixer = AnimationMixerPlayable.Create(playerGraph, m_StatusVisualProperties.Length);
             m_Animations = new AnimationClipPlayable[m_StatusVisualProperties.Length];
             ModiferProperties = ItemManager.Singleton.GetModifierProperties(m_Id);
-            m_StatusToVisualProperties = m_StatusVisualProperties.ToEnumDictionary<ItemStatus, ItemStatusVisualProperties>();
+            m_StatusToVisualProperties = m_StatusVisualProperties.ToEnumDictionary<ItemStatusId, ItemStatusVisualProperties>();
             for (var statusIndex = 0; statusIndex < m_StatusVisualProperties.Length; statusIndex++)
             {
                 AnimationClip clip = m_StatusVisualProperties[statusIndex].animationClip;
@@ -93,14 +96,14 @@ namespace Session.Player.Visualization
             m_PlayerItemAnimator.LastRenderedItemComponent = component;
         }
 
-        public void SampleAnimation(ItemStatus status, ItemStatusVisualProperties statusVisualProperties, float interpolation)
+        public void SampleAnimation(ItemStatusId statusId, ItemStatusVisualProperties statusVisualProperties, float interpolation)
         {
             AnimationClip animationClip = statusVisualProperties.animationClip;
             if (!animationClip)
                 return;
             if (statusVisualProperties.isReverseAnimation)
                 interpolation = 1.0f - interpolation;
-            var statusIndex = (int) status;
+            var statusIndex = (int) statusId;
             for (var animationIndex = 0; animationIndex < m_StatusVisualProperties.Length; animationIndex++)
                 m_Mixer.SetInputWeight(animationIndex, statusIndex == animationIndex ? 1.0f : 0.0f);
             ref AnimationClipPlayable itemAnimation = ref m_Animations[statusIndex];

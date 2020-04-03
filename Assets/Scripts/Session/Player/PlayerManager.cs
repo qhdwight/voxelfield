@@ -38,17 +38,17 @@ namespace Session.Player
                 m_Visuals[playerId].Visualize(session.playerComponents[playerId], playerId == session.localPlayerId);
         }
 
-        public void ModifyCommands(byte playerId, PlayerCommands commandsToModify)
+        public void ModifyCommands(byte playerId, PlayerCommandsComponent commandsToModify)
         {
             m_Modifier[playerId].ModifyCommands(commandsToModify);
         }
 
-        public void ModifyTrusted(byte playerId, PlayerComponent componentToModify, PlayerCommands commands)
+        public void ModifyTrusted(byte playerId, PlayerComponent componentToModify, PlayerCommandsComponent commands)
         {
             m_Modifier[playerId].ModifyTrusted(componentToModify, commands);
         }
 
-        public void ModifyChecked(byte playerId, PlayerComponent componentToModify, PlayerCommands commands)
+        public void ModifyChecked(byte playerId, PlayerComponent componentToModify, PlayerCommandsComponent commands)
         {
             m_Modifier[playerId].ModifyChecked(componentToModify, commands);
         }

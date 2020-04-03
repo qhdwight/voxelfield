@@ -4,21 +4,21 @@ using UnityEngine;
 
 namespace Session.Player.Modifiers
 {
-    public class PlayerCameraBehavior : PlayerModifierBehaviorBase
+    public class PlayerCameraBehavior : ModifierBehaviorBase<PlayerComponent>
     {
         [SerializeField] private float m_Sensitivity = 10.0f;
-
-        internal override void ModifyTrusted(PlayerComponent componentToModify, PlayerCommands commands)
+        
+        public override void ModifyTrusted(PlayerComponent componentToModify, PlayerCommandsComponent commands)
         {
             base.ModifyTrusted(componentToModify, commands);
             componentToModify.yaw.Value = Mathf.Repeat(componentToModify.yaw + commands.mouseDeltaX * m_Sensitivity, 360.0f);
             componentToModify.pitch.Value = Mathf.Clamp(componentToModify.pitch - commands.mouseDeltaY * m_Sensitivity, -90.0f, 90.0f);
         }
 
-        internal override void ModifyCommands(PlayerCommands commandsToModify)
+        public override void ModifyCommands(PlayerCommandsComponent commandsToModify)
         {
-            commandsToModify.mouseDeltaX = InputProvider.GetMouseInput(MouseMovement.X);
-            commandsToModify.mouseDeltaY = InputProvider.GetMouseInput(MouseMovement.Y);
+            commandsToModify.mouseDeltaX.Value = InputProvider.GetMouseInput(MouseMovement.X);
+            commandsToModify.mouseDeltaY.Value = InputProvider.GetMouseInput(MouseMovement.Y);
         }
 
         protected override void SynchronizeBehavior(PlayerComponent componentToApply)

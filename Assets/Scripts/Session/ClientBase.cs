@@ -12,7 +12,7 @@ namespace Session
     {
         private const int LocalPlayerId = 0;
 
-        private readonly PlayerCommands m_Commands = new PlayerCommands();
+        private readonly PlayerCommandsComponent m_Commands = new PlayerCommandsComponent();
         private readonly CyclicArray<StampedPlayerComponent> m_PredictedPlayerComponents =
             new CyclicArray<StampedPlayerComponent>(250, () => new StampedPlayerComponent());
         private readonly TSessionComponent m_RenderSessionComponent = Activator.CreateInstance<TSessionComponent>();
@@ -53,7 +53,7 @@ namespace Session
             float duration = time - lastTickTime;
             predictedPlayerComponent.duration.Value = duration;
             predictedPlayerComponent.component.health.Value = 100;
-            m_Commands.duration = duration;
+            m_Commands.duration.Value = duration;
             Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);
             PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedPlayerComponent.component, m_Commands);
         }

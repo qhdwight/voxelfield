@@ -17,6 +17,12 @@ namespace Util
 
         [SerializeField] private Arm m_Left = default, m_Right = default;
 
+        public void SetTargets(Transform left, Transform right)
+        {
+            m_Left.target = left;
+            m_Right.target = right;
+        }
+        
         private static bool SetupArm(Arm arm)
         {
             Transform hand = arm.hand;

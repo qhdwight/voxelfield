@@ -11,12 +11,14 @@ namespace Session
         public Property<byte> tickRate;
     }
 
+    [Serializable]
     public class StampComponent : ComponentBase
     {
         public Property<uint> tick;
         public Property<float> time, duration;
     }
 
+    [Serializable]
     public abstract class SessionComponentBase : ComponentBase
     {
         public Property<byte> localPlayerId;

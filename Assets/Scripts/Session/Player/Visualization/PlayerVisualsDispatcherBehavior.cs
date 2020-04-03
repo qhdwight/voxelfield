@@ -11,7 +11,7 @@ namespace Session.Player.Visualization
 
         private Camera m_Camera;
         [SerializeField] private Transform m_Head = default;
-        private Renderer[] m_Renders;
+        [SerializeField] private Renderer[] m_Renders = default;
 
         private PlayerVisualsBehaviorBase[] m_Visuals;
 
@@ -21,7 +21,6 @@ namespace Session.Player.Visualization
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup();
             m_Camera = GetComponentInChildren<Camera>();
             m_AudioListener = GetComponentInChildren<AudioListener>();
-            m_Renders = GetComponentsInChildren<Renderer>();
             SetVisible(false, false);
         }
 

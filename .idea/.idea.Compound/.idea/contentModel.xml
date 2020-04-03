@@ -56,10 +56,11 @@
           <e p="Session" t="Include">
             <e p="ClientBase.cs" t="Include" />
             <e p="DebugBehavior.cs" t="Include" />
+            <e p="IModifierBase.cs" t="Include" />
             <e p="Items" t="Include">
-              <e p="ItemId.cs" t="Include" />
               <e p="ItemManager.cs" t="Include" />
               <e p="ItemModiferProperties.cs" t="Include" />
+              <e p="ItemModifierBase.cs" t="Include" />
               <e p="PlayerItemAnimatorBehavior.cs" t="Include" />
             </e>
             <e p="Player" t="Include">
@@ -67,13 +68,13 @@
                 <e p="PlayerComponents.cs" t="Include" />
               </e>
               <e p="Modifiers" t="Include">
+                <e p="ModifierBehaviorBase.cs" t="Include" />
                 <e p="PlayerCameraBehavior.cs" t="Include" />
                 <e p="PlayerItemManagerModiferBehavior.cs" t="Include" />
-                <e p="PlayerModifierBehaviorBase.cs" t="Include" />
                 <e p="PlayerModifierDispatcherBehavior.cs" t="Include" />
                 <e p="PlayerMovement.cs" t="Include" />
               </e>
-              <e p="PlayerCommands.cs" t="Include" />
+              <e p="PlayerCommandsComponent.cs" t="Include" />
               <e p="PlayerManager.cs" t="Include" />
               <e p="Visualization" t="Include">
                 <e p="ItemVisualBehavior.cs" t="Include" />
