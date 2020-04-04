@@ -52,9 +52,11 @@ namespace Session.Player.Modifiers
         public override void ModifyCommands(PlayerCommandsComponent commandsToModify)
         {
             InputProvider input = InputProvider.Singleton;
-            commandsToModify.hInput.Value = input.GetAxis(InputType.Right, InputType.Left);
-            commandsToModify.vInput.Value = input.GetAxis(InputType.Forward, InputType.Backward);
-            commandsToModify.jumpInput.Value = input.GetInput(InputType.Jump);
+            commandsToModify.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
+            commandsToModify.SetInput(PlayerInput.Backward, input.GetInput(InputType.Backward));
+            commandsToModify.SetInput(PlayerInput.Right, input.GetInput(InputType.Right));
+            commandsToModify.SetInput(PlayerInput.Left, input.GetInput(InputType.Left));
+            commandsToModify.SetInput(PlayerInput.Jump, input.GetInput(InputType.Jump));
         }
 
         protected override void SynchronizeBehavior(PlayerComponent componentToApply)
@@ -79,11 +81,11 @@ namespace Session.Player.Modifiers
                 float distance = m_CachedGroundHits[0].distance;
                 m_IsGrounded = true;
                 m_Velocity.y = DefaultDownSpeed;
-                if (!commands.jumpInput) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
+                if (!commands.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
             }
             Vector3 wishDirection =
-                commands.vInput * m_ForwardSpeed * playerTransform.forward +
-                commands.hInput * m_SideSpeed * playerTransform.right;
+                commands.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * playerTransform.forward +
+                commands.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * playerTransform.right;
             float wishSpeed = wishDirection.magnitude;
             wishDirection.Normalize();
             if (wishSpeed > m_MaxSpeed) wishSpeed = m_MaxSpeed;
@@ -96,7 +98,7 @@ namespace Session.Player.Modifiers
                     m_Velocity.y = DefaultDownSpeed;
                 }
                 Accelerate(wishDirection, wishSpeed, m_Acceleration, commands.duration);
-                if (commands.jumpInput)
+                if (commands.GetInput(PlayerInput.Jump))
                 {
                     initialVelocity.y = m_JumpSpeed;
                     m_Velocity.y = initialVelocity.y - m_GravityFactor * commands.duration;

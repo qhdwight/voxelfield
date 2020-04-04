@@ -128,6 +128,6 @@ namespace Session.Player.Visualization
                 meshRenderer.enabled = isVisible;
         }
 
-        public ItemStatusVisualProperties GetStatusVisualProperties(ItemComponent component) => m_StatusToVisualProperties[component.status.id];
+        public ItemStatusVisualProperties GetStatusVisualProperties(ItemComponent itemComponent) => m_StatusToVisualProperties[(ItemStatusId) itemComponent.status.id.Value];
     }
 }

@@ -7,11 +7,11 @@ namespace Components.Tests
         [Test]
         public void TestMerge()
         {
-            var source = new OuterComponent {@float = 2.0f};
-            var merged = new OuterComponent {@float = 3.0f, @int = 4};
+            var source = new OuterComponent {@float = new FloatProperty(1.0f)};
+            var merged = new OuterComponent {@float = new FloatProperty(2.0f), @uint = new UIntProperty(3)};
             Copier.CopyTo(source, merged);
-            Assert.AreEqual(merged.@float, 2.0f);
-            Assert.AreEqual(merged.@int, 4);
+            Assert.AreEqual(1.0f, merged.@float.Value);
+            Assert.AreEqual(3, merged.@uint.Value);
         }
     }
 }

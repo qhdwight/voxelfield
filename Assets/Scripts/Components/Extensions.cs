@@ -19,30 +19,30 @@ namespace Components
         {
             return type.IsSubclassOf(typeof(ArrayPropertyBase));
         }
-
+        
         internal static void Navigate(Action<FieldInfo, PropertyBase> visitProperty, object o)
         {
-            var @object = new ThreeReferences<object> {[0] = o};
+            var @object = new TriArray<object> {[0] = o};
             Navigate((field, properties) => visitProperty(field, properties[0]), @object, 1);
         }
 
         internal static void NavigateZipped(Action<FieldInfo, PropertyBase, PropertyBase> visitProperty, object o1, object o2)
         {
-            var zipped = new ThreeReferences<object> {[0] = o1, [1] = o2};
+            var zipped = new TriArray<object> {[0] = o1, [1] = o2};
             Navigate((field, properties) => visitProperty(field, properties[0], properties[1]), zipped, 2);
         }
 
         internal static void NavigateZipped(Action<FieldInfo, PropertyBase, PropertyBase, PropertyBase> visitProperty, object o1, object o2, object o3)
         {
-            var zipped = new ThreeReferences<object> {[0] = o1, [1] = o2, [2] = o3};
+            var zipped = new TriArray<object> {[0] = o1, [1] = o2, [2] = o3};
             Navigate((field, properties) => visitProperty(field, properties[0], properties[1], properties[2]), zipped, 3);
         }
 
-        private static void Navigate(Action<FieldInfo, ThreeReferences<PropertyBase>> visitProperty, in ThreeReferences<object> zipped, int size)
+        private static void Navigate(Action<FieldInfo, TriArray<PropertyBase>> visitProperty, in TriArray<object> zipped, int size)
         {
-            void NavigateRecursively(in ThreeReferences<object> _zipped, Type _type, FieldInfo _field)
+            void NavigateRecursively(in TriArray<object> _zipped, Type _type, FieldInfo _field)
             {
-                ThreeReferences<object> zippedReferencesCopy = _zipped;
+                TriArray<object> zippedReferencesCopy = _zipped;
                 for (var i = 0; i < size; i++)
                     if (_zipped[i] == null)
                         throw new NullReferenceException("Null member");
@@ -55,7 +55,7 @@ namespace Components
                         Type fieldType = field.FieldType;
                         if (fieldType.IsProperty())
                         {
-                            var zippedProperties = new ThreeReferences<PropertyBase>();
+                            var zippedProperties = new TriArray<PropertyBase>();
                             for (var i = 0; i < size; i++)
                                 zippedProperties[i] = (PropertyBase) field.GetValue(_zipped[i]);
                             visitProperty(field, zippedProperties);
@@ -70,7 +70,7 @@ namespace Components
                 }
                 else if (_type.IsArrayProperty())
                 {
-                    var zippedArrays = new ThreeReferences<ArrayPropertyBase>();
+                    var zippedArrays = new TriArray<ArrayPropertyBase>();
                     for (var i = 0; i < size; i++)
                         zippedArrays[i] = (ArrayPropertyBase) _zipped[i];
                     Type elementType = zippedArrays[0].GetElementType();
@@ -78,7 +78,7 @@ namespace Components
                     for (var j = 0; j < zippedArrays[0].Length; j++)
                         if (isProperty)
                         {
-                            var zippedProperties = new ThreeReferences<PropertyBase>();
+                            var zippedProperties = new TriArray<PropertyBase>();
                             for (var i = 0; i < size; i++)
                                 zippedProperties[i] = (PropertyBase) zippedArrays[i].GetValue(j);
                             visitProperty(_field, zippedProperties);
@@ -99,7 +99,7 @@ namespace Components
             NavigateRecursively(zipped, type, null);
         }
 
-        private struct ThreeReferences<T>
+        private struct TriArray<T>
         {
             private T o1, o2, o3;
 

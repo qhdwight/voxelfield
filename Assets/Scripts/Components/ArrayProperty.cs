@@ -20,7 +20,7 @@ namespace Components
     {
         [CopyField, SerializeField] private T[] m_Values;
 
-        private ArrayProperty(T[] values)
+        public ArrayProperty(params T[] values)
         {
             m_Values = values;
         }
@@ -56,16 +56,6 @@ namespace Components
         public override Type GetElementType()
         {
             return typeof(T);
-        }
-
-        public static ArrayProperty<T> From(params T[] elements)
-        {
-            return new ArrayProperty<T>(elements);
-        }
-
-        public static implicit operator ArrayProperty<T>(T[] values)
-        {
-            return new ArrayProperty<T>(values);
         }
     }
 }

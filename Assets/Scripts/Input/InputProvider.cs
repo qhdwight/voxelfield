@@ -53,12 +53,7 @@ namespace Input
         {
             return UnityEngine.Input.GetKey(m_Settings.Get(type));
         }
-
-        public float GetAxis(InputType positive, InputType negative)
-        {
-            return (GetInput(positive) ? 1.0f : 0.0f) + (GetInput(negative) ? -1.0f : 0.0f);
-        }
-
+        
         public static float GetMouseInput(MouseMovement mouseMovement)
         {
             switch (mouseMovement)

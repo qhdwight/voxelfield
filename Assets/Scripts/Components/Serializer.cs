@@ -10,36 +10,15 @@ namespace Components
         private static readonly MemoryStream Stream = new MemoryStream(1 << 16);
         private static readonly BinaryWriter Writer = new BinaryWriter(Stream);
         private static readonly BinaryReader Reader = new BinaryReader(Stream);
-
-        private static readonly Dictionary<Type, Func<object>> Readers = new Dictionary<Type, Func<object>>
-        {
-            // @formatter:off
-            [typeof(    int)] = () => Reader.ReadInt32(),
-            [typeof(   uint)] = () => Reader.ReadUInt32(),
-            [typeof(  float)] = () => Reader.ReadSingle(),
-            [typeof( double)] = () => Reader.ReadDouble(),
-            [typeof(Vector3)] = () => new Vector3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle())
-            // @formatter:on
-        };
-
+        
         private static void ReadIntoProperty(PropertyBase property)
         {
-            property.SetValue(Readers[property.ValueType]());
+            property.Deserialize(Reader);
         }
 
         private static void WriteFromProperty(PropertyBase property)
         {
-            // @formatter:off
-            switch (property.GetValue())
-            {
-                case    int     @int: Writer.Write(   @int); break;
-                case    uint   @uint: Writer.Write(  @uint); break;
-                case   float  @float: Writer.Write( @float); break;
-                case  double @double: Writer.Write(@double); break;
-                case Vector3  vector: for (var i = 0; i < 3; i++) Writer.Write(vector[i]); break;
-                default: throw new ArgumentException();
-            }
-            // @formatter:on
+            property.Serialize(Writer);
         }
 
         public static void SerializeFrom(object @object, Stream stream)

@@ -10,7 +10,7 @@ namespace Components.Tests
             OuterComponent source = OuterComponent.Arbitrary;
             var destination = new OuterComponent();
             Copier.CopyTo(source, destination);
-            Assert.AreEqual(source.@int, destination.@int);
+            Assert.AreEqual(source.@uint, destination.@uint);
             Assert.AreEqual(source.@float, destination.@float);
             Assert.AreEqual(source.vector, destination.vector);
             Assert.AreNotSame(source.inner, destination.inner);

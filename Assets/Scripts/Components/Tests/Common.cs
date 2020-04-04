@@ -2,26 +2,24 @@ using UnityEngine;
 
 namespace Components.Tests
 {
-    using IntArrayProperty = ArrayProperty<Property<int>>;
-
     internal class OuterComponent : ComponentBase
     {
-        public Property<float> @float;
+        public FloatProperty @float;
         public InnerComponent inner;
 
-        public Property<int> @int;
-        public IntArrayProperty intArray = new IntArrayProperty(2);
-        public Property<Vector3> vector;
+        public UIntProperty @uint;
+        public ArrayProperty<UIntProperty> intArray = new ArrayProperty<UIntProperty>(2);
+        public VectorProperty vector;
 
         internal static OuterComponent Arbitrary => new OuterComponent
         {
-            @int = 2, @float = 3.7f, vector = new Vector3(3.0f, 2.0f, 1.0f), inner = new InnerComponent {@uint = 3},
-            intArray = IntArrayProperty.From(1, 2)
+            @uint = new UIntProperty(1), @float = new FloatProperty(2.0f), vector = new VectorProperty(3.0f, 4.0f, 5.0f), inner = new InnerComponent {@uint = new UIntProperty(6)},
+            intArray = new ArrayProperty<UIntProperty>(new UIntProperty(7), new UIntProperty(8))
         };
 
         internal class InnerComponent : ComponentBase
         {
-            public Property<uint> @uint;
+            public UIntProperty @uint;
         }
     }
 }

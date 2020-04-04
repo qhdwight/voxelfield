@@ -21,7 +21,8 @@
             <e p="Copier.cs" t="Include" />
             <e p="Extensions.cs" t="Include" />
             <e p="Interpolator.cs" t="Include" />
-            <e p="Property.cs" t="Include" />
+            <e p="Properties.cs" t="Include" />
+            <e p="PropertyBase.cs" t="Include" />
             <e p="Serializer.cs" t="Include" />
             <e p="Tests" t="Include">
               <e p="Common.cs" t="Include" />

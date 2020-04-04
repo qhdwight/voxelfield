@@ -320,7 +320,7 @@ MonoBehaviour:
               m_Value: 0
             id:
               m_HasValue: 1
-              m_Value: 0
+              m_Value: 2
         - gunStatus:
             aimStatus:
               m_HasValue: 0

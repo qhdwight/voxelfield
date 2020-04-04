@@ -13,7 +13,7 @@ namespace Components.Tests
             Serializer.SerializeFrom(arbitrary, stream);
             var deserialized = new OuterComponent();
             Serializer.DeserializeInto(deserialized, stream);
-            Assert.AreEqual(arbitrary.@int, deserialized.@int);
+            Assert.AreEqual(arbitrary.@uint, deserialized.@uint);
             Assert.AreEqual(arbitrary.@float, deserialized.@float);
             Assert.AreEqual(arbitrary.vector, deserialized.vector);
             Assert.AreNotSame(arbitrary.inner, deserialized.inner);
