@@ -11,7 +11,7 @@ namespace Session.Player.Components
     [Serializable]
     public class PlayerComponent : ComponentBase
     {
-        [NoInterpolation] public ByteProperty health;
+        [TakeSecondForInterpolation] public ByteProperty health;
         public PlayerInventoryComponent inventory;
         public VectorProperty position;
         public FloatProperty yaw, pitch;
@@ -23,29 +23,31 @@ namespace Session.Player.Components
     [Serializable]
     public class GunStatusComponent : ComponentBase
     {
-        public ByteProperty aimStatus;
-        public FloatProperty aimStatusElapsed;
+        public ItemByteStatusComponent aimStatus;
         public UShortProperty ammoInMag, ammoInReserve;
     }
 
     [Serializable]
-    public class ItemComponent : ComponentBase
+    public class ItemByteStatusComponent : ByteStatusComponentBase
     {
-        public GunStatusComponent gunStatus;
-        public ByteProperty id;
-        [CustomInterpolation] public FloatProperty statusElapsed;
-        [CustomInterpolation] public ByteProperty statusId;
-
-        public override void InterpolateFrom(object c1, object c2, float interpolation)
+        public void InterpolateFrom(ItemByteStatusComponent i1, ItemByteStatusComponent i2, float interpolation, byte itemId)
         {
-            if (!(c1 is ItemComponent i1) || !(c2 is ItemComponent i2)) return;
-            byte s1 = i1.statusId.Value,
-                 itemId1 = i1.id.Value;
-            if (itemId1 == ItemId.None) return;
-            ItemStatusModiferProperties sp1 = ItemManager.Singleton.GetModifier(itemId1).GetStatusModifierProperties(s1);
-            float d1 = sp1.duration,
-                  e1 = i1.statusElapsed,
-                  e2 = i2.statusElapsed;
+            InterpolateFrom(i1, i2, interpolation, statusId => ItemManager.Singleton.GetModifier(itemId).GetStatusModifierProperties(statusId).duration);
+        }
+    }
+
+    [Serializable]
+    public abstract class ByteStatusComponentBase : ComponentBase
+    {
+        [CustomInterpolation] public ByteProperty id;
+        [CustomInterpolation] public FloatProperty elapsed;
+
+        protected void InterpolateFrom(ByteStatusComponentBase s1, ByteStatusComponentBase s2, float interpolation, Func<byte, float> getStatusDuration)
+        {
+            if (s1.id == ItemId.None) return;
+            float d1 = getStatusDuration(s1.id),
+                  e1 = s1.elapsed,
+                  e2 = s2.elapsed;
             bool isAligned = e1 < e2;
             if (!isAligned) e2 += d1;
             float interpolatedStatusElapsed = Mathf.Lerp(e1, e2, interpolation);
@@ -53,12 +55,30 @@ namespace Session.Player.Components
             if (e2 > d1)
             {
                 interpolatedStatusElapsed -= d1;
-                interpolatedStatusId = i2.statusId;
+                interpolatedStatusId = s2.id;
             }
             else
-                interpolatedStatusId = i1.statusId;
-            statusId.Value = interpolatedStatusId;
-            statusElapsed.Value = interpolatedStatusElapsed;
+                interpolatedStatusId = s1.id;
+            id.Value = interpolatedStatusId;
+            elapsed.Value = interpolatedStatusElapsed;
+        }
+    }
+
+    [Serializable]
+    public class ItemComponent : ComponentBase
+    {
+        public GunStatusComponent gunStatus;
+        public ByteProperty id;
+        public ItemByteStatusComponent status;
+        public ItemByteStatusComponent equipStatus;
+
+        public override void InterpolateFrom(object c1, object c2, float interpolation)
+        {
+            var i1 = (ItemComponent) c1;
+            var i2 = (ItemComponent) c2;
+            status.InterpolateFrom(i1.status, i2.status, interpolation, id);
+            equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation, id);
+            gunStatus.aimStatus.InterpolateFrom(i1.gunStatus.aimStatus, i2.gunStatus.aimStatus, interpolation, id);
         }
     }
 

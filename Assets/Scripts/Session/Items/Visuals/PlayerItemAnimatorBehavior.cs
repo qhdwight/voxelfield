@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 using Util;
 
 namespace Session.Items.Visuals
@@ -45,11 +44,11 @@ namespace Session.Items.Visuals
             m_Visuals = SetupVisualItem(playerComponent);
             if (m_Visuals == null) return;
             ItemComponent itemComponent = playerComponent.inventory.ActiveItemComponent;
-            float duration = m_Visuals.ModiferProperties.GetStatusModifierProperties(itemComponent.statusId).duration,
-                  interpolation = itemComponent.statusElapsed / duration;
+            float duration = m_Visuals.ModiferProperties.GetStatusModifierProperties(itemComponent.status.id).duration,
+                  interpolation = itemComponent.status.elapsed / duration;
             if (m_FpvArmsRenderer)
             {
-                m_FpvArmsRenderer.enabled = isLocalPlayer && m_IsFpv;
+                m_FpvArmsRenderer.enabled = isLocalPlayer;
                 m_FpvArmsRenderer.shadowCastingMode = ShadowCastingMode.Off;
             }
             SampleItemAnimation(itemComponent, interpolation);
@@ -89,9 +88,8 @@ namespace Session.Items.Visuals
         private void SampleItemAnimation(ItemComponent itemComponent, float statusInterpolation)
         {
             ItemStatusVisualProperties statusVisualProperties = m_Visuals.GetStatusVisualProperties(itemComponent);
-            float clampedInterpolation = Mathf.Clamp01(statusInterpolation);
             if (statusVisualProperties.animationEvents != null) m_Visuals.SampleEvents(itemComponent, statusVisualProperties);
-            m_Visuals.SampleAnimation(itemComponent.statusId, statusVisualProperties, clampedInterpolation);
+            m_Visuals.SampleAnimation(itemComponent.status.id, statusVisualProperties, statusInterpolation);
         }
 
         internal override void Cleanup()

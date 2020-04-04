@@ -76,16 +76,16 @@ namespace Session.Player.Visualization
             float? lastStatusElapsed = null;
             if (lastItemComponent != null)
             {
-                bool isSameAnimation = lastItemComponent.id == component.id && lastItemComponent.statusId == component.statusId,
-                     isAfter = component.statusElapsed > lastItemComponent.statusElapsed;
+                bool isSameAnimation = lastItemComponent.id == component.id && lastItemComponent.status.id == component.status.id,
+                     isAfter = component.status.elapsed > lastItemComponent.status.elapsed;
                 if (isSameAnimation && isAfter)
-                    lastStatusElapsed = lastItemComponent.statusElapsed;
+                    lastStatusElapsed = lastItemComponent.status.elapsed;
             }
             ItemStatusVisualProperties.AnimationEvent[] animationEvents = statusVisualProperties.animationEvents;
             foreach (ItemStatusVisualProperties.AnimationEvent animationEvent in animationEvents)
             {
                 bool shouldDoEvent = (!lastStatusElapsed.HasValue || lastStatusElapsed.Value < animationEvent.time)
-                                  && component.statusElapsed >= animationEvent.time;
+                                  && component.status.elapsed >= animationEvent.time;
                 if (!shouldDoEvent) continue;
                 if (animationEvent.audioSource) animationEvent.audioSource.PlayOneShot(animationEvent.audioSource.clip);
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
@@ -118,6 +118,6 @@ namespace Session.Player.Visualization
             }
         }
         
-        public ItemStatusVisualProperties GetStatusVisualProperties(ItemComponent itemComponent) => m_StatusVisualProperties[itemComponent.statusId.Value];
+        public ItemStatusVisualProperties GetStatusVisualProperties(ItemComponent itemComponent) => m_StatusVisualProperties[itemComponent.status.id.Value];
     }
 }

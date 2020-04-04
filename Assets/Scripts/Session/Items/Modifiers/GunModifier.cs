@@ -26,14 +26,14 @@ namespace Session.Items.Modifiers
         public override void ModifyChecked(ItemComponent componentToModify, PlayerCommandsComponent commands)
         {
             bool reloadInput = commands.GetInput(PlayerInput.Reload);
-            if ((reloadInput || componentToModify.gunStatus.ammoInMag == 0) && CanReload(componentToModify) && componentToModify.statusId == ItemStatusId.Idle)
+            if ((reloadInput || componentToModify.gunStatus.ammoInMag == 0) && CanReload(componentToModify) && componentToModify.status.id == ItemStatusId.Idle)
                 StartStatus(componentToModify, GunStatusId.Reloading);
             base.ModifyChecked(componentToModify, commands);
         }
 
         protected override void FinishStatus(ItemComponent itemComponent, PlayerCommandsComponent commands)
         {
-            byte statusId = itemComponent.statusId;
+            byte statusId = itemComponent.status.id;
             switch (statusId)
             {
                 case GunStatusId.Reloading:

@@ -11,7 +11,7 @@ namespace Components
             foreach (FieldInfo fieldInfo in fieldInfos)
             {
                 Type fieldType = fieldInfo.FieldType;
-                if (fieldType.IsProperty() || fieldType.IsComponent())
+                if (fieldInfo.GetValue(this) == null && (fieldType.IsProperty() || fieldType.IsComponent()))
                     fieldInfo.SetValue(this, Activator.CreateInstance(fieldType));
             }
         }

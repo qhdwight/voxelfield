@@ -4,7 +4,7 @@ using System.Reflection;
 namespace Components
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class NoInterpolation : Attribute
+    public class TakeSecondForInterpolation : Attribute
     {
     }
 
@@ -33,7 +33,7 @@ namespace Components
         {
             Extensions.NavigateZipped((field, _o1, _o2, _destination) =>
             {
-                if (field.IsDefined(typeof(NoInterpolation)))
+                if (field.IsDefined(typeof(TakeSecondForInterpolation)))
                     _destination.SetFromIfPresent(_o2);
                 else
                     _destination.InterpolateFromIfPresent(_o1, _o2, interpolation, field);
