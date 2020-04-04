@@ -62,13 +62,11 @@ namespace Session
             float interpolation;
             if (toComponent.duration > 0.0f)
             {
-                float elapsedTimeIntoComponent = durationCount - rollback + timeSinceLastUpdate;
-                interpolation = elapsedTimeIntoComponent / toComponent.duration;
+                float elapsed = durationCount - rollback + timeSinceLastUpdate;
+                interpolation = elapsed / toComponent.duration;
             }
             else
-            {
                 interpolation = 0.0f;
-            }
             Interpolator.InterpolateInto(fromComponent.component, toComponent.component, componentToInterpolate, interpolation);
             return true;
         }

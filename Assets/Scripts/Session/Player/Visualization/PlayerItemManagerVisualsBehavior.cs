@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Session.Items;
 using Session.Items.Visuals;
 using Session.Player.Components;
 using UnityEngine;

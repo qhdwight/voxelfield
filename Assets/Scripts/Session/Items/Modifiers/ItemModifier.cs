@@ -21,7 +21,7 @@ namespace Session.Items.Modifiers
         None,
         TestingRifle,
     }
-    
+
     [Serializable]
     public class ItemStatusModiferProperties
     {
@@ -51,30 +51,29 @@ namespace Session.Items.Modifiers
 
         public void ModifyChecked(ItemComponent componentToModify, PlayerCommandsComponent commands)
         {
-            ItemStatusComponent itemStatusComponent = componentToModify.status;
             float duration = commands.duration;
-            itemStatusComponent.elapsedTime.Value += duration;
+            componentToModify.statusElapsed.Value += duration;
             StatusTick(commands);
             ItemStatusModiferProperties modifierProperties;
-            while (itemStatusComponent.elapsedTime > (modifierProperties = m_StatusModifierProperties[(ItemStatusId) itemStatusComponent.id.Value]).duration)
+            while (componentToModify.statusElapsed > (modifierProperties = m_StatusModifierProperties[(ItemStatusId) componentToModify.statusId.Value]).duration)
             {
-                float statusElapsedTime = itemStatusComponent.elapsedTime;
-                FinishStatus(itemStatusComponent, commands);
-                itemStatusComponent.elapsedTime.Value = modifierProperties.duration < Mathf.Epsilon
-                    ? statusElapsedTime
-                    : statusElapsedTime % modifierProperties.duration;
+                float statusElapsed = componentToModify.statusElapsed;
+                FinishStatus(componentToModify, commands);
+                componentToModify.statusElapsed.Value = Mathf.Approximately(modifierProperties.duration, 0.0f)
+                    ? statusElapsed
+                    : statusElapsed % modifierProperties.duration;
             }
         }
 
-        public void SetStatus(ItemStatusComponent itemStatusComponent, ItemStatusId statusId, float elapsedTime = 0.0f)
+        public void SetStatus(ItemComponent itemComponent, ItemStatusId statusId, float elapsed = 0.0f)
         {
-            itemStatusComponent.id.Value = (byte) statusId;
-            itemStatusComponent.elapsedTime.Value = elapsedTime;
+            itemComponent.statusId.Value = (byte) statusId;
+            itemComponent.statusElapsed.Value = elapsed;
         }
 
-        public virtual void StartStatus(ItemStatusComponent itemStatusComponent, ItemStatusId statusId)
+        public virtual void StartStatus(ItemComponent itemComponent, ItemStatusId statusId)
         {
-            SetStatus(itemStatusComponent, statusId);
+            SetStatus(itemComponent, statusId);
             switch (statusId)
             {
                 case ItemStatusId.PrimaryUsing:
@@ -86,20 +85,20 @@ namespace Session.Items.Modifiers
             }
         }
 
-        protected virtual void FinishStatus(ItemStatusComponent itemStatusComponent, PlayerCommandsComponent commands)
+        protected virtual void FinishStatus(ItemComponent itemComponent, PlayerCommandsComponent commands)
         {
-            var statusId = (ItemStatusId) itemStatusComponent.id.Value;
+            var statusId = (ItemStatusId) itemComponent.id.Value;
             switch (statusId)
             {
                 case ItemStatusId.Equipping:
                 case ItemStatusId.SecondaryUsing:
-                    StartStatus(itemStatusComponent, ItemStatusId.Idle);
+                    StartStatus(itemComponent, ItemStatusId.Idle);
                     break;
                 case ItemStatusId.Unequipping:
-                    StartStatus(itemStatusComponent, ItemStatusId.PrimaryUsing);
+                    StartStatus(itemComponent, ItemStatusId.PrimaryUsing);
                     break;
                 case ItemStatusId.PrimaryUsing:
-                    StartStatus(itemStatusComponent, CanUse(statusId, true) && commands.GetInput(PlayerInput.UseOne)
+                    StartStatus(itemComponent, CanUse(statusId, true) && commands.GetInput(PlayerInput.UseOne)
                                     ? GetUseStatus(commands)
                                     : ItemStatusId.Idle);
                     break;
@@ -119,7 +118,6 @@ namespace Session.Items.Modifiers
 
         protected virtual void PrimaryUse()
         {
-            
         }
 
         protected virtual void StatusTick(PlayerCommandsComponent commands)

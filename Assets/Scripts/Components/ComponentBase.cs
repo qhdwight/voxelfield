@@ -15,5 +15,9 @@ namespace Components
                     fieldInfo.SetValue(this, Activator.CreateInstance(fieldType));
             }
         }
+
+        public virtual void InterpolateFrom(object c1, object c2, float interpolation)
+        {
+        }
     }
 }

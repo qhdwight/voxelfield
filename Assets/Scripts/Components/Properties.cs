@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 
 namespace Components
@@ -7,6 +8,14 @@ namespace Components
     [Serializable]
     public class UIntProperty : PropertyBase<uint>
     {
+        public UIntProperty(uint value) : base(value)
+        {
+        }
+
+        public UIntProperty()
+        {
+        }
+
         public override void Serialize(BinaryWriter writer)
         {
             writer.Write(Value);
@@ -21,19 +30,19 @@ namespace Components
         {
             return other is UIntProperty otherProperty && otherProperty.Value == Value;
         }
-
-        public UIntProperty(uint value) : base(value)
-        {
-        }
-        
-        public UIntProperty()
-        {
-        }
     }
-    
+
     [Serializable]
     public class UShortProperty : PropertyBase<ushort>
     {
+        public UShortProperty(ushort value) : base(value)
+        {
+        }
+
+        public UShortProperty()
+        {
+        }
+
         public override void Serialize(BinaryWriter writer)
         {
             writer.Write(Value);
@@ -48,19 +57,19 @@ namespace Components
         {
             return other is UShortProperty otherProperty && otherProperty.Value == Value;
         }
-
-        public UShortProperty(ushort value) : base(value)
-        {
-        }
-
-        public UShortProperty()
-        {
-        }
     }
 
     [Serializable]
     public class FloatProperty : PropertyBase<float>
     {
+        public FloatProperty(float value) : base(value)
+        {
+        }
+
+        public FloatProperty()
+        {
+        }
+
         public override void Serialize(BinaryWriter writer)
         {
             writer.Write(Value);
@@ -76,25 +85,35 @@ namespace Components
             return other is FloatProperty otherProperty && Mathf.Approximately(otherProperty.Value, Value);
         }
 
-        public FloatProperty(float value) : base(value)
+        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
         {
-        }
-        
-        public FloatProperty()
-        {
-        }
-
-        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation)
-        {
-            if (!(p1 is FloatProperty f1) || !(p2 is FloatProperty f2))
-                throw new ArgumentException("Properties are not the proper type!");
-            Value = Mathf.Lerp(f1, f2, interpolation);
+            if (field.IsDefined(typeof(CustomInterpolation))) return;
+            CheckInterpolatable(p1, p2, out PropertyBase<float> fp1, out PropertyBase<float> fp2);
+            float f1 = fp1, f2 = fp2;
+            if (field.IsDefined(typeof(Cyclic)))
+            {
+                var attribute = field.GetCustomAttribute<Cyclic>();
+                float range = attribute.maximum - attribute.minimum;
+                while (f1 > f2)
+                    f2 += range;
+                Value = attribute.minimum + Mathf.Repeat(Mathf.Lerp(f1, f2, interpolation), range);
+            }
+            else
+                Value = Mathf.Lerp(f1, f2, interpolation);
         }
     }
 
     [Serializable]
     public class ByteProperty : PropertyBase<byte>
     {
+        public ByteProperty(byte value) : base(value)
+        {
+        }
+
+        public ByteProperty()
+        {
+        }
+
         public override void Serialize(BinaryWriter writer)
         {
             writer.Write(Value);
@@ -109,19 +128,23 @@ namespace Components
         {
             return other is ByteProperty otherProperty && otherProperty.Value == Value;
         }
-
-        public ByteProperty(byte value) : base(value)
-        {
-        }
-        
-        public ByteProperty()
-        {
-        }
     }
 
     [Serializable]
     public class VectorProperty : PropertyBase<Vector3>
     {
+        public VectorProperty(Vector3 value) : base(value)
+        {
+        }
+
+        public VectorProperty(float x, float y, float z) : base(new Vector3(x, y, z))
+        {
+        }
+
+        public VectorProperty()
+        {
+        }
+
         public override void Serialize(BinaryWriter writer)
         {
             writer.Write(Value.x);
@@ -139,23 +162,10 @@ namespace Components
             return other is VectorProperty otherProperty && otherProperty.Value == Value;
         }
 
-        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation)
+        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
         {
-            if (!(p1 is VectorProperty v1) || !(p2 is VectorProperty v2))
-                throw new ArgumentException("Properties are not the proper type!");
+            CheckInterpolatable(p1, p2, out PropertyBase<Vector3> v1, out PropertyBase<Vector3> v2);
             Value = Vector3.Lerp(v1, v2, interpolation);
-        }
-
-        public VectorProperty(Vector3 value) : base(value)
-        {
-        }
-        
-        public VectorProperty(float x, float y, float z) : base(new Vector3(x, y, z))
-        {
-        }
-        
-        public VectorProperty()
-        {
         }
     }
 }

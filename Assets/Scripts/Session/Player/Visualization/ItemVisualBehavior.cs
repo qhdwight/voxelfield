@@ -46,7 +46,6 @@ namespace Session.Player.Visualization
         public ItemId Id => m_Id;
         public Vector3 Offset => m_Offset;
 
-        public ItemStatusVisualProperties[] StatusVisualProperties => m_StatusVisualProperties;
         public ItemModifier ModiferProperties { get; private set; }
 
         internal void SetupForPlayerAnimation(PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
@@ -77,20 +76,19 @@ namespace Session.Player.Visualization
         public void SampleEvents(ItemComponent component, ItemStatusVisualProperties statusVisualProperties)
         {
             ItemComponent lastItemComponent = m_PlayerItemAnimator.LastRenderedItemComponent;
-            float? lastStatusTime = null;
+            float? lastStatusElapsed = null;
             if (lastItemComponent != null)
             {
-                bool isSameAnimation = lastItemComponent.id == component.id && lastItemComponent.status.id == component.status.id,
-                     isAfter = component.status.elapsedTime > lastItemComponent.status.elapsedTime;
+                bool isSameAnimation = lastItemComponent.id == component.id && lastItemComponent.statusId == component.statusId,
+                     isAfter = component.statusElapsed > lastItemComponent.statusElapsed;
                 if (isSameAnimation && isAfter)
-                    lastStatusTime = lastItemComponent.status.elapsedTime;
+                    lastStatusElapsed = lastItemComponent.statusElapsed;
             }
             ItemStatusVisualProperties.AnimationEvent[] animationEvents = statusVisualProperties.animationEvents;
             foreach (ItemStatusVisualProperties.AnimationEvent animationEvent in animationEvents)
             {
-                bool shouldDoEvent = lastStatusTime != component.status.elapsedTime
-                                  && (!lastStatusTime.HasValue || lastStatusTime.Value < animationEvent.time)
-                                  && component.status.elapsedTime >= animationEvent.time;
+                bool shouldDoEvent = (!lastStatusElapsed.HasValue || lastStatusElapsed.Value < animationEvent.time)
+                                  && component.statusElapsed >= animationEvent.time;
                 if (!shouldDoEvent) continue;
                 if (animationEvent.audioSource) animationEvent.audioSource.PlayOneShot(animationEvent.audioSource.clip);
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
@@ -130,6 +128,6 @@ namespace Session.Player.Visualization
                 meshRenderer.enabled = isVisible;
         }
 
-        public ItemStatusVisualProperties GetStatusVisualProperties(ItemComponent itemComponent) => m_StatusToVisualProperties[(ItemStatusId) itemComponent.status.id.Value];
+        public ItemStatusVisualProperties GetStatusVisualProperties(ItemComponent itemComponent) => m_StatusToVisualProperties[(ItemStatusId) itemComponent.statusId.Value];
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using Components;
 using Session.Items;
+using Session.Items.Modifiers;
+using UnityEngine;
 
 // ReSharper disable UnassignedField.Global
 
@@ -9,7 +11,7 @@ namespace Session.Player.Components
     [Serializable]
     public class PlayerComponent : ComponentBase
     {
-        [NoInterpolate] public ByteProperty health;
+        [NoInterpolation] public ByteProperty health;
         public PlayerInventoryComponent inventory;
         public VectorProperty position;
         public FloatProperty yaw, pitch;
@@ -19,17 +21,10 @@ namespace Session.Player.Components
     }
 
     [Serializable]
-    public class ItemStatusComponent : ComponentBase
-    {
-        public FloatProperty elapsedTime;
-        public ByteProperty id;
-    }
-
-    [Serializable]
     public class GunStatusComponent : ComponentBase
     {
         public ByteProperty aimStatus;
-        public FloatProperty aimStatusElapsedTime;
+        public FloatProperty aimStatusElapsed;
         public UShortProperty ammoInMag, ammoInReserve;
     }
 
@@ -38,7 +33,33 @@ namespace Session.Player.Components
     {
         public GunStatusComponent gunStatus;
         public ByteProperty id;
-        public ItemStatusComponent status;
+        [CustomInterpolation] public FloatProperty statusElapsed;
+        [CustomInterpolation] public ByteProperty statusId;
+
+        public override void InterpolateFrom(object c1, object c2, float interpolation)
+        {
+            if (!(c1 is ItemComponent i1) || !(c2 is ItemComponent i2)) return;
+            var s1 = (ItemStatusId) i1.statusId.Value;
+            var itemId1 = (ItemId) i1.id.Value;
+            if (itemId1 == ItemId.None) return;
+            ItemStatusModiferProperties sp1 = ItemManager.Singleton.GetModifier(itemId1).GetStatusModifierProperties(s1);
+            float d1 = sp1.duration,
+                  e1 = i1.statusElapsed,
+                  e2 = i2.statusElapsed;
+            bool isAligned = e1 < e2;
+            if (!isAligned) e2 += d1;
+            float interpolatedStatusElapsed = Mathf.Lerp(e1, e2, interpolation);
+            byte interpolatedStatusId;
+            if (e2 > d1)
+            {
+                interpolatedStatusElapsed -= d1;
+                interpolatedStatusId = i2.statusId;
+            }
+            else
+                interpolatedStatusId = i1.statusId;
+            statusId.Value = interpolatedStatusId;
+            statusElapsed.Value = interpolatedStatusElapsed;
+        }
     }
 
     [Serializable]

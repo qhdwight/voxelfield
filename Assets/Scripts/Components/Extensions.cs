@@ -19,7 +19,7 @@ namespace Components
         {
             return type.IsSubclassOf(typeof(ArrayPropertyBase));
         }
-        
+
         internal static void Navigate(Action<FieldInfo, PropertyBase> visitProperty, object o)
         {
             var @object = new TriArray<object> {[0] = o};
@@ -32,13 +32,16 @@ namespace Components
             Navigate((field, properties) => visitProperty(field, properties[0], properties[1]), zipped, 2);
         }
 
-        internal static void NavigateZipped(Action<FieldInfo, PropertyBase, PropertyBase, PropertyBase> visitProperty, object o1, object o2, object o3)
+        internal static void NavigateZipped(Action<FieldInfo, PropertyBase, PropertyBase, PropertyBase> visitProperty, object o1, object o2, object o3,
+                                            Action<ComponentBase, ComponentBase, ComponentBase> visitComponent = null)
         {
             var zipped = new TriArray<object> {[0] = o1, [1] = o2, [2] = o3};
-            Navigate((field, properties) => visitProperty(field, properties[0], properties[1], properties[2]), zipped, 3);
+            Navigate((field, properties) => visitProperty(field, properties[0], properties[1], properties[2]), zipped, 3,
+                     visitComponent == null ? (Action<TriArray<ComponentBase>>) null : components => visitComponent(components[0], components[1], components[2]));
         }
 
-        private static void Navigate(Action<FieldInfo, TriArray<PropertyBase>> visitProperty, in TriArray<object> zipped, int size)
+        private static void Navigate(Action<FieldInfo, TriArray<PropertyBase>> visitProperty, in TriArray<object> zipped, int size,
+                                     Action<TriArray<ComponentBase>> visitComponent = null)
         {
             void NavigateRecursively(in TriArray<object> _zipped, Type _type, FieldInfo _field)
             {
@@ -50,6 +53,13 @@ namespace Components
                         zippedReferencesCopy[i] = _zipped[i];
                 if (_type.IsComponent())
                 {
+                    if (visitComponent != null)
+                    {
+                        var zippedComponents = new TriArray<ComponentBase>();
+                        for (var i = 0; i < size; i++)
+                            zippedComponents[i] = (ComponentBase) _zipped[i];
+                        visitComponent(zippedComponents);
+                    }
                     foreach (FieldInfo field in Cache.GetFieldInfo(_type))
                     {
                         Type fieldType = field.FieldType;

@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace Components.Tests
 {
     internal class OuterComponent : ComponentBase

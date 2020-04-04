@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -25,7 +25,7 @@ namespace Components
         
         public abstract void SetFromIfPresent(PropertyBase other);
 
-        public abstract void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation);
+        public abstract void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null);
     }
 
     [Serializable]
@@ -105,7 +105,15 @@ namespace Components
                 Value = otherProperty.m_Value;
         }
 
-        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation)
+        protected void CheckInterpolatable(PropertyBase p1, PropertyBase p2, out PropertyBase<T> op1, out PropertyBase<T> op2)
+        {
+            if (!(p1 is PropertyBase<T>) || !(p2 is PropertyBase<T>))
+                throw new ArgumentException("Properties are not the proper type!");
+            op1 = (PropertyBase<T>) p1;
+            op2 = (PropertyBase<T>) p2;
+        }
+
+        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
         {
             SetFromIfPresent(p2);
         }
