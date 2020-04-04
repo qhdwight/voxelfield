@@ -32,7 +32,7 @@ namespace Session.Player.Visualization
     {
         [SerializeField] private byte m_Id = default;
         [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default;
-        [SerializeField] private Vector3 m_Offset = default;
+        [SerializeField] private Vector3 m_Offset = default, m_TpvOffset = default;
 
         private AnimationClipPlayable[] m_Animations;
         private PlayableGraph m_PlayerGraph;
@@ -42,6 +42,7 @@ namespace Session.Player.Visualization
 
         public byte Id => m_Id;
         public Vector3 Offset => m_Offset;
+        public Vector3 TpvOffset => m_TpvOffset;
 
         public ItemModifierBase ModiferProperties { get; private set; }
 
@@ -107,23 +108,16 @@ namespace Session.Player.Visualization
             m_PlayerGraph.Evaluate();
         }
 
-        public void SetRenderingMode(int layer, ShadowCastingMode shadowCastingMode)
+        public void SetRenderingMode(bool isEnabled, ShadowCastingMode shadowCastingMode)
         {
             if (m_Renders == null) return;
             foreach (Renderer meshRenderer in m_Renders)
             {
-                meshRenderer.gameObject.layer = layer;
+                meshRenderer.enabled = isEnabled;
                 meshRenderer.shadowCastingMode = shadowCastingMode;
             }
         }
-
-        public void SetVisible(bool isVisible)
-        {
-            if (m_Renders == null) return;
-            foreach (Renderer meshRenderer in m_Renders)
-                meshRenderer.enabled = isVisible;
-        }
-
+        
         public ItemStatusVisualProperties GetStatusVisualProperties(ItemComponent itemComponent) => m_StatusVisualProperties[itemComponent.statusId.Value];
     }
 }

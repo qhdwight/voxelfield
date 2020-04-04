@@ -147,6 +147,7 @@ MonoBehaviour:
     animationEvents: []
     isReverseAnimation: 0
   m_Offset: {x: 0.297, y: -0.344, z: 0.213}
+  m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
 --- !u!1001 &7021715047206297980
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -89,7 +89,7 @@ namespace Session.Items.Modifiers
 
         protected virtual void FinishStatus(ItemComponent itemComponent, PlayerCommandsComponent commands)
         {
-            byte statusId = itemComponent.id;
+            byte statusId = itemComponent.statusId;
             switch (statusId)
             {
                 case ItemStatusId.Equipping:

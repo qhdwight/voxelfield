@@ -6,6 +6,8 @@ using Session.Player.Visualization;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 using Util;
 
 namespace Session.Items.Visuals
@@ -16,9 +18,9 @@ namespace Session.Items.Visuals
         public const int OutputIndex = 0;
 
         [SerializeField] private string m_GraphName = default;
-        [SerializeField] private Renderer m_ArmsRenderer = default;
+        [SerializeField] private Transform m_TpvArmsRotator = default;
         [SerializeField] protected bool m_IsFpv;
-        [SerializeField] protected Transform m_OffsetTaker;
+        [SerializeField] private Renderer m_FpvArmsRenderer = default;
 
         private Animator m_Animator;
         private PlayableGraph m_Graph;
@@ -45,8 +47,19 @@ namespace Session.Items.Visuals
             ItemComponent itemComponent = playerComponent.inventory.ActiveItemComponent;
             float duration = m_Visuals.ModiferProperties.GetStatusModifierProperties(itemComponent.statusId).duration,
                   interpolation = itemComponent.statusElapsed / duration;
-            if (m_ArmsRenderer) m_ArmsRenderer.enabled = isLocalPlayer && m_IsFpv;
-            SampleItemAnimation(itemComponent, playerComponent.pitch, interpolation);
+            if (m_FpvArmsRenderer)
+            {
+                m_FpvArmsRenderer.enabled = isLocalPlayer && m_IsFpv;
+                m_FpvArmsRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            }
+            SampleItemAnimation(itemComponent, interpolation);
+            if (m_IsFpv)
+                m_Visuals.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
+            else
+                m_Visuals.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
+            if (!m_TpvArmsRotator) return;
+            const float armClamp = 60.0f;
+            m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(playerComponent.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
         }
 
         private static bool RequiresItemVisuals(PlayerComponent component)
@@ -68,11 +81,12 @@ namespace Session.Items.Visuals
             ItemVisualBehavior newVisuals = ItemManager.Singleton.ObtainVisuals(newItemId, this, m_Graph);
             newVisuals.transform.SetParent(transform, false);
             m_Visuals = newVisuals;
-            if (m_OffsetTaker) m_OffsetTaker.localPosition = newVisuals.Offset;
+            if (m_IsFpv) transform.localPosition = newVisuals.Offset;
+            else newVisuals.transform.localPosition = newVisuals.TpvOffset;
             return newVisuals;
         }
 
-        private void SampleItemAnimation(ItemComponent itemComponent, float pitch, float statusInterpolation)
+        private void SampleItemAnimation(ItemComponent itemComponent, float statusInterpolation)
         {
             ItemStatusVisualProperties statusVisualProperties = m_Visuals.GetStatusVisualProperties(itemComponent);
             float clampedInterpolation = Mathf.Clamp01(statusInterpolation);

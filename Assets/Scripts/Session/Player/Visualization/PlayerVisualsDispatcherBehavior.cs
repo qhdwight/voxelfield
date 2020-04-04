@@ -12,6 +12,7 @@ namespace Session.Player.Visualization
         private Camera m_Camera;
         [SerializeField] private Transform m_Head = default;
         [SerializeField] private Renderer[] m_Renders = default;
+        [SerializeField] private bool m_IsDebugRender = default;
 
         private PlayerVisualsBehaviorBase[] m_Visuals;
 
@@ -46,7 +47,7 @@ namespace Session.Player.Visualization
             foreach (Renderer render in m_Renders)
             {
                 render.enabled = isVisible;
-                render.shadowCastingMode = isListenerEnabled ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
+                render.shadowCastingMode = isListenerEnabled && !m_IsDebugRender ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             }
             gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
         }
