@@ -11,7 +11,9 @@ namespace Input
         Backward,
         Left,
         Right,
-        Jump
+        Jump,
+        UseOne,
+        UseTwo
     }
 
     public enum MouseMovement
@@ -39,7 +41,9 @@ namespace Input
                     [InputType.Backward] = KeyCode.S,
                     [InputType.Left] = KeyCode.A,
                     [InputType.Right] = KeyCode.D,
-                    [InputType.Jump] = KeyCode.Space
+                    [InputType.Jump] = KeyCode.Space,
+                    [InputType.UseOne] = KeyCode.Mouse0,
+                    [InputType.UseTwo] = KeyCode.Mouse1
                 }
             };
         }

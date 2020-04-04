@@ -291,7 +291,7 @@ MonoBehaviour:
       m_Value: 0
     inventory:
       activeIndex:
-        m_HasValue: 1
+        m_HasValue: 0
         m_Value: 1
       wantedIndex:
         m_HasValue: 0
@@ -312,14 +312,14 @@ MonoBehaviour:
               m_HasValue: 0
               m_Value: 0
           id:
-            m_HasValue: 1
+            m_HasValue: 0
             m_Value: 1
           status:
             elapsedTime:
-              m_HasValue: 1
+              m_HasValue: 0
               m_Value: 0
             id:
-              m_HasValue: 1
+              m_HasValue: 0
               m_Value: 2
         - gunStatus:
             aimStatus:
@@ -548,7 +548,7 @@ GameObject:
   - component: {fileID: 754540771}
   - component: {fileID: 754540772}
   m_Layer: 0
-  m_Name: ItemManager
+  m_Name: Item Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

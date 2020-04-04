@@ -8,6 +8,8 @@ namespace Session
     {
         [Range(0.0f, 1.0f)] public float Rollback;
 
+        public PlayerComponent Current;
+
         public SessionSettingsComponent Settings;
 
         public PlayerComponent RenderOverride;

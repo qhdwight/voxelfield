@@ -102,7 +102,7 @@ namespace Components
             if (!(other is PropertyBase<T> otherProperty))
                 throw new ArgumentException("Other property is not of the same type");
             if (otherProperty.HasValue)
-                m_Value = otherProperty.m_Value;
+                Value = otherProperty.m_Value;
         }
 
         public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation)

@@ -1,4 +1,5 @@
 using System;
+using Session.Items.Modifiers;
 using Session.Player.Components;
 using Session.Player.Modifiers;
 using Session.Player.Visualization;
@@ -7,7 +8,7 @@ using UnityEngine.Animations;
 using UnityEngine.Playables;
 using Util;
 
-namespace Session.Items
+namespace Session.Items.Visuals
 {
     [Serializable, RequireComponent(typeof(Animator), typeof(ArmIk))]
     public class PlayerItemAnimatorBehavior : PlayerVisualsBehaviorBase

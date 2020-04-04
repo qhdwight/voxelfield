@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Collections;
+using Session.Items.Modifiers;
+using Session.Items.Visuals;
 using Session.Player.Visualization;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -12,15 +14,15 @@ namespace Session.Items
     public class ItemManager : SingletonBehavior<ItemManager>
     {
         private Dictionary<ItemId, ItemVisualBehavior> m_ItemVisualPrefabs;
-        private Dictionary<ItemId, ItemModiferProperties> m_ModifierStatusProperties;
+        private Dictionary<ItemId, ItemModifier> m_ItemModifiers;
         private Dictionary<ItemId, Pool<ItemVisualBehavior>> m_ItemVisualsPool;
 
         protected override void Awake()
         {
             base.Awake();
-            m_ModifierStatusProperties = Resources.LoadAll<ItemModiferProperties>($"Modifiers")
-                                                  .ToDictionary(properties => properties.id, properties => properties);
-            m_ItemVisualPrefabs = Resources.LoadAll<GameObject>($"Visuals")
+            m_ItemModifiers = Resources.LoadAll<ItemModifier>("Modifiers")
+                                       .ToDictionary(properties => properties.id, properties => properties);
+            m_ItemVisualPrefabs = Resources.LoadAll<GameObject>("Visuals")
                                            .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
                                            .Where(visuals => visuals != null)
                                            .ToDictionary(visuals => visuals.Id, visuals => visuals);
@@ -40,7 +42,7 @@ namespace Session.Items
         {
             Pool<ItemVisualBehavior> pool = m_ItemVisualsPool[itemId];
             ItemVisualBehavior visual = pool.Obtain();
-            visual.Setup(playerItemAnimator, playerGraph);
+            visual.SetupForPlayerAnimation(playerItemAnimator, playerGraph);
             return visual;
         }
 
@@ -51,9 +53,9 @@ namespace Session.Items
             pool.Return(visual);
         }
 
-        public ItemModiferProperties GetModifierProperties(ItemId itemId)
+        public ItemModifier GetModifier(ItemId itemId)
         {
-            return m_ModifierStatusProperties[itemId];
+            return m_ItemModifiers[itemId];
         }
     }
 }

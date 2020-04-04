@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using Session.Player;
 using Session.Player.Components;
 using UnityEngine;
+using Util;
 
-namespace Session.Items
+namespace Session.Items.Modifiers
 {
     public enum ItemStatusId
     {
@@ -19,14 +21,28 @@ namespace Session.Items
         None,
         TestingRifle,
     }
-
-    public abstract class ItemModifierBase : IModifierBase<ItemComponent>
+    
+    [Serializable]
+    public class ItemStatusModiferProperties
     {
-        private readonly ItemModiferProperties m_ModiferProperties;
+        public float duration;
+    }
 
-        internal ItemModifierBase(ItemModiferProperties modiferProperties)
+    [CreateAssetMenu(fileName = "Item", menuName = "Item/Item", order = 0)]
+    public class ItemModifier : ScriptableObject, IModifierBase<ItemComponent>
+    {
+        public ItemId id;
+        public string itemName;
+        public float movementFactor = 1.0f;
+        [SerializeField] private ItemStatusModiferProperties[] m_StatusModiferProperties = default;
+
+        private Dictionary<ItemStatusId, ItemStatusModiferProperties> m_StatusModifierProperties;
+
+        public ItemStatusModiferProperties GetStatusModifierProperties(ItemStatusId statusId) => m_StatusModifierProperties[statusId];
+
+        private void OnEnable()
         {
-            m_ModiferProperties = modiferProperties;
+            m_StatusModifierProperties = m_StatusModiferProperties.ToEnumDictionary<ItemStatusId, ItemStatusModiferProperties>();
         }
 
         public void ModifyTrusted(ItemComponent componentToModify, PlayerCommandsComponent commands)
@@ -39,9 +55,8 @@ namespace Session.Items
             float duration = commands.duration;
             itemStatusComponent.elapsedTime.Value += duration;
             StatusTick(commands);
-            Func<byte, ItemStatusModiferProperties> obatiner = statusId => m_ModiferProperties.GetStatusModifierProperties((ItemStatusId) statusId);
             ItemStatusModiferProperties modifierProperties;
-            while (itemStatusComponent.elapsedTime > (modifierProperties = obatiner(itemStatusComponent.id)).duration)
+            while (itemStatusComponent.elapsedTime > (modifierProperties = m_StatusModifierProperties[(ItemStatusId) itemStatusComponent.id.Value]).duration)
             {
                 float statusElapsedTime = itemStatusComponent.elapsedTime;
                 FinishStatus(itemStatusComponent, commands);
@@ -102,7 +117,10 @@ namespace Session.Items
         {
         }
 
-        protected abstract void PrimaryUse();
+        protected virtual void PrimaryUse()
+        {
+            
+        }
 
         protected virtual void StatusTick(PlayerCommandsComponent commands)
         {

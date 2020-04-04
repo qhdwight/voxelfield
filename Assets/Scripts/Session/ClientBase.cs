@@ -1,6 +1,7 @@
 using System;
 using Collections;
 using Components;
+using Session.Items.Modifiers;
 using Session.Player;
 using Session.Player.Components;
 
@@ -53,9 +54,14 @@ namespace Session
             float duration = time - lastTickTime;
             predictedPlayerComponent.duration.Value = duration;
             predictedPlayerComponent.component.health.Value = 100;
+            PlayerInventoryComponent predictedInventory = predictedPlayerComponent.component.inventory;
+            predictedInventory.activeIndex.Value = 1;
+            predictedInventory.wantedIndex.Value = 1;
+            predictedInventory.itemComponents[0].id.Value = (byte) ItemId.TestingRifle;
             m_Commands.duration.Value = duration;
             Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);
             PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedPlayerComponent.component, m_Commands);
+            DebugBehavior.Singleton.Current = predictedPlayerComponent.component;
         }
     }
 }

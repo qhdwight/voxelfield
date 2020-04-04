@@ -60,9 +60,12 @@
             <e p="IModifierBase.cs" t="Include" />
             <e p="Items" t="Include">
               <e p="ItemManager.cs" t="Include" />
-              <e p="ItemModiferProperties.cs" t="Include" />
-              <e p="ItemModifierBase.cs" t="Include" />
-              <e p="PlayerItemAnimatorBehavior.cs" t="Include" />
+              <e p="Modifiers" t="Include">
+                <e p="ItemModifier.cs" t="Include" />
+              </e>
+              <e p="Visuals" t="Include">
+                <e p="PlayerItemAnimatorBehavior.cs" t="Include" />
+              </e>
             </e>
             <e p="Player" t="Include">
               <e p="Components" t="Include">

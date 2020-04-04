@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Session.Items;
+using Session.Items.Modifiers;
+using Session.Items.Visuals;
 using Session.Player.Components;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -45,9 +47,9 @@ namespace Session.Player.Visualization
         public Vector3 Offset => m_Offset;
 
         public ItemStatusVisualProperties[] StatusVisualProperties => m_StatusVisualProperties;
-        public ItemModiferProperties ModiferProperties { get; private set; }
+        public ItemModifier ModiferProperties { get; private set; }
 
-        internal void Setup(PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
+        internal void SetupForPlayerAnimation(PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {
             m_PlayerItemAnimator = playerItemAnimator;
             m_PlayerGraph = playerGraph;
@@ -55,7 +57,7 @@ namespace Session.Player.Visualization
             playerItemAnimator.ArmIk.SetTargets(transform.Find("IK.L"), transform.Find("IK.R"));
             m_Mixer = AnimationMixerPlayable.Create(playerGraph, m_StatusVisualProperties.Length);
             m_Animations = new AnimationClipPlayable[m_StatusVisualProperties.Length];
-            ModiferProperties = ItemManager.Singleton.GetModifierProperties(m_Id);
+            ModiferProperties = ItemManager.Singleton.GetModifier(m_Id);
             m_StatusToVisualProperties = m_StatusVisualProperties.ToEnumDictionary<ItemStatusId, ItemStatusVisualProperties>();
             for (var statusIndex = 0; statusIndex < m_StatusVisualProperties.Length; statusIndex++)
             {
@@ -69,7 +71,7 @@ namespace Session.Player.Visualization
 
         internal override void Cleanup()
         {
-            m_PlayerGraph.DestroySubgraph(m_Mixer);
+            if (m_PlayerGraph.IsValid()) m_PlayerGraph.DestroySubgraph(m_Mixer);
         }
 
         public void SampleEvents(ItemComponent component, ItemStatusVisualProperties statusVisualProperties)
