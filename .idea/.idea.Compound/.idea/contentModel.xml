@@ -61,7 +61,9 @@
             <e p="Items" t="Include">
               <e p="ItemManager.cs" t="Include" />
               <e p="Modifiers" t="Include">
-                <e p="ItemModifier.cs" t="Include" />
+                <e p="GunModifier.cs" t="Include" />
+                <e p="GunWithMagazineModifier.cs" t="Include" />
+                <e p="ItemModifierBase.cs" t="Include" />
               </e>
               <e p="Visuals" t="Include">
                 <e p="PlayerItemAnimatorBehavior.cs" t="Include" />

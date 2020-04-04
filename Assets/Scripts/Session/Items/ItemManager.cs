@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Collections;
 using Session.Items.Modifiers;
@@ -13,34 +11,32 @@ namespace Session.Items
 {
     public class ItemManager : SingletonBehavior<ItemManager>
     {
-        private Dictionary<ItemId, ItemVisualBehavior> m_ItemVisualPrefabs;
-        private Dictionary<ItemId, ItemModifier> m_ItemModifiers;
-        private Dictionary<ItemId, Pool<ItemVisualBehavior>> m_ItemVisualsPool;
+        private ItemVisualBehavior[] m_ItemVisualPrefabs;
+        private ItemModifierBase[] m_ItemModifiers;
+        private Pool<ItemVisualBehavior>[] m_ItemVisualsPool;
 
         protected override void Awake()
         {
             base.Awake();
-            m_ItemModifiers = Resources.LoadAll<ItemModifier>("Modifiers")
-                                       .ToDictionary(properties => properties.id, properties => properties);
+            m_ItemModifiers = Resources.LoadAll<ItemModifierBase>("Modifiers")
+                                       .OrderBy(modifier => modifier.id).ToArray();
             m_ItemVisualPrefabs = Resources.LoadAll<GameObject>("Visuals")
                                            .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
                                            .Where(visuals => visuals != null)
-                                           .ToDictionary(visuals => visuals.Id, visuals => visuals);
-            var items = (ItemId[]) Enum.GetValues(typeof(ItemId));
-            m_ItemVisualsPool = items.Where(item => item != ItemId.None)
-                                     .ToDictionary(item => item,
-                                                   item => new Pool<ItemVisualBehavior>(0, () =>
-                                                   {
-                                                       ItemVisualBehavior visualsPrefab = m_ItemVisualPrefabs[item],
-                                                                          visualsInstance = Instantiate(visualsPrefab);
-                                                       visualsInstance.name = visualsPrefab.name;
-                                                       return visualsInstance.GetComponent<ItemVisualBehavior>();
-                                                   }));
+                                           .OrderBy(visuals => visuals.Id).ToArray();
+            m_ItemVisualsPool = Enumerable.Range(1, ItemId.Last)
+                                          .Select(id => new Pool<ItemVisualBehavior>(0, () =>
+                                           {
+                                               ItemVisualBehavior visualsPrefab = m_ItemVisualPrefabs[id - 1],
+                                                                  visualsInstance = Instantiate(visualsPrefab);
+                                               visualsInstance.name = visualsPrefab.name;
+                                               return visualsInstance.GetComponent<ItemVisualBehavior>();
+                                           })).ToArray();
         }
 
-        public ItemVisualBehavior ObtainVisuals(ItemId itemId, PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
+        public ItemVisualBehavior ObtainVisuals(byte itemId, PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {
-            Pool<ItemVisualBehavior> pool = m_ItemVisualsPool[itemId];
+            Pool<ItemVisualBehavior> pool = m_ItemVisualsPool[itemId - 1];
             ItemVisualBehavior visual = pool.Obtain();
             visual.SetupForPlayerAnimation(playerItemAnimator, playerGraph);
             return visual;
@@ -48,14 +44,14 @@ namespace Session.Items
 
         public void ReturnVisuals(ItemVisualBehavior visual)
         {
-            Pool<ItemVisualBehavior> pool = m_ItemVisualsPool[visual.Id];
+            Pool<ItemVisualBehavior> pool = m_ItemVisualsPool[visual.Id - 1];
             visual.Cleanup();
             pool.Return(visual);
         }
 
-        public ItemModifier GetModifier(ItemId itemId)
+        public ItemModifierBase GetModifier(byte itemId)
         {
-            return m_ItemModifiers[itemId];
+            return m_ItemModifiers[itemId - 1];
         }
     }
 }

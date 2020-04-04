@@ -13,7 +13,7 @@ namespace Session.Player.Modifiers
         {
             base.ModifyChecked(componentToModify, commands);
             ItemComponent activeItemComponent = componentToModify.inventory.ActiveItemComponent;
-            ItemModifier modifier = ItemManager.Singleton.GetModifier((ItemId) activeItemComponent.id.Value);
+            ItemModifierBase modifier = ItemManager.Singleton.GetModifier(activeItemComponent.id);
             modifier.ModifyChecked(activeItemComponent, commands);
         }
 
@@ -25,7 +25,8 @@ namespace Session.Player.Modifiers
         {
             InputProvider input = InputProvider.Singleton;
             commandsToModify.SetInput(PlayerInput.UseOne, input.GetInput(InputType.UseOne));
-            commandsToModify.SetInput(PlayerInput.UseOne, input.GetInput(InputType.UseTwo));
+            commandsToModify.SetInput(PlayerInput.UseTwo, input.GetInput(InputType.UseTwo));
+            commandsToModify.SetInput(PlayerInput.Reload, input.GetInput(InputType.Reload));
         }
     }
 }

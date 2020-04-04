@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Session.Player.Modifiers
 {
     using PlayerModifier = ModifierBehaviorBase<PlayerComponent>;
-    
+
     [RequireComponent(typeof(PlayerCameraBehavior), typeof(PlayerMovement))]
     public class PlayerModifierDispatcherBehavior : MonoBehaviour
     {

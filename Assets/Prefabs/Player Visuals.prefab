@@ -287,8 +287,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
+  near clip plane: 0.05
+  far clip plane: 10
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -486,6 +486,36 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4381454792350094727, guid: 275f31b1df3f8f74db5e8ae99149e45c,
+        type: 3}
+      propertyPath: m_AABB.m_Center.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4381454792350094727, guid: 275f31b1df3f8f74db5e8ae99149e45c,
+        type: 3}
+      propertyPath: m_AABB.m_Center.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4381454792350094727, guid: 275f31b1df3f8f74db5e8ae99149e45c,
+        type: 3}
+      propertyPath: m_AABB.m_Center.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4381454792350094727, guid: 275f31b1df3f8f74db5e8ae99149e45c,
+        type: 3}
+      propertyPath: m_AABB.m_Extent.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4381454792350094727, guid: 275f31b1df3f8f74db5e8ae99149e45c,
+        type: 3}
+      propertyPath: m_AABB.m_Extent.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4381454792350094727, guid: 275f31b1df3f8f74db5e8ae99149e45c,
+        type: 3}
+      propertyPath: m_AABB.m_Extent.z
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6809147834031868275, guid: 275f31b1df3f8f74db5e8ae99149e45c,
         type: 3}

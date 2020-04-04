@@ -11,7 +11,8 @@ namespace Session.Player
         Left,
         Jump,
         UseOne,
-        UseTwo
+        UseTwo,
+        Reload
     }
 
     [Serializable]

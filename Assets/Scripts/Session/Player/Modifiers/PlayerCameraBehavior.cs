@@ -7,7 +7,7 @@ namespace Session.Player.Modifiers
     public class PlayerCameraBehavior : ModifierBehaviorBase<PlayerComponent>
     {
         [SerializeField] private float m_Sensitivity = 10.0f;
-        
+
         public override void ModifyTrusted(PlayerComponent componentToModify, PlayerCommandsComponent commands)
         {
             base.ModifyTrusted(componentToModify, commands);

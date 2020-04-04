@@ -43,7 +43,7 @@ namespace Session.Items.Visuals
             m_Visuals = SetupVisualItem(playerComponent);
             if (m_Visuals == null) return;
             ItemComponent itemComponent = playerComponent.inventory.ActiveItemComponent;
-            float duration = m_Visuals.ModiferProperties.GetStatusModifierProperties((ItemStatusId) itemComponent.statusId.Value).duration,
+            float duration = m_Visuals.ModiferProperties.GetStatusModifierProperties(itemComponent.statusId).duration,
                   interpolation = itemComponent.statusElapsed / duration;
             if (m_ArmsRenderer) m_ArmsRenderer.enabled = isLocalPlayer && m_IsFpv;
             SampleItemAnimation(itemComponent, playerComponent.pitch, interpolation);
@@ -51,8 +51,8 @@ namespace Session.Items.Visuals
 
         private static bool RequiresItemVisuals(PlayerComponent component)
         {
-            return component.inventory.activeIndex.Value != PlayerItemManagerModiferBehavior.NoneIndex
-                && (ItemId) component.inventory.ActiveItemComponent.id.Value != ItemId.None;
+            return component.inventory.activeIndex != PlayerItemManagerModiferBehavior.NoneIndex
+                && component.inventory.ActiveItemComponent.id != ItemId.None;
         }
 
         private ItemVisualBehavior SetupVisualItem(PlayerComponent playerComponent)
@@ -62,7 +62,7 @@ namespace Session.Items.Visuals
                 if (m_Visuals) ItemManager.Singleton.ReturnVisuals(m_Visuals);
                 return null;
             }
-            var newItemId = (ItemId) playerComponent.inventory.ActiveItemComponent.id.Value;
+            byte newItemId = playerComponent.inventory.ActiveItemComponent.id;
             if (m_Visuals && newItemId == m_Visuals.ModiferProperties.id) return m_Visuals;
             if (m_Visuals) ItemManager.Singleton.ReturnVisuals(m_Visuals); // We have existing visuals but they are the wrong item id
             ItemVisualBehavior newVisuals = ItemManager.Singleton.ObtainVisuals(newItemId, this, m_Graph);
@@ -77,7 +77,7 @@ namespace Session.Items.Visuals
             ItemStatusVisualProperties statusVisualProperties = m_Visuals.GetStatusVisualProperties(itemComponent);
             float clampedInterpolation = Mathf.Clamp01(statusInterpolation);
             if (statusVisualProperties.animationEvents != null) m_Visuals.SampleEvents(itemComponent, statusVisualProperties);
-            m_Visuals.SampleAnimation((ItemStatusId) itemComponent.statusId.Value, statusVisualProperties, clampedInterpolation);
+            m_Visuals.SampleAnimation(itemComponent.statusId, statusVisualProperties, clampedInterpolation);
         }
 
         internal override void Cleanup()

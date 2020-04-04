@@ -13,7 +13,8 @@ namespace Input
         Right,
         Jump,
         UseOne,
-        UseTwo
+        UseTwo,
+        Reload
     }
 
     public enum MouseMovement
@@ -43,7 +44,8 @@ namespace Input
                     [InputType.Right] = KeyCode.D,
                     [InputType.Jump] = KeyCode.Space,
                     [InputType.UseOne] = KeyCode.Mouse0,
-                    [InputType.UseTwo] = KeyCode.Mouse1
+                    [InputType.UseTwo] = KeyCode.Mouse1,
+                    [InputType.Reload] = KeyCode.R
                 }
             };
         }

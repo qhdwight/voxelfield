@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Session.Items;
 using Session.Items.Modifiers;
 using Session.Items.Visuals;
@@ -8,7 +7,6 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 using UnityEngine.Rendering;
-using Util;
 
 namespace Session.Player.Visualization
 {
@@ -32,7 +30,7 @@ namespace Session.Player.Visualization
     [SelectionBase]
     public class ItemVisualBehavior : PlayerVisualsBehaviorBase
     {
-        [SerializeField] private ItemId m_Id = default;
+        [SerializeField] private byte m_Id = default;
         [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default;
         [SerializeField] private Vector3 m_Offset = default;
 
@@ -41,12 +39,11 @@ namespace Session.Player.Visualization
         private AnimationMixerPlayable m_Mixer;
         private PlayerItemAnimatorBehavior m_PlayerItemAnimator;
         private Renderer[] m_Renders;
-        private Dictionary<ItemStatusId, ItemStatusVisualProperties> m_StatusToVisualProperties;
 
-        public ItemId Id => m_Id;
+        public byte Id => m_Id;
         public Vector3 Offset => m_Offset;
 
-        public ItemModifier ModiferProperties { get; private set; }
+        public ItemModifierBase ModiferProperties { get; private set; }
 
         internal void SetupForPlayerAnimation(PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {
@@ -57,7 +54,6 @@ namespace Session.Player.Visualization
             m_Mixer = AnimationMixerPlayable.Create(playerGraph, m_StatusVisualProperties.Length);
             m_Animations = new AnimationClipPlayable[m_StatusVisualProperties.Length];
             ModiferProperties = ItemManager.Singleton.GetModifier(m_Id);
-            m_StatusToVisualProperties = m_StatusVisualProperties.ToEnumDictionary<ItemStatusId, ItemStatusVisualProperties>();
             for (var statusIndex = 0; statusIndex < m_StatusVisualProperties.Length; statusIndex++)
             {
                 AnimationClip clip = m_StatusVisualProperties[statusIndex].animationClip;
@@ -96,7 +92,7 @@ namespace Session.Player.Visualization
             m_PlayerItemAnimator.LastRenderedItemComponent = component;
         }
 
-        public void SampleAnimation(ItemStatusId statusId, ItemStatusVisualProperties statusVisualProperties, float interpolation)
+        public void SampleAnimation(byte statusId, ItemStatusVisualProperties statusVisualProperties, float interpolation)
         {
             AnimationClip animationClip = statusVisualProperties.animationClip;
             if (!animationClip)
@@ -128,6 +124,6 @@ namespace Session.Player.Visualization
                 meshRenderer.enabled = isVisible;
         }
 
-        public ItemStatusVisualProperties GetStatusVisualProperties(ItemComponent itemComponent) => m_StatusToVisualProperties[(ItemStatusId) itemComponent.statusId.Value];
+        public ItemStatusVisualProperties GetStatusVisualProperties(ItemComponent itemComponent) => m_StatusVisualProperties[itemComponent.statusId.Value];
     }
 }

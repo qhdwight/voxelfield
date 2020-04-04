@@ -143,6 +143,9 @@ MonoBehaviour:
   - animationClip: {fileID: 0}
     animationEvents: []
     isReverseAnimation: 0
+  - animationClip: {fileID: 7400000, guid: 5eb60bc330dafa948b0e18deaceedf73, type: 2}
+    animationEvents: []
+    isReverseAnimation: 0
   m_Offset: {x: 0.297, y: -0.344, z: 0.213}
 --- !u!1001 &7021715047206297980
 PrefabInstance:

@@ -39,8 +39,8 @@ namespace Session.Player.Components
         public override void InterpolateFrom(object c1, object c2, float interpolation)
         {
             if (!(c1 is ItemComponent i1) || !(c2 is ItemComponent i2)) return;
-            var s1 = (ItemStatusId) i1.statusId.Value;
-            var itemId1 = (ItemId) i1.id.Value;
+            byte s1 = i1.statusId.Value,
+                 itemId1 = i1.id.Value;
             if (itemId1 == ItemId.None) return;
             ItemStatusModiferProperties sp1 = ItemManager.Singleton.GetModifier(itemId1).GetStatusModifierProperties(s1);
             float d1 = sp1.duration,
