@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 890536645}
   m_LocalRotation: {x: -0.00012221279, y: 0.00012221279, z: 0.70710677, w: 0.70710677}
-  m_LocalPosition: {x: 0.000000007168671, y: 0.10399997, z: 0.36299965}
+  m_LocalPosition: {x: 0.000000007168671, y: 0.08200003, z: 0.12899968}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2596483993728092774}
@@ -82,7 +82,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1912571479}
   m_LocalRotation: {x: -0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0.0008, y: 0.13099985, z: 0.15099996}
+  m_LocalPosition: {x: 0.0008, y: 0.108999945, z: -0.08300007}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2596483993728092774}
@@ -123,17 +123,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1320620905993369717}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4c898dbd171e48e0a7a9c2712caf7832, type: 3}
+  m_Script: {fileID: 11500000, guid: b0087249ee481b24abd1461b8b5158a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Id: 1
   m_StatusVisualProperties:
-  - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
-    animationEvents: []
-    isReverseAnimation: 0
-  - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
-    animationEvents: []
-    isReverseAnimation: 1
   - animationClip: {fileID: 7400000, guid: b05fe9f9a73cf8c4980b2dc16fbf0eb7, type: 2}
     animationEvents: []
     isReverseAnimation: 0
@@ -146,7 +140,17 @@ MonoBehaviour:
   - animationClip: {fileID: 7400000, guid: 5eb60bc330dafa948b0e18deaceedf73, type: 2}
     animationEvents: []
     isReverseAnimation: 0
-  m_Offset: {x: 0.297, y: -0.344, z: 0.213}
+  - animationClip: {fileID: 0}
+    animationEvents: []
+    isReverseAnimation: 0
+  m_EquipStatusVisualProperties:
+  - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
+    animationEvents: []
+    isReverseAnimation: 1
+  - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
+    animationEvents: []
+    isReverseAnimation: 0
+  m_FpvOffset: {x: 0.297, y: -0.344, z: 0.213}
   m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
 --- !u!1001 &7021715047206297980
 PrefabInstance:

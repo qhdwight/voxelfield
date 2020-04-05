@@ -26,10 +26,10 @@
             <e p="Serializer.cs" t="Include" />
             <e p="Tests" t="Include">
               <e p="Common.cs" t="Include" />
+              <e p="ComponentTests.asmdef" t="Include" />
               <e p="CopierTests.cs" t="Include" />
               <e p="InterpolatorTests.cs" t="Include" />
               <e p="MergeTests.cs" t="Include" />
-              <e p="SerializationTests.asmdef" t="Include" />
               <e p="SerializerTests.cs" t="Include" />
             </e>
           </e>
@@ -61,12 +61,12 @@
             <e p="Items" t="Include">
               <e p="ItemManager.cs" t="Include" />
               <e p="Modifiers" t="Include">
-                <e p="GunModifier.cs" t="Include" />
+                <e p="GunModifierBase.cs" t="Include" />
                 <e p="GunWithMagazineModifier.cs" t="Include" />
                 <e p="ItemModifierBase.cs" t="Include" />
               </e>
               <e p="Visuals" t="Include">
-                <e p="PlayerItemAnimatorBehavior.cs" t="Include" />
+                <e p="ItemVisualBehavior.cs" t="Include" />
               </e>
             </e>
             <e p="Player" t="Include">
@@ -83,7 +83,7 @@
               <e p="PlayerCommandsComponent.cs" t="Include" />
               <e p="PlayerManager.cs" t="Include" />
               <e p="Visualization" t="Include">
-                <e p="ItemVisualBehavior.cs" t="Include" />
+                <e p="PlayerItemAnimatorBehavior.cs" t="Include" />
                 <e p="PlayerItemManagerVisualsBehavior.cs" t="Include" />
                 <e p="PlayerVisualsBehaviorBase.cs" t="Include" />
                 <e p="PlayerVisualsDispatcherBehavior.cs" t="Include" />
@@ -95,8 +95,13 @@
             <e p="SessionBase.cs" t="Include" />
             <e p="SessionComponentBase.cs" t="Include" />
             <e p="SessionComponents.cs" t="Include" />
+            <e p="Tests" t="Include">
+              <e p="SessionTests.asmdef" t="Include" />
+              <e p="TestInterpolation.cs" t="Include" />
+            </e>
           </e>
           <e p="Util" t="Include">
+            <e p="AnalysisLogger.cs" t="Include" />
             <e p="ArmIK.cs" t="Include" />
             <e p="Extensions.cs" t="Include" />
             <e p="SingletonBehavior.cs" t="Include" />
@@ -106,6 +111,7 @@
       </e>
       <e p="Collections.csproj" t="IncludeRecursive" />
       <e p="Components.csproj" t="IncludeRecursive" />
+      <e p="ComponentTests.csproj" t="IncludeRecursive" />
       <e p="Compound.csproj" t="IncludeRecursive" />
       <e p="Compound.sln" t="IncludeFlat" />
       <e p="Input.csproj" t="IncludeRecursive" />
@@ -114,8 +120,8 @@
       <e p="obj" t="ExcludeRecursive" />
       <e p="packages" t="ExcludeRecursive" />
       <e p="Session.csproj" t="IncludeRecursive" />
+      <e p="SessionTests.csproj" t="IncludeRecursive" />
       <e p="Temp\bin" t="ExcludeRecursive" />
-      <e p="Tests.csproj" t="IncludeRecursive" />
       <e p="Util.csproj" t="IncludeRecursive" />
     </e>
   </component>

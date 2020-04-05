@@ -59,7 +59,7 @@ namespace Input
         {
             return UnityEngine.Input.GetKey(m_Settings.Get(type));
         }
-        
+
         public static float GetMouseInput(MouseMovement mouseMovement)
         {
             switch (mouseMovement)

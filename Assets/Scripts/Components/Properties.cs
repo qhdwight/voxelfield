@@ -87,7 +87,6 @@ namespace Components
 
         public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
         {
-            if (field.IsDefined(typeof(CustomInterpolation))) return;
             CheckInterpolatable(p1, p2, out PropertyBase<float> fp1, out PropertyBase<float> fp2);
             float f1 = fp1, f2 = fp2;
             if (field.IsDefined(typeof(Cyclic)))

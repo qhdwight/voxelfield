@@ -13,7 +13,7 @@ namespace Session.Player.Modifiers
         {
             base.ModifyChecked(componentToModify, commands);
             ItemComponent activeItemComponent = componentToModify.inventory.ActiveItemComponent;
-            ItemModifierBase modifier = ItemManager.Singleton.GetModifier(activeItemComponent.id);
+            ItemModifierBase modifier = ItemManager.GetModifier(activeItemComponent.id);
             modifier.ModifyChecked(activeItemComponent, commands);
         }
 

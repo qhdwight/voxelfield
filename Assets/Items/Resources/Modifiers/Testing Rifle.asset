@@ -16,11 +16,14 @@ MonoBehaviour:
   itemName: Testing Rifle
   movementFactor: 1
   m_StatusModiferProperties:
-  - duration: 0.1
-  - duration: 0.1
   - duration: 2
   - duration: 0.1
   - duration: 0
   - duration: 2
+  m_EquipStatusModiferProperties:
+  - duration: 2
+  - duration: 2
+  - duration: Infinity
+  - duration: Infinity
   m_MagSize: 30
   m_StartingAmmoInReserve: 90

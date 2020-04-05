@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using Session.Player;
 using Session.Player.Components;
 using UnityEngine;
-using Util;
 
 namespace Session.Items.Modifiers
 {
@@ -16,7 +14,7 @@ namespace Session.Items.Modifiers
 
     public static class ItemEquipStatusId
     {
-        public const byte Unequipping = 0, Equipping = 1, Ready = 2;
+        public const byte Unequipping = 0, Equipping = 1, Inactive = 2, Ready = 3;
     }
 
     public static class ItemId
@@ -38,9 +36,12 @@ namespace Session.Items.Modifiers
         public byte id;
         public string itemName;
         public float movementFactor = 1.0f;
-        [SerializeField] private ItemStatusModiferProperties[] m_StatusModiferProperties = default;
+        [SerializeField] private ItemStatusModiferProperties[] m_StatusModiferProperties = default,
+                                                               m_EquipStatusModiferProperties = default;
 
         public ItemStatusModiferProperties GetStatusModifierProperties(byte statusId) => m_StatusModiferProperties[statusId];
+
+        public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
 
         public virtual void ModifyTrusted(ItemComponent componentToModify, PlayerCommandsComponent commands)
         {
@@ -55,29 +56,49 @@ namespace Session.Items.Modifiers
                 else if (HasSecondaryUse() && commands.GetInput(PlayerInput.UseOne))
                     StartStatus(componentToModify, ItemStatusId.SecondaryUsing);
             }
-            float duration = commands.duration;
-            componentToModify.status.elapsed.Value += duration;
-            StatusTick(commands);
+            ModifyEquipStatus(componentToModify, commands);
+            ModifyStatus(componentToModify, commands);
+        }
+
+        private void ModifyStatus(ItemComponent componentToModify, PlayerCommandsComponent commands)
+        {
+            ItemByteStatusComponent status = componentToModify.status;
+            status.elapsed.Value += commands.duration;
             ItemStatusModiferProperties modifierProperties;
-            while (componentToModify.status.elapsed > (modifierProperties = m_StatusModiferProperties[componentToModify.status.id]).duration)
+            while (status.elapsed > (modifierProperties = m_StatusModiferProperties[status.id]).duration)
             {
-                float statusElapsed = componentToModify.status.elapsed;
-                FinishStatus(componentToModify, commands);
-                componentToModify.status.elapsed.Value = Mathf.Approximately(modifierProperties.duration, 0.0f)
-                    ? statusElapsed
-                    : statusElapsed % modifierProperties.duration;
+                float statusElapsed = status.elapsed;
+                byte? nextStatus = FinishStatus(componentToModify, commands);
+                StartStatus(componentToModify, nextStatus ?? ItemStatusId.Idle, statusElapsed - modifierProperties.duration);
+                if (Mathf.Approximately(modifierProperties.duration, 0.0f))
+                    break;
             }
         }
 
-        public void SetStatus(ItemComponent itemComponent, byte statusId, float elapsed = 0.0f)
+        private void ModifyEquipStatus(ItemComponent componentToModify, PlayerCommandsComponent commands)
+        {
+            ItemByteStatusComponent equipStatus = componentToModify.equipStatus;
+            equipStatus.elapsed.Value += commands.duration;
+            ItemStatusModiferProperties modifierProperties;
+            while (equipStatus.elapsed > (modifierProperties = m_EquipStatusModiferProperties[equipStatus.id]).duration)
+            {
+                if (equipStatus.id == ItemEquipStatusId.Equipping) equipStatus.id.Value = ItemEquipStatusId.Ready;
+                else if (equipStatus.id == ItemEquipStatusId.Unequipping) equipStatus.id.Value = ItemEquipStatusId.Inactive;
+                if (Mathf.Approximately(modifierProperties.duration, 0.0f))
+                    break;
+                equipStatus.elapsed.Value -= modifierProperties.duration;
+            }
+        }
+
+        private static void SetStatus(ItemComponent itemComponent, byte statusId, float elapsed = 0.0f)
         {
             itemComponent.status.id.Value = statusId;
             itemComponent.status.elapsed.Value = elapsed;
         }
 
-        public virtual void StartStatus(ItemComponent itemComponent, byte statusId)
+        protected void StartStatus(ItemComponent itemComponent, byte statusId, float elapsed = 0.0f)
         {
-            SetStatus(itemComponent, statusId);
+            SetStatus(itemComponent, statusId, elapsed);
             switch (statusId)
             {
                 case ItemStatusId.PrimaryUsing:
@@ -89,18 +110,18 @@ namespace Session.Items.Modifiers
             }
         }
 
-        protected virtual void FinishStatus(ItemComponent itemComponent, PlayerCommandsComponent commands)
+        protected virtual byte? FinishStatus(ItemComponent itemComponent, PlayerCommandsComponent commands)
         {
-            byte statusId = itemComponent.status.id;
-            switch (statusId)
+            switch (itemComponent.status.id)
             {
                 case ItemStatusId.SecondaryUsing:
-                    StartStatus(itemComponent, ItemStatusId.Idle);
-                    break;
+                    return ItemStatusId.Idle;
                 case ItemStatusId.PrimaryUsing:
-                    StartStatus(itemComponent, CanUse(itemComponent, true) && commands.GetInput(PlayerInput.UseOne) ? GetUseStatus(commands) : ItemStatusId.Idle);
+                    if (CanUse(itemComponent, true) && commands.GetInput(PlayerInput.UseOne))
+                        return GetUseStatus(commands);
                     break;
             }
+            return null;
         }
 
         protected virtual byte GetUseStatus(PlayerCommandsComponent commands) => ItemStatusId.PrimaryUsing;
@@ -108,17 +129,13 @@ namespace Session.Items.Modifiers
         protected virtual bool CanUse(ItemComponent itemComponent, bool justFinishedUse = false) =>
             (itemComponent.status.id != ItemStatusId.PrimaryUsing || justFinishedUse) &&
             itemComponent.status.id != ItemStatusId.SecondaryUsing &&
-            itemComponent.equipStatus.id != ItemEquipStatusId.Unequipping;
+            itemComponent.equipStatus.id == ItemEquipStatusId.Ready;
 
         protected virtual void SecondaryUse()
         {
         }
 
         protected virtual void PrimaryUse(ItemComponent itemComponent)
-        {
-        }
-
-        protected virtual void StatusTick(PlayerCommandsComponent commands)
         {
         }
 

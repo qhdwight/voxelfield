@@ -33,6 +33,7 @@ namespace Components
         {
             Extensions.NavigateZipped((field, _o1, _o2, _destination) =>
             {
+                if (field.IsDefined(typeof(CustomInterpolation))) return;
                 if (field.IsDefined(typeof(TakeSecondForInterpolation)))
                     _destination.SetFromIfPresent(_o2);
                 else

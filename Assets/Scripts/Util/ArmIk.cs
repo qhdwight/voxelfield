@@ -22,7 +22,7 @@ namespace Util
             m_Left.target = left;
             m_Right.target = right;
         }
-        
+
         private static bool SetupArm(Arm arm)
         {
             Transform hand = arm.hand;

@@ -14,6 +14,7 @@ namespace Compound.Session
 
         private void Start()
         {
+            AnalysisLogger.Reset("");
             StartSession();
         }
 

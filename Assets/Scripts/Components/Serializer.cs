@@ -7,7 +7,7 @@ namespace Components
         private static readonly MemoryStream Stream = new MemoryStream(1 << 16);
         private static readonly BinaryWriter Writer = new BinaryWriter(Stream);
         private static readonly BinaryReader Reader = new BinaryReader(Stream);
-        
+
         private static void ReadIntoProperty(PropertyBase property)
         {
             property.Deserialize(Reader);

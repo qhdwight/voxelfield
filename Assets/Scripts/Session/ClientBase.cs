@@ -59,7 +59,11 @@ namespace Session
             predictedInventory.activeIndex.Value = 1;
             predictedInventory.wantedIndex.Value = 1;
             predictedInventory.ActiveItemComponent.id.Value = ItemId.TestingRifle;
-            if (tick == 0) ((GunModifierBase) ItemManager.Singleton.GetModifier(ItemId.TestingRifle)).RefillAmmoAndReserve(predictedInventory.ActiveItemComponent);
+            if (tick == 0)
+            {
+                ((GunModifierBase) ItemManager.GetModifier(ItemId.TestingRifle)).RefillAmmoAndReserve(predictedInventory.ActiveItemComponent);
+                predictedInventory.ActiveItemComponent.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+            }
             m_Commands.duration.Value = duration;
             Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);
             PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedPlayerComponent.component, m_Commands);

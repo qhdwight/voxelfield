@@ -146,8 +146,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b338eb82d1a04e78a68fce8d9a4d1023, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FpvItemAnimator: {fileID: 8329671944776764433}
-  m_TpvItemAnimator: {fileID: 6205047962720205290}
 --- !u!1 &5848440351982617854
 GameObject:
   m_ObjectHideFlags: 0
@@ -637,6 +635,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Human
+      objectReference: {fileID: 0}
+    - target: {fileID: 5563636170511573486, guid: 5b3f5c557898b324ba1ea53d0fae4c85,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: -6057140222963153312, guid: 5b3f5c557898b324ba1ea53d0fae4c85, type: 3}

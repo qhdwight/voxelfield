@@ -31,20 +31,17 @@ namespace Session.Items.Modifiers
             base.ModifyChecked(componentToModify, commands);
         }
 
-        protected override void FinishStatus(ItemComponent itemComponent, PlayerCommandsComponent commands)
+        protected override byte? FinishStatus(ItemComponent itemComponent, PlayerCommandsComponent commands)
         {
-            byte statusId = itemComponent.status.id;
-            switch (statusId)
+            switch (itemComponent.status.id)
             {
                 case GunStatusId.Reloading:
                     ReloadAmmo(itemComponent);
-                    StartStatus(itemComponent, ItemStatusId.Idle);
-                    break;
+                    return null;
                 case ItemStatusId.PrimaryUsing when itemComponent.gunStatus.ammoInMag == 0 && CanReload(itemComponent):
-                    StartStatus(itemComponent, GunStatusId.Reloading);
-                    return;
+                    return GunStatusId.Reloading;
             }
-            base.FinishStatus(itemComponent, commands);
+            return base.FinishStatus(itemComponent, commands);
         }
 
         protected virtual bool CanReload(ItemComponent itemComponent)
@@ -67,7 +64,6 @@ namespace Session.Items.Modifiers
 
         protected virtual void Fire(ItemComponent itemComponent)
         {
-            Debug.Log("Fire");
             itemComponent.gunStatus.ammoInMag.Value--;
 //             Ray ray = m_Game.GetRayForRaycastingPlayer(m_HoldingPlayer);
 //             m_Game.AboutToRaycast(m_HoldingPlayer);

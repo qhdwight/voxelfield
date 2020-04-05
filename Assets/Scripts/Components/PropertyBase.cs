@@ -10,19 +10,26 @@ namespace Components
     public abstract class PropertyBase
     {
         [SerializeField] private bool m_HasValue;
+        private bool m_IsModified;
 
         public bool HasValue
         {
             get => m_HasValue;
             protected set => m_HasValue = value;
         }
-        
+
+        public bool IsModified
+        {
+            get => m_IsModified;
+            protected set => m_IsModified = value;
+        }
+
         public abstract void Serialize(BinaryWriter writer);
 
         public abstract void Deserialize(BinaryReader reader);
-        
+
         public abstract bool Equals(PropertyBase other);
-        
+
         public abstract void SetFromIfPresent(PropertyBase other);
 
         public abstract void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null);
@@ -40,6 +47,16 @@ namespace Components
             {
                 m_Value = value;
                 HasValue = true;
+            }
+        }
+
+        public T Modified
+        {
+            get => m_Value;
+            set
+            {
+                Value = value;
+                IsModified = true;
             }
         }
 
@@ -96,7 +113,7 @@ namespace Components
         {
             return m_Value.ToString();
         }
-        
+
         public override void SetFromIfPresent(PropertyBase other)
         {
             if (!(other is PropertyBase<T> otherProperty))

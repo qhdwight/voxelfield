@@ -281,6 +281,338 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Rollback: 0.02
+  Current:
+    health:
+      m_HasValue: 0
+      m_Value: 0
+    inventory:
+      activeIndex:
+        m_HasValue: 0
+        m_Value: 0
+      wantedIndex:
+        m_HasValue: 0
+        m_Value: 0
+      itemComponents:
+        m_Values:
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+        - gunStatus:
+            aimStatus:
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
+            ammoInMag:
+              m_HasValue: 0
+              m_Value: 0
+            ammoInReserve:
+              m_HasValue: 0
+              m_Value: 0
+          id:
+            m_HasValue: 0
+            m_Value: 0
+          status:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+    position:
+      m_HasValue: 0
+      m_Value: {x: 0, y: 0, z: 0}
+    yaw:
+      m_HasValue: 0
+      m_Value: 0
+    pitch:
+      m_HasValue: 0
+      m_Value: 0
   Settings:
     tickRate:
       m_HasValue: 1
@@ -300,11 +632,12 @@ MonoBehaviour:
         m_Values:
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -315,19 +648,27 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 1
           status:
-            elapsedTime:
-              m_HasValue: 0
-              m_Value: 0
             id:
               m_HasValue: 0
               m_Value: 2
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
+            id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -338,19 +679,27 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 0
           status:
-            elapsedTime:
+            id:
               m_HasValue: 0
               m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
             id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
               m_HasValue: 0
               m_Value: 0
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -361,19 +710,27 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 0
           status:
-            elapsedTime:
+            id:
               m_HasValue: 0
               m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
             id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
               m_HasValue: 0
               m_Value: 0
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -384,19 +741,27 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 0
           status:
-            elapsedTime:
+            id:
               m_HasValue: 0
               m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
             id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
               m_HasValue: 0
               m_Value: 0
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -407,19 +772,27 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 0
           status:
-            elapsedTime:
+            id:
               m_HasValue: 0
               m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
             id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
               m_HasValue: 0
               m_Value: 0
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -430,19 +803,27 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 0
           status:
-            elapsedTime:
+            id:
               m_HasValue: 0
               m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
             id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
               m_HasValue: 0
               m_Value: 0
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -453,19 +834,27 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 0
           status:
-            elapsedTime:
+            id:
               m_HasValue: 0
               m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
             id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
               m_HasValue: 0
               m_Value: 0
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -476,19 +865,27 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 0
           status:
-            elapsedTime:
+            id:
               m_HasValue: 0
               m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
             id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
               m_HasValue: 0
               m_Value: 0
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -499,19 +896,27 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 0
           status:
-            elapsedTime:
+            id:
               m_HasValue: 0
               m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
             id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
               m_HasValue: 0
               m_Value: 0
         - gunStatus:
             aimStatus:
-              m_HasValue: 0
-              m_Value: 0
-            aimStatusElapsedTime:
-              m_HasValue: 0
-              m_Value: 0
+              id:
+                m_HasValue: 0
+                m_Value: 0
+              elapsed:
+                m_HasValue: 0
+                m_Value: 0
             ammoInMag:
               m_HasValue: 0
               m_Value: 0
@@ -522,10 +927,17 @@ MonoBehaviour:
             m_HasValue: 0
             m_Value: 0
           status:
-            elapsedTime:
+            id:
               m_HasValue: 0
               m_Value: 0
+            elapsed:
+              m_HasValue: 0
+              m_Value: 0
+          equipStatus:
             id:
+              m_HasValue: 0
+              m_Value: 0
+            elapsed:
               m_HasValue: 0
               m_Value: 0
     position:
@@ -817,7 +1229,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
