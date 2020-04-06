@@ -71,7 +71,7 @@ namespace Session.Items.Modifiers
             {
                 float statusElapsed = status.elapsed;
                 byte? nextStatus = FinishStatus(itemComponent, inventoryComponent, commands);
-                StartStatus(itemComponent, nextStatus ?? ItemStatusId.Idle, elapsed: statusElapsed - modifierProperties.duration);
+                StartStatus(itemComponent, nextStatus ?? ItemStatusId.Idle, statusElapsed - modifierProperties.duration);
             }
         }
 
@@ -90,6 +90,10 @@ namespace Session.Items.Modifiers
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>State to switch to</returns>
         protected virtual byte? FinishStatus(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent, PlayerCommandsComponent commands)
         {
             switch (itemComponent.status.id)

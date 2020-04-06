@@ -9,7 +9,8 @@ namespace Compound.Session
 
         private void StartSession()
         {
-            m_Session = new Client();
+            // m_Session = new Client();
+            m_Session = new Host();
         }
 
         private void Start()
@@ -21,8 +22,7 @@ namespace Compound.Session
         private void Update()
         {
             if (m_Session == null) return;
-            m_Session.HandleInput();
-            m_Session.Render();
+            m_Session.Update();
         }
 
         private void FixedUpdate()

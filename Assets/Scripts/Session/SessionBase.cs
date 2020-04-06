@@ -9,7 +9,7 @@ namespace Session
     public abstract class SessionBase<TSessionComponent> where TSessionComponent : SessionComponentBase
     {
         protected readonly SessionComponents<TSessionComponent> m_SessionComponents;
-        private float m_FixedUpdateTime;
+        private float m_FixedUpdateTime, m_RenderTime;
         protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
         protected uint m_Tick;
 
@@ -18,12 +18,15 @@ namespace Session
             m_SessionComponents = new SessionComponents<TSessionComponent>();
         }
 
-        public void Render()
+        public void Update()
         {
-            Render(Time.realtimeSinceStartup - m_FixedUpdateTime);
+            float time = Time.realtimeSinceStartup, delta = time - m_RenderTime;
+            Input(delta);
+            Render(delta, time - m_FixedUpdateTime);
+            m_RenderTime = time;
         }
 
-        protected virtual void Render(float timeSinceTick)
+        protected virtual void Render(float renderDelta, float timeSinceTick)
         {
         }
 
@@ -32,7 +35,7 @@ namespace Session
             Time.fixedDeltaTime = 1.0f / m_Settings.tickRate;
         }
 
-        public virtual void HandleInput()
+        public virtual void Input(float delta)
         {
         }
 

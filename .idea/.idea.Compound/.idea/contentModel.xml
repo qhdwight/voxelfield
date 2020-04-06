@@ -37,6 +37,7 @@
             <e p="Compound.asmdef" t="Include" />
             <e p="Session" t="Include">
               <e p="Client.cs" t="Include" />
+              <e p="Host.cs" t="Include" />
               <e p="Session.cs" t="Include" />
               <e p="SessionComponent.cs" t="Include" />
               <e p="SessionManager.cs" t="Include" />
@@ -57,6 +58,7 @@
           <e p="Session" t="Include">
             <e p="ClientBase.cs" t="Include" />
             <e p="DebugBehavior.cs" t="Include" />
+            <e p="HostBase.cs" t="Include" />
             <e p="IModifierBase.cs" t="Include" />
             <e p="Items" t="Include">
               <e p="ItemManager.cs" t="Include" />
@@ -91,6 +93,7 @@
               </e>
             </e>
             <e p="SceneCamera.cs" t="Include" />
+            <e p="ServerBase.cs" t="Include" />
             <e p="ServerSessionBase.cs" t="Include" />
             <e p="Session.asmdef" t="Include" />
             <e p="SessionBase.cs" t="Include" />

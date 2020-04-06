@@ -31,8 +31,8 @@ namespace Components
         public static void DeserializeInto(object @object, Stream stream)
         {
             var length = (int) stream.Position;
-            stream.Position = 0;
             Stream.Position = 0;
+            stream.Position = 0;
             stream.CopyTo(Stream, length);
             Stream.Position = 0;
             Extensions.Navigate((_, property) => ReadIntoProperty(property), @object);

@@ -14,7 +14,7 @@ namespace Session
     {
         private const int LocalPlayerId = 0;
 
-        private readonly PlayerCommandsComponent m_Commands = new PlayerCommandsComponent();
+        private readonly PlayerCommandsComponent m_LocalCommands = new PlayerCommandsComponent();
         private readonly CyclicArray<StampedPlayerComponent> m_PredictedPlayerComponents =
             new CyclicArray<StampedPlayerComponent>(250, () => new StampedPlayerComponent());
         private readonly TSessionComponent m_RenderSessionComponent = Activator.CreateInstance<TSessionComponent>();
@@ -22,16 +22,16 @@ namespace Session
 
         private void ReadLocalInputs()
         {
-            PlayerManager.Singleton.ModifyCommands(LocalPlayerId, m_Commands);
+            PlayerManager.Singleton.ModifyCommands(LocalPlayerId, m_LocalCommands);
         }
 
-        public override void HandleInput()
+        public override void Input(float delta)
         {
             ReadLocalInputs();
-            PlayerManager.Singleton.ModifyTrusted(LocalPlayerId, m_TrustedPlayerComponent, m_Commands);
+            PlayerManager.Singleton.ModifyTrusted(LocalPlayerId, m_TrustedPlayerComponent, m_LocalCommands);
         }
 
-        protected override void Render(float timeSinceTick)
+        protected override void Render(float renderDelta, float timeSinceTick)
         {
             m_RenderSessionComponent.localPlayerId.Value = LocalPlayerId;
             PlayerComponent localPlayerRenderComponent = m_RenderSessionComponent.playerComponents[LocalPlayerId];
@@ -45,7 +45,9 @@ namespace Session
         protected override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
+            
             ReadLocalInputs();
+            
             StampedPlayerComponent lastPredictedPlayerComponent = m_PredictedPlayerComponents.Peek();
             float lastTickTime = lastPredictedPlayerComponent.time.OrElse(time);
             StampedPlayerComponent predictedPlayerComponent = m_PredictedPlayerComponents.ClaimNext();
@@ -54,15 +56,18 @@ namespace Session
             predictedPlayerComponent.time.Value = time;
             float duration = time - lastTickTime;
             predictedPlayerComponent.duration.Value = duration;
-            predictedPlayerComponent.component.health.Value = 100;
+            
             if (tick == 0)
             {
+                predictedPlayerComponent.component.health.Value = 100;
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 1);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 2);
             }
-            m_Commands.duration.Value = duration;
+            
             Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);
-            PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedPlayerComponent.component, m_Commands);
+            m_LocalCommands.duration.Value = duration;
+            PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedPlayerComponent.component, m_LocalCommands);
+            
             DebugBehavior.Singleton.Current = predictedPlayerComponent.component;
         }
     }

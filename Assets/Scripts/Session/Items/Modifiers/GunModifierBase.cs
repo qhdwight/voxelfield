@@ -35,7 +35,7 @@ namespace Session.Items.Modifiers
         {
             (ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent) = componentToModify;
             bool reloadInput = commands.GetInput(PlayerInput.Reload);
-            if ((reloadInput || itemComponent.gunStatus.ammoInMag == 0) && CanReload(itemComponent, inventoryComponent) && itemComponent.status.id == ItemStatusId.Idle)
+            if ((reloadInput || itemComponent.gunStatus.ammoInMag == 0) && CanReload(itemComponent, inventoryComponent))
                 StartStatus(itemComponent, GunStatusId.Reloading);
             base.ModifyChecked(componentToModify, commands);
         }
@@ -55,7 +55,8 @@ namespace Session.Items.Modifiers
 
         protected virtual bool CanReload(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent)
         {
-            return inventoryComponent.equipStatus.id == ItemEquipStatusId.Equipped && itemComponent.gunStatus.ammoInReserve > 0 && itemComponent.gunStatus.ammoInMag < m_MagSize;
+            return itemComponent.status.id == ItemStatusId.Idle && inventoryComponent.equipStatus.id == ItemEquipStatusId.Equipped
+                                                                && itemComponent.gunStatus.ammoInReserve > 0 && itemComponent.gunStatus.ammoInMag < m_MagSize;
         }
 
         protected override bool CanUse(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent, bool justFinishedUse = false)
