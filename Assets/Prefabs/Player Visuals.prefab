@@ -468,6 +468,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 129350255495253916, guid: 275f31b1df3f8f74db5e8ae99149e45c,
+        type: 3}
+      propertyPath: m_Name
+      value: Armature [FPV ANIMATOR]
+      objectReference: {fileID: 0}
     - target: {fileID: 2053152601430424141, guid: 275f31b1df3f8f74db5e8ae99149e45c,
         type: 3}
       propertyPath: m_LocalRotation.x
@@ -641,7 +646,12 @@ PrefabInstance:
     - target: {fileID: 5563636170511573486, guid: 5b3f5c557898b324ba1ea53d0fae4c85,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5563636170511573486, guid: 5b3f5c557898b324ba1ea53d0fae4c85,
+        type: 3}
+      propertyPath: m_Name
+      value: Arms [TPV ANIMATOR]
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: -6057140222963153312, guid: 5b3f5c557898b324ba1ea53d0fae4c85, type: 3}

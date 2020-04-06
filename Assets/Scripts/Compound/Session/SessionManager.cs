@@ -11,6 +11,7 @@ namespace Compound.Session
         {
             // m_Session = new Client();
             m_Session = new Host();
+            m_Session.Start();
         }
 
         private void Start()

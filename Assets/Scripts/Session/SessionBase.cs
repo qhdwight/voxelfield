@@ -17,6 +17,11 @@ namespace Session
         {
             m_SessionComponents = new SessionComponents<TSessionComponent>();
         }
+        
+        public virtual void Start()
+        {
+            
+        }
 
         public void Update()
         {
