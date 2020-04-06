@@ -23,36 +23,37 @@ namespace Session.Items.Modifiers
             return false;
         }
 
-        public override void ModifyChecked(ItemComponent componentToModify, PlayerCommandsComponent commands)
+        public override void ModifyChecked((ItemComponent, ByteStatusComponent) componentToModify, PlayerCommandsComponent commands)
         {
+            (ItemComponent itemComponent, ByteStatusComponent equipStatus) = componentToModify;
             bool reloadInput = commands.GetInput(PlayerInput.Reload);
-            if ((reloadInput || componentToModify.gunStatus.ammoInMag == 0) && CanReload(componentToModify) && componentToModify.status.id == ItemStatusId.Idle)
-                StartStatus(componentToModify, GunStatusId.Reloading);
+            if ((reloadInput || itemComponent.gunStatus.ammoInMag == 0) && CanReload(itemComponent, equipStatus) && itemComponent.status.id == ItemStatusId.Idle)
+                StartStatus(itemComponent, GunStatusId.Reloading);
             base.ModifyChecked(componentToModify, commands);
         }
 
-        protected override byte? FinishStatus(ItemComponent itemComponent, PlayerCommandsComponent commands)
+        protected override byte? FinishStatus(ItemComponent itemComponent, ByteStatusComponent equipStatus, PlayerCommandsComponent commands)
         {
             switch (itemComponent.status.id)
             {
                 case GunStatusId.Reloading:
                     ReloadAmmo(itemComponent);
                     return null;
-                case ItemStatusId.PrimaryUsing when itemComponent.gunStatus.ammoInMag == 0 && CanReload(itemComponent):
+                case ItemStatusId.PrimaryUsing when itemComponent.gunStatus.ammoInMag == 0 && CanReload(itemComponent, equipStatus):
                     return GunStatusId.Reloading;
             }
-            return base.FinishStatus(itemComponent, commands);
+            return base.FinishStatus(itemComponent, equipStatus, commands);
         }
 
-        protected virtual bool CanReload(ItemComponent itemComponent)
+        protected virtual bool CanReload(ItemComponent itemComponent, ByteStatusComponent equipStatus)
         {
-            return itemComponent.gunStatus.ammoInReserve > 0 && itemComponent.gunStatus.ammoInMag < m_MagSize;
+            return itemComponent.gunStatus.ammoInReserve > 0 && itemComponent.gunStatus.ammoInMag < m_MagSize && equipStatus.id == ItemEquipStatusId.Equipped;
         }
 
-        protected override bool CanUse(ItemComponent itemComponent, bool justFinishedUse = false)
+        protected override bool CanUse(ItemComponent itemComponent, ByteStatusComponent equipStatus, bool justFinishedUse = false)
         {
             // We want to be able to interrupt reload with firing, and also make sure we can not fire with no ammo
-            return itemComponent.gunStatus.ammoInMag > 0 && base.CanUse(itemComponent, justFinishedUse);
+            return itemComponent.gunStatus.ammoInMag > 0 && base.CanUse(itemComponent, equipStatus, justFinishedUse);
         }
 
         protected override void PrimaryUse(ItemComponent itemComponent)
@@ -86,6 +87,12 @@ namespace Session.Items.Modifiers
 //                 });
 //             }
 //             m_HitPlayers.Clear();
+        }
+
+        internal override void OnUnequip(ItemComponent itemComponent)
+        {
+            if (itemComponent.status.id == GunStatusId.Reloading)
+                StartStatus(itemComponent, ItemStatusId.Idle);
         }
 
         public void RefillAmmoAndReserve(ItemComponent itemComponents)

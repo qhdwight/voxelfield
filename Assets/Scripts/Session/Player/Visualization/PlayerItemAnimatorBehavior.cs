@@ -41,11 +41,12 @@ namespace Session.Player.Visualization
 
         public override void Visualize(PlayerComponent playerComponent, bool isLocalPlayer)
         {
-            m_Visuals = SetupVisualItem(playerComponent);
+            m_Visuals = SetupVisualItem(playerComponent.inventory);
             if (m_Visuals == null) return;
-            ItemComponent activeItemComponent = playerComponent.inventory.ActiveItemComponent;
-            bool isEquipped = activeItemComponent.equipStatus.id == ItemEquipStatusId.Ready;
-            ItemByteStatusComponent expressedStatus = isEquipped ? activeItemComponent.status : activeItemComponent.equipStatus;
+            ItemComponent equippedItemComponent = playerComponent.inventory.EquippedItemComponent;
+            ByteStatusComponent equipStatus = playerComponent.inventory.equipStatus;
+            bool isEquipped = equipStatus.id == ItemEquipStatusId.Equipped;
+            ByteStatusComponent expressedStatus = isEquipped ? equippedItemComponent.status : equipStatus;
             float duration = (isEquipped
                       ? m_Visuals.ModiferProperties.GetStatusModifierProperties(expressedStatus.id)
                       : m_Visuals.ModiferProperties.GetEquipStatusModifierProperties(expressedStatus.id)).duration,
@@ -56,7 +57,7 @@ namespace Session.Player.Visualization
                 m_FpvArmsRenderer.enabled = isLocalPlayer;
                 m_FpvArmsRenderer.shadowCastingMode = ShadowCastingMode.Off;
             }
-            SampleItemAnimation(activeItemComponent, interpolation);
+            SampleItemAnimation(equippedItemComponent, equipStatus, interpolation);
             if (m_IsFpv)
                 m_Visuals.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
             else
@@ -66,16 +67,14 @@ namespace Session.Player.Visualization
             m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(playerComponent.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
         }
 
-        private ItemVisualBehavior SetupVisualItem(PlayerComponent playerComponent)
+        private ItemVisualBehavior SetupVisualItem(PlayerInventoryComponent inventoryComponent)
         {
-            if (playerComponent.inventory.activeIndex == PlayerItemManagerModiferBehavior.NoneIndex
-             || playerComponent.inventory.ActiveItemComponent.id == ItemId.None
-             || playerComponent.inventory.ActiveItemComponent.equipStatus.id == ItemEquipStatusId.Inactive)
+            if (inventoryComponent.equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex)
             {
                 if (m_Visuals) ItemManager.Singleton.ReturnVisuals(m_Visuals);
                 return null;
             }
-            byte itemId = playerComponent.inventory.ActiveItemComponent.id;
+            byte itemId = inventoryComponent.EquippedItemComponent.id;
             if (m_Visuals && itemId == m_Visuals.ModiferProperties.id) return m_Visuals;
             if (m_Visuals) ItemManager.Singleton.ReturnVisuals(m_Visuals); // We have existing visuals but they are the wrong item id
             ItemVisualBehavior newVisuals = ItemManager.Singleton.ObtainVisuals(itemId, this, m_Graph);
@@ -86,10 +85,10 @@ namespace Session.Player.Visualization
             return newVisuals;
         }
 
-        private void SampleItemAnimation(ItemComponent itemComponent, float statusInterpolation)
+        private void SampleItemAnimation(ItemComponent itemComponent, ByteStatusComponent equipStatus, float statusInterpolation)
         {
-            m_Visuals.SampleEvents(itemComponent);
-            m_Visuals.SampleAnimation(itemComponent, statusInterpolation);
+            m_Visuals.SampleEvents(itemComponent, equipStatus);
+            m_Visuals.SampleAnimation(itemComponent, equipStatus, statusInterpolation);
         }
 
         internal override void Cleanup()

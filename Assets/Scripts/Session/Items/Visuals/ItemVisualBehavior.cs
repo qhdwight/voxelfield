@@ -74,17 +74,17 @@ namespace Session.Items.Visuals
             if (m_PlayerGraph.IsValid()) m_PlayerGraph.DestroySubgraph(m_Mixer);
         }
 
-        private (ItemStatusVisualProperties, int) GetVisualProperties(ItemComponent itemComponent)
+        private (ItemStatusVisualProperties, int) GetVisualProperties(ItemComponent itemComponent, ByteStatusComponent equipStatus)
         {
-            bool useStatus = itemComponent.equipStatus.id == ItemEquipStatusId.Ready;
+            bool useStatus = equipStatus.id == ItemEquipStatusId.Equipped;
             ItemStatusVisualProperties statusVisualProperties = useStatus
                 ? m_StatusVisualProperties[itemComponent.status.id]
-                : m_EquipStatusVisualProperties[itemComponent.equipStatus.id];
-            int animationIndex = useStatus ? itemComponent.status.id : itemComponent.equipStatus.id + m_StatusVisualProperties.Length;
+                : m_EquipStatusVisualProperties[equipStatus.id];
+            int animationIndex = useStatus ? itemComponent.status.id : equipStatus.id + m_StatusVisualProperties.Length;
             return (statusVisualProperties, animationIndex);
         }
 
-        public void SampleEvents(ItemComponent itemComponent)
+        public void SampleEvents(ItemComponent itemComponent, ByteStatusComponent equipStatus)
         {
             ItemComponent lastItemComponent = m_PlayerItemAnimator.LastRenderedItemComponent;
             float? lastStatusElapsed = null;
@@ -95,7 +95,7 @@ namespace Session.Items.Visuals
                 if (isSameAnimation && isAfter)
                     lastStatusElapsed = lastItemComponent.status.elapsed;
             }
-            (ItemStatusVisualProperties statusVisualProperties, int _) = GetVisualProperties(itemComponent);
+            (ItemStatusVisualProperties statusVisualProperties, int _) = GetVisualProperties(itemComponent, equipStatus);
             ItemStatusVisualProperties.AnimationEvent[] animationEvents = statusVisualProperties.animationEvents;
             foreach (ItemStatusVisualProperties.AnimationEvent animationEvent in animationEvents)
             {
@@ -108,9 +108,9 @@ namespace Session.Items.Visuals
             m_PlayerItemAnimator.LastRenderedItemComponent = itemComponent;
         }
 
-        public void SampleAnimation(ItemComponent itemComponent, float interpolation)
+        public void SampleAnimation(ItemComponent itemComponent, ByteStatusComponent equipStatus, float interpolation)
         {
-            (ItemStatusVisualProperties statusVisualProperties, int animationIndex) = GetVisualProperties(itemComponent);
+            (ItemStatusVisualProperties statusVisualProperties, int animationIndex) = GetVisualProperties(itemComponent, equipStatus);
             AnimationClip animationClip = statusVisualProperties.animationClip;
             if (!animationClip)
                 return;

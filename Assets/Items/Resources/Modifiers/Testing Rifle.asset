@@ -21,8 +21,8 @@ MonoBehaviour:
   - duration: 0
   - duration: 2
   m_EquipStatusModiferProperties:
-  - duration: 2
-  - duration: 2
+  - duration: 0.15
+  - duration: 0.15
   - duration: Infinity
   - duration: Infinity
   m_MagSize: 30

@@ -19,7 +19,7 @@ namespace Session.Player
     public class PlayerCommandsComponent : ComponentBase
     {
         public FloatProperty duration;
-        public ByteProperty inputs;
+        public ByteProperty inputs, wantedItemIndex;
         public FloatProperty mouseDeltaX, mouseDeltaY;
 
         public bool GetInput(PlayerInput input) => (inputs & (1 << (int) input)) != 0;

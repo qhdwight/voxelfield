@@ -14,7 +14,10 @@ namespace Input
         Jump,
         UseOne,
         UseTwo,
-        Reload
+        Reload,
+        ItemOne,
+        ItemTwo,
+        ItemThree
     }
 
     public enum MouseMovement
@@ -45,7 +48,10 @@ namespace Input
                     [InputType.Jump] = KeyCode.Space,
                     [InputType.UseOne] = KeyCode.Mouse0,
                     [InputType.UseTwo] = KeyCode.Mouse1,
-                    [InputType.Reload] = KeyCode.R
+                    [InputType.Reload] = KeyCode.R,
+                    [InputType.ItemOne] = KeyCode.Alpha1,
+                    [InputType.ItemTwo] = KeyCode.Alpha2,
+                    [InputType.ItemThree] = KeyCode.Alpha3
                 }
             };
         }

@@ -1,10 +1,10 @@
 using System;
 using Collections;
 using Components;
-using Session.Items;
 using Session.Items.Modifiers;
 using Session.Player;
 using Session.Player.Components;
+using Session.Player.Modifiers;
 
 namespace Session
 {
@@ -55,14 +55,10 @@ namespace Session
             float duration = time - lastTickTime;
             predictedPlayerComponent.duration.Value = duration;
             predictedPlayerComponent.component.health.Value = 100;
-            PlayerInventoryComponent predictedInventory = predictedPlayerComponent.component.inventory;
-            predictedInventory.activeIndex.Value = 1;
-            predictedInventory.wantedIndex.Value = 1;
-            predictedInventory.ActiveItemComponent.id.Value = ItemId.TestingRifle;
             if (tick == 0)
             {
-                ((GunModifierBase) ItemManager.GetModifier(ItemId.TestingRifle)).RefillAmmoAndReserve(predictedInventory.ActiveItemComponent);
-                predictedInventory.ActiveItemComponent.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 1);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 2);
             }
             m_Commands.duration.Value = duration;
             Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);

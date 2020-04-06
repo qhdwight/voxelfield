@@ -2,6 +2,7 @@ using System;
 using Components;
 using Session.Items;
 using Session.Items.Modifiers;
+using Session.Player.Modifiers;
 using UnityEngine;
 
 // ReSharper disable UnassignedField.Global
@@ -23,22 +24,17 @@ namespace Session.Player.Components
     [Serializable]
     public class GunStatusComponent : ComponentBase
     {
-        public ItemByteStatusComponent aimStatus;
+        public ByteStatusComponent aimStatus;
         public UShortProperty ammoInMag, ammoInReserve;
     }
 
     [Serializable]
-    public class ItemByteStatusComponent : ByteStatusComponentBase
-    {
-    }
-
-    [Serializable]
-    public abstract class ByteStatusComponentBase : ComponentBase
+    public class ByteStatusComponent : ComponentBase
     {
         [CustomInterpolation] public ByteProperty id;
         [CustomInterpolation] public FloatProperty elapsed;
 
-        public void InterpolateFrom(ByteStatusComponentBase s1, ByteStatusComponentBase s2, float interpolation, Func<byte, float> getStatusDuration)
+        public void InterpolateFrom(ByteStatusComponent s1, ByteStatusComponent s2, float interpolation, Func<byte, float> getStatusDuration)
         {
             float d1 = getStatusDuration(s1.id),
                   e1 = s1.elapsed,
@@ -69,22 +65,12 @@ namespace Session.Player.Components
     {
         public GunStatusComponent gunStatus;
         public ByteProperty id;
-        public ItemByteStatusComponent status;
-        public ItemByteStatusComponent equipStatus;
+        public ByteStatusComponent status;
 
-        public override void InterpolateFrom(object c1, object c2, float interpolation)
+        public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
         {
-            var i1 = (ItemComponent) c1;
-            var i2 = (ItemComponent) c2;
-            if (i1.id == ItemId.None || i2.id == ItemId.None)
-            {
-                id.Value = ItemId.None;
-                return;
-            }
-            // TODO: possibly cleanup
             ItemModifierBase modifier = ItemManager.GetModifier(i1.id);
             status.InterpolateFrom(i1.status, i2.status, interpolation, statusId => modifier.GetStatusModifierProperties(statusId).duration);
-            equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation, equipStatusId => modifier.GetEquipStatusModifierProperties(equipStatusId).duration);
             // TODO: aim status
             gunStatus.aimStatus.InterpolateFrom(i1.gunStatus.aimStatus, i2.gunStatus.aimStatus, interpolation, aimStatus => 0.0f);
         }
@@ -93,9 +79,24 @@ namespace Session.Player.Components
     [Serializable]
     public class PlayerInventoryComponent : ComponentBase
     {
-        public ByteProperty activeIndex, wantedIndex;
+        public ByteProperty equippedIndex;
+        public ByteStatusComponent equipStatus;
         public ArrayProperty<ItemComponent> itemComponents = new ArrayProperty<ItemComponent>(10);
 
-        public ItemComponent ActiveItemComponent => itemComponents[activeIndex - 1];
+        public ItemComponent EquippedItemComponent => itemComponents[equippedIndex - 1];
+
+        public override void InterpolateFrom(object c1, object c2, float interpolation)
+        {
+            var i1 = (PlayerInventoryComponent) c1;
+            var i2 = (PlayerInventoryComponent) c2;
+            if (i1.equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex)
+            {
+                equippedIndex.Value = PlayerItemManagerModiferBehavior.NoneIndex;
+                return;
+            }
+            ItemModifierBase modifier = ItemManager.GetModifier(i1.EquippedItemComponent.id);
+            equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation, equipStatusId => modifier.GetEquipStatusModifierProperties(equipStatusId).duration);
+            EquippedItemComponent.InterpolateFrom(i1.EquippedItemComponent, i2.EquippedItemComponent, interpolation);
+        }
     }
 }
