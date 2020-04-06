@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace Components
@@ -24,16 +25,13 @@ namespace Components
             Extensions.Navigate((_, property) => WriteFromProperty(property), @object);
             var length = (int) Stream.Position;
             Stream.Position = 0;
-            stream.Position = 0;
             Stream.CopyTo(stream, length);
         }
 
         public static void DeserializeInto(object @object, Stream stream)
         {
-            var length = (int) stream.Position;
             Stream.Position = 0;
-            stream.Position = 0;
-            stream.CopyTo(Stream, length);
+            stream.CopyTo(Stream);
             Stream.Position = 0;
             Extensions.Navigate((_, property) => ReadIntoProperty(property), @object);
         }

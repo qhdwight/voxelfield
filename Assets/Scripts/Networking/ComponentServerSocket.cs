@@ -5,9 +5,9 @@ using System.Net.Sockets;
 
 namespace Networking
 {
-    public class ServerSocket : SocketBase
+    public class ComponentServerSocket : ComponentSocketBase
     {
-        public ServerSocket(IPEndPoint endpoint, Dictionary<Type, byte> codes) : base(endpoint, codes)
+        public ComponentServerSocket(IPEndPoint endpoint, Dictionary<Type, byte> codes) : base(endpoint, codes)
         {
             m_RawSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
             m_RawSocket.Bind(endpoint);

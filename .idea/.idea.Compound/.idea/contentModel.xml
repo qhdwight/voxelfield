@@ -11,6 +11,7 @@
             <e p="ArrayFactory.cs" t="Include" />
             <e p="Collections.asmdef" t="Include" />
             <e p="CyclicArray.cs" t="Include" />
+            <e p="DualDictionary.cs" t="Include" />
             <e p="Pool.cs" t="Include" />
           </e>
           <e p="Components" t="Include">
@@ -52,10 +53,10 @@
             <e p="Interfaces.asmdef" t="Include" />
           </e>
           <e p="Networking" t="Include">
-            <e p="ClientSocket.cs" t="Include" />
+            <e p="ComponentClientSocket.cs" t="Include" />
+            <e p="ComponentServerSocket.cs" t="Include" />
+            <e p="ComponentSocketBase.cs" t="Include" />
             <e p="Networking.asmdef" t="Include" />
-            <e p="ServerSocket.cs" t="Include" />
-            <e p="SocketBase.cs" t="Include" />
           </e>
           <e p="Session" t="Include">
             <e p="ClientBase.cs" t="Include" />
@@ -100,7 +101,7 @@
             <e p="Session.asmdef" t="Include" />
             <e p="SessionBase.cs" t="Include" />
             <e p="SessionComponentBase.cs" t="Include" />
-            <e p="SessionComponents.cs" t="Include" />
+            <e p="SessionComponentHistory.cs" t="Include" />
             <e p="Tests" t="Include">
               <e p="SessionTests.asmdef" t="Include" />
               <e p="TestInterpolation.cs" t="Include" />

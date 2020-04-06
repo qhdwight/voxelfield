@@ -12,7 +12,7 @@ namespace Session
         where TSessionComponent : SessionComponentBase
     {
         private const int HostPlayerId = 0;
-        
+
         private readonly PlayerCommandsComponent m_HostCommands = new PlayerCommandsComponent();
         private readonly PlayerComponent m_HostPlayerComponent = new PlayerComponent();
         private readonly TSessionComponent m_RenderSessionComponent = Activator.CreateInstance<TSessionComponent>();

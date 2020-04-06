@@ -1,20 +1,34 @@
+using System.IO;
 using System.Net;
+using Components;
 using Networking;
+using UnityEngine;
 
 namespace Session
 {
-    public abstract class ServerBase<TSessionComponent> : SessionBase<TSessionComponent>
+    public abstract class ServerBase<TSessionComponent>
+        : SessionBase<TSessionComponent>
         where TSessionComponent : SessionComponentBase
     {
+        private ComponentServerSocket m_Socket;
+
         public override void Start()
         {
-            var server = new ServerSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777), null);
-            server.Receive();
+            m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777), TypeToId);
+            m_Socket.StartReceiving();
         }
 
         protected override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
+
+            m_Socket.PollReceived(@object =>
+            {
+                if (@object is PingCheckComponent pingCheckComponent)
+                {
+                    Debug.Log($"Received {pingCheckComponent.tick}");
+                }
+            });
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Collections;
 using Components;
 using Session.Player.Components;
@@ -8,14 +9,24 @@ namespace Session
 {
     public abstract class SessionBase<TSessionComponent> where TSessionComponent : SessionComponentBase
     {
-        protected readonly SessionComponents<TSessionComponent> m_SessionComponents;
+        protected class PingCheckComponent : ComponentBase
+        {
+            public UIntProperty tick;
+        }
+        
+        protected readonly SessionComponentHistory<TSessionComponent> sessionComponentHistory;
         private float m_FixedUpdateTime, m_RenderTime;
         protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
         protected uint m_Tick;
+        
+        protected static readonly Dictionary<Type, byte> TypeToId = new Dictionary<Type, byte>()
+        {
+            [typeof(PingCheckComponent)] = 0
+        };
 
         protected SessionBase()
         {
-            m_SessionComponents = new SessionComponents<TSessionComponent>();
+            sessionComponentHistory = new SessionComponentHistory<TSessionComponent>();
         }
         
         public virtual void Start()

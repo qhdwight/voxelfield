@@ -1,10 +1,13 @@
 using System;
+using System.Net;
 using Collections;
 using Components;
+using Networking;
 using Session.Items.Modifiers;
 using Session.Player;
 using Session.Player.Components;
 using Session.Player.Modifiers;
+using UnityEngine;
 
 namespace Session
 {
@@ -19,6 +22,13 @@ namespace Session
             new CyclicArray<StampedPlayerComponent>(250, () => new StampedPlayerComponent());
         private readonly TSessionComponent m_RenderSessionComponent = Activator.CreateInstance<TSessionComponent>();
         private readonly PlayerComponent m_TrustedPlayerComponent = new PlayerComponent();
+        private ComponentClientSocket m_Socket;
+
+        public override void Start()
+        {
+            m_Socket = new ComponentClientSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777), TypeToId);
+            m_Socket.StartReceiving();
+        }
 
         private void ReadLocalInputs()
         {
@@ -64,6 +74,9 @@ namespace Session
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 2);
             }
             
+            m_Socket.SendToServer(new PingCheckComponent {tick = new UIntProperty(tick)});
+            Debug.Log($"Sent {tick}");
+
             Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);
             m_LocalCommands.duration.Value = duration;
             PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedPlayerComponent.component, m_LocalCommands);
