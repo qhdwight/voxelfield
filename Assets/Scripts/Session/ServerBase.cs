@@ -1,6 +1,4 @@
-using System.IO;
 using System.Net;
-using Components;
 using Networking;
 using UnityEngine;
 
@@ -26,7 +24,6 @@ namespace Session
             {
                 if (@object is PingCheckComponent pingCheckComponent)
                 {
-                    Debug.Log($"Received {pingCheckComponent.tick}");
                 }
             });
         }

@@ -55,9 +55,9 @@ namespace Session
         protected override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
-            
+
             ReadLocalInputs();
-            
+
             StampedPlayerComponent lastPredictedPlayerComponent = m_PredictedPlayerComponents.Peek();
             float lastTickTime = lastPredictedPlayerComponent.time.OrElse(time);
             StampedPlayerComponent predictedPlayerComponent = m_PredictedPlayerComponents.ClaimNext();
@@ -66,21 +66,20 @@ namespace Session
             predictedPlayerComponent.time.Value = time;
             float duration = time - lastTickTime;
             predictedPlayerComponent.duration.Value = duration;
-            
+
             if (tick == 0)
             {
                 predictedPlayerComponent.component.health.Value = 100;
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 1);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 2);
             }
-            
+
             m_Socket.SendToServer(new PingCheckComponent {tick = new UIntProperty(tick)});
-            Debug.Log($"Sent {tick}");
 
             Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);
             m_LocalCommands.duration.Value = duration;
             PlayerManager.Singleton.ModifyChecked(LocalPlayerId, predictedPlayerComponent.component, m_LocalCommands);
-            
+
             DebugBehavior.Singleton.Current = predictedPlayerComponent.component;
         }
     }

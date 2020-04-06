@@ -14,8 +14,9 @@ namespace Session.Player.Components
     {
         [TakeSecondForInterpolation] public ByteProperty health;
         public PlayerInventoryComponent inventory;
-        public VectorProperty position;
+        public VectorProperty position, velocity;
         public FloatProperty yaw, pitch;
+        public ByteProperty groundTick;
 
         public bool IsAlive => !IsDead;
         public bool IsDead => health == 0;

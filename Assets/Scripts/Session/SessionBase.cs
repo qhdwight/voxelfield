@@ -13,12 +13,12 @@ namespace Session
         {
             public UIntProperty tick;
         }
-        
+
         protected readonly SessionComponentHistory<TSessionComponent> sessionComponentHistory;
         private float m_FixedUpdateTime, m_RenderTime;
         protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
         protected uint m_Tick;
-        
+
         protected static readonly Dictionary<Type, byte> TypeToId = new Dictionary<Type, byte>()
         {
             [typeof(PingCheckComponent)] = 0
@@ -28,10 +28,9 @@ namespace Session
         {
             sessionComponentHistory = new SessionComponentHistory<TSessionComponent>();
         }
-        
+
         public virtual void Start()
         {
-            
         }
 
         public void Update()

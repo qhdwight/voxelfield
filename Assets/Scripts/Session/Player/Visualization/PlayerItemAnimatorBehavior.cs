@@ -64,11 +64,11 @@ namespace Session.Player.Visualization
                 m_Visuals.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
             else
                 m_Visuals.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
-            
+
             SampleItemAnimation(equippedItemComponent, equipStatus, interpolation);
-            
+
             if (m_IsFpv) AnimateAim(playerComponent.inventory);
-            
+
             if (!m_TpvArmsRotator) return;
             const float armClamp = 60.0f;
             m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(playerComponent.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
@@ -97,7 +97,7 @@ namespace Session.Player.Visualization
             m_Visuals.SampleEvents(itemComponent, equipStatus);
             m_Visuals.SampleAnimation(itemComponent, equipStatus, statusInterpolation);
         }
-        
+
         public void AnimateAim(PlayerInventoryComponent inventoryComponent)
         {
             if (!(m_Visuals is GunVisualBehavior gunVisuals) || !(m_Visuals.ModiferProperties is GunWithMagazineModifier gunModifier)) return;
@@ -106,7 +106,7 @@ namespace Session.Player.Visualization
             transform.localPosition = Vector3.Slerp(m_Visuals.FpvOffset, adsPosition, adsInterpolation);
             m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView / 2, adsInterpolation);
         }
-        
+
         private static float GetAimInterpolationValue(PlayerInventoryComponent inventoryComponent)
         {
             var aimInterpolationValue = 0.0f;

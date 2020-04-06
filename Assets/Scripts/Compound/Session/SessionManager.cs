@@ -12,7 +12,7 @@ namespace Compound.Session
         {
             m_Session = new Host();
             m_Session.Start();
-            
+
             m_DebugSession = new Client();
             m_DebugSession.Start();
         }
@@ -26,15 +26,16 @@ namespace Compound.Session
         private void Update()
         {
             if (m_Session == null) return;
-            m_DebugSession.Update();
             
+            m_DebugSession.Update();
+
             m_Session.Update();
         }
 
         private void FixedUpdate()
         {
             m_Session?.FixedUpdate();
-            
+
             m_DebugSession?.FixedUpdate();
         }
     }
