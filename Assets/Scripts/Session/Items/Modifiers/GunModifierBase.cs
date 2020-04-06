@@ -9,6 +9,11 @@ namespace Session.Items.Modifiers
         public const byte Reloading = ItemStatusId.Last + 1;
     }
 
+    public static class AdsStatusId
+    {
+        public const byte HipAiming = 0, EnteringAds = 1, Ads = 2, ExitingAds = 3;
+    }
+
     public abstract class GunModifierBase : ItemModifierBase
     {
         private const int MaxRaycastDetections = 16;
@@ -17,43 +22,46 @@ namespace Session.Items.Modifiers
 
         [SerializeField] protected ushort m_MagSize;
         [SerializeField] private ushort m_StartingAmmoInReserve = default;
+        [SerializeField] private ItemStatusModiferProperties[] m_AdsModifierProperties = default;
+
+        public ItemStatusModiferProperties GetAdsStatusModifierProperties(byte statusId) => m_AdsModifierProperties[statusId];
 
         protected override bool HasSecondaryUse()
         {
             return false;
         }
 
-        public override void ModifyChecked((ItemComponent, ByteStatusComponent) componentToModify, PlayerCommandsComponent commands)
+        public override void ModifyChecked((ItemComponent, PlayerInventoryComponent) componentToModify, PlayerCommandsComponent commands)
         {
-            (ItemComponent itemComponent, ByteStatusComponent equipStatus) = componentToModify;
+            (ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent) = componentToModify;
             bool reloadInput = commands.GetInput(PlayerInput.Reload);
-            if ((reloadInput || itemComponent.gunStatus.ammoInMag == 0) && CanReload(itemComponent, equipStatus) && itemComponent.status.id == ItemStatusId.Idle)
+            if ((reloadInput || itemComponent.gunStatus.ammoInMag == 0) && CanReload(itemComponent, inventoryComponent) && itemComponent.status.id == ItemStatusId.Idle)
                 StartStatus(itemComponent, GunStatusId.Reloading);
             base.ModifyChecked(componentToModify, commands);
         }
 
-        protected override byte? FinishStatus(ItemComponent itemComponent, ByteStatusComponent equipStatus, PlayerCommandsComponent commands)
+        protected override byte? FinishStatus(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent, PlayerCommandsComponent commands)
         {
             switch (itemComponent.status.id)
             {
                 case GunStatusId.Reloading:
                     ReloadAmmo(itemComponent);
                     return null;
-                case ItemStatusId.PrimaryUsing when itemComponent.gunStatus.ammoInMag == 0 && CanReload(itemComponent, equipStatus):
+                case ItemStatusId.PrimaryUsing when itemComponent.gunStatus.ammoInMag == 0 && CanReload(itemComponent, inventoryComponent):
                     return GunStatusId.Reloading;
             }
-            return base.FinishStatus(itemComponent, equipStatus, commands);
+            return base.FinishStatus(itemComponent, inventoryComponent, commands);
         }
 
-        protected virtual bool CanReload(ItemComponent itemComponent, ByteStatusComponent equipStatus)
+        protected virtual bool CanReload(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent)
         {
-            return itemComponent.gunStatus.ammoInReserve > 0 && itemComponent.gunStatus.ammoInMag < m_MagSize && equipStatus.id == ItemEquipStatusId.Equipped;
+            return inventoryComponent.equipStatus.id == ItemEquipStatusId.Equipped && itemComponent.gunStatus.ammoInReserve > 0 && itemComponent.gunStatus.ammoInMag < m_MagSize;
         }
 
-        protected override bool CanUse(ItemComponent itemComponent, ByteStatusComponent equipStatus, bool justFinishedUse = false)
+        protected override bool CanUse(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent, bool justFinishedUse = false)
         {
             // We want to be able to interrupt reload with firing, and also make sure we can not fire with no ammo
-            return itemComponent.gunStatus.ammoInMag > 0 && base.CanUse(itemComponent, equipStatus, justFinishedUse);
+            return itemComponent.gunStatus.ammoInMag > 0 && base.CanUse(itemComponent, inventoryComponent, justFinishedUse);
         }
 
         protected override void PrimaryUse(ItemComponent itemComponent)

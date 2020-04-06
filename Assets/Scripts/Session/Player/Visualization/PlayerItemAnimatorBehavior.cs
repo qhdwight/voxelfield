@@ -21,7 +21,9 @@ namespace Session.Player.Visualization
         [SerializeField] private Transform m_TpvArmsRotator = default;
         [SerializeField] protected bool m_IsFpv;
         [SerializeField] private Renderer m_FpvArmsRenderer = default;
+        [SerializeField] private Camera m_FpvCamera = default;
 
+        private float m_FieldOfView;
         private Animator m_Animator;
         private PlayableGraph m_Graph;
         private ItemVisualBehavior m_Visuals;
@@ -36,6 +38,7 @@ namespace Session.Player.Visualization
             m_Animator = GetComponent<Animator>();
             m_Graph = PlayableGraph.Create($"{m_GraphName} Item Animator");
             m_Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+            if (m_FpvCamera) m_FieldOfView = m_FpvCamera.fieldOfView;
             AnimationPlayableOutput.Create(m_Graph, $"{m_GraphName} Output", m_Animator);
         }
 
@@ -57,11 +60,15 @@ namespace Session.Player.Visualization
                 m_FpvArmsRenderer.enabled = isLocalPlayer;
                 m_FpvArmsRenderer.shadowCastingMode = ShadowCastingMode.Off;
             }
-            SampleItemAnimation(equippedItemComponent, equipStatus, interpolation);
             if (m_IsFpv)
                 m_Visuals.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
             else
                 m_Visuals.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
+            
+            SampleItemAnimation(equippedItemComponent, equipStatus, interpolation);
+            
+            if (m_IsFpv) AnimateAim(playerComponent.inventory);
+            
             if (!m_TpvArmsRotator) return;
             const float armClamp = 60.0f;
             m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(playerComponent.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
@@ -89,6 +96,35 @@ namespace Session.Player.Visualization
         {
             m_Visuals.SampleEvents(itemComponent, equipStatus);
             m_Visuals.SampleAnimation(itemComponent, equipStatus, statusInterpolation);
+        }
+        
+        public void AnimateAim(PlayerInventoryComponent inventoryComponent)
+        {
+            if (!(m_Visuals is GunVisualBehavior gunVisuals) || !(m_Visuals.ModiferProperties is GunWithMagazineModifier gunModifier)) return;
+            float adsInterpolation = GetAimInterpolationValue(inventoryComponent);
+            Vector3 adsPosition = -transform.InverseTransformPoint(gunVisuals.AdsTarget.position);
+            transform.localPosition = Vector3.Slerp(m_Visuals.FpvOffset, adsPosition, adsInterpolation);
+            m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView / 2, adsInterpolation);
+        }
+        
+        private static float GetAimInterpolationValue(PlayerInventoryComponent inventoryComponent)
+        {
+            var aimInterpolationValue = 0.0f;
+            ByteStatusComponent adsStatus = inventoryComponent.adsStatus;
+            switch (adsStatus.id)
+            {
+                case AdsStatusId.ExitingAds:
+                case AdsStatusId.EnteringAds:
+                    var gunModifier = (GunModifierBase) ItemManager.GetModifier(inventoryComponent.EquippedItemComponent.id);
+                    float duration = gunModifier.GetAdsStatusModifierProperties(adsStatus.id).duration;
+                    aimInterpolationValue = adsStatus.elapsed / duration;
+                    break;
+                case AdsStatusId.Ads:
+                    aimInterpolationValue = 1.0f;
+                    break;
+            }
+            if (adsStatus.id == AdsStatusId.ExitingAds) aimInterpolationValue = 1.0f - aimInterpolationValue;
+            return aimInterpolationValue;
         }
 
         internal override void Cleanup()

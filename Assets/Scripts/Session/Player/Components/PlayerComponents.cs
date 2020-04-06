@@ -24,7 +24,6 @@ namespace Session.Player.Components
     [Serializable]
     public class GunStatusComponent : ComponentBase
     {
-        public ByteStatusComponent aimStatus;
         public UShortProperty ammoInMag, ammoInReserve;
     }
 
@@ -71,8 +70,6 @@ namespace Session.Player.Components
         {
             ItemModifierBase modifier = ItemManager.GetModifier(i1.id);
             status.InterpolateFrom(i1.status, i2.status, interpolation, statusId => modifier.GetStatusModifierProperties(statusId).duration);
-            // TODO: aim status
-            gunStatus.aimStatus.InterpolateFrom(i1.gunStatus.aimStatus, i2.gunStatus.aimStatus, interpolation, aimStatus => 0.0f);
         }
     }
 
@@ -80,7 +77,7 @@ namespace Session.Player.Components
     public class PlayerInventoryComponent : ComponentBase
     {
         public ByteProperty equippedIndex;
-        public ByteStatusComponent equipStatus;
+        public ByteStatusComponent equipStatus, adsStatus;
         public ArrayProperty<ItemComponent> itemComponents = new ArrayProperty<ItemComponent>(10);
 
         public ItemComponent EquippedItemComponent => itemComponents[equippedIndex - 1];
@@ -95,6 +92,8 @@ namespace Session.Player.Components
                 return;
             }
             ItemModifierBase modifier = ItemManager.GetModifier(i1.EquippedItemComponent.id);
+            if (modifier is GunModifierBase gunModifier)
+                adsStatus.InterpolateFrom(i1.adsStatus, i2.adsStatus, interpolation, aimStatusId => gunModifier.GetAdsStatusModifierProperties(aimStatusId).duration);
             equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation, equipStatusId => modifier.GetEquipStatusModifierProperties(equipStatusId).duration);
             EquippedItemComponent.InterpolateFrom(i1.EquippedItemComponent, i2.EquippedItemComponent, interpolation);
         }

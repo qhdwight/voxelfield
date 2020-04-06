@@ -12,6 +12,7 @@ namespace Session.Player
         Jump,
         UseOne,
         UseTwo,
+        Ads,
         Reload
     }
 
@@ -19,7 +20,8 @@ namespace Session.Player
     public class PlayerCommandsComponent : ComponentBase
     {
         public FloatProperty duration;
-        public ByteProperty inputs, wantedItemIndex;
+        public UShortProperty inputs;
+        public ByteProperty wantedItemIndex;
         public FloatProperty mouseDeltaX, mouseDeltaY;
 
         public bool GetInput(PlayerInput input) => (inputs & (1 << (int) input)) != 0;
@@ -30,9 +32,9 @@ namespace Session.Player
         public void SetInput(PlayerInput input, bool enabled)
         {
             if (enabled)
-                inputs.Value |= (byte) (1 << (int) input);
+                inputs.Value |= (ushort) (1 << (int) input);
             else
-                inputs.Value &= (byte) ~(1 << (int) input);
+                inputs.Value &= (ushort) ~(1 << (int) input);
         }
     }
 }

@@ -26,7 +26,8 @@ namespace Session.Player.Visualization
         private void ForEachItemAnimator(Action<PlayerItemAnimatorBehavior> action)
         {
             foreach (PlayerItemAnimatorBehavior animator in m_ItemAnimators)
-                action(animator);
+                if (animator.gameObject.activeSelf)
+                    action(animator);
         }
     }
 }

@@ -84,6 +84,7 @@ MonoBehaviour:
   m_TpvArmsRotator: {fileID: 0}
   m_IsFpv: 1
   m_FpvArmsRenderer: {fileID: 910699837165934009}
+  m_FpvCamera: {fileID: 6162287085297115463}
 --- !u!1 &4224837671832740950
 GameObject:
   m_ObjectHideFlags: 0
@@ -314,6 +315,7 @@ MonoBehaviour:
   m_TpvArmsRotator: {fileID: 5827125597094849578}
   m_IsFpv: 0
   m_FpvArmsRenderer: {fileID: 0}
+  m_FpvCamera: {fileID: 0}
 --- !u!1001 &3489578628679581758
 PrefabInstance:
   m_ObjectHideFlags: 0

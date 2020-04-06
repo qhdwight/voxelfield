@@ -32,7 +32,7 @@ namespace Session.Items.Modifiers
     }
 
     [CreateAssetMenu(fileName = "Item", menuName = "Item/Item", order = 0)]
-    public class ItemModifierBase : ScriptableObject, IModifierBase<(ItemComponent, ByteStatusComponent)>
+    public class ItemModifierBase : ScriptableObject, IModifierBase<(ItemComponent, PlayerInventoryComponent)>
     {
         public byte id;
         public string itemName;
@@ -44,14 +44,14 @@ namespace Session.Items.Modifiers
 
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
 
-        public virtual void ModifyTrusted((ItemComponent, ByteStatusComponent) componentToModify, PlayerCommandsComponent commands)
+        public virtual void ModifyTrusted((ItemComponent, PlayerInventoryComponent) componentToModify, PlayerCommandsComponent commands)
         {
         }
 
-        public virtual void ModifyChecked((ItemComponent, ByteStatusComponent) componentToModify, PlayerCommandsComponent commands)
+        public virtual void ModifyChecked((ItemComponent, PlayerInventoryComponent) componentToModify, PlayerCommandsComponent commands)
         {
-            (ItemComponent itemComponent, ByteStatusComponent equipStatus) = componentToModify;
-            if (CanUse(itemComponent, equipStatus))
+            (ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent) = componentToModify;
+            if (CanUse(itemComponent, inventoryComponent))
             {
                 if (commands.GetInput(PlayerInput.UseOne))
                     StartStatus(itemComponent, GetUseStatus(commands));
@@ -61,23 +61,19 @@ namespace Session.Items.Modifiers
             ModifyStatus(componentToModify, commands);
         }
 
-        private void ModifyStatus((ItemComponent, ByteStatusComponent) componentToModify, PlayerCommandsComponent commands)
+        private void ModifyStatus((ItemComponent, PlayerInventoryComponent) componentToModify, PlayerCommandsComponent commands)
         {
-            (ItemComponent itemComponent, ByteStatusComponent equipStatus) = componentToModify;
+            (ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent) = componentToModify;
             ByteStatusComponent status = itemComponent.status;
             status.elapsed.Value += commands.duration;
             ItemStatusModiferProperties modifierProperties;
             while (status.elapsed > (modifierProperties = m_StatusModiferProperties[status.id]).duration)
             {
                 float statusElapsed = status.elapsed;
-                byte? nextStatus = FinishStatus(itemComponent, equipStatus, commands);
+                byte? nextStatus = FinishStatus(itemComponent, inventoryComponent, commands);
                 StartStatus(itemComponent, nextStatus ?? ItemStatusId.Idle, elapsed: statusElapsed - modifierProperties.duration);
-                if (Mathf.Approximately(modifierProperties.duration, 0.0f))
-                    break;
             }
         }
-
-
 
         protected void StartStatus(ItemComponent itemComponent, byte statusId, float elapsed = 0.0f)
         {
@@ -94,14 +90,14 @@ namespace Session.Items.Modifiers
             }
         }
 
-        protected virtual byte? FinishStatus(ItemComponent itemComponent, ByteStatusComponent equipStatus, PlayerCommandsComponent commands)
+        protected virtual byte? FinishStatus(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent, PlayerCommandsComponent commands)
         {
             switch (itemComponent.status.id)
             {
                 case ItemStatusId.SecondaryUsing:
                     return ItemStatusId.Idle;
                 case ItemStatusId.PrimaryUsing:
-                    if (CanUse(itemComponent, equipStatus, true) && commands.GetInput(PlayerInput.UseOne))
+                    if (CanUse(itemComponent, inventoryComponent, true) && commands.GetInput(PlayerInput.UseOne))
                         return GetUseStatus(commands);
                     break;
             }
@@ -110,9 +106,10 @@ namespace Session.Items.Modifiers
 
         protected virtual byte GetUseStatus(PlayerCommandsComponent commands) => ItemStatusId.PrimaryUsing;
 
-        protected virtual bool CanUse(ItemComponent itemComponent, ByteStatusComponent equipStatus, bool justFinishedUse = false) =>
-            (itemComponent.status.id != ItemStatusId.PrimaryUsing || justFinishedUse) && itemComponent.status.id != ItemStatusId.SecondaryUsing
-                                                                                      && equipStatus.id == ItemEquipStatusId.Equipped;
+        protected virtual bool CanUse(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent, bool justFinishedUse = false) =>
+            (itemComponent.status.id != ItemStatusId.PrimaryUsing || justFinishedUse)
+         && itemComponent.status.id != ItemStatusId.SecondaryUsing
+         && inventoryComponent.equipStatus.id == ItemEquipStatusId.Equipped;
 
         protected virtual void SecondaryUse()
         {

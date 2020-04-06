@@ -66,6 +66,7 @@
                 <e p="ItemModifierBase.cs" t="Include" />
               </e>
               <e p="Visuals" t="Include">
+                <e p="GunVisualBehavior.cs" t="Include" />
                 <e p="ItemVisualBehavior.cs" t="Include" />
               </e>
             </e>

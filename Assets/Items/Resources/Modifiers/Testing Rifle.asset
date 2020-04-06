@@ -27,3 +27,8 @@ MonoBehaviour:
   - duration: Infinity
   m_MagSize: 30
   m_StartingAmmoInReserve: 90
+  m_AdsModifierProperties:
+  - duration: Infinity
+  - duration: 0.1
+  - duration: Infinity
+  - duration: 0.1

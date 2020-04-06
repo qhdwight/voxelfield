@@ -28,12 +28,13 @@ namespace Session.Items.Visuals
         public bool isReverseAnimation;
     }
 
-    [SelectionBase]
+    [SelectionBase, DisallowMultipleComponent]
     public class ItemVisualBehavior : PlayerVisualsBehaviorBase
     {
         [SerializeField] private byte m_Id = default;
         [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default,
                                                               m_EquipStatusVisualProperties = default;
+        [SerializeField] private Transform m_IkL = default, m_IkR = default;
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;
 
         private AnimationClipPlayable[] m_Animations;
@@ -54,7 +55,7 @@ namespace Session.Items.Visuals
             m_PlayerGraph = playerGraph;
             m_Renders = GetComponentsInChildren<Renderer>();
             ModiferProperties = ItemManager.GetModifier(m_Id);
-            playerItemAnimator.ArmIk.SetTargets(transform.Find("IK.L"), transform.Find("IK.R"));
+            playerItemAnimator.ArmIk.SetTargets(m_IkL, m_IkR);
             ItemStatusVisualProperties[] properties = m_StatusVisualProperties.Concat(m_EquipStatusVisualProperties).ToArray();
             m_Mixer = AnimationMixerPlayable.Create(playerGraph, properties.Length);
             m_Animations = new AnimationClipPlayable[properties.Length];
