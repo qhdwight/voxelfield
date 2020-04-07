@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using Collections;
@@ -10,11 +11,7 @@ using UnityEngine;
 
 namespace Networking
 {
-    public class NetworkEvent
-    {
-    }
-
-    public abstract class ComponentSocketBase
+    public abstract class ComponentSocketBase : IDisposable
     {
         private const int BufferSize = 1 << 16;
 
@@ -25,7 +22,8 @@ namespace Networking
         private readonly MemoryStream m_SendStream = new MemoryStream(BufferSize);
         private readonly BinaryWriter m_SendWriter;
         private readonly ReadState m_ReadState = new ReadState();
-        private readonly ConcurrentQueue<object> m_ReceivedMessages = new ConcurrentQueue<object>();
+        private readonly ConcurrentQueue<ComponentBase> m_ReceivedMessages = new ConcurrentQueue<ComponentBase>();
+        private readonly Dictionary<Type, Pool<ComponentBase>> m_MessagePools;
 
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
         private AsyncCallback m_ReceiveCallback;
@@ -36,6 +34,8 @@ namespace Networking
             m_Codes = new DualDictionary<Type, byte>(codes);
             m_RawSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             m_SendWriter = new BinaryWriter(m_SendStream);
+            m_MessagePools = codes.ToDictionary(pair => pair.Key,
+                                                pair => new Pool<ComponentBase>(0, () => (ComponentBase) Activator.CreateInstance(pair.Key)));
         }
 
         protected class ReadState
@@ -47,6 +47,7 @@ namespace Networking
             internal ReadState()
             {
                 reader = new BinaryReader(stream);
+                stream.SetLength(BufferSize);
             }
         }
 
@@ -54,24 +55,37 @@ namespace Networking
         {
             m_ReceiveCallback = result =>
             {
-                var state = (ReadState) result.AsyncState;
-                int received = m_RawSocket.EndReceiveFrom(result, ref m_ReceiveEndPoint);
-                state.stream.Position = 0;
-                state.stream.SetLength(received);
-                byte code = state.reader.ReadByte();
-                Type type = m_Codes.GetReverse(code);
-                object instance = Activator.CreateInstance(type);
-                Serializer.DeserializeInto(instance, state.stream);
-                m_ReceivedMessages.Enqueue(instance);
-                m_RawSocket.BeginReceiveFrom(state.stream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, state);
+                try
+                {
+                    var state = (ReadState) result.AsyncState;
+                    int received = m_RawSocket.EndReceiveFrom(result, ref m_ReceiveEndPoint);
+                    state.stream.Position = 0;
+                    byte code = state.reader.ReadByte();
+                    Type type = m_Codes.GetReverse(code);
+                    ComponentBase instance = m_MessagePools[type].Obtain();
+                    Serializer.DeserializeInto(instance, state.stream);
+                    m_ReceivedMessages.Enqueue(instance);
+                    m_RawSocket.BeginReceiveFrom(state.stream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, state);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogError(exception);
+                    throw;
+                }
             };
             m_RawSocket.BeginReceiveFrom(m_ReadState.stream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, m_ReadState);
         }
 
-        public void PollReceived(Action<object> received)
+        public void PollReceived(Action<int, ComponentBase> received)
         {
-            while (m_ReceivedMessages.TryDequeue(out object message))
-                received(message);
+            while (m_ReceivedMessages.TryDequeue(out ComponentBase message))
+            {
+                received(0, message);
+                m_MessagePools[message.GetType()].Return(message);
+            }
         }
 
         public bool Send(ComponentBase message, IPEndPoint endPoint)
@@ -94,6 +108,13 @@ namespace Networking
                 Debug.Log(exception);
                 return false;
             }
+        }
+
+        public void Dispose()
+        {
+            m_RawSocket.Dispose();
+            m_SendStream.Dispose();
+            m_SendWriter.Dispose();
         }
     }
 }

@@ -13,9 +13,11 @@ namespace Session.Player.Modifiers
         {
             PlayerInventoryComponent inventoryComponent = componentToModify.inventory;
 
-            ModifyAdsStatus(inventoryComponent, commands);
-
             ModifyEquipStatus(inventoryComponent, commands);
+
+            if (inventoryComponent.HasNoItemEquipped) return;
+            
+            ModifyAdsStatus(inventoryComponent, commands);
 
             // Item
             ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
@@ -38,7 +40,7 @@ namespace Session.Player.Modifiers
                 equipStatus.elapsed.Value = 0.0f;
             }
 
-            if (inventoryComponent.equippedIndex == NoneIndex) return;
+            if (inventoryComponent.HasNoItemEquipped) return;
             // We have a current equipped item
             equipStatus.elapsed.Value += commands.duration;
             ItemModifierBase modifier = ItemManager.GetModifier(inventoryComponent.EquippedItemComponent.id);
@@ -142,7 +144,7 @@ namespace Session.Player.Modifiers
             itemComponent.gunStatus.ammoInReserve.Value = 240;
             inventoryComponent.equipStatus.id.Value = ItemEquipStatusId.Equipping;
             inventoryComponent.equipStatus.elapsed.Value = 0.0f;
-            if (inventoryComponent.equippedIndex != NoneIndex && inventoryComponent.equippedIndex != index) return;
+            if (inventoryComponent.HasItemEquipped && inventoryComponent.equippedIndex != index) return;
             // If this replaces existing equipped item, find new one to equip
             inventoryComponent.equippedIndex.Value = FindReplacement(inventoryComponent, out byte replacementIndex) ? replacementIndex : NoneIndex;
         }

@@ -67,6 +67,7 @@ namespace Session.Player.Components
         public ByteProperty id;
         public ByteStatusComponent status;
 
+        // Embedded item components are only explicitly interpolated, since usually it only needs to be done on equipped item
         public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
         {
             ItemModifierBase modifier = ItemManager.GetModifier(i1.id);
@@ -82,12 +83,14 @@ namespace Session.Player.Components
         public ArrayProperty<ItemComponent> itemComponents = new ArrayProperty<ItemComponent>(10);
 
         public ItemComponent EquippedItemComponent => itemComponents[equippedIndex - 1];
+        public bool HasItemEquipped => !HasNoItemEquipped;
+        public bool HasNoItemEquipped => equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex;
 
         public override void InterpolateFrom(object c1, object c2, float interpolation)
         {
             var i1 = (PlayerInventoryComponent) c1;
             var i2 = (PlayerInventoryComponent) c2;
-            if (i1.equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex)
+            if (i1.HasNoItemEquipped)
             {
                 equippedIndex.Value = PlayerItemManagerModiferBehavior.NoneIndex;
                 return;

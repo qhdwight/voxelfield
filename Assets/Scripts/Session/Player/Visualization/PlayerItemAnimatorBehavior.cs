@@ -76,7 +76,7 @@ namespace Session.Player.Visualization
 
         private ItemVisualBehavior SetupVisualItem(PlayerInventoryComponent inventoryComponent)
         {
-            if (inventoryComponent.equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex)
+            if (inventoryComponent.HasNoItemEquipped)
             {
                 if (m_Visuals) ItemManager.Singleton.ReturnVisuals(m_Visuals);
                 return null;

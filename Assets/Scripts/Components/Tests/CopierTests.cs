@@ -9,7 +9,7 @@ namespace Components.Tests
         {
             OuterComponent source = OuterComponent.Arbitrary;
             var destination = new OuterComponent();
-            Copier.CopyTo(source, destination);
+            Copier.MergeSet(destination, source);
             Assert.AreEqual(source.@uint, destination.@uint);
             Assert.AreEqual(source.@float, destination.@float, 1e-6f);
             Assert.AreEqual(source.vector, destination.vector);

@@ -16,7 +16,7 @@ namespace Session
     {
         private const int LocalPlayerId = 0;
 
-        private readonly PlayerCommandsComponent m_LocalCommands = new PlayerCommandsComponent();
+        private readonly ClientCommandComponent m_LocalCommands = new ClientCommandComponent();
         private readonly CyclicArray<StampedPlayerComponent> m_PredictedPlayerComponents =
             new CyclicArray<StampedPlayerComponent>(250, () => new StampedPlayerComponent());
         private readonly TSessionComponent m_RenderSessionComponent = Activator.CreateInstance<TSessionComponent>();
@@ -50,9 +50,9 @@ namespace Session
             m_RenderSessionComponent.localPlayerId.Value = LocalPlayerId;
             PlayerComponent localPlayerRenderComponent = m_RenderSessionComponent.playerComponents[LocalPlayerId];
             // InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, 1.0f / m_Settings.tickRate * 1.2f, timeSinceTick);
-            InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, DebugBehavior.Singleton.Rollback, timeSinceTick);
-            Copier.CopyTo(m_TrustedPlayerComponent, localPlayerRenderComponent);
-            Copier.CopyTo(DebugBehavior.Singleton.RenderOverride, localPlayerRenderComponent);
+            InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, player => player.stamp.duration, DebugBehavior.Singleton.Rollback, timeSinceTick);
+            Copier.MergeSet(localPlayerRenderComponent, m_TrustedPlayerComponent);
+            Copier.MergeSet(localPlayerRenderComponent, DebugBehavior.Singleton.RenderOverride);
             RenderSessionComponent(m_RenderSessionComponent);
         }
 
@@ -63,28 +63,35 @@ namespace Session
             ReadLocalInputs();
 
             StampedPlayerComponent lastPredictedPlayerComponent = m_PredictedPlayerComponents.Peek();
-            float lastTickTime = lastPredictedPlayerComponent.time.OrElse(time);
+            float lastTickTime = lastPredictedPlayerComponent.stamp.time.OrElse(time);
             StampedPlayerComponent predictedPlayerComponent = m_PredictedPlayerComponents.ClaimNext();
-            Copier.CopyTo(lastPredictedPlayerComponent, predictedPlayerComponent);
-            predictedPlayerComponent.tick.Value = m_Tick;
-            predictedPlayerComponent.time.Value = time;
+            Extensions.Emptify(predictedPlayerComponent);
+            Copier.MergeSet(predictedPlayerComponent, lastPredictedPlayerComponent);
+            predictedPlayerComponent.stamp.tick.Value = m_Tick;
+            predictedPlayerComponent.stamp.time.Value = time;
             float duration = time - lastTickTime;
-            predictedPlayerComponent.duration.Value = duration;
-
+            predictedPlayerComponent.stamp.duration.Value = duration;
+            
             if (tick == 0)
             {
-                predictedPlayerComponent.component.health.Value = 100;
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 2);
+                predictedPlayerComponent.health.Value = 100;
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.inventory, ItemId.TestingRifle, 1);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.inventory, ItemId.TestingRifle, 2);
             }
-
+            
+            m_LocalCommands.tick.Value = tick;
             m_Socket.SendToServer(m_LocalCommands);
 
-            Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);
+            Copier.MergeSet(predictedPlayerComponent, m_TrustedPlayerComponent);
             m_LocalCommands.duration.Value = duration;
-            m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayerComponent.component, m_LocalCommands);
+            m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayerComponent, m_LocalCommands);
 
-            DebugBehavior.Singleton.Current = predictedPlayerComponent.component;
+            DebugBehavior.Singleton.Predicted = predictedPlayerComponent;
+        }
+
+        public override void Dispose()
+        {
+            m_Socket.Dispose();
         }
     }
 }

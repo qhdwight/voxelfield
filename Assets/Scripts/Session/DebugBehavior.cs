@@ -8,7 +8,9 @@ namespace Session
     {
         [Range(0.0f, 1.0f)] public float Rollback;
 
-        public PlayerComponent Current;
+        public PlayerComponent Predicted;
+
+        public SessionComponentBase Server;
 
         public SessionSettingsComponent Settings;
 

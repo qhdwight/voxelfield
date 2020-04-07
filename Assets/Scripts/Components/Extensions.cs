@@ -20,6 +20,12 @@ namespace Components
             return type.IsSubclassOf(typeof(ArrayPropertyBase));
         }
 
+        public static void Emptify(object o)
+        {
+            var @object = new TriArray<object> {[0] = o};
+            Navigate((field, properties) => properties[0].Clear(), @object, 1);
+        }
+
         internal static void Navigate(Action<FieldInfo, PropertyBase> visitProperty, object o)
         {
             var @object = new TriArray<object> {[0] = o};
@@ -43,7 +49,8 @@ namespace Components
         private static void Navigate(Action<FieldInfo, TriArray<PropertyBase>> visitProperty, in TriArray<object> zipped, int size,
                                      Action<TriArray<ComponentBase>> visitComponent = null)
         {
-            void NavigateRecursively(in TriArray<object> _zipped, Type _type, FieldInfo _field)
+            if (size <= 0) throw new ArgumentException("Size needs to be greater than zero");
+            void NavigateRecursively(in TriArray<object> _zipped, FieldInfo _field)
             {
                 TriArray<object> zippedReferencesCopy = _zipped;
                 for (var i = 0; i < size; i++)
@@ -51,6 +58,17 @@ namespace Components
                         throw new NullReferenceException("Null member");
                     else
                         zippedReferencesCopy[i] = _zipped[i];
+                FieldInfo[] _fields = null;
+                Type _type = null;
+                for (var i = 0; i < size; i++)
+                {
+                    Type type = _zipped[i].GetType();
+                    FieldInfo[] fields = Cache.GetFieldInfo(type);
+                    int count = fields.Length;
+                    if (_fields != null && count >= _fields.Length) continue;
+                    _fields = fields;
+                    _type = type;
+                }
                 if (_type.IsComponent())
                 {
                     if (visitComponent != null)
@@ -60,7 +78,7 @@ namespace Components
                             zippedComponents[i] = (ComponentBase) _zipped[i];
                         visitComponent(zippedComponents);
                     }
-                    foreach (FieldInfo field in Cache.GetFieldInfo(_type))
+                    foreach (FieldInfo field in _fields)
                     {
                         Type fieldType = field.FieldType;
                         if (fieldType.IsProperty())
@@ -74,7 +92,7 @@ namespace Components
                         {
                             for (var i = 0; i < size; i++)
                                 zippedReferencesCopy[i] = field.GetValue(_zipped[i]);
-                            NavigateRecursively(zippedReferencesCopy, fieldType, field);
+                            NavigateRecursively(zippedReferencesCopy, field);
                         }
                     }
                 }
@@ -97,7 +115,7 @@ namespace Components
                         {
                             for (var i = 0; i < size; i++)
                                 zippedReferencesCopy[i] = zippedArrays[i].GetValue(j);
-                            NavigateRecursively(zippedReferencesCopy, elementType, _field);
+                            NavigateRecursively(zippedReferencesCopy, _field);
                         }
                 }
                 else
@@ -105,8 +123,7 @@ namespace Components
                     throw new Exception("Expected component or array");
                 }
             }
-            Type type = zipped[0].GetType();
-            NavigateRecursively(zipped, type, null);
+            NavigateRecursively(zipped, null);
         }
 
         private struct TriArray<T>

@@ -39,21 +39,24 @@ namespace Session
 
         protected override void Render(float renderDelta, float timeSinceTick)
         {
+            // Interpolate all remote players
+            InterpolateHistoryInto(m_RenderSessionComponent, m_SessionComponentHistory, session => session.stamp.duration, DebugBehavior.Singleton.Rollback, timeSinceTick);
+            // Inject host player component
             m_RenderSessionComponent.localPlayerId.Value = HostPlayerId;
-            PlayerComponent localPlayerRenderComponent = m_RenderSessionComponent.playerComponents[HostPlayerId];
-            Copier.CopyTo(m_HostPlayerComponent, localPlayerRenderComponent);
+            PlayerComponent hostPlayerRenderComponent = m_RenderSessionComponent.playerComponents[HostPlayerId];
+            Copier.MergeSet(hostPlayerRenderComponent, m_HostPlayerComponent);
+            
             RenderSessionComponent(m_RenderSessionComponent);
         }
 
         protected override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
-            if (tick == 0)
-            {
-                m_HostPlayerComponent.health.Value = 100;
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(m_HostPlayerComponent.inventory, ItemId.TestingRifle, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(m_HostPlayerComponent.inventory, ItemId.TestingRifle, 2);
-            }
+            TSessionComponent trustedSessionComponent = m_SessionComponentHistory.Peek();
+            trustedSessionComponent.localPlayerId.Value = HostPlayerId;
+            // Merge updates that happen on normal update cycle with host
+            Copier.MergeSet(m_HostPlayerComponent, trustedSessionComponent.LocalPlayerComponent);
+            Copier.MergeSet(trustedSessionComponent.LocalPlayerComponent, m_HostPlayerComponent);
         }
     }
 }

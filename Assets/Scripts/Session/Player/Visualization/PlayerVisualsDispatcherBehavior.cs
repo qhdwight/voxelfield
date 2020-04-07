@@ -50,7 +50,7 @@ namespace Session.Player.Visualization
                 render.enabled = isVisible;
                 render.shadowCastingMode = isListenerEnabled && !m_IsDebugRender ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             }
-            // gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
+            gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
         }
     }
 }

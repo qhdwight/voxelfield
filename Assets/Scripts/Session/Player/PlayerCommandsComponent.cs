@@ -22,7 +22,7 @@ namespace Session.Player
         public FloatProperty duration;
         public UShortProperty inputs;
         public ByteProperty wantedItemIndex;
-        public FloatProperty mouseDeltaX, mouseDeltaY;
+        [NoSerialization] public FloatProperty mouseDeltaX, mouseDeltaY;
 
         public bool GetInput(PlayerInput input) => (inputs & (1 << (int) input)) != 0;
 

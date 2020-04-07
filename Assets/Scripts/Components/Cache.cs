@@ -15,7 +15,11 @@ namespace Components
                 FieldCache.Add(type,
                                type.GetFields(BindingFlags.Instance | BindingFlags.Public)
                                    .Concat(type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-                                               .Where(field => field.IsDefined(typeof(CopyField)))).ToArray());
+                                               .Where(field => field.IsDefined(typeof(CopyField))))
+                                   .GroupBy(field => field.DeclaringType)
+                                   .Reverse()
+                                   .SelectMany(grouping => grouping)
+                                   .ToArray());
             return FieldCache[type];
         }
     }

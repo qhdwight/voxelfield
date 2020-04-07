@@ -60,6 +60,7 @@ namespace Session.Player.Modifiers
 
         private void FullMove(PlayerComponent playerComponent, PlayerCommandsComponent commands)
         {
+            if (playerComponent.IsDead) return;
             Vector3 initialVelocity = playerComponent.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = LateralMagnitude(endingVelocity);
             Transform playerTransform = transform;

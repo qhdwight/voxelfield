@@ -30,6 +30,8 @@ namespace Components
 
         public abstract bool Equals(PropertyBase other);
 
+        public abstract void Clear();
+
         public abstract void SetFromIfPresent(PropertyBase other);
 
         public abstract void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null);
@@ -102,6 +104,12 @@ namespace Components
         {
             if (HasValue) action(m_Value);
             return this;
+        }
+
+        public override void Clear()
+        {
+            HasValue = false;
+            m_Value = default;
         }
 
         public T OrElse(T @default)
