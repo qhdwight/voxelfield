@@ -3,34 +3,58 @@ using System.Collections.Generic;
 using Collections;
 using Components;
 using Session.Player.Components;
+using Session.Player.Modifiers;
+using Session.Player.Visualization;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Session
 {
-    public abstract class SessionBase<TSessionComponent> where TSessionComponent : SessionComponentBase
+    public interface IGameObjectLinker
     {
-        protected class PingCheckComponent : ComponentBase
-        {
-            public UIntProperty tick;
-        }
+        (GameObject, GameObject) GetPlayerPrefabs();
+    }
+    
+    public abstract class SessionBase
+    {
+        internal const int MaxPlayers = 2;
+    }
 
-        protected readonly SessionComponentHistory<TSessionComponent> sessionComponentHistory;
-        private float m_FixedUpdateTime, m_RenderTime;
-        protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
-        protected uint m_Tick;
-
-        protected static readonly Dictionary<Type, byte> TypeToId = new Dictionary<Type, byte>()
+    public abstract class SessionBase<TSessionComponent> : SessionBase
+        where TSessionComponent : SessionComponentBase
+    {
+        protected static readonly Dictionary<Type, byte> TypeToId = new Dictionary<Type, byte>
         {
             [typeof(PingCheckComponent)] = 0
         };
 
-        protected SessionBase()
+        private readonly GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
+
+        private float m_FixedUpdateTime, m_RenderTime;
+
+        protected PlayerModifierDispatcherBehavior[] m_Modifier;
+        protected PlayerVisualsDispatcherBehavior[] m_Visuals;
+        protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
+        protected uint m_Tick;
+        protected SessionComponentHistory<TSessionComponent> sessionComponentHistory;
+
+        protected SessionBase(IGameObjectLinker linker)
         {
-            sessionComponentHistory = new SessionComponentHistory<TSessionComponent>();
+            (m_PlayerModifierPrefab, m_PlayerVisualsPrefab) = linker.GetPlayerPrefabs();
+        }
+
+        private static T Instantiate<T>(GameObject prefab, Action<T> setup)
+        {
+            var component = Object.Instantiate(prefab).GetComponent<T>();
+            setup(component);
+            return component;
         }
 
         public virtual void Start()
         {
+            sessionComponentHistory = new SessionComponentHistory<TSessionComponent>();
+            m_Visuals = ArrayFactory.Repeat(() => Instantiate<PlayerVisualsDispatcherBehavior>(m_PlayerVisualsPrefab, visuals => visuals.Setup()), MaxPlayers);
+            m_Modifier = ArrayFactory.Repeat(() => Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, modifier => modifier.Setup()), MaxPlayers);
         }
 
         public void Update()
@@ -84,9 +108,23 @@ namespace Session
                 interpolation = elapsed / toComponent.duration;
             }
             else
+            {
                 interpolation = 0.0f;
+            }
             Interpolator.InterpolateInto(fromComponent.component, toComponent.component, componentToInterpolate, interpolation);
             return true;
+        }
+
+        protected void RenderSessionComponent(SessionComponentBase session)
+        {
+            SceneCamera.Singleton.SetEnabled(!session.localPlayerId.HasValue || session.LocalPlayerComponent.IsDead);
+            for (var playerId = 0; playerId < session.playerComponents.Length; playerId++)
+                m_Visuals[playerId].Visualize(session.playerComponents[playerId], playerId == session.localPlayerId);
+        }
+
+        protected class PingCheckComponent : ComponentBase
+        {
+            public UIntProperty tick;
         }
 
         protected class StampedPlayerComponent : StampComponent

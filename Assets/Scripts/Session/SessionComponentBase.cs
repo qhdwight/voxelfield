@@ -1,6 +1,5 @@
 using System;
 using Components;
-using Session.Player;
 using Session.Player.Components;
 
 namespace Session
@@ -22,7 +21,7 @@ namespace Session
     public abstract class SessionComponentBase : ComponentBase
     {
         public ByteProperty localPlayerId;
-        public ArrayProperty<PlayerComponent> playerComponents = new ArrayProperty<PlayerComponent>(PlayerManager.MaxPlayers);
+        public ArrayProperty<PlayerComponent> playerComponents = new ArrayProperty<PlayerComponent>(SessionBase.MaxPlayers);
         public SessionSettingsComponent settings;
         public StampComponent stamp;
 

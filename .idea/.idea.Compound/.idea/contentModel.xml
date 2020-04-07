@@ -39,7 +39,6 @@
             <e p="Session" t="Include">
               <e p="Client.cs" t="Include" />
               <e p="Host.cs" t="Include" />
-              <e p="Session.cs" t="Include" />
               <e p="SessionComponent.cs" t="Include" />
               <e p="SessionManager.cs" t="Include" />
             </e>
@@ -87,7 +86,6 @@
                 <e p="PlayerMovement.cs" t="Include" />
               </e>
               <e p="PlayerCommandsComponent.cs" t="Include" />
-              <e p="PlayerManager.cs" t="Include" />
               <e p="Visualization" t="Include">
                 <e p="PlayerItemAnimatorBehavior.cs" t="Include" />
                 <e p="PlayerItemManagerVisualsBehavior.cs" t="Include" />

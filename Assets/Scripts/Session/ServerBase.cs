@@ -1,6 +1,5 @@
 using System.Net;
 using Networking;
-using UnityEngine;
 
 namespace Session
 {
@@ -10,8 +9,13 @@ namespace Session
     {
         private ComponentServerSocket m_Socket;
 
+        protected ServerBase(IGameObjectLinker linker) : base(linker)
+        {
+        }
+        
         public override void Start()
         {
+            base.Start();
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777), TypeToId);
             m_Socket.StartReceiving();
         }

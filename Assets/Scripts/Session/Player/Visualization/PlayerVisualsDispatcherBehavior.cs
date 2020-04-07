@@ -22,6 +22,7 @@ namespace Session.Player.Visualization
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup();
             m_Camera = GetComponentInChildren<Camera>();
             m_AudioListener = GetComponentInChildren<AudioListener>();
+            m_Camera.enabled = false;
             SetVisible(false, false);
         }
 
@@ -49,7 +50,7 @@ namespace Session.Player.Visualization
                 render.enabled = isVisible;
                 render.shadowCastingMode = isListenerEnabled && !m_IsDebugRender ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             }
-            gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
+            // gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
         }
     }
 }
