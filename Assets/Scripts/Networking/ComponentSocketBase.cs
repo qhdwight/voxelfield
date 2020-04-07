@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -24,7 +25,7 @@ namespace Networking
         private readonly MemoryStream m_SendStream = new MemoryStream(BufferSize);
         private readonly BinaryWriter m_SendWriter;
         private readonly ReadState m_ReadState = new ReadState();
-        private readonly List<object> m_ReceivedObjects = new List<object>();
+        private readonly ConcurrentQueue<object> m_ReceivedMessages = new ConcurrentQueue<object>();
 
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
         private AsyncCallback m_ReceiveCallback;
@@ -61,7 +62,7 @@ namespace Networking
                 Type type = m_Codes.GetReverse(code);
                 object instance = Activator.CreateInstance(type);
                 Serializer.DeserializeInto(instance, state.stream);
-                m_ReceivedObjects.Add(instance);
+                m_ReceivedMessages.Enqueue(instance);
                 m_RawSocket.BeginReceiveFrom(state.stream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, state);
             };
             m_RawSocket.BeginReceiveFrom(m_ReadState.stream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, m_ReadState);
@@ -69,9 +70,8 @@ namespace Networking
 
         public void PollReceived(Action<object> received)
         {
-            foreach (object receivedObject in m_ReceivedObjects)
-                received(receivedObject);
-            m_ReceivedObjects.Clear();
+            while (m_ReceivedMessages.TryDequeue(out object message))
+                received(message);
         }
 
         public bool Send(ComponentBase message, IPEndPoint endPoint)

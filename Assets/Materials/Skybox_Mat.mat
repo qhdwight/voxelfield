@@ -94,3 +94,4 @@ Material:
     - _SkyTint: {r: 0.16470589, g: 0.22352941, b: 0.32941177, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _Tint: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
+  m_BuildTextureStacks: []

@@ -1,5 +1,7 @@
 using System.Net;
 using Networking;
+using Session.Player;
+using UnityEngine;
 
 namespace Session
 {
@@ -24,10 +26,13 @@ namespace Session
         {
             base.Tick(tick, time);
 
-            m_Socket.PollReceived(@object =>
+            m_Socket.PollReceived(message =>
             {
-                if (@object is PingCheckComponent pingCheckComponent)
+                switch (message)
                 {
+                    case PlayerCommandsComponent commands:
+                        
+                        break;
                 }
             });
         }

@@ -13,7 +13,7 @@ namespace Compound.Session
 
         private void StartSession()
         {
-            m_Session = new Client(this);
+            m_Session = new Host(this);
             m_Session.Start();
 
             // m_DebugSession = new Client(this);

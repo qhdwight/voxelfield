@@ -78,7 +78,7 @@ namespace Session
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.component.inventory, ItemId.TestingRifle, 2);
             }
 
-            m_Socket.SendToServer(new PingCheckComponent {tick = new UIntProperty(tick)});
+            m_Socket.SendToServer(m_LocalCommands);
 
             Copier.CopyTo(m_TrustedPlayerComponent, predictedPlayerComponent.component);
             m_LocalCommands.duration.Value = duration;

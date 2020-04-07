@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Collections;
 using Components;
+using Session.Player;
 using Session.Player.Components;
 using Session.Player.Modifiers;
 using Session.Player.Visualization;
@@ -25,7 +26,8 @@ namespace Session
     {
         protected static readonly Dictionary<Type, byte> TypeToId = new Dictionary<Type, byte>
         {
-            [typeof(PingCheckComponent)] = 0
+            [typeof(PingCheckComponent)] = 0,
+            [typeof(PlayerCommandsComponent)] = 1
         };
 
         private readonly GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
