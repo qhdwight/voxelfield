@@ -51,8 +51,8 @@ namespace Session
             PlayerComponent localPlayerRenderComponent = m_RenderSessionComponent.playerComponents[LocalPlayerId];
             // InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, 1.0f / m_Settings.tickRate * 1.2f, timeSinceTick);
             InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, player => player.stamp.duration, DebugBehavior.Singleton.Rollback, timeSinceTick);
-            Copier.MergeSet(localPlayerRenderComponent, m_TrustedPlayerComponent);
-            Copier.MergeSet(localPlayerRenderComponent, DebugBehavior.Singleton.RenderOverride);
+            localPlayerRenderComponent.MergeSet(m_TrustedPlayerComponent);
+            localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
             RenderSessionComponent(m_RenderSessionComponent);
         }
 
@@ -62,14 +62,13 @@ namespace Session
 
             ReadLocalInputs();
 
-            StampedPlayerComponent lastPredictedPlayerComponent = m_PredictedPlayerComponents.Peek();
-            float lastTickTime = lastPredictedPlayerComponent.stamp.time.OrElse(time);
-            StampedPlayerComponent predictedPlayerComponent = m_PredictedPlayerComponents.ClaimNext();
-            Extensions.Zero(predictedPlayerComponent);
-            Copier.MergeSet(predictedPlayerComponent, lastPredictedPlayerComponent);
+            StampedPlayerComponent lastPredictedPlayerComponent = m_PredictedPlayerComponents.Peek(),
+                                   predictedPlayerComponent = m_PredictedPlayerComponents.ClaimNext();
+            predictedPlayerComponent.Zero();
+            predictedPlayerComponent.MergeSet(lastPredictedPlayerComponent);
             predictedPlayerComponent.stamp.tick.Value = m_Tick;
             predictedPlayerComponent.stamp.time.Value = time;
-            float duration = time - lastTickTime;
+            float duration = time - lastPredictedPlayerComponent.stamp.time.OrElse(time);
             predictedPlayerComponent.stamp.duration.Value = duration;
             
             if (tick == 0)
@@ -80,9 +79,10 @@ namespace Session
             }
             
             m_LocalCommands.stamp.tick.Value = tick;
+            m_LocalCommands.SetInput(PlayerInput.Forward, true);
             m_Socket.SendToServer(m_LocalCommands);
 
-            Copier.MergeSet(predictedPlayerComponent, m_TrustedPlayerComponent);
+            predictedPlayerComponent.MergeSet(m_TrustedPlayerComponent);
             m_LocalCommands.duration.Value = duration;
             m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayerComponent, m_LocalCommands);
 

@@ -9,7 +9,7 @@ namespace Components
 
     public static class Copier
     {
-        public static void MergeSet<T>(T destination, T source)
+        public static void MergeSet<T>(this T destination, T source)
         {
             Extensions.NavigateZipped((_, _destination, _source) => _destination.SetFromIfPresent(_source), destination, source);
         }

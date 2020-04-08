@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using Collections;
 using Components;
 using UnityEngine;
@@ -15,57 +15,47 @@ namespace Networking
     {
         private const int BufferSize = 1 << 16;
 
-        protected readonly IPEndPoint m_Endpoint;
+        protected readonly IPEndPoint m_Ip;
         protected readonly Socket m_RawSocket;
 
         private readonly DualDictionary<Type, byte> m_Codes;
-        private readonly MemoryStream m_SendStream = new MemoryStream(BufferSize);
-        private readonly BinaryWriter m_SendWriter;
-        private readonly ReadState m_ReadState = new ReadState();
-        private readonly ConcurrentQueue<ComponentBase> m_ReceivedMessages = new ConcurrentQueue<ComponentBase>();
+        private readonly MemoryStream m_SendStream = new MemoryStream(BufferSize), m_ReadStream = new MemoryStream(BufferSize);
+        private readonly BinaryWriter m_Writer;
+        private readonly BinaryReader m_Reader;
+        private readonly Queue<ComponentBase> m_ReceivedMessages = new Queue<ComponentBase>();
         private readonly Dictionary<Type, Pool<ComponentBase>> m_MessagePools;
 
+        private readonly Mutex m_Mutex = new Mutex();
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
         private AsyncCallback m_ReceiveCallback;
 
-        protected ComponentSocketBase(IPEndPoint endpoint, Dictionary<Type, byte> codes)
+        protected ComponentSocketBase(IPEndPoint ip, Dictionary<Type, byte> codes)
         {
-            m_Endpoint = endpoint;
+            m_Ip = ip;
             m_Codes = new DualDictionary<Type, byte>(codes);
             m_RawSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            m_SendWriter = new BinaryWriter(m_SendStream);
+            m_ReadStream.SetLength(m_ReadStream.Capacity);
+            m_Writer = new BinaryWriter(m_SendStream);
+            m_Reader = new BinaryReader(m_ReadStream);
             m_MessagePools = codes.ToDictionary(pair => pair.Key,
                                                 pair => new Pool<ComponentBase>(0, () => (ComponentBase) Activator.CreateInstance(pair.Key)));
-        }
-
-        protected class ReadState
-        {
-            internal readonly MemoryStream stream = new MemoryStream(BufferSize);
-
-            internal readonly BinaryReader reader;
-
-            internal ReadState()
-            {
-                reader = new BinaryReader(stream);
-                stream.SetLength(stream.Capacity);
-            }
         }
 
         public void StartReceiving()
         {
             m_ReceiveCallback = result =>
             {
+                m_Mutex.WaitOne();
                 try
                 {
-                    var state = (ReadState) result.AsyncState;
                     int received = m_RawSocket.EndReceiveFrom(result, ref m_ReceiveEndPoint);
-                    state.stream.Position = 0;
-                    byte code = state.reader.ReadByte();
+                    m_ReadStream.Position = 0;
+                    byte code = m_Reader.ReadByte();
                     Type type = m_Codes.GetReverse(code);
                     ComponentBase instance = m_MessagePools[type].Obtain();
-                    Serializer.DeserializeInto(instance, state.stream);
+                    Serializer.DeserializeInto(instance, m_ReadStream);
                     m_ReceivedMessages.Enqueue(instance);
-                    m_RawSocket.BeginReceiveFrom(state.stream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, state);
+                    m_RawSocket.BeginReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, null);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -75,27 +65,41 @@ namespace Networking
                     Debug.LogError(exception);
                     throw;
                 }
+                finally
+                {
+                    m_Mutex.ReleaseMutex();
+                }
             };
-            m_RawSocket.BeginReceiveFrom(m_ReadState.stream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, m_ReadState);
+            m_RawSocket.BeginReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, null);
         }
 
         public void PollReceived(Action<int, ComponentBase> received)
         {
-            while (m_ReceivedMessages.TryDequeue(out ComponentBase message))
+            m_Mutex.WaitOne();
+            try
             {
-                // TODO: change
-                received(1, message);
-                m_MessagePools[message.GetType()].Return(message);
+                while (m_ReceivedMessages.Count > 0)
+                {
+                    // TODO: change
+                    ComponentBase message = m_ReceivedMessages.Dequeue();
+                    received(1, message);
+                    m_MessagePools[message.GetType()].Return(message);
+                }
+            }
+            finally
+            {
+                m_Mutex.ReleaseMutex();
             }
         }
 
         public bool Send(ComponentBase message, IPEndPoint endPoint)
         {
+            m_Mutex.WaitOne();
             try
             {
                 byte code = m_Codes.GetForward(message.GetType());
                 m_SendStream.Position = 0;
-                m_SendWriter.Write(code);
+                m_Writer.Write(code);
                 Serializer.SerializeFrom(message, m_SendStream);
                 int sent = m_RawSocket.SendTo(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position, SocketFlags.None, endPoint);
                 return true;
@@ -105,13 +109,17 @@ namespace Networking
                 Debug.LogError(exception);
                 return false;
             }
+            finally
+            {
+                m_Mutex.ReleaseMutex();
+            }
         }
 
         public void Dispose()
         {
             m_RawSocket.Dispose();
             m_SendStream.Dispose();
-            m_SendWriter.Dispose();
+            m_Writer.Dispose();
         }
     }
 }

@@ -7,10 +7,10 @@ namespace Networking
 {
     public class ComponentServerSocket : ComponentSocketBase
     {
-        public ComponentServerSocket(IPEndPoint endpoint, Dictionary<Type, byte> codes) : base(endpoint, codes)
+        public ComponentServerSocket(IPEndPoint ip, Dictionary<Type, byte> codes) : base(ip, codes)
         {
             m_RawSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
-            m_RawSocket.Bind(endpoint);
+            m_RawSocket.Bind(ip);
         }
     }
 }

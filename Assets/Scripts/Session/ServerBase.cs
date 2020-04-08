@@ -18,7 +18,7 @@ namespace Session
         protected ServerBase(IGameObjectLinker linker) : base(linker)
         {
         }
-    
+
         public override void Start()
         {
             base.Start();
@@ -26,11 +26,36 @@ namespace Session
             m_Socket.StartReceiving();
         }
 
+        protected virtual void PreTick(TSessionComponent tickSessionComponent)
+        {
+            
+        }
+
+        protected virtual void PostTick(TSessionComponent tickSessionComponent)
+        {
+            
+        }
+
         protected override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
-            TSessionComponent trustedSessionComponent = m_SessionComponentHistory.ClaimNext();
-            Extensions.Zero(trustedSessionComponent);
+            TSessionComponent lastTrustedSessionComponent = m_SessionComponentHistory.Peek(),
+                              trustedSessionComponent = m_SessionComponentHistory.ClaimNext();
+            trustedSessionComponent.Zero();
+            trustedSessionComponent.MergeSet(lastTrustedSessionComponent);
+            trustedSessionComponent.stamp.tick.Value = tick;
+            trustedSessionComponent.stamp.time.Value = time;
+            float duration = time - lastTrustedSessionComponent.stamp.time.OrElse(time);
+            trustedSessionComponent.stamp.duration.Value = duration;
+            PreTick(trustedSessionComponent);
+            
+            foreach (PlayerComponent playerComponent in trustedSessionComponent.playerComponents)
+            {
+                playerComponent.health.Value = 100;
+                if (tick > 0) continue;
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(playerComponent.inventory, ItemId.TestingRifle, 1);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(playerComponent.inventory, ItemId.TestingRifle, 2);
+            }
             m_Socket.PollReceived((clientId, message) =>
             {
                 switch (message)
@@ -38,20 +63,13 @@ namespace Session
                     case ClientCommandComponent commands:
                         PlayerComponent trustedPlayerComponent = trustedSessionComponent.playerComponents[clientId];
                         m_Modifier[clientId].ModifyChecked(trustedPlayerComponent, commands);
-                        Copier.MergeSet(trustedPlayerComponent, commands.trustedComponent);
+                        trustedPlayerComponent.MergeSet(commands.trustedComponent);
                         break;
                 }
             });
-            foreach (PlayerComponent playerComponent in trustedSessionComponent.playerComponents)
-            {
-                playerComponent.health.Value = 100;
-                if (tick == 0)
-                {
-                    PlayerItemManagerModiferBehavior.SetItemAtIndex(playerComponent.inventory, ItemId.TestingRifle, 1);
-                    PlayerItemManagerModiferBehavior.SetItemAtIndex(playerComponent.inventory, ItemId.TestingRifle, 2);
-                }
-            }
             DebugBehavior.Singleton.Server = trustedSessionComponent;
+            
+            PostTick(trustedSessionComponent);
         }
 
         public override void Dispose()

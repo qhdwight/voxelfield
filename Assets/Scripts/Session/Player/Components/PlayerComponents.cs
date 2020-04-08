@@ -88,7 +88,7 @@ namespace Session.Player.Components
         {
             var i1 = (PlayerInventoryComponent) c1;
             var i2 = (PlayerInventoryComponent) c2;
-            if (i1.HasNoItemEquipped)
+            if (i1.HasNoItemEquipped || i2.HasNoItemEquipped)
             {
                 equippedIndex.Value = PlayerItemManagerModiferBehavior.NoneIndex;
                 return;

@@ -1,9 +1,7 @@
 using System;
 using Components;
-using Session.Items.Modifiers;
 using Session.Player;
 using Session.Player.Components;
-using Session.Player.Modifiers;
 
 namespace Session
 {
@@ -26,7 +24,7 @@ namespace Session
 
         private void ReadLocalInputs()
         {
-           m_Modifier[HostPlayerId].ModifyCommands(m_HostCommands);
+            m_Modifier[HostPlayerId].ModifyCommands(m_HostCommands);
         }
 
         public override void Input(float delta)
@@ -44,19 +42,22 @@ namespace Session
             // Inject host player component
             m_RenderSessionComponent.localPlayerId.Value = HostPlayerId;
             PlayerComponent hostPlayerRenderComponent = m_RenderSessionComponent.playerComponents[HostPlayerId];
-            Copier.MergeSet(hostPlayerRenderComponent, m_HostPlayerComponent);
-            
+            hostPlayerRenderComponent.MergeSet(m_HostPlayerComponent);
+
             RenderSessionComponent(m_RenderSessionComponent);
         }
 
-        protected override void Tick(uint tick, float time)
+        protected override void PreTick(TSessionComponent tickSessionComponent)
         {
-            base.Tick(tick, time);
-            TSessionComponent trustedSessionComponent = m_SessionComponentHistory.Peek();
-            trustedSessionComponent.localPlayerId.Value = HostPlayerId;
-            // Merge updates that happen on normal update cycle with host
-            Copier.MergeSet(m_HostPlayerComponent, trustedSessionComponent.LocalPlayerComponent);
-            Copier.MergeSet(trustedSessionComponent.LocalPlayerComponent, m_HostPlayerComponent);
+            // Inject our current player component before normal update cycle
+            tickSessionComponent.localPlayerId.Value = HostPlayerId;
+            tickSessionComponent.LocalPlayerComponent.MergeSet(m_HostPlayerComponent);
+        }
+
+        protected override void PostTick(TSessionComponent tickSessionComponent)
+        {
+            // Merge host component updates that happen on normal server update cycle
+            m_HostPlayerComponent.MergeSet(tickSessionComponent.LocalPlayerComponent);
         }
     }
 }

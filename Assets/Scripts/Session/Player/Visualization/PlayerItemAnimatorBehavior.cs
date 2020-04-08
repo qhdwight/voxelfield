@@ -3,7 +3,6 @@ using Session.Items;
 using Session.Items.Modifiers;
 using Session.Items.Visuals;
 using Session.Player.Components;
-using Session.Player.Modifiers;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
