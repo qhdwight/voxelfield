@@ -18,7 +18,7 @@ namespace Session
         protected ServerBase(IGameObjectLinker linker) : base(linker)
         {
         }
-
+    
         public override void Start()
         {
             base.Start();
@@ -30,7 +30,7 @@ namespace Session
         {
             base.Tick(tick, time);
             TSessionComponent trustedSessionComponent = m_SessionComponentHistory.ClaimNext();
-            Extensions.Emptify(trustedSessionComponent);
+            Extensions.Zero(trustedSessionComponent);
             m_Socket.PollReceived((clientId, message) =>
             {
                 switch (message)

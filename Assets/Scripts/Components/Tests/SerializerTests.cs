@@ -12,6 +12,7 @@ namespace Components.Tests
             var stream = new MemoryStream();
             Serializer.SerializeFrom(arbitrary, stream);
             var deserialized = new OuterComponent();
+            stream.Position = 0;
             Serializer.DeserializeInto(deserialized, stream);
             Assert.AreEqual(arbitrary.@uint, deserialized.@uint);
             Assert.AreEqual(arbitrary.@float, deserialized.@float, 1e-6f);

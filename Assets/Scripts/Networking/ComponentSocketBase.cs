@@ -47,7 +47,7 @@ namespace Networking
             internal ReadState()
             {
                 reader = new BinaryReader(stream);
-                stream.SetLength(BufferSize);
+                stream.SetLength(stream.Capacity);
             }
         }
 
@@ -83,7 +83,8 @@ namespace Networking
         {
             while (m_ReceivedMessages.TryDequeue(out ComponentBase message))
             {
-                received(0, message);
+                // TODO: change
+                received(1, message);
                 m_MessagePools[message.GetType()].Return(message);
             }
         }
@@ -96,16 +97,12 @@ namespace Networking
                 m_SendStream.Position = 0;
                 m_SendWriter.Write(code);
                 Serializer.SerializeFrom(message, m_SendStream);
-
-                m_RawSocket.BeginSendTo(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position, SocketFlags.None, endPoint, result =>
-                {
-                    int sent = m_RawSocket.EndSendTo(result);
-                }, null);
+                int sent = m_RawSocket.SendTo(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position, SocketFlags.None, endPoint);
                 return true;
             }
             catch (Exception exception)
             {
-                Debug.Log(exception);
+                Debug.LogError(exception);
                 return false;
             }
         }

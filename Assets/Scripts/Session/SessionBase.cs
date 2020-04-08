@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Collections;
 using Components;
 using Session.Player;
@@ -19,7 +20,7 @@ namespace Session
     public abstract class SessionBase
     {
         internal const int MaxPlayers = 2;
-        
+
         public static readonly Dictionary<Type, byte> TypeToId = new Dictionary<Type, byte>
         {
             [typeof(PingCheckComponent)] = 0,
@@ -38,30 +39,37 @@ namespace Session
         protected PlayerVisualsDispatcherBehavior[] m_Visuals;
         protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
         protected uint m_Tick;
+        
+        public bool ShouldRender { get; set; } = true;
 
         protected SessionBase(IGameObjectLinker linker)
         {
             (m_PlayerModifierPrefab, m_PlayerVisualsPrefab) = linker.GetPlayerPrefabs();
         }
-
-        private static T Instantiate<T>(GameObject prefab, Action<T> setup)
+        
+        private static T[] Instantiate<T>(GameObject prefab, int length, Action<T> setup)
         {
-            var component = Object.Instantiate(prefab).GetComponent<T>();
-            setup(component);
-            return component;
+            return Enumerable.Range(0, length).Select(i =>
+            {
+                GameObject instance = Object.Instantiate(prefab);
+                instance.name = $"{prefab.name} ({i})";
+                var component = instance.GetComponent<T>();
+                setup(component);
+                return component;
+            }).ToArray();
         }
 
         public virtual void Start()
         {
-            m_Visuals = ArrayFactory.Repeat(() => Instantiate<PlayerVisualsDispatcherBehavior>(m_PlayerVisualsPrefab, visuals => visuals.Setup()), MaxPlayers);
-            m_Modifier = ArrayFactory.Repeat(() => Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, modifier => modifier.Setup()), MaxPlayers);
+            m_Visuals = Instantiate<PlayerVisualsDispatcherBehavior>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup());
+            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, visuals => visuals.Setup());
         }
 
         public void Update()
         {
             float time = Time.realtimeSinceStartup, delta = time - m_RenderTime;
             Input(delta);
-            Render(delta, time - m_FixedUpdateTime);
+            if (ShouldRender) Render(delta, time - m_FixedUpdateTime);
             m_RenderTime = time;
         }
 
@@ -126,7 +134,7 @@ namespace Session
         {
         }
     }
-    
+
     [Serializable]
     public class PingCheckComponent : ComponentBase
     {
@@ -142,7 +150,6 @@ namespace Session
     [Serializable]
     public class ClientCommandComponent : PlayerCommandsComponent
     {
-        public UIntProperty tick;
         public StampComponent stamp;
         public PlayerComponent trustedComponent;
     }

@@ -9,7 +9,7 @@ namespace Session.Player.Modifiers
         }
 
         /// <summary>
-        ///     Called in FixedUpdate()<Baser< based on game tick rate
+        ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
         public virtual void ModifyChecked(TComponent componentToModify, PlayerCommandsComponent commands)
         {

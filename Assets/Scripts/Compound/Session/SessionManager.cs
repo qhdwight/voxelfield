@@ -19,7 +19,7 @@ namespace Compound.Session
                 if (Application.isEditor)
                 {
                     m_Session = new Host(this);
-                    // m_DebugSession = new Client(this);
+                    m_DebugSession = new Client(this) {ShouldRender = false};
                 }
                 else
                 {
@@ -33,7 +33,7 @@ namespace Compound.Session
             }
 
             m_Session?.Start();
-            
+
             m_DebugSession?.Start();
         }
 

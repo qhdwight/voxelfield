@@ -5,8 +5,6 @@ using Session.Items.Modifiers;
 using Session.Player.Modifiers;
 using UnityEngine;
 
-// ReSharper disable UnassignedField.Global
-
 namespace Session.Player.Components
 {
     [Serializable]

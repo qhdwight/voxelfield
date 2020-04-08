@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 
 namespace Components
@@ -20,7 +21,7 @@ namespace Components
             return type.IsSubclassOf(typeof(ArrayPropertyBase));
         }
 
-        public static void Emptify(object o)
+        public static void Zero(object o)
         {
             var @object = new TriArray<object> {[0] = o};
             Navigate((field, properties) => properties[0].Clear(), @object, 1);

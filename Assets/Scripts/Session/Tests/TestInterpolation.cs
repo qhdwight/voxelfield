@@ -1,9 +1,11 @@
-﻿using System.Net;
+﻿using System.IO;
+using System.Net;
 using System.Threading;
 using Components;
 using Networking;
 using NUnit.Framework;
 using Session.Player.Components;
+using UnityEngine;
 
 namespace Session.Tests
 {
@@ -22,36 +24,55 @@ namespace Session.Tests
             Assert.AreEqual(0.021f, id.status.elapsed.Value, 1e-3f);
         }
 
+        // [Test]
+        // public void TestCommandSerialization()
+        // {
+        //     var p1 = new ClientCommandComponent {stamp = new StampComponent {tick = new UIntProperty(35)}};
+        //     
+        //     var stream = new MemoryStream();
+        //     Serializer.SerializeFrom(p1, stream);
+        //     
+        //     var p2 = new ClientCommandComponent();
+        //     stream.Position = 0;
+        //     Serializer.DeserializeInto(p2, stream);
+        //     
+        //     Assert.AreEqual(p1.stamp.tick, p2.stamp.tick);
+        // }
+
         [Test]
         public void TestCommand()
         {
-            var p = new ClientCommandComponent {tick = new UIntProperty(32)};
+            var p = new ClientCommandComponent {stamp = new StampComponent {tick = new UIntProperty(35)}};
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
             using (var server = new ComponentServerSocket(localHost, SessionBase.TypeToId))
             using (var client = new ComponentClientSocket(localHost, SessionBase.TypeToId))
             {
-                server.StartReceiving();
                 client.StartReceiving();
+                server.StartReceiving();
 
-                client.SendToServer(p);
+                const int send = 120;
 
-                var received = false;
+                for (var i = 0; i < send; i++)
+                    client.SendToServer(p);
 
+                var received = 0;
+                
                 Thread.Sleep(100);
 
                 server.PollReceived((id, component) =>
                 {
                     switch (component)
                     {
-                        case ClientCommandComponent _:
-                            received = true;
+                        case ClientCommandComponent command:
+                            Assert.AreEqual(35, command.stamp.tick.Value);
+                            received++;
                             break;
                     }
                 });
 
-                Assert.True(received);
+                Assert.AreEqual(send, received);
             }
         }
     }

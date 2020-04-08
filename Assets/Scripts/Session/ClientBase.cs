@@ -22,7 +22,7 @@ namespace Session
         private readonly TSessionComponent m_RenderSessionComponent = Activator.CreateInstance<TSessionComponent>();
         private readonly PlayerComponent m_TrustedPlayerComponent = new PlayerComponent();
         private ComponentClientSocket m_Socket;
-
+        
         protected ClientBase(IGameObjectLinker linker) : base(linker)
         {
         }
@@ -65,7 +65,7 @@ namespace Session
             StampedPlayerComponent lastPredictedPlayerComponent = m_PredictedPlayerComponents.Peek();
             float lastTickTime = lastPredictedPlayerComponent.stamp.time.OrElse(time);
             StampedPlayerComponent predictedPlayerComponent = m_PredictedPlayerComponents.ClaimNext();
-            Extensions.Emptify(predictedPlayerComponent);
+            Extensions.Zero(predictedPlayerComponent);
             Copier.MergeSet(predictedPlayerComponent, lastPredictedPlayerComponent);
             predictedPlayerComponent.stamp.tick.Value = m_Tick;
             predictedPlayerComponent.stamp.time.Value = time;
@@ -79,7 +79,7 @@ namespace Session
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.inventory, ItemId.TestingRifle, 2);
             }
             
-            m_LocalCommands.tick.Value = tick;
+            m_LocalCommands.stamp.tick.Value = tick;
             m_Socket.SendToServer(m_LocalCommands);
 
             Copier.MergeSet(predictedPlayerComponent, m_TrustedPlayerComponent);
