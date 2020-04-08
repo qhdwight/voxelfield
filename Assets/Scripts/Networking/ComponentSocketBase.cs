@@ -22,10 +22,8 @@ namespace Networking
         private readonly MemoryStream m_SendStream = new MemoryStream(BufferSize), m_ReadStream = new MemoryStream(BufferSize);
         private readonly BinaryWriter m_Writer;
         private readonly BinaryReader m_Reader;
-        private readonly Queue<ComponentBase> m_ReceivedMessages = new Queue<ComponentBase>();
         private readonly Dictionary<Type, Pool<ComponentBase>> m_MessagePools;
 
-        private readonly Mutex m_Mutex = new Mutex();
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
         private AsyncCallback m_ReceiveCallback;
 
@@ -41,61 +39,25 @@ namespace Networking
                                                 pair => new Pool<ComponentBase>(0, () => (ComponentBase) Activator.CreateInstance(pair.Key)));
         }
 
-        public void StartReceiving()
-        {
-            m_ReceiveCallback = result =>
-            {
-                m_Mutex.WaitOne();
-                try
-                {
-                    int received = m_RawSocket.EndReceiveFrom(result, ref m_ReceiveEndPoint);
-                    m_ReadStream.Position = 0;
-                    byte code = m_Reader.ReadByte();
-                    Type type = m_Codes.GetReverse(code);
-                    ComponentBase instance = m_MessagePools[type].Obtain();
-                    instance.Zero();
-                    Serializer.DeserializeInto(instance, m_ReadStream);
-                    m_ReceivedMessages.Enqueue(instance);
-                    m_RawSocket.BeginReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, null);
-                }
-                catch (ObjectDisposedException)
-                {
-                }
-                catch (Exception exception)
-                {
-                    Debug.LogError(exception);
-                    throw;
-                }
-                finally
-                {
-                    m_Mutex.ReleaseMutex();
-                }
-            };
-            m_RawSocket.BeginReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, null);
-        }
-
         public void PollReceived(Action<int, ComponentBase> received)
         {
-            m_Mutex.WaitOne();
-            try
+            while (m_RawSocket.Available > 0)
             {
-                while (m_ReceivedMessages.Count > 0)
-                {
-                    // TODO: change
-                    ComponentBase message = m_ReceivedMessages.Dequeue();
-                    received(1, message);
-                    m_MessagePools[message.GetType()].Return(message);
-                }
-            }
-            finally
-            {
-                m_Mutex.ReleaseMutex();
+                // TODO: change
+                int bytesReceived = m_RawSocket.ReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint);
+                m_ReadStream.Position = 0;
+                byte code = m_Reader.ReadByte();
+                Type type = m_Codes.GetReverse(code);
+                ComponentBase message = m_MessagePools[type].Obtain();
+                message.Zero();
+                Serializer.DeserializeInto(message, m_ReadStream);
+                received(1, message);
+                m_MessagePools[message.GetType()].Return(message);
             }
         }
 
         public bool Send(ComponentBase message, IPEndPoint endPoint)
         {
-            m_Mutex.WaitOne();
             try
             {
                 byte code = m_Codes.GetForward(message.GetType());
@@ -109,10 +71,6 @@ namespace Networking
             {
                 Debug.LogError(exception);
                 return false;
-            }
-            finally
-            {
-                m_Mutex.ReleaseMutex();
             }
         }
 

@@ -23,17 +23,14 @@ namespace Session
         {
             base.Start();
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777), TypeToId);
-            m_Socket.StartReceiving();
         }
 
         protected virtual void PreTick(TSessionComponent tickSessionComponent)
         {
-            
         }
 
         protected virtual void PostTick(TSessionComponent tickSessionComponent)
         {
-            
         }
 
         protected override void Tick(uint tick, float time)
@@ -48,7 +45,7 @@ namespace Session
             float duration = time - lastTrustedSessionComponent.stamp.time.OrElse(time);
             trustedSessionComponent.stamp.duration.Value = duration;
             PreTick(trustedSessionComponent);
-            
+
             foreach (PlayerComponent playerComponent in trustedSessionComponent.playerComponents)
             {
                 playerComponent.health.Value = 100;
@@ -68,7 +65,7 @@ namespace Session
                 }
             });
             DebugBehavior.Singleton.Server = trustedSessionComponent;
-            
+
             PostTick(trustedSessionComponent);
         }
 

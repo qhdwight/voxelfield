@@ -16,7 +16,7 @@ namespace Session.Player.Modifiers
             ModifyEquipStatus(inventoryComponent, commands);
 
             if (inventoryComponent.HasNoItemEquipped) return;
-            
+
             ModifyAdsStatus(inventoryComponent, commands);
 
             // Item

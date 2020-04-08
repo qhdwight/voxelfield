@@ -47,16 +47,13 @@ namespace Session.Tests
             using (var server = new ComponentServerSocket(localHost, SessionBase.TypeToId))
             using (var client = new ComponentClientSocket(localHost, SessionBase.TypeToId))
             {
-                client.StartReceiving();
-                server.StartReceiving();
-
                 const int send = 120;
 
                 for (var i = 0; i < send; i++)
                     client.SendToServer(p);
 
                 var received = 0;
-                
+
                 Thread.Sleep(100);
 
                 server.PollReceived((id, component) =>

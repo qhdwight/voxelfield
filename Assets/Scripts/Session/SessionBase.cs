@@ -39,14 +39,14 @@ namespace Session
         protected PlayerVisualsDispatcherBehavior[] m_Visuals;
         protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
         protected uint m_Tick;
-        
+
         public bool ShouldRender { get; set; } = true;
 
         protected SessionBase(IGameObjectLinker linker)
         {
             (m_PlayerModifierPrefab, m_PlayerVisualsPrefab) = linker.GetPlayerPrefabs();
         }
-        
+
         private static T[] Instantiate<T>(GameObject prefab, int length, Action<T> setup)
         {
             return Enumerable.Range(0, length).Select(i =>
