@@ -24,12 +24,17 @@ namespace Components
 
         private static void ReadIntoProperty(PropertyBase property)
         {
-            property.Deserialize(Reader);
+            bool hasValue = Reader.ReadBoolean();
+            if (hasValue)
+                property.Deserialize(Reader);
         }
 
         private static void WriteFromProperty(PropertyBase property)
         {
-            property.Serialize(Writer);
+            bool hasValue = property.HasValue;
+            Writer.Write(hasValue);
+            if (hasValue)
+                property.Serialize(Writer);
         }
 
         public static void SerializeFrom(ComponentBase component, MemoryStream stream)

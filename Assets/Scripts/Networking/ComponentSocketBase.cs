@@ -53,6 +53,7 @@ namespace Networking
                     byte code = m_Reader.ReadByte();
                     Type type = m_Codes.GetReverse(code);
                     ComponentBase instance = m_MessagePools[type].Obtain();
+                    instance.Zero();
                     Serializer.DeserializeInto(instance, m_ReadStream);
                     m_ReceivedMessages.Enqueue(instance);
                     m_RawSocket.BeginReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint, m_ReceiveCallback, null);

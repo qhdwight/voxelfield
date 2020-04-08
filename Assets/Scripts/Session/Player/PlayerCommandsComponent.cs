@@ -19,7 +19,7 @@ namespace Session.Player
     [Serializable]
     public class PlayerCommandsComponent : ComponentBase
     {
-        [NoSerialization] public FloatProperty duration;
+        public FloatProperty duration;
         public UShortProperty inputs;
         public ByteProperty wantedItemIndex;
         [NoSerialization] public FloatProperty mouseDeltaX, mouseDeltaY;

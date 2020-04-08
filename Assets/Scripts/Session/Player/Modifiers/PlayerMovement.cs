@@ -8,7 +8,7 @@ namespace Session.Player.Modifiers
     public class PlayerMovement : ModifierBehaviorBase<PlayerComponent>
     {
         private const float DefaultDownSpeed = -1.0f, RaycastOffset = 0.05f;
-        
+
         private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
 
         [SerializeField] private float

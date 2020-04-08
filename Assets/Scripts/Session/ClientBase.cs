@@ -3,10 +3,8 @@ using System.Net;
 using Collections;
 using Components;
 using Networking;
-using Session.Items.Modifiers;
 using Session.Player;
 using Session.Player.Components;
-using Session.Player.Modifiers;
 
 namespace Session
 {
@@ -20,7 +18,6 @@ namespace Session
         private readonly CyclicArray<StampedPlayerComponent> m_PredictedPlayerComponents =
             new CyclicArray<StampedPlayerComponent>(250, () => new StampedPlayerComponent());
         private readonly TSessionComponent m_RenderSessionComponent = Activator.CreateInstance<TSessionComponent>();
-        private readonly PlayerComponent m_TrustedPlayerComponent = new PlayerComponent();
         private ComponentClientSocket m_Socket;
         
         protected ClientBase(IGameObjectLinker linker) : base(linker)
@@ -42,7 +39,7 @@ namespace Session
         public override void Input(float delta)
         {
             ReadLocalInputs();
-            m_Modifier[LocalPlayerId].ModifyTrusted(m_TrustedPlayerComponent, m_LocalCommands);
+            m_Modifier[LocalPlayerId].ModifyTrusted(m_LocalCommands.trustedComponent, m_LocalCommands);
         }
 
         protected override void Render(float renderDelta, float timeSinceTick)
@@ -51,7 +48,7 @@ namespace Session
             PlayerComponent localPlayerRenderComponent = m_RenderSessionComponent.playerComponents[LocalPlayerId];
             // InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, 1.0f / m_Settings.tickRate * 1.2f, timeSinceTick);
             InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, player => player.stamp.duration, DebugBehavior.Singleton.Rollback, timeSinceTick);
-            localPlayerRenderComponent.MergeSet(m_TrustedPlayerComponent);
+            localPlayerRenderComponent.MergeSet(m_LocalCommands.trustedComponent);
             localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
             RenderSessionComponent(m_RenderSessionComponent);
         }
@@ -70,19 +67,11 @@ namespace Session
             predictedPlayerComponent.stamp.time.Value = time;
             float duration = time - lastPredictedPlayerComponent.stamp.time.OrElse(time);
             predictedPlayerComponent.stamp.duration.Value = duration;
-            
-            if (tick == 0)
-            {
-                predictedPlayerComponent.health.Value = 100;
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.inventory, ItemId.TestingRifle, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.inventory, ItemId.TestingRifle, 2);
-            }
-            
+
             m_LocalCommands.stamp.tick.Value = tick;
-            m_LocalCommands.SetInput(PlayerInput.Forward, true);
             m_Socket.SendToServer(m_LocalCommands);
 
-            predictedPlayerComponent.MergeSet(m_TrustedPlayerComponent);
+            predictedPlayerComponent.MergeSet(m_LocalCommands.trustedComponent);
             m_LocalCommands.duration.Value = duration;
             m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayerComponent, m_LocalCommands);
 
