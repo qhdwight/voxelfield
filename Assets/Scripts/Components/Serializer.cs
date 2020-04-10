@@ -37,7 +37,7 @@ namespace Components
                 property.Serialize(Writer);
         }
 
-        public static void SerializeFrom(ComponentBase component, MemoryStream stream)
+        public static void Serialize(this ComponentBase component, MemoryStream stream)
         {
             StreamMutex.WaitOne();
             try
@@ -59,7 +59,7 @@ namespace Components
             }
         }
 
-        public static void DeserializeInto(ComponentBase component, MemoryStream stream)
+        public static void Deserialize(this ComponentBase component, MemoryStream stream)
         {
             StreamMutex.WaitOne();
             try

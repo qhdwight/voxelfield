@@ -19,6 +19,7 @@
             <e p="Cache.cs" t="Include" />
             <e p="ComponentBase.cs" t="Include" />
             <e p="Components.asmdef" t="Include" />
+            <e p="ContainerBase.cs" t="Include" />
             <e p="Copier.cs" t="Include" />
             <e p="Extensions.cs" t="Include" />
             <e p="Interpolator.cs" t="Include" />
@@ -38,8 +39,8 @@
             <e p="Compound.asmdef" t="Include" />
             <e p="Session" t="Include">
               <e p="Client.cs" t="Include" />
+              <e p="Components.cs" t="Include" />
               <e p="Host.cs" t="Include" />
-              <e p="SessionComponent.cs" t="Include" />
               <e p="SessionManager.cs" t="Include" />
             </e>
           </e>
@@ -59,6 +60,9 @@
           </e>
           <e p="Session" t="Include">
             <e p="ClientBase.cs" t="Include" />
+            <e p="Components" t="Include">
+              <e p="SessionComponents.cs" t="Include" />
+            </e>
             <e p="DebugBehavior.cs" t="Include" />
             <e p="HostBase.cs" t="Include" />
             <e p="IModifierBase.cs" t="Include" />
@@ -76,6 +80,7 @@
             </e>
             <e p="Player" t="Include">
               <e p="Components" t="Include">
+                <e p="CommandsComponent.cs" t="Include" />
                 <e p="PlayerComponents.cs" t="Include" />
               </e>
               <e p="Modifiers" t="Include">
@@ -85,7 +90,6 @@
                 <e p="PlayerModifierDispatcherBehavior.cs" t="Include" />
                 <e p="PlayerMovement.cs" t="Include" />
               </e>
-              <e p="PlayerCommandsComponent.cs" t="Include" />
               <e p="Visualization" t="Include">
                 <e p="PlayerItemAnimatorBehavior.cs" t="Include" />
                 <e p="PlayerItemManagerVisualsBehavior.cs" t="Include" />
@@ -95,11 +99,8 @@
             </e>
             <e p="SceneCamera.cs" t="Include" />
             <e p="ServerBase.cs" t="Include" />
-            <e p="ServerSessionBase.cs" t="Include" />
             <e p="Session.asmdef" t="Include" />
             <e p="SessionBase.cs" t="Include" />
-            <e p="SessionComponentBase.cs" t="Include" />
-            <e p="SessionComponentHistory.cs" t="Include" />
             <e p="Tests" t="Include">
               <e p="SessionTests.asmdef" t="Include" />
               <e p="TestInterpolation.cs" t="Include" />

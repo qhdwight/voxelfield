@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Collections;
 using Components;
-using Session.Player;
-using Session.Player.Components;
+using Session.Components;
 using Session.Player.Modifiers;
-using Session.Player.Visualization;
 using UnityEngine;
-using Object = UnityEngine.Object;
+using UnityObject = UnityEngine.Object;
 
 namespace Session
 {
@@ -17,26 +14,36 @@ namespace Session
         (GameObject, GameObject) GetPlayerPrefabs();
     }
 
-    public abstract class SessionBase
+    public interface IPlayerContainerRenderer
     {
-        internal const int MaxPlayers = 2;
-
-        public static readonly Dictionary<Type, byte> TypeToId = new Dictionary<Type, byte>
-        {
-            [typeof(PingCheckComponent)] = 0,
-            [typeof(ClientCommandComponent)] = 1
-        };
+        void Render(ContainerBase playerContainer, bool isLocalPlayer);
     }
 
-    public abstract class SessionBase<TSessionComponent> : SessionBase, IDisposable
-        where TSessionComponent : SessionComponentBase
+    public abstract class SessionBase : IDisposable
+    {
+        internal const int MaxPlayers = 2;
+        
+        public abstract void Start();
+
+        public abstract void Update();
+
+        public abstract void FixedUpdate();
+
+        public virtual void Dispose()
+        {
+        }
+    }
+
+    public abstract class SessionBase<TSessionComponent> : SessionBase
+        where TSessionComponent : SessionContainerBase
     {
         private readonly GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
 
-        private float m_FixedUpdateTime, m_RenderTime;
+        internal readonly TSessionComponent m_EmptySessionComponent = Activator.CreateInstance<TSessionComponent>();
 
+        private float m_FixedUpdateTime, m_RenderTime;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
-        protected PlayerVisualsDispatcherBehavior[] m_Visuals;
+        protected IPlayerContainerRenderer[] m_Visuals;
         protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
         protected uint m_Tick;
 
@@ -51,7 +58,7 @@ namespace Session
         {
             return Enumerable.Range(0, length).Select(i =>
             {
-                GameObject instance = Object.Instantiate(prefab);
+                GameObject instance = UnityObject.Instantiate(prefab);
                 instance.name = $"{prefab.name} ({i})";
                 var component = instance.GetComponent<T>();
                 setup(component);
@@ -59,21 +66,21 @@ namespace Session
             }).ToArray();
         }
 
-        public virtual void Start()
+        public override void Start()
         {
-            m_Visuals = Instantiate<PlayerVisualsDispatcherBehavior>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup());
+            m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => { });
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, visuals => visuals.Setup());
         }
 
-        public void Update()
+        public override void Update()
         {
             float time = Time.realtimeSinceStartup, delta = time - m_RenderTime;
             Input(delta);
-            if (ShouldRender) Render(delta, time - m_FixedUpdateTime);
+            if (ShouldRender) Render(delta, time - m_FixedUpdateTime, time);
             m_RenderTime = time;
         }
 
-        protected virtual void Render(float renderDelta, float timeSinceTick)
+        protected virtual void Render(float renderDelta, float timeSinceTick, float renderTime)
         {
         }
 
@@ -86,26 +93,34 @@ namespace Session
         {
         }
 
-        public void FixedUpdate()
+        public override void FixedUpdate()
         {
             Tick(m_Tick++, m_FixedUpdateTime = Time.realtimeSinceStartup);
         }
 
-        protected bool InterpolateHistoryInto<T>(ComponentBase componentToInterpolate, CyclicArray<T> componentHistory,
-                                                 Func<T, float> getDuration, float rollback, float timeSinceLastUpdate) where T : ComponentBase
+        protected void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, CyclicArray<TComponent> componentHistory,
+                                                          Func<TComponent, float> getDuration, float rollback, float timeSinceLastUpdate)
+            where TComponent : ComponentBase
         {
-            T fromComponent = null, toComponent = null;
+            InterpolateHistoryInto(componentToInterpolate, i => componentHistory.Get(i), componentHistory.Size, getDuration, rollback, timeSinceLastUpdate);
+        }
+
+        protected static void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, Func<int, TComponent> getInHistory, int maxRollback,
+                                                                 Func<TComponent, float> getDuration, float rollback, float timeSinceLastUpdate)
+            where TComponent : ComponentBase
+        {
+            TComponent fromComponent = null, toComponent = null;
             var durationCount = 0.0f;
-            for (var componentHistoryIndex = 0; componentHistoryIndex < componentHistory.Size; componentHistoryIndex++)
+            for (var componentHistoryIndex = 0; componentHistoryIndex < maxRollback; componentHistoryIndex++)
             {
-                fromComponent = componentHistory.Get(-componentHistoryIndex - 1);
-                toComponent = componentHistory.Get(-componentHistoryIndex);
+                fromComponent = getInHistory(-componentHistoryIndex - 1);
+                toComponent = getInHistory(-componentHistoryIndex);
                 durationCount += getDuration(toComponent);
                 if (durationCount >= rollback - timeSinceLastUpdate) break;
-                if (componentHistoryIndex != componentHistory.Size - 1) continue;
+                if (componentHistoryIndex != maxRollback - 1) continue;
                 // We do not have enough history. Copy the most recent instead
-                Copier.MergeSet(componentToInterpolate, componentHistory.Peek());
-                return false;
+                componentToInterpolate.MergeSet(getInHistory(0));
+                return;
             }
             if (toComponent == null)
                 throw new ArgumentException("Cyclic array is not big enough");
@@ -116,41 +131,14 @@ namespace Session
                 interpolation = elapsed / getDuration(toComponent);
             }
             else
-            {
                 interpolation = 0.0f;
-            }
             Interpolator.InterpolateInto(fromComponent, toComponent, componentToInterpolate, interpolation);
-            return true;
         }
 
-        protected void RenderSessionComponent(SessionComponentBase session)
+        protected void RenderSessionComponent(SessionContainerBase<ContainerBase> session)
         {
-            SceneCamera.Singleton.SetEnabled(!session.localPlayerId.HasValue || session.LocalPlayerComponent.IsDead);
             for (var playerId = 0; playerId < session.playerComponents.Length; playerId++)
-                m_Visuals[playerId].Visualize(session.playerComponents[playerId], playerId == session.localPlayerId);
+                m_Visuals[playerId].Render(session.playerComponents[playerId], playerId == session.localPlayerId);
         }
-
-        public virtual void Dispose()
-        {
-        }
-    }
-
-    [Serializable]
-    public class PingCheckComponent : ComponentBase
-    {
-        public UIntProperty tick;
-    }
-
-    [Serializable]
-    public class StampedPlayerComponent : PlayerComponent
-    {
-        public StampComponent stamp;
-    }
-
-    [Serializable]
-    public class ClientCommandComponent : PlayerCommandsComponent
-    {
-        public StampComponent stamp;
-        public PlayerComponent trustedComponent;
     }
 }

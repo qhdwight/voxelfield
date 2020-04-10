@@ -7,8 +7,8 @@ namespace Compound.Session
 {
     public class SessionManager : SingletonBehavior<SessionManager>, IGameObjectLinker
     {
-        private SessionBase<SessionComponent> m_Session;
-        private SessionBase<SessionComponent> m_DebugSession = default;
+        private SessionBase m_Session;
+        private SessionBase m_DebugSession = default;
 
         [SerializeField] private GameObject m_PlayerModifierPrefab = default, m_PlayerVisualsPrefab = default;
 

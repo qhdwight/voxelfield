@@ -8,16 +8,37 @@ using UnityEngine;
 namespace Session.Player.Components
 {
     [Serializable]
-    public class PlayerComponent : ComponentBase
+    public class CameraComponent : ComponentBase
     {
-        [TakeSecondForInterpolation] public ByteProperty health;
-        public PlayerInventoryComponent inventory;
-        public VectorProperty position, velocity;
         public FloatProperty yaw, pitch;
-        public ByteProperty groundTick;
+    }
 
+    [Serializable]
+    public class MoveComponent : ComponentBase
+    {
+        public VectorProperty position, velocity;
+        public ByteProperty groundTick;
+    }
+
+    [Serializable]
+    public class HealthProperty : ByteProperty
+    {
         public bool IsAlive => !IsDead;
-        public bool IsDead => health == 0;
+        public bool IsDead => Value == 0;
+    }
+
+    [Serializable]
+    public class StandardPlayerContainer : ContainerBase
+    {
+        [TakeSecondForInterpolation] public HealthProperty health;
+        public MoveComponent move;
+        public InventoryComponent inventory;
+        public CameraComponent camera;
+
+        public override string ToString()
+        {
+            return $"Health: {health}";
+        }
     }
 
     [Serializable]
@@ -39,22 +60,22 @@ namespace Session.Player.Components
                   e2 = s2.elapsed;
             if (s1.id != s2.id) e2 += d1;
             else if (e1 > e2) e2 += d1;
-            float interpolatedStatusElapsed = Mathf.Lerp(e1, e2, interpolation);
-            byte interpolatedStatusId;
-            if (interpolatedStatusElapsed > d1)
+            float interpolatedElapsed = Mathf.Lerp(e1, e2, interpolation);
+            byte interpolatedId;
+            if (interpolatedElapsed > d1)
             {
-                interpolatedStatusElapsed -= d1;
-                interpolatedStatusId = s2.id;
+                interpolatedElapsed -= d1;
+                interpolatedId = s2.id;
             }
             else
-                interpolatedStatusId = s1.id;
-            id.Value = interpolatedStatusId;
-            elapsed.Value = interpolatedStatusElapsed;
+                interpolatedId = s1.id;
+            id.Value = interpolatedId;
+            elapsed.Value = interpolatedElapsed;
         }
 
         public override string ToString()
         {
-            return $"{id}, {elapsed}";
+            return $"ID: {id}, Elapsed: {elapsed}";
         }
     }
 
@@ -74,7 +95,7 @@ namespace Session.Player.Components
     }
 
     [Serializable]
-    public class PlayerInventoryComponent : ComponentBase
+    public class InventoryComponent : ComponentBase
     {
         public ByteProperty equippedIndex;
         public ByteStatusComponent equipStatus, adsStatus;
@@ -86,8 +107,8 @@ namespace Session.Player.Components
 
         public override void InterpolateFrom(object c1, object c2, float interpolation)
         {
-            var i1 = (PlayerInventoryComponent) c1;
-            var i2 = (PlayerInventoryComponent) c2;
+            var i1 = (InventoryComponent) c1;
+            var i2 = (InventoryComponent) c2;
             if (i1.HasNoItemEquipped || i2.HasNoItemEquipped)
             {
                 equippedIndex.Value = PlayerItemManagerModiferBehavior.NoneIndex;
@@ -97,6 +118,8 @@ namespace Session.Player.Components
             if (modifier is GunModifierBase gunModifier)
                 adsStatus.InterpolateFrom(i1.adsStatus, i2.adsStatus, interpolation, aimStatusId => gunModifier.GetAdsStatusModifierProperties(aimStatusId).duration);
             equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation, equipStatusId => modifier.GetEquipStatusModifierProperties(equipStatusId).duration);
+            equippedIndex = i1.equippedIndex;
+            // TODO: handle when id of equipped weapon changes
             EquippedItemComponent.InterpolateFrom(i1.EquippedItemComponent, i2.EquippedItemComponent, interpolation);
         }
     }

@@ -16,7 +16,15 @@ namespace Session
             m_AudioListener = GetComponent<AudioListener>();
         }
 
-        public void SetEnabled(bool isEnabled)
+        private void Update()
+        {
+            if (Camera.allCamerasCount > 1)
+                SetEnabled(false);
+            else if (Camera.allCamerasCount < 1)
+                SetEnabled(true);
+        }
+
+        private void SetEnabled(bool isEnabled)
         {
             m_Camera.enabled = isEnabled;
             m_AudioListener.enabled = isEnabled;

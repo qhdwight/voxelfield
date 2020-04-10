@@ -16,7 +16,7 @@ namespace Components
     }
 
     [Serializable]
-    public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T>
+    public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T> where T : class
     {
         [CopyField, SerializeField] private T[] m_Values;
 
@@ -40,7 +40,7 @@ namespace Components
 
         public IEnumerator<T> GetEnumerator()
         {
-            return m_Values.OfType<T>().GetEnumerator();
+            return ((IEnumerable<T>) m_Values).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

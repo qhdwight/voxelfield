@@ -1,19 +1,31 @@
+using System;
 using System.Net;
+using Collections;
 using Components;
 using Networking;
+using Session.Components;
 using Session.Items.Modifiers;
-using Session.Player.Components;
 using Session.Player.Modifiers;
+using Util;
 
 namespace Session
 {
-    public abstract class ServerBase<TSessionComponent>
-        : SessionBase<TSessionComponent>
-        where TSessionComponent : SessionComponentBase
+    [Serializable]
+    public class ServerPlayerContainer : ContainerBase
+    {
+        public ContainerBase playerComponent;
+        public StampComponent serverStamp, clientStamp;
+    }
+    
+    public abstract class ServerBase<TSessionContainer> : SessionBase<TSessionContainer>
+        where TSessionContainer : SessionContainerBase, new()
     {
         private ComponentServerSocket m_Socket;
-
-        protected readonly SessionComponentHistory<TSessionComponent> m_SessionComponentHistory = new SessionComponentHistory<TSessionComponent>();
+        
+        protected readonly CyclicArray<TSessionContainer> m_SessionComponentHistory = new CyclicArray<TSessionContainer>(250, () =>
+        {
+            return new TSessionContainer {PlayerComponents = new ArrayProperty<ServerPlayerContainer>(MaxPlayers)};
+        });
 
         protected ServerBase(IGameObjectLinker linker) : base(linker)
         {
@@ -22,51 +34,58 @@ namespace Session
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777), TypeToId);
+            m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));
         }
 
-        protected virtual void PreTick(TSessionComponent tickSessionComponent)
+        protected virtual void PreTick(TSessionContainer tickSessionComponent)
         {
         }
 
-        protected virtual void PostTick(TSessionComponent tickSessionComponent)
+        protected virtual void PostTick(TSessionContainer tickSessionComponent)
         {
         }
 
-        protected override void Tick(uint tick, float time)
+        protected sealed override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
-            TSessionComponent lastTrustedSessionComponent = m_SessionComponentHistory.Peek(),
+            TSessionContainer lastTrustedSessionComponent = m_SessionComponentHistory.Peek(),
                               trustedSessionComponent = m_SessionComponentHistory.ClaimNext();
-            trustedSessionComponent.Zero();
+            trustedSessionComponent.Reset();
             trustedSessionComponent.MergeSet(lastTrustedSessionComponent);
             trustedSessionComponent.stamp.tick.Value = tick;
             trustedSessionComponent.stamp.time.Value = time;
             float duration = time - lastTrustedSessionComponent.stamp.time.OrElse(time);
             trustedSessionComponent.stamp.duration.Value = duration;
             PreTick(trustedSessionComponent);
+            Tick(trustedSessionComponent);
+            PostTick(trustedSessionComponent);
+        }
 
-            foreach (PlayerComponent playerComponent in trustedSessionComponent.playerComponents)
+        private void Tick(TSessionContainer trustedSessionComponent)
+        {
+            foreach (ContainerBase playerContainer in trustedSessionComponent.PlayerComponents)
             {
-                playerComponent.health.Value = 100;
-                if (tick > 0) continue;
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(playerComponent.inventory, ItemId.TestingRifle, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(playerComponent.inventory, ItemId.TestingRifle, 2);
+                playerContainer.health.Value = 100;
+                playerContainer.stamp.duration.Value = 0u;
+                playerContainer.stamp.time = trustedSessionComponent.stamp.time;
+                if (trustedSessionComponent.stamp.tick > 0u) continue;
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(playerContainer.inventory, ItemId.TestingRifle, 1);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(playerContainer.inventory, ItemId.TestingRifle, 2);
             }
             m_Socket.PollReceived((clientId, message) =>
             {
                 switch (message)
                 {
                     case ClientCommandComponent commands:
-                        PlayerComponent trustedPlayerComponent = trustedSessionComponent.playerComponents[clientId];
+                        StampedPlayerComponent trustedPlayerComponent = trustedSessionComponent.playerComponents[clientId];
                         m_Modifier[clientId].ModifyChecked(trustedPlayerComponent, commands);
                         trustedPlayerComponent.MergeSet(commands.trustedComponent);
+                        trustedPlayerComponent.stamp.duration.Value += commands.duration;
+                        AnalysisLogger.AddDataPoint("", "A", trustedPlayerComponent.position.Value.x);
                         break;
                 }
             });
             DebugBehavior.Singleton.Server = trustedSessionComponent;
-
-            PostTick(trustedSessionComponent);
         }
 
         public override void Dispose()

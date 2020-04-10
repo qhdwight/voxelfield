@@ -7,7 +7,7 @@ namespace Networking
 {
     public class ComponentClientSocket : ComponentSocketBase
     {
-        public ComponentClientSocket(IPEndPoint ip, Dictionary<Type, byte> codes) : base(ip, codes)
+        public ComponentClientSocket(IPEndPoint ip) : base(ip)
         {
             m_RawSocket.Connect(ip);
         }

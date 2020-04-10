@@ -1,29 +1,26 @@
-using Session.Player.Components;
+using Components;
 using UnityEngine;
 
 namespace Session.Player.Modifiers
 {
-    using PlayerModifier = ModifierBehaviorBase<PlayerComponent>;
-
-    [RequireComponent(typeof(PlayerCameraBehavior), typeof(PlayerMovement))]
     public class PlayerModifierDispatcherBehavior : MonoBehaviour
     {
-        private PlayerModifier[] m_Modifiers;
+        private PlayerModifierBehaviorBase[] m_Modifiers;
 
         internal void Setup()
         {
-            m_Modifiers = GetComponents<PlayerModifier>();
-            foreach (PlayerModifier modifier in m_Modifiers) modifier.Setup();
+            m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
         }
 
-        internal void ModifyChecked(PlayerComponent componentToModify, PlayerCommandsComponent commands)
+        internal void ModifyChecked(ContainerBase containerToModify, ContainerBase commands, float duration)
         {
-            foreach (PlayerModifier modifier in m_Modifiers) modifier.ModifyChecked(componentToModify, commands);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(containerToModify, commands, duration);
         }
 
-        internal void ModifyTrusted(PlayerComponent componentToModify, PlayerCommandsComponent commands)
+        internal void ModifyTrusted(ContainerBase containerToModify, ContainerBase commands, float duration)
         {
-            foreach (PlayerModifier modifier in m_Modifiers) modifier.ModifyTrusted(componentToModify, commands);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(containerToModify, commands, duration);
         }
 
         // public List<TComponent> GetInterfaces<TComponent>() where TComponent : class
@@ -36,9 +33,41 @@ namespace Session.Player.Modifiers
         //     }
         //     return components;
         // }
-        internal void ModifyCommands(PlayerCommandsComponent commandsToModify)
+        
+        internal void ModifyCommands(ContainerBase commandsToModify)
         {
-            foreach (PlayerModifier modifier in m_Modifiers) modifier.ModifyCommands(commandsToModify);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(commandsToModify);
+        }
+    }
+
+    public abstract class PlayerModifierBehaviorBase : MonoBehaviour, IModifierBase<ContainerBase, ContainerBase>
+    {
+        internal virtual void Setup()
+        {
+        }
+
+        /// <summary>
+        ///     Called in FixedUpdate() based on game tick rate
+        /// </summary>
+        public virtual void ModifyChecked(ContainerBase containerToModify, ContainerBase commands, float duration)
+        {
+            SynchronizeBehavior(containerToModify);
+        }
+
+        /// <summary>
+        ///     Called in Update() right after inputs are sampled
+        /// </summary>
+        public virtual void ModifyTrusted(ContainerBase containerToModify, ContainerBase commandsContainer, float duration)
+        {
+            SynchronizeBehavior(containerToModify);
+        }
+
+        public virtual void ModifyCommands(ContainerBase commandsToModify)
+        {
+        }
+
+        protected virtual void SynchronizeBehavior(ContainerBase containersToApply)
+        {
         }
     }
 }

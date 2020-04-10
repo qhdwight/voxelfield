@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 using UnityEngine.Rendering;
-using Util;
 
 namespace Session.Items.Visuals
 {
@@ -29,7 +28,7 @@ namespace Session.Items.Visuals
     }
 
     [SelectionBase, DisallowMultipleComponent]
-    public class ItemVisualBehavior : PlayerVisualsBehaviorBase
+    public class ItemVisualBehavior : MonoBehaviour
     {
         [SerializeField] private byte m_Id = default;
         [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default,
@@ -70,7 +69,7 @@ namespace Session.Items.Visuals
             m_PlayerGraph.GetOutput(PlayerItemAnimatorBehavior.OutputIndex).SetSourcePlayable(m_Mixer);
         }
 
-        internal override void Cleanup()
+        internal void Cleanup()
         {
             if (m_PlayerGraph.IsValid()) m_PlayerGraph.DestroySubgraph(m_Mixer);
         }
@@ -121,7 +120,6 @@ namespace Session.Items.Visuals
                 m_Mixer.SetInputWeight(i, i == animationIndex ? 1.0f : 0.0f);
             ref AnimationClipPlayable itemAnimation = ref m_Animations[animationIndex];
             itemAnimation.SetTime(interpolation * animationClip.length);
-            AnalysisLogger.AddDataPoint("", animationIndex, interpolation);
             m_PlayerGraph.Evaluate();
         }
 

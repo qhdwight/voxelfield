@@ -1,4 +1,5 @@
 using System;
+using Components;
 using Session.Items;
 using Session.Items.Modifiers;
 using Session.Items.Visuals;
@@ -12,7 +13,7 @@ using Util;
 namespace Session.Player.Visualization
 {
     [Serializable, RequireComponent(typeof(Animator), typeof(ArmIk))]
-    public class PlayerItemAnimatorBehavior : PlayerVisualsBehaviorBase
+    public class PlayerItemAnimatorBehavior : MonoBehaviour
     {
         public const int OutputIndex = 0;
 
@@ -31,7 +32,7 @@ namespace Session.Player.Visualization
 
         public ItemComponent LastRenderedItemComponent { internal get; set; }
 
-        internal override void Setup()
+        internal void Setup()
         {
             ArmIk = GetComponent<ArmIk>();
             m_Animator = GetComponent<Animator>();
@@ -41,12 +42,14 @@ namespace Session.Player.Visualization
             AnimationPlayableOutput.Create(m_Graph, $"{m_GraphName} Output", m_Animator);
         }
 
-        public override void Visualize(PlayerComponent playerComponent, bool isLocalPlayer)
+        public void Render(ContainerBase playerContainer, bool isLocalPlayer)
         {
-            m_Visuals = SetupVisualItem(playerComponent.inventory);
+            if (!playerContainer.WithComponent(out InventoryComponent inventoryComponent)) return;
+
+            m_Visuals = SetupVisualItem(inventoryComponent);
             if (m_Visuals == null) return;
-            ItemComponent equippedItemComponent = playerComponent.inventory.EquippedItemComponent;
-            ByteStatusComponent equipStatus = playerComponent.inventory.equipStatus;
+            ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
+            ByteStatusComponent equipStatus = inventoryComponent.equipStatus;
             bool isEquipped = equipStatus.id == ItemEquipStatusId.Equipped;
             ByteStatusComponent expressedStatus = isEquipped ? equippedItemComponent.status : equipStatus;
             float duration = (isEquipped
@@ -66,14 +69,14 @@ namespace Session.Player.Visualization
 
             SampleItemAnimation(equippedItemComponent, equipStatus, interpolation);
 
-            if (m_IsFpv) AnimateAim(playerComponent.inventory);
+            if (m_IsFpv) AnimateAim(inventoryComponent);
 
-            if (!m_TpvArmsRotator) return;
+            if (!playerContainer.WithComponent(out CameraComponent cameraComponent) || !m_TpvArmsRotator) return;
             const float armClamp = 60.0f;
-            m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(playerComponent.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
+            m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(cameraComponent.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
         }
 
-        private ItemVisualBehavior SetupVisualItem(PlayerInventoryComponent inventoryComponent)
+        private ItemVisualBehavior SetupVisualItem(InventoryComponent inventoryComponent)
         {
             if (inventoryComponent.HasNoItemEquipped)
             {
@@ -97,7 +100,7 @@ namespace Session.Player.Visualization
             m_Visuals.SampleAnimation(itemComponent, equipStatus, statusInterpolation);
         }
 
-        public void AnimateAim(PlayerInventoryComponent inventoryComponent)
+        public void AnimateAim(InventoryComponent inventoryComponent)
         {
             if (!(m_Visuals is GunVisualBehavior gunVisuals) || !(m_Visuals.ModiferProperties is GunWithMagazineModifier gunModifier)) return;
             float adsInterpolation = GetAimInterpolationValue(inventoryComponent);
@@ -106,7 +109,7 @@ namespace Session.Player.Visualization
             m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView / 2, adsInterpolation);
         }
 
-        private static float GetAimInterpolationValue(PlayerInventoryComponent inventoryComponent)
+        private static float GetAimInterpolationValue(InventoryComponent inventoryComponent)
         {
             var aimInterpolationValue = 0.0f;
             ByteStatusComponent adsStatus = inventoryComponent.adsStatus;
@@ -126,7 +129,7 @@ namespace Session.Player.Visualization
             return aimInterpolationValue;
         }
 
-        internal override void Cleanup()
+        internal void Cleanup()
         {
             m_Graph.Destroy();
         }

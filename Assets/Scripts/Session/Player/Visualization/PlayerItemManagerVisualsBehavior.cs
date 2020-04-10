@@ -1,5 +1,5 @@
 using System;
-using Session.Player.Components;
+using Components;
 
 namespace Session.Player.Visualization
 {
@@ -13,9 +13,9 @@ namespace Session.Player.Visualization
             ForEachItemAnimator(animator => animator.Setup());
         }
 
-        public override void Visualize(PlayerComponent playerComponent, bool isLocalPlayer)
+        public override void Render(ContainerBase playerContainer, bool isLocalPlayer)
         {
-            ForEachItemAnimator(animator => animator.Visualize(playerComponent, isLocalPlayer));
+            ForEachItemAnimator(animator => animator.Render(playerContainer, isLocalPlayer));
         }
 
         internal override void Cleanup()

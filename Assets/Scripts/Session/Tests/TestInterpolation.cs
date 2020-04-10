@@ -3,6 +3,7 @@ using System.Threading;
 using Components;
 using Networking;
 using NUnit.Framework;
+using Session.Components;
 using Session.Player.Components;
 
 namespace Session.Tests
@@ -40,12 +41,12 @@ namespace Session.Tests
         [Test]
         public void TestCommand()
         {
-            var p = new ClientCommandComponent {stamp = new StampComponent {tick = new UIntProperty(35)}};
+            var p = new ClientCommandsComponent {stamp = new StampComponent {tick = new UIntProperty(35)}};
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
-            using (var server = new ComponentServerSocket(localHost, SessionBase.TypeToId))
-            using (var client = new ComponentClientSocket(localHost, SessionBase.TypeToId))
+            using (var server = new ComponentServerSocket(localHost))
+            using (var client = new ComponentClientSocket(localHost))
             {
                 const int send = 120;
 
@@ -60,7 +61,7 @@ namespace Session.Tests
                 {
                     switch (component)
                     {
-                        case ClientCommandComponent command:
+                        case ClientCommandsComponent command:
                             Assert.AreEqual(35, command.stamp.tick.Value);
                             received++;
                             break;

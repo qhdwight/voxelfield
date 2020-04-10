@@ -20,10 +20,23 @@ namespace Components
             return type.IsSubclassOf(typeof(ArrayPropertyBase));
         }
 
-        public static void Zero(this ComponentBase o)
+        /// <summary>
+        /// Reset all properties to default values clear has value flags.
+        /// </summary>
+        public static void Reset(this ComponentBase o)
         {
             var @object = new TriArray<object> {[0] = o};
             Navigate((field, properties) => properties[0].Clear(), @object, 1);
+        }
+
+        /// <summary>
+        /// Allocates a cloned instance. Do not use in loops.
+        /// </summary>
+        public static T Clone<T>(this T component) where T : ComponentBase
+        {
+            var clone = Activator.CreateInstance<T>();
+            clone.MergeSet(component);
+            return clone;
         }
 
         internal static void Navigate(Action<FieldInfo, PropertyBase> visitProperty, object o)
@@ -52,12 +65,6 @@ namespace Components
             if (size <= 0) throw new ArgumentException("Size needs to be greater than zero");
             void NavigateRecursively(in TriArray<object> _zipped, FieldInfo _field)
             {
-                TriArray<object> zippedReferencesCopy = _zipped;
-                for (var i = 0; i < size; i++)
-                    if (_zipped[i] == null)
-                        throw new NullReferenceException("Null member");
-                    else
-                        zippedReferencesCopy[i] = _zipped[i];
                 FieldInfo[] _fields = null;
                 Type _type = null;
                 for (var i = 0; i < size; i++)
@@ -90,9 +97,10 @@ namespace Components
                         }
                         else
                         {
+                            var zippedFields = new TriArray<object>();
                             for (var i = 0; i < size; i++)
-                                zippedReferencesCopy[i] = field.GetValue(_zipped[i]);
-                            NavigateRecursively(zippedReferencesCopy, field);
+                                zippedFields[i] = field.GetValue(_zipped[i]);
+                            NavigateRecursively(zippedFields, field);
                         }
                     }
                 }
@@ -113,9 +121,10 @@ namespace Components
                         }
                         else
                         {
+                            var zippedElements = new TriArray<object>();
                             for (var i = 0; i < size; i++)
-                                zippedReferencesCopy[i] = zippedArrays[i].GetValue(j);
-                            NavigateRecursively(zippedReferencesCopy, _field);
+                                zippedElements[i] = zippedArrays[i].GetValue(j);
+                            NavigateRecursively(zippedElements, _field);
                         }
                 }
                 else

@@ -1,5 +1,4 @@
 using System;
-using Session.Player;
 using Session.Player.Components;
 using UnityEngine;
 
@@ -32,7 +31,7 @@ namespace Session.Items.Modifiers
     }
 
     [CreateAssetMenu(fileName = "Item", menuName = "Item/Item", order = 0)]
-    public class ItemModifierBase : ScriptableObject, IModifierBase<(ItemComponent, PlayerInventoryComponent)>
+    public class ItemModifierBase : ScriptableObject, IModifierBase<(ItemComponent, InventoryComponent), InputFlagProperty>
     {
         public byte id;
         public string itemName;
@@ -44,33 +43,33 @@ namespace Session.Items.Modifiers
 
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
 
-        public virtual void ModifyTrusted((ItemComponent, PlayerInventoryComponent) componentToModify, PlayerCommandsComponent commands)
+        public virtual void ModifyTrusted((ItemComponent, InventoryComponent) containerToModify, InputFlagProperty inputProperty, float duration)
         {
         }
 
-        public virtual void ModifyChecked((ItemComponent, PlayerInventoryComponent) componentToModify, PlayerCommandsComponent commands)
+        public virtual void ModifyChecked((ItemComponent, InventoryComponent) containerToModify, InputFlagProperty inputProperty, float duration)
         {
-            (ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent) = componentToModify;
+            (ItemComponent itemComponent, InventoryComponent inventoryComponent) = containerToModify;
             if (CanUse(itemComponent, inventoryComponent))
             {
-                if (commands.GetInput(PlayerInput.UseOne))
-                    StartStatus(itemComponent, GetUseStatus(commands));
-                else if (HasSecondaryUse() && commands.GetInput(PlayerInput.UseTwo))
+                if (inputProperty.GetInput(PlayerInput.UseOne))
+                    StartStatus(itemComponent, GetUseStatus(inputProperty));
+                else if (HasSecondaryUse() && inputProperty.GetInput(PlayerInput.UseTwo))
                     StartStatus(itemComponent, ItemStatusId.SecondaryUsing);
             }
-            ModifyStatus(componentToModify, commands);
+            ModifyStatus(containerToModify, inputProperty, duration);
         }
 
-        private void ModifyStatus((ItemComponent, PlayerInventoryComponent) componentToModify, PlayerCommandsComponent commands)
+        private void ModifyStatus((ItemComponent, InventoryComponent) componentToModify, InputFlagProperty inputProperty, float duration)
         {
-            (ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent) = componentToModify;
+            (ItemComponent itemComponent, InventoryComponent inventoryComponent) = componentToModify;
             ByteStatusComponent status = itemComponent.status;
-            status.elapsed.Value += commands.duration;
+            status.elapsed.Value += duration;
             ItemStatusModiferProperties modifierProperties;
             while (status.elapsed > (modifierProperties = m_StatusModiferProperties[status.id]).duration)
             {
                 float statusElapsed = status.elapsed;
-                byte? nextStatus = FinishStatus(itemComponent, inventoryComponent, commands);
+                byte? nextStatus = FinishStatus(itemComponent, inventoryComponent, inputProperty);
                 StartStatus(itemComponent, nextStatus ?? ItemStatusId.Idle, statusElapsed - modifierProperties.duration);
             }
         }
@@ -90,27 +89,24 @@ namespace Session.Items.Modifiers
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         /// <returns>State to switch to</returns>
-        protected virtual byte? FinishStatus(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent, PlayerCommandsComponent commands)
+        protected virtual byte? FinishStatus(ItemComponent itemComponent, InventoryComponent inventoryComponent, InputFlagProperty inputProperty)
         {
             switch (itemComponent.status.id)
             {
                 case ItemStatusId.SecondaryUsing:
                     return ItemStatusId.Idle;
                 case ItemStatusId.PrimaryUsing:
-                    if (CanUse(itemComponent, inventoryComponent, true) && commands.GetInput(PlayerInput.UseOne))
-                        return GetUseStatus(commands);
+                    if (CanUse(itemComponent, inventoryComponent, true) && inputProperty.GetInput(PlayerInput.UseOne))
+                        return GetUseStatus(inputProperty);
                     break;
             }
             return null;
         }
 
-        protected virtual byte GetUseStatus(PlayerCommandsComponent commands) => ItemStatusId.PrimaryUsing;
+        protected virtual byte GetUseStatus(InputFlagProperty inputProperty) => ItemStatusId.PrimaryUsing;
 
-        protected virtual bool CanUse(ItemComponent itemComponent, PlayerInventoryComponent inventoryComponent, bool justFinishedUse = false) =>
+        protected virtual bool CanUse(ItemComponent itemComponent, InventoryComponent inventoryComponent, bool justFinishedUse = false) =>
             (itemComponent.status.id != ItemStatusId.PrimaryUsing || justFinishedUse)
          && itemComponent.status.id != ItemStatusId.SecondaryUsing
          && inventoryComponent.equipStatus.id == ItemEquipStatusId.Equipped;
@@ -123,7 +119,7 @@ namespace Session.Items.Modifiers
         {
         }
 
-        public void ModifyCommands(PlayerCommandsComponent commandsToModify)
+        public void ModifyCommands(InputFlagProperty commandsToModify)
         {
         }
 

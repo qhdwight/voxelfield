@@ -1,11 +1,25 @@
+using Components;
 using Session.Player.Components;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace Session.Player.Visualization
 {
+    public abstract class PlayerVisualsBehaviorBase : MonoBehaviour, IPlayerContainerRenderer
+    {
+        internal virtual void Setup()
+        {
+        }
+
+        internal virtual void Cleanup()
+        {
+        }
+
+        public abstract void Render(ContainerBase playerContainer, bool isLocalPlayer);
+    }
+    
     [SelectionBase]
-    public class PlayerVisualsDispatcherBehavior : MonoBehaviour
+    public class PlayerVisualsDispatcherBehavior : MonoBehaviour, IPlayerContainerRenderer
     {
         private AudioListener m_AudioListener;
 
@@ -31,15 +45,24 @@ namespace Session.Player.Visualization
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Cleanup();
         }
 
-        public void Visualize(PlayerComponent playerComponent, bool isLocalPlayer)
+        public void Render(ContainerBase playerContainer, bool isLocalPlayer)
         {
-            transform.position = playerComponent.position;
-            transform.rotation = Quaternion.AngleAxis(playerComponent.yaw, Vector3.up);
-            m_Head.localRotation = Quaternion.AngleAxis(playerComponent.pitch, Vector3.right);
-            m_Camera.transform.localRotation = Quaternion.AngleAxis(playerComponent.pitch, Vector3.right);
-            m_Camera.enabled = isLocalPlayer;
-            SetVisible(playerComponent.IsAlive, isLocalPlayer && playerComponent.IsAlive);
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Visualize(playerComponent, isLocalPlayer);
+            if (playerContainer.WithComponent(out MoveComponent moveComponent))
+            {
+                transform.position = moveComponent.position;
+            }
+            if (playerContainer.WithComponent(out CameraComponent cameraComponent))
+            {
+                transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
+                m_Head.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
+                m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
+                m_Camera.enabled = isLocalPlayer;
+            }
+            if (playerContainer.WithProperty(out HealthProperty healthProperty))
+            {
+                SetVisible(healthProperty.IsAlive, isLocalPlayer && healthProperty.IsAlive);
+            }
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerContainer, isLocalPlayer);
         }
 
         private void SetVisible(bool isVisible, bool isListenerEnabled)

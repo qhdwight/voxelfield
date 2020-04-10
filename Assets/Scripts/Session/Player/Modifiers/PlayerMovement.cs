@@ -1,3 +1,4 @@
+using Components;
 using Input;
 using Session.Player.Components;
 using UnityEngine;
@@ -5,7 +6,7 @@ using UnityEngine;
 namespace Session.Player.Modifiers
 {
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerMovement : ModifierBehaviorBase<PlayerComponent>
+    public class PlayerMovement : PlayerModifierBehaviorBase
     {
         private const float DefaultDownSpeed = -1.0f, RaycastOffset = 0.05f;
 
@@ -36,32 +37,40 @@ namespace Session.Player.Modifiers
             m_Controller.enabled = false;
         }
 
-        public override void ModifyChecked(PlayerComponent componentToModify, PlayerCommandsComponent commands)
+        public override void ModifyChecked(ContainerBase containerToModify, ContainerBase commands, float duration)
         {
-            base.ModifyChecked(componentToModify, commands);
-            FullMove(componentToModify, commands);
+            base.ModifyChecked(containerToModify, commands, duration);
+            FullMove(containerToModify, commands, duration);
         }
 
-        public override void ModifyCommands(PlayerCommandsComponent commandsToModify)
+        public override void ModifyCommands(ContainerBase commandsToModify)
         {
+            if (!commandsToModify.WithProperty(out InputFlagProperty inputProperty)) return;
+            
             InputProvider input = InputProvider.Singleton;
-            commandsToModify.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
-            commandsToModify.SetInput(PlayerInput.Backward, input.GetInput(InputType.Backward));
-            commandsToModify.SetInput(PlayerInput.Right, input.GetInput(InputType.Right));
-            commandsToModify.SetInput(PlayerInput.Left, input.GetInput(InputType.Left));
-            commandsToModify.SetInput(PlayerInput.Jump, input.GetInput(InputType.Jump));
+            inputProperty.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
+            inputProperty.SetInput(PlayerInput.Backward, input.GetInput(InputType.Backward));
+            inputProperty.SetInput(PlayerInput.Right, input.GetInput(InputType.Right));
+            inputProperty.SetInput(PlayerInput.Left, input.GetInput(InputType.Left));
+            inputProperty.SetInput(PlayerInput.Jump, input.GetInput(InputType.Jump));
         }
 
-        protected override void SynchronizeBehavior(PlayerComponent componentToApply)
+        protected override void SynchronizeBehavior(ContainerBase containersToApply)
         {
-            transform.position = componentToApply.position;
-            m_Controller.enabled = componentToApply.IsAlive;
+            if (!containersToApply.WithComponent(out MoveComponent moveComponent)
+             || !containersToApply.WithProperty(out HealthProperty healthProperty)) return;
+            
+            transform.position = moveComponent.position;
+            m_Controller.enabled = healthProperty.IsAlive;
         }
 
-        private void FullMove(PlayerComponent playerComponent, PlayerCommandsComponent commands)
+        private void FullMove(ContainerBase containerToModify, ContainerBase commands, float duration)
         {
-            if (playerComponent.IsDead) return;
-            Vector3 initialVelocity = playerComponent.velocity, endingVelocity = initialVelocity;
+            if (!containerToModify.WithComponent(out MoveComponent moveComponent)
+             || !containerToModify.WithProperty(out HealthProperty healthProperty)
+             || !commands.WithProperty(out InputFlagProperty inputProperty)) return;
+            
+            Vector3 initialVelocity = moveComponent.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = LateralMagnitude(endingVelocity);
             Transform playerTransform = transform;
             bool isGrounded = Physics.RaycastNonAlloc(playerTransform.position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
@@ -71,36 +80,36 @@ namespace Session.Player.Modifiers
             {
                 float distance = m_CachedGroundHits[0].distance;
                 endingVelocity.y = DefaultDownSpeed;
-                if (!commands.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
+                if (!inputProperty.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
             }
             Vector3 wishDirection =
-                commands.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * playerTransform.forward +
-                commands.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * playerTransform.right;
+                inputProperty.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * playerTransform.forward +
+                inputProperty.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * playerTransform.right;
             float wishSpeed = wishDirection.magnitude;
             wishDirection.Normalize();
             if (wishSpeed > m_MaxSpeed) wishSpeed = m_MaxSpeed;
             if (isGrounded && withinAngleLimit)
             {
-                if (playerComponent.groundTick >= 1)
+                if (moveComponent.groundTick >= 1)
                 {
-                    if (lateralSpeed > m_FrictionCutoff) Friction(lateralSpeed, commands.duration, ref endingVelocity);
+                    if (lateralSpeed > m_FrictionCutoff) Friction(lateralSpeed, duration, ref endingVelocity);
                     else if (Mathf.Approximately(wishSpeed, 0.0f)) endingVelocity = Vector3.zero;
                     endingVelocity.y = DefaultDownSpeed;
                 }
-                Accelerate(wishDirection, wishSpeed, m_Acceleration, commands.duration, ref endingVelocity);
-                if (commands.GetInput(PlayerInput.Jump))
+                Accelerate(wishDirection, wishSpeed, m_Acceleration, duration, ref endingVelocity);
+                if (inputProperty.GetInput(PlayerInput.Jump))
                 {
                     initialVelocity.y = m_JumpSpeed;
-                    endingVelocity.y = initialVelocity.y - m_GravityFactor * commands.duration;
+                    endingVelocity.y = initialVelocity.y - m_GravityFactor * duration;
                 }
-                if (playerComponent.groundTick < byte.MaxValue) playerComponent.groundTick.Value++;
+                if (moveComponent.groundTick < byte.MaxValue) moveComponent.groundTick.Value++;
             }
             else
             {
-                playerComponent.groundTick.Value = 0;
+                moveComponent.groundTick.Value = 0;
                 if (wishSpeed > m_AirSpeedCap) wishSpeed = m_AirSpeedCap;
-                Accelerate(wishDirection, wishSpeed, m_AirAcceleration, commands.duration, ref endingVelocity);
-                endingVelocity.y -= m_GravityFactor * commands.duration;
+                Accelerate(wishDirection, wishSpeed, m_AirAcceleration, duration, ref endingVelocity);
+                endingVelocity.y -= m_GravityFactor * duration;
                 float lateralAirSpeed = LateralMagnitude(endingVelocity);
                 if (lateralAirSpeed > m_MaxAirSpeed)
                 {
@@ -108,9 +117,9 @@ namespace Session.Player.Modifiers
                     endingVelocity.z *= m_MaxAirSpeed / lateralAirSpeed;
                 }
             }
-            m_Controller.Move((initialVelocity + endingVelocity) / 2.0f * commands.duration);
-            playerComponent.position.Value = transform.position;
-            playerComponent.velocity.Value = endingVelocity;
+            m_Controller.Move((initialVelocity + endingVelocity) / 2.0f * duration);
+            moveComponent.position.Value = transform.position;
+            moveComponent.velocity.Value = endingVelocity;
         }
 
         private void Friction(float lateralSpeed, float time, ref Vector3 velocity)

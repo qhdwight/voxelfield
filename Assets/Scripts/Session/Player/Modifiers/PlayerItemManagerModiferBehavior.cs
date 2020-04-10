@@ -1,3 +1,4 @@
+using Components;
 using Input;
 using Session.Items;
 using Session.Items.Modifiers;
@@ -5,34 +6,36 @@ using Session.Player.Components;
 
 namespace Session.Player.Modifiers
 {
-    public class PlayerItemManagerModiferBehavior : ModifierBehaviorBase<PlayerComponent>
+    public class PlayerItemManagerModiferBehavior : PlayerModifierBehaviorBase
     {
         public const byte NoneIndex = 0;
 
-        public override void ModifyChecked(PlayerComponent componentToModify, PlayerCommandsComponent commands)
+        public override void ModifyChecked(ContainerBase containerToModify, ContainerBase commands, float duration)
         {
-            PlayerInventoryComponent inventoryComponent = componentToModify.inventory;
+            if (!containerToModify.WithComponent(out InventoryComponent inventoryComponent)
+             || !containerToModify.WithProperty(out WantedItemIndexProperty wantedItemIndexProperty)
+             || !containerToModify.WithProperty(out InputFlagProperty inputProperty)) return;
 
-            ModifyEquipStatus(inventoryComponent, commands);
+            ModifyEquipStatus(inventoryComponent, wantedItemIndexProperty, duration);
 
             if (inventoryComponent.HasNoItemEquipped) return;
 
-            ModifyAdsStatus(inventoryComponent, commands);
+            ModifyAdsStatus(inventoryComponent, inputProperty, duration);
 
-            // Item
+            // Modify equipped item component
             ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
             ItemModifierBase modifier = ItemManager.GetModifier(equippedItemComponent.id);
-            modifier.ModifyChecked((equippedItemComponent, inventoryComponent), commands);
+            modifier.ModifyChecked((equippedItemComponent, inventoryComponent), inputProperty, duration);
         }
 
-        private static void ModifyEquipStatus(PlayerInventoryComponent inventoryComponent, PlayerCommandsComponent commands)
+        private static void ModifyEquipStatus(InventoryComponent inventoryComponent, WantedItemIndexProperty wantedItemIndexProperty, float duration)
         {
-            byte wantedIndex = commands.wantedItemIndex;
+            byte wantedIndex = wantedItemIndexProperty;
             ByteStatusComponent equipStatus = inventoryComponent.equipStatus;
             // Unequip current item if desired
             bool
                 hasValidWantedIndex = wantedIndex != NoneIndex && inventoryComponent.itemComponents[wantedIndex - 1].id != ItemId.None,
-                wantsNewIndex = commands.wantedItemIndex != inventoryComponent.equippedIndex,
+                wantsNewIndex = wantedIndex != inventoryComponent.equippedIndex,
                 isAlreadyUnequipping = equipStatus.id == ItemEquipStatusId.Unequipping;
             if (hasValidWantedIndex && wantsNewIndex && !isAlreadyUnequipping)
             {
@@ -42,7 +45,7 @@ namespace Session.Player.Modifiers
 
             if (inventoryComponent.HasNoItemEquipped) return;
             // We have a current equipped item
-            equipStatus.elapsed.Value += commands.duration;
+            equipStatus.elapsed.Value += duration;
             ItemModifierBase modifier = ItemManager.GetModifier(inventoryComponent.EquippedItemComponent.id);
 
             // Handle finishing equip status
@@ -59,7 +62,7 @@ namespace Session.Player.Modifiers
             ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
             modifier.OnUnequip(equippedItemComponent);
             if (hasValidWantedIndex)
-                inventoryComponent.equippedIndex.Value = commands.wantedItemIndex;
+                inventoryComponent.equippedIndex.Value = wantedIndex;
             else if (FindReplacement(inventoryComponent, out byte replacementIndex))
                 inventoryComponent.equippedIndex.Value = replacementIndex;
             else
@@ -67,12 +70,12 @@ namespace Session.Player.Modifiers
             equipStatus.id.Value = ItemEquipStatusId.Equipping;
         }
 
-        private static void ModifyAdsStatus(PlayerInventoryComponent inventoryComponent, PlayerCommandsComponent commands)
+        private static void ModifyAdsStatus(InventoryComponent inventoryComponent, InputFlagProperty inputsProperty, float duration)
         {
             ItemModifierBase modifier = ItemManager.GetModifier(inventoryComponent.EquippedItemComponent.id);
             if (!(modifier is GunModifierBase gunModifier)) return;
 
-            if (commands.GetInput(PlayerInput.Ads))
+            if (inputsProperty.GetInput(PlayerInput.Ads))
             {
                 if (inventoryComponent.adsStatus.id == AdsStatusId.HipAiming)
                 {
@@ -90,7 +93,7 @@ namespace Session.Player.Modifiers
             }
 
             ByteStatusComponent adsStatus = inventoryComponent.adsStatus;
-            adsStatus.elapsed.Value += commands.duration;
+            adsStatus.elapsed.Value += duration;
 
             ItemStatusModiferProperties modifierProperties;
             while (adsStatus.elapsed > (modifierProperties = gunModifier.GetAdsStatusModifierProperties(adsStatus.id)).duration)
@@ -101,26 +104,28 @@ namespace Session.Player.Modifiers
             }
         }
 
-        protected override void SynchronizeBehavior(PlayerComponent componentToApply)
+        protected override void SynchronizeBehavior(ContainerBase componentToApply)
         {
         }
 
-        public override void ModifyCommands(PlayerCommandsComponent commandsToModify)
+        public override void ModifyCommands(ContainerBase commands)
         {
+            if (!commands.WithProperty(out InputFlagProperty inputProperty)) return;
             InputProvider input = InputProvider.Singleton;
-            commandsToModify.SetInput(PlayerInput.UseOne, input.GetInput(InputType.UseOne));
-            commandsToModify.SetInput(PlayerInput.UseTwo, input.GetInput(InputType.UseTwo));
-            commandsToModify.SetInput(PlayerInput.Reload, input.GetInput(InputType.Reload));
-            commandsToModify.SetInput(PlayerInput.Ads, input.GetInput(InputType.Ads));
+            inputProperty.SetInput(PlayerInput.UseOne, input.GetInput(InputType.UseOne));
+            inputProperty.SetInput(PlayerInput.UseTwo, input.GetInput(InputType.UseTwo));
+            inputProperty.SetInput(PlayerInput.Reload, input.GetInput(InputType.Reload));
+            inputProperty.SetInput(PlayerInput.Ads, input.GetInput(InputType.Ads));
+            if (!commands.WithProperty(out WantedItemIndexProperty itemIndexProperty)) return;
             if (input.GetInput(InputType.ItemOne))
-                commandsToModify.wantedItemIndex.Value = 1;
+                itemIndexProperty.Value = 1;
             else if (input.GetInput(InputType.ItemTwo))
-                commandsToModify.wantedItemIndex.Value = 2;
+                itemIndexProperty.Value = 2;
             else if (input.GetInput(InputType.ItemThree))
-                commandsToModify.wantedItemIndex.Value = 3;
+                itemIndexProperty.Value = 3;
         }
 
-        private static bool FindReplacement(PlayerInventoryComponent inventoryComponent, out byte replacementIndex)
+        private static bool FindReplacement(InventoryComponent inventoryComponent, out byte replacementIndex)
         {
             var hasFoundReplacement = false;
             replacementIndex = 0;
@@ -133,7 +138,7 @@ namespace Session.Player.Modifiers
             return hasFoundReplacement;
         }
 
-        public static void SetItemAtIndex(PlayerInventoryComponent inventoryComponent, byte itemId, int index)
+        public static void SetItemAtIndex(InventoryComponent inventoryComponent, byte itemId, int index)
         {
             ItemComponent itemComponent = inventoryComponent.itemComponents[index - 1];
             itemComponent.id.Value = itemId;
