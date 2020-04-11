@@ -1,17 +1,16 @@
 using System;
 using Session.Components;
-using Session.Player;
 using Session.Player.Components;
 
 namespace Compound.Session
 {
     [Serializable]
-    public class SessionContainer : SessionContainerBase<PlayerComponent>
+    public class SessionContainer : SessionContainerBase<PlayerContainer>
     {
     }
 
     [Serializable]
-    public class PlayerComponent : StandardPlayerContainer
+    public class PlayerContainer : StandardPlayerContainer
     {
     }
 

@@ -33,7 +33,7 @@ namespace Session.Player.Modifiers
         //     }
         //     return components;
         // }
-        
+
         internal void ModifyCommands(ContainerBase commandsToModify)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(commandsToModify);

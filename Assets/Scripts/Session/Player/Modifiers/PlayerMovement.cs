@@ -46,7 +46,7 @@ namespace Session.Player.Modifiers
         public override void ModifyCommands(ContainerBase commandsToModify)
         {
             if (!commandsToModify.WithProperty(out InputFlagProperty inputProperty)) return;
-            
+
             InputProvider input = InputProvider.Singleton;
             inputProperty.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
             inputProperty.SetInput(PlayerInput.Backward, input.GetInput(InputType.Backward));
@@ -59,7 +59,7 @@ namespace Session.Player.Modifiers
         {
             if (!containersToApply.WithComponent(out MoveComponent moveComponent)
              || !containersToApply.WithProperty(out HealthProperty healthProperty)) return;
-            
+
             transform.position = moveComponent.position;
             m_Controller.enabled = healthProperty.IsAlive;
         }
@@ -69,7 +69,7 @@ namespace Session.Player.Modifiers
             if (!containerToModify.WithComponent(out MoveComponent moveComponent)
              || !containerToModify.WithProperty(out HealthProperty healthProperty)
              || !commands.WithProperty(out InputFlagProperty inputProperty)) return;
-            
+
             Vector3 initialVelocity = moveComponent.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = LateralMagnitude(endingVelocity);
             Transform playerTransform = transform;

@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Collections;
 using Components;
 using Session.Components;
 using Session.Player.Modifiers;
@@ -21,25 +20,10 @@ namespace Session
 
     public abstract class SessionBase : IDisposable
     {
+        private readonly Type m_SessionType, m_PlayerType, m_CommandsType;
         internal const int MaxPlayers = 2;
-        
-        public abstract void Start();
 
-        public abstract void Update();
-
-        public abstract void FixedUpdate();
-
-        public virtual void Dispose()
-        {
-        }
-    }
-
-    public abstract class SessionBase<TSessionComponent> : SessionBase
-        where TSessionComponent : SessionContainerBase
-    {
         private readonly GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
-
-        internal readonly TSessionComponent m_EmptySessionComponent = Activator.CreateInstance<TSessionComponent>();
 
         private float m_FixedUpdateTime, m_RenderTime;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
@@ -49,8 +33,11 @@ namespace Session
 
         public bool ShouldRender { get; set; } = true;
 
-        protected SessionBase(IGameObjectLinker linker)
+        protected SessionBase(IGameObjectLinker linker, Type sessionType, Type playerType, Type commandsType)
         {
+            m_SessionType = sessionType;
+            m_PlayerType = playerType;
+            m_CommandsType = commandsType;
             (m_PlayerModifierPrefab, m_PlayerVisualsPrefab) = linker.GetPlayerPrefabs();
         }
 
@@ -66,13 +53,13 @@ namespace Session
             }).ToArray();
         }
 
-        public override void Start()
+        public virtual void Start()
         {
             m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => { });
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, visuals => visuals.Setup());
         }
 
-        public override void Update()
+        public void Update()
         {
             float time = Time.realtimeSinceStartup, delta = time - m_RenderTime;
             Input(delta);
@@ -93,52 +80,48 @@ namespace Session
         {
         }
 
-        public override void FixedUpdate()
+        public void FixedUpdate()
         {
             Tick(m_Tick++, m_FixedUpdateTime = Time.realtimeSinceStartup);
         }
 
-        protected void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, CyclicArray<TComponent> componentHistory,
-                                                          Func<TComponent, float> getDuration, float rollback, float timeSinceLastUpdate)
-            where TComponent : ComponentBase
-        {
-            InterpolateHistoryInto(componentToInterpolate, i => componentHistory.Get(i), componentHistory.Size, getDuration, rollback, timeSinceLastUpdate);
-        }
+        // protected void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, CyclicArray<TComponent> componentHistory,
+        //                                                   Func<TComponent, float> getDuration, float rollback, float timeSinceLastUpdate)
+        //     where TComponent : ComponentBase
+        // {
+        //     InterpolateHistoryInto(componentToInterpolate, i => componentHistory.Get(i), componentHistory.Size, getDuration, rollback, timeSinceLastUpdate);
+        // }
 
         protected static void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, Func<int, TComponent> getInHistory, int maxRollback,
-                                                                 Func<TComponent, float> getDuration, float rollback, float timeSinceLastUpdate)
+                                                                 Func<int, float> getDuration, float rollback, float timeSinceLastUpdate)
             where TComponent : ComponentBase
         {
-            TComponent fromComponent = null, toComponent = null;
+            int fromIndex = 0, toIndex = 0;
             var durationCount = 0.0f;
-            for (var componentHistoryIndex = 0; componentHistoryIndex < maxRollback; componentHistoryIndex++)
+            for (var historyIndex = 0; historyIndex < maxRollback; historyIndex++)
             {
-                fromComponent = getInHistory(-componentHistoryIndex - 1);
-                toComponent = getInHistory(-componentHistoryIndex);
-                durationCount += getDuration(toComponent);
+                fromIndex = -historyIndex - 1;
+                toIndex = -historyIndex;
+                durationCount += getDuration(-historyIndex);
                 if (durationCount >= rollback - timeSinceLastUpdate) break;
-                if (componentHistoryIndex != maxRollback - 1) continue;
+                if (historyIndex != maxRollback - 1) continue;
                 // We do not have enough history. Copy the most recent instead
                 componentToInterpolate.MergeSet(getInHistory(0));
                 return;
             }
-            if (toComponent == null)
-                throw new ArgumentException("Cyclic array is not big enough");
             float interpolation;
-            if (getDuration(toComponent) > 0.0f)
+            if (getDuration(toIndex) > 0.0f)
             {
                 float elapsed = durationCount - rollback + timeSinceLastUpdate;
-                interpolation = elapsed / getDuration(toComponent);
+                interpolation = elapsed / getDuration(toIndex);
             }
             else
                 interpolation = 0.0f;
-            Interpolator.InterpolateInto(fromComponent, toComponent, componentToInterpolate, interpolation);
+            Interpolator.InterpolateInto(getInHistory(fromIndex), getInHistory(toIndex), componentToInterpolate, interpolation);
         }
 
-        protected void RenderSessionComponent(SessionContainerBase<ContainerBase> session)
+        public virtual void Dispose()
         {
-            for (var playerId = 0; playerId < session.playerComponents.Length; playerId++)
-                m_Visuals[playerId].Render(session.playerComponents[playerId], playerId == session.localPlayerId);
         }
     }
 }

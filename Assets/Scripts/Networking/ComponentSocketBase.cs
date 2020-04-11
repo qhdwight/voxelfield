@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using Collections;
@@ -36,6 +35,11 @@ namespace Networking
             m_Reader = new BinaryReader(m_ReadStream);
             // m_MessagePools = m_Codes.Forwards.ToDictionary(pair => pair.Key,
             //                                     pair => new Pool<ComponentBase>(0, () => (ComponentBase) Activator.CreateInstance(pair.Key)));
+        }
+
+        public void RegisterComponent(Type componentType)
+        {
+            m_MessagePools[componentType] = new Pool<ComponentBase>(1, () => (ComponentBase) Activator.CreateInstance(componentType));
         }
 
         public void PollReceived(Action<int, ComponentBase> received)

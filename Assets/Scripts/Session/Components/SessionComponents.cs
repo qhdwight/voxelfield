@@ -1,6 +1,5 @@
 using System;
 using Components;
-using Session.Player.Components;
 
 namespace Session.Components
 {
@@ -31,27 +30,14 @@ namespace Session.Components
     }
 
     [Serializable]
-    public abstract class SessionContainerBase : ContainerBase
+    public abstract class SessionContainerBase<TPlayerComponent> : ContainerBase
+        where TPlayerComponent : ComponentBase
     {
         public ByteProperty localPlayerId;
         public StampComponent stamp;
-
-        public abstract Type PlayerType { get; }
-
-        public abstract ArrayProperty<ContainerBase> PlayerComponents { get; }
-    }
-
-    [Serializable]
-    public abstract class SessionContainerBase<TPlayerComponent> : SessionContainerBase
-        where TPlayerComponent : ContainerBase
-    {
-        public ArrayProperty<TPlayerComponent> playerComponents = new ArrayProperty<TPlayerComponent>(SessionBase.MaxPlayers);
+        public ArrayProperty<TPlayerComponent> playerComponents;
         public SessionSettingsComponent settings;
 
         public ComponentBase LocalPlayerComponent => localPlayerId.HasValue ? playerComponents[localPlayerId.Value] : null;
-
-        public override Type PlayerType => typeof(TPlayerComponent);
-
-        public override ArrayProperty<ContainerBase> PlayerComponents => (object) playerComponents as ArrayProperty<ContainerBase>;
     }
 }

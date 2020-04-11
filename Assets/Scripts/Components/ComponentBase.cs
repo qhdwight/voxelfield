@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Components
@@ -23,7 +22,6 @@ namespace Components
 
         protected virtual void NewInstance(object instance)
         {
-            
         }
 
         public virtual void InterpolateFrom(object c1, object c2, float interpolation)

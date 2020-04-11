@@ -7,6 +7,8 @@ using Session.Components;
 
 namespace Session
 {
+    using SessionContainer = SessionContainerBase<ContainerBase>;
+
     [Serializable]
     public class ClientCommandsComponent : ComponentBase
     {
@@ -14,24 +16,26 @@ namespace Session
         public StampComponent stamp;
     }
 
-    public abstract class ClientBase<TSessionContainer, TCommandsContainer> : SessionBase<TSessionContainer>
-        where TSessionContainer : SessionContainerBase, new()
-        where TCommandsContainer : ContainerBase, new()
+    public abstract class ClientBase : SessionBase
     {
         private const int LocalPlayerId = 0;
 
-        private readonly ClientCommandsComponent m_LocalClientCommands;
+        private readonly SessionContainer m_RenderSessionContainer;
+        private readonly ClientCommandsComponent m_PredictedPlayerCommands;
         private readonly CyclicArray<StampedPlayerComponent> m_PredictedPlayerComponents;
-        private readonly SessionContainerBase<ContainerBase> m_RenderSessionContainer;
         private ComponentClientSocket m_Socket;
 
-        protected ClientBase(IGameObjectLinker linker) : base(linker)
+        protected ClientBase(IGameObjectLinker linker, Type sessionType, Type playerType, Type commandsType) : base(linker, sessionType, playerType, commandsType)
         {
-            m_RenderSessionContainer = (SessionContainerBase<ContainerBase>) (object) new TSessionContainer();
-            m_LocalClientCommands = new ClientCommandsComponent {playerCommands = new TCommandsContainer(), trustedPlayerComponent = new TSessionContainer()};
+            m_RenderSessionContainer = (SessionContainer) Activator.CreateInstance(sessionType);
+            m_PredictedPlayerCommands = new ClientCommandsComponent
+            {
+                playerCommands = (ContainerBase) Activator.CreateInstance(commandsType),
+                trustedPlayerComponent = (ContainerBase) Activator.CreateInstance(playerType)
+            };
             m_PredictedPlayerComponents = new CyclicArray<StampedPlayerComponent>(250, () => new StampedPlayerComponent
             {
-                player = (ContainerBase) Activator.CreateInstance(m_EmptySessionComponent.PlayerType),
+                player = (ContainerBase) Activator.CreateInstance(commandsType)
             });
         }
 
@@ -39,28 +43,33 @@ namespace Session
         {
             base.Start();
             m_Socket = new ComponentClientSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));
+            m_Socket.RegisterComponent(typeof(ClientCommandsComponent));
         }
 
         private void ReadLocalInputs()
         {
-            m_Modifier[LocalPlayerId].ModifyCommands(m_LocalClientCommands.playerCommands);
+            m_Modifier[LocalPlayerId].ModifyCommands(m_PredictedPlayerCommands.playerCommands);
         }
 
         public override void Input(float delta)
         {
             ReadLocalInputs();
-            m_Modifier[LocalPlayerId].ModifyTrusted(m_LocalClientCommands.trustedPlayerComponent, m_LocalClientCommands.playerCommands, delta);
+            m_Modifier[LocalPlayerId].ModifyTrusted(m_PredictedPlayerCommands.trustedPlayerComponent, m_PredictedPlayerCommands.playerCommands, delta);
         }
 
         protected override void Render(float renderDelta, float timeSinceTick, float renderTime)
         {
             m_RenderSessionContainer.localPlayerId.Value = LocalPlayerId;
             ComponentBase localPlayerRenderComponent = m_RenderSessionContainer.playerComponents[LocalPlayerId];
-            // InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, 1.0f / m_Settings.tickRate * 1.2f, timeSinceTick);
-            InterpolateHistoryInto(localPlayerRenderComponent, m_PredictedPlayerComponents, player => player.stamp.duration, DebugBehavior.Singleton.Rollback, timeSinceTick);
-            localPlayerRenderComponent.MergeSet(m_LocalClientCommands.trustedPlayerComponent);
+            // 1.0f / m_Settings.tickRate * 1.2f
+            InterpolateHistoryInto(localPlayerRenderComponent,
+                                   i => m_PredictedPlayerComponents.Get(i).player, m_PredictedPlayerComponents.Size,
+                                   i => m_PredictedPlayerComponents.Get(i).stamp.duration,
+                                   DebugBehavior.Singleton.Rollback, timeSinceTick);
+            localPlayerRenderComponent.MergeSet(m_PredictedPlayerCommands.trustedPlayerComponent);
             localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
-            RenderSessionComponent(m_RenderSessionContainer);
+            for (var playerId = 0; playerId < m_RenderSessionContainer.playerComponents.Length; playerId++)
+                m_Visuals[playerId].Render(m_RenderSessionContainer.playerComponents[playerId], playerId == m_RenderSessionContainer.localPlayerId);
         }
 
         protected override void Tick(uint tick, float time)
@@ -79,14 +88,14 @@ namespace Session
             predictedPlayerComponent.stamp.duration.Value = duration;
 
             // Inject trusted component
-            predictedPlayerComponent.player.MergeSet(m_LocalClientCommands.trustedPlayerComponent);
-            m_LocalClientCommands.stamp.duration.Value = duration;
-            m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayerComponent.player, m_LocalClientCommands.playerCommands, duration);
+            predictedPlayerComponent.player.MergeSet(m_PredictedPlayerCommands.trustedPlayerComponent);
+            m_PredictedPlayerCommands.stamp.duration.Value = duration;
+            m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayerComponent.player, m_PredictedPlayerCommands.playerCommands, duration);
 
             // Send off commands to server for checking
-            m_LocalClientCommands.stamp.tick.Value = tick;
-            m_LocalClientCommands.stamp.time.Value = time;
-            m_Socket.SendToServer(m_LocalClientCommands);
+            m_PredictedPlayerCommands.stamp.tick.Value = tick;
+            m_PredictedPlayerCommands.stamp.time.Value = time;
+            m_Socket.SendToServer(m_PredictedPlayerCommands);
 
             DebugBehavior.Singleton.Predicted = predictedPlayerComponent.player;
         }

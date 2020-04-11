@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace Session.Player.Visualization
 {
-    public abstract class PlayerVisualsBehaviorBase : MonoBehaviour, IPlayerContainerRenderer
+    public abstract class PlayerVisualsBehaviorBase : MonoBehaviour
     {
         internal virtual void Setup()
         {
@@ -17,13 +17,14 @@ namespace Session.Player.Visualization
 
         public abstract void Render(ContainerBase playerContainer, bool isLocalPlayer);
     }
-    
+
     [SelectionBase]
     public class PlayerVisualsDispatcherBehavior : MonoBehaviour, IPlayerContainerRenderer
     {
         private AudioListener m_AudioListener;
 
         private Camera m_Camera;
+        private bool m_HasSetup;
         [SerializeField] private Transform m_Head = default;
         [SerializeField] private Renderer[] m_Renders = default;
         [SerializeField] private bool m_IsDebugRender = default;
@@ -38,6 +39,7 @@ namespace Session.Player.Visualization
             m_AudioListener = GetComponentInChildren<AudioListener>();
             m_Camera.enabled = false;
             SetVisible(false, false);
+            m_HasSetup = true;
         }
 
         private void OnDestroy()
@@ -47,6 +49,7 @@ namespace Session.Player.Visualization
 
         public void Render(ContainerBase playerContainer, bool isLocalPlayer)
         {
+            if (!m_HasSetup) Setup();
             if (playerContainer.WithComponent(out MoveComponent moveComponent))
             {
                 transform.position = moveComponent.position;
