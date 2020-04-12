@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Components;
 using Session.Components;
+using UnityEngine;
 
 namespace Session
 {
@@ -50,19 +51,25 @@ namespace Session
                     }
                     else
                     {
-                        float rollback = DebugBehavior.Singleton.Rollback * 2,
+                        float rollback = DebugBehavior.Singleton.Rollback * 3,
                               interpolatedTime = renderTime - rollback;
                         // Interpolate all remote players
-                        for (var i = 0; i < m_SessionComponentHistory.Size; i++)
+                        for (var historyIndex = 0; historyIndex < m_SessionComponentHistory.Size; historyIndex++)
                         {
-                            Container fromComponent = m_SessionComponentHistory.Get(-(i + 1)).Require<PlayerContainerArrayProperty>()[playerId],
-                                      toComponent = m_SessionComponentHistory.Get(-i).Require<PlayerContainerArrayProperty>()[playerId];
+                            Container GetInHistory(int offset) => m_SessionComponentHistory.Get(-offset).Require<PlayerContainerArrayProperty>()[playerId];
+                            Container fromComponent = GetInHistory(historyIndex + 1),
+                                      toComponent = GetInHistory(historyIndex);
                             float toTime = toComponent.Require<ClientStampComponent>().time,
                                   fromTime = fromComponent.Require<ClientStampComponent>().time;
-                            if (fromTime > interpolatedTime) continue;
-                            float interpolation = (interpolatedTime - fromTime) / (toTime - fromTime);
-                            Interpolator.InterpolateInto(fromComponent, toComponent, renderPlayersProperty[playerId], interpolation);
-                            break;
+                            if (interpolatedTime > fromTime && interpolatedTime < toTime)
+                            {
+                                float interpolation = (interpolatedTime - fromTime) / (toTime - fromTime);
+                                Interpolator.InterpolateInto(fromComponent, toComponent, renderPlayersProperty[playerId], interpolation);
+                                break;
+                            }
+                            
+                            // Debug.LogWarning("Not enough fresh sessions to render smoothly");
+                            // renderPlayersProperty[playerId].MergeSet(GetInHistory(0));
                         }
                         // AnalysisLogger.AddDataPoint("", "V", m_RenderSessionContainer.playerComponents[playerId].position.Value.x);
 

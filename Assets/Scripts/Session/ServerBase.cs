@@ -9,6 +9,7 @@ using Session.Components;
 using Session.Items.Modifiers;
 using Session.Player.Components;
 using Session.Player.Modifiers;
+using UnityEngine;
 
 namespace Session
 {
