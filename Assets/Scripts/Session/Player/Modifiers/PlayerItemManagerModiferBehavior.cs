@@ -12,9 +12,9 @@ namespace Session.Player.Modifiers
 
         public override void ModifyChecked(Container containerToModify, Container commands, float duration)
         {
-            if (!containerToModify.With(out InventoryComponent inventoryComponent)
-             || !containerToModify.With(out WantedItemIndexProperty wantedItemIndexProperty)
-             || !containerToModify.With(out InputFlagProperty inputProperty)) return;
+            if (!containerToModify.If(out InventoryComponent inventoryComponent)
+             || !containerToModify.If(out WantedItemIndexProperty wantedItemIndexProperty)
+             || !containerToModify.If(out InputFlagProperty inputProperty)) return;
 
             ModifyEquipStatus(inventoryComponent, wantedItemIndexProperty, duration);
 
@@ -110,13 +110,13 @@ namespace Session.Player.Modifiers
 
         public override void ModifyCommands(Container commands)
         {
-            if (!commands.With(out InputFlagProperty inputProperty)) return;
+            if (!commands.If(out InputFlagProperty inputProperty)) return;
             InputProvider input = InputProvider.Singleton;
             inputProperty.SetInput(PlayerInput.UseOne, input.GetInput(InputType.UseOne));
             inputProperty.SetInput(PlayerInput.UseTwo, input.GetInput(InputType.UseTwo));
             inputProperty.SetInput(PlayerInput.Reload, input.GetInput(InputType.Reload));
             inputProperty.SetInput(PlayerInput.Ads, input.GetInput(InputType.Ads));
-            if (!commands.With(out WantedItemIndexProperty itemIndexProperty)) return;
+            if (!commands.If(out WantedItemIndexProperty itemIndexProperty)) return;
             if (input.GetInput(InputType.ItemOne))
                 itemIndexProperty.Value = 1;
             else if (input.GetInput(InputType.ItemTwo))

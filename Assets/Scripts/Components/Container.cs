@@ -4,9 +4,10 @@ using System.Linq;
 
 namespace Components
 {
+    [Serializable]
     public class Container : ComponentBase
     {
-        private readonly IDictionary<Type, ContainableBase> m_Children = new SortedDictionary<Type, ContainableBase>();
+        public IDictionary<Type, ElementBase> Children { get; } = new SortedDictionary<Type, ElementBase>();
 
         public Container(IEnumerable<Type> types) : this(types.ToArray())
         {
@@ -22,17 +23,35 @@ namespace Components
             foreach (Type type in types)
             {
                 if (type.IsContainable())
-                    m_Children[type] = (ContainableBase) Activator.CreateInstance(type);
+                    Children[type] = (ElementBase) Activator.CreateInstance(type);
                 else
                     throw new ArgumentException("Type must be containable (Property or Component)");
             }
         }
 
-        public bool With<TComponent>(out TComponent component) where TComponent : ContainableBase
+        public bool If<TElement>(out TElement component) where TElement : ElementBase
         {
-            bool hasComponent = m_Children.TryGetValue(typeof(TComponent), out ContainableBase childComponent);
-            component = (TComponent) childComponent;
+            bool hasComponent = Children.TryGetValue(typeof(TElement), out ElementBase child);
+            component = (TElement) child;
             return hasComponent;
+        }
+
+        public bool Has<TElement>()
+        {
+            return Children.ContainsKey(typeof(TElement));
+        }
+
+        public TElement Require<TElement>()
+        {
+            try
+            {
+                object child = Children[typeof(TElement)];
+                return (TElement) child;
+            }
+            catch (Exception exception)
+            {
+                throw new ArgumentException($"Container does not have {typeof(TElement).Name}", exception);
+            }
         }
     }
 }

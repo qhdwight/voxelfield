@@ -10,10 +10,10 @@ namespace Components.Tests
         {
             OuterComponent arbitrary = OuterComponent.Arbitrary;
             var stream = new MemoryStream();
-            Serializer.Serialize(arbitrary, stream);
+            arbitrary.Serialize(stream);
             var deserialized = new OuterComponent();
             stream.Position = 0;
-            Serializer.Deserialize(deserialized, stream);
+            deserialized.Deserialize(stream);
             Assert.AreEqual(arbitrary.@uint, deserialized.@uint);
             Assert.AreEqual(arbitrary.@float, deserialized.@float, 1e-6f);
             Assert.AreEqual(arbitrary.vector, deserialized.vector);

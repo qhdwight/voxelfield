@@ -1,13 +1,15 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace Components
 {
-    public abstract class ContainableBase
+    public abstract class ElementBase
     {
     }
 
-    public abstract class ComponentBase : ContainableBase
+    public abstract class ComponentBase : ElementBase
     {
         protected ComponentBase()
         {

@@ -50,16 +50,16 @@ namespace Session.Player.Visualization
         public void Render(Container playerContainer, bool isLocalPlayer)
         {
             if (!m_HasSetup) Setup();
-            if (playerContainer.With(out MoveComponent moveComponent))
+            if (playerContainer.If(out MoveComponent moveComponent))
                 transform.position = moveComponent.position;
-            if (playerContainer.With(out CameraComponent cameraComponent))
+            if (playerContainer.If(out CameraComponent cameraComponent))
             {
                 transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
                 m_Head.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
                 m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
                 m_Camera.enabled = isLocalPlayer;
             }
-            if (playerContainer.With(out HealthProperty healthProperty))
+            if (playerContainer.If(out HealthProperty healthProperty))
                 SetVisible(healthProperty.IsAlive, isLocalPlayer && healthProperty.IsAlive);
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerContainer, isLocalPlayer);
         }

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Linq;
+using System.Net;
 using System.Threading;
 using Components;
 using Networking;
@@ -41,7 +42,9 @@ namespace Session.Tests
         [Test]
         public void TestCommand()
         {
-            var p = new ClientCommandsContainer {stamp = new StampComponent {tick = new UIntProperty(35)}};
+            var p = new ClientCommandsContainer(StandardComponents.StandardPlayerComponents
+                                                                  .Concat(StandardComponents.StandardPlayerCommandsComponents)
+                                                                  .Append(typeof(StampComponent)));
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
@@ -62,7 +65,7 @@ namespace Session.Tests
                     switch (component)
                     {
                         case ClientCommandsContainer command:
-                            Assert.AreEqual(35, command.stamp.tick.Value);
+                            Assert.AreEqual(35, command.Require<StampComponent>().tick.Value);
                             received++;
                             break;
                     }

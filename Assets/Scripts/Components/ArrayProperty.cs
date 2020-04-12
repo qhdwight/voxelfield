@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Components
 {
-    public abstract class ArrayPropertyBase : ContainableBase
+    public abstract class ArrayPropertyBase : ElementBase
     {
         public abstract int Length { get; }
 
@@ -16,7 +16,7 @@ namespace Components
     }
 
     [Serializable]
-    public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T> where T : class
+    public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T> where T : ElementBase
     {
         [CopyField, SerializeField] private T[] m_Values;
 
@@ -28,6 +28,7 @@ namespace Components
         public ArrayProperty(int size)
         {
             m_Values = new T[size];
+            SetAll(Activator.CreateInstance<T>);
         }
 
         public void SetAll(Func<T> constructor)

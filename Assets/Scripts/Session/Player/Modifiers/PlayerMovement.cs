@@ -45,7 +45,7 @@ namespace Session.Player.Modifiers
 
         public override void ModifyCommands(Container commandsToModify)
         {
-            if (!commandsToModify.With(out InputFlagProperty inputProperty)) return;
+            if (!commandsToModify.If(out InputFlagProperty inputProperty)) return;
 
             InputProvider input = InputProvider.Singleton;
             inputProperty.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
@@ -57,8 +57,8 @@ namespace Session.Player.Modifiers
 
         protected override void SynchronizeBehavior(Container containersToApply)
         {
-            if (!containersToApply.With(out MoveComponent moveComponent)
-             || !containersToApply.With(out HealthProperty healthProperty)) return;
+            if (!containersToApply.If(out MoveComponent moveComponent)
+             || !containersToApply.If(out HealthProperty healthProperty)) return;
 
             transform.position = moveComponent.position;
             m_Controller.enabled = healthProperty.IsAlive;
@@ -66,9 +66,10 @@ namespace Session.Player.Modifiers
 
         private void FullMove(Container containerToModify, Container commands, float duration)
         {
-            if (!containerToModify.With(out MoveComponent moveComponent)
-             || !containerToModify.With(out HealthProperty healthProperty)
-             || !commands.With(out InputFlagProperty inputProperty)) return;
+            if (!containerToModify.If(out MoveComponent moveComponent)
+             || !containerToModify.If(out HealthProperty healthProperty)
+             || healthProperty.IsDead
+             || !commands.If(out InputFlagProperty inputProperty)) return;
 
             Vector3 initialVelocity = moveComponent.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = LateralMagnitude(endingVelocity);
