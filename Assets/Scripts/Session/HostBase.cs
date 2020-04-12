@@ -40,13 +40,13 @@ namespace Session
             if (m_RenderSessionContainer.If(out PlayerContainerArrayProperty renderPlayersProperty)
              && m_RenderSessionContainer.If(out LocalPlayerProperty localPlayerProperty))
             {
+                localPlayerProperty.Value = HostPlayerId;
                 for (var playerId = 0; playerId < renderPlayersProperty.Length; playerId++)
                 {
-                    if (localPlayerProperty.Value == HostPlayerId)
+                    if (playerId == localPlayerProperty)
                     {
                         // Inject host player component
-                        localPlayerProperty.Value = HostPlayerId;
-                        renderPlayersProperty[HostPlayerId].MergeSet(m_HostPlayerCommands);
+                        renderPlayersProperty[playerId].MergeSet(m_HostPlayerCommands);
                     }
                     else
                     {
