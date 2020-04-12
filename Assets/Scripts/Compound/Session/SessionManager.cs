@@ -46,16 +46,32 @@ namespace Compound.Session
 
         private void Update()
         {
-            m_DebugSession?.Update();
+            try
+            {
+                m_DebugSession?.Update();
 
-            m_Session?.Update();
+                m_Session?.Update();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception);
+                m_Session = null;
+            }
         }
 
         private void FixedUpdate()
         {
-            m_Session?.FixedUpdate();
+            try
+            {
+                m_Session?.FixedUpdate();
 
-            m_DebugSession?.FixedUpdate();
+                m_DebugSession?.FixedUpdate();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception);
+                m_Session = null;
+            }
         }
 
         private void OnDestroy()

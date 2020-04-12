@@ -45,7 +45,7 @@ namespace Session
         {
             base.Start();
             m_Socket = new ComponentClientSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));
-            m_Socket.RegisterComponent(typeof(ClientCommandsContainer));
+            m_Socket.ResgisterMessage(typeof(ClientCommandsContainer), m_PredictedPlayerCommands);
         }
 
         private void ReadLocalInputs()
@@ -65,14 +65,14 @@ namespace Session
              && m_RenderSessionContainer.If(out LocalPlayerProperty localPlayerProperty))
             {
                 localPlayerProperty.Value = LocalPlayerId;
-                ComponentBase localPlayerRenderComponent = playersProperty[LocalPlayerId];
+                Container localPlayerRenderComponent = playersProperty[LocalPlayerId];
                 // 1.0f / m_Settings.tickRate * 1.2f
                 InterpolateHistoryInto(localPlayerRenderComponent,
                                        i => m_PredictedPlayerComponents.Get(i), m_PredictedPlayerComponents.Size,
                                        i => m_PredictedPlayerComponents.Get(i).Require<StampComponent>().duration,
                                        DebugBehavior.Singleton.Rollback, timeSinceTick);
                 localPlayerRenderComponent.MergeSet(m_PredictedPlayerCommands);
-                localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
+                // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                 for (var playerId = 0; playerId < playersProperty.Length; playerId++)
                     m_Visuals[playerId].Render(playersProperty[playerId], playerId == LocalPlayerId);
             }

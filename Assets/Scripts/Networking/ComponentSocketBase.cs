@@ -37,7 +37,7 @@ namespace Networking
             //                                     pair => new Pool<ComponentBase>(0, () => (ComponentBase) Activator.CreateInstance(pair.Key)));
         }
 
-        public void RegisterComponent(Type componentType, Container container = null)
+        public void ResgisterMessage(Type componentType, Container container = null)
         {
             m_Codes.Add(componentType, (byte) m_Codes.Length);
             m_MessagePools[componentType] = new Pool<ElementBase>(1, () => componentType.IsContainer()

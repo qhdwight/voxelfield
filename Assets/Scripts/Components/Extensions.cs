@@ -87,18 +87,18 @@ namespace Components
             void NavigateRecursively(in TriArray<ElementBase> _zip, FieldInfo _field)
             {
                 visit(_field, _zip);
-                FieldInfo[] fields = null;
+                Type type = _zip[0].GetType();
+                FieldInfo[] fields = Cache.GetFieldInfo(type);
                 // Polymorphism get the top shared base by examining number of fields
-                Type type = null;
-                for (var i = 0; i < size; i++)
-                {
-                    Type zipType = _zip[i].GetType();
-                    FieldInfo[] zipFields = Cache.GetFieldInfo(zipType);
-                    int count = zipFields.Length;
-                    if (fields != null && count >= fields.Length) continue;
-                    fields = zipFields;
-                    type = zipType;
-                }
+                // for (var i = 0; i < size; i++)
+                // {
+                //     Type zipType = _zip[i].GetType();
+                //     FieldInfo[] zipFields = Cache.GetFieldInfo(zipType);
+                //     int count = zipFields.Length;
+                //     if (fields != null && count >= fields.Length) continue;
+                //     fields = zipFields;
+                //     type = zipType;
+                // }
                 if (type.IsContainer())
                 {
                     var zippedContainers = new TriArray<Container>();
@@ -108,7 +108,10 @@ namespace Components
                     {
                         var zippedChildren = new TriArray<ElementBase>();
                         for (var i = 0; i < size; i++)
-                            zippedChildren[i] = zippedContainers[i].Children[childType];
+                        {
+                            zippedContainers[i].Children.TryGetValue(childType, out ElementBase child);
+                            zippedChildren[i] = child;
+                        }
                         NavigateRecursively(zippedChildren, null);
                     }
                 }
@@ -117,8 +120,6 @@ namespace Components
                     var zippedArrays = new TriArray<ArrayPropertyBase>();
                     for (var i = 0; i < size; i++)
                         zippedArrays[i] = (ArrayPropertyBase) _zip[i];
-                    Type elementType = zippedArrays[0].GetElementType();
-                    bool isProperty = elementType.IsProperty();
                     for (var j = 0; j < zippedArrays[0].Length; j++)
                     {
                         var zippedElements = new TriArray<ElementBase>();
@@ -133,7 +134,7 @@ namespace Components
                     {
                         var zippedChildren = new TriArray<ElementBase>();
                         for (var i = 0; i < size; i++)
-                            zippedChildren[i] = (ElementBase) field.GetValue(_zip[i]);
+                            zippedChildren[i] = _zip[i] == null ? null : (ElementBase) field.GetValue(_zip[i]);
                         NavigateRecursively(zippedChildren, field);
                     }
                 }
