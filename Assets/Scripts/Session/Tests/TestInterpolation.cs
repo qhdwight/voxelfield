@@ -42,19 +42,23 @@ namespace Session.Tests
         [Test]
         public void TestCommand()
         {
-            var p = new ClientCommandsContainer(StandardComponents.StandardPlayerComponents
-                                                                  .Concat(StandardComponents.StandardPlayerCommandsComponents)
-                                                                  .Append(typeof(StampComponent)));
+            var clientCommands = new ClientCommandsContainer(StandardComponents.StandardPlayerComponents
+                                                                               .Concat(StandardComponents.StandardPlayerCommandsComponents)
+                                                                               .Append(typeof(StampComponent)));
+            clientCommands.Require<StampComponent>().tick.Value = 35;
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
             using (var server = new ComponentServerSocket(localHost))
             using (var client = new ComponentClientSocket(localHost))
             {
+                server.RegisterComponent(typeof(ClientCommandsContainer), clientCommands);
+                client.RegisterComponent(typeof(ClientCommandsContainer), clientCommands);
+
                 const int send = 120;
 
                 for (var i = 0; i < send; i++)
-                    client.SendToServer(p);
+                    client.SendToServer(clientCommands);
 
                 var received = 0;
 

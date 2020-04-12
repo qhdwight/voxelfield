@@ -5,18 +5,26 @@ namespace Components.Tests
     public class CopierTests
     {
         [Test]
+        public void TestEquals()
+        {
+            OuterComponent c1 = OuterComponent.Arbitrary, c2 = OuterComponent.Arbitrary;
+            Assert.IsTrue(c1.AreEquals(c2));
+        }
+
+        [Test]
+        public void TestClone()
+        {
+            OuterComponent component = OuterComponent.Arbitrary;
+            Assert.IsTrue(component.AreEquals(component.Clone()));
+        }
+
+        [Test]
         public void TestCopier()
         {
             OuterComponent source = OuterComponent.Arbitrary;
             var destination = new OuterComponent();
             destination.MergeSet(source);
-            Assert.AreEqual(source.@uint, destination.@uint);
-            Assert.AreEqual(source.@float, destination.@float, 1e-6f);
-            Assert.AreEqual(source.vector, destination.vector);
-            Assert.AreNotSame(source.inner, destination.inner);
-            Assert.AreEqual(source.inner.@uint, destination.inner.@uint);
-            Assert.AreEqual(source.intArray, destination.intArray);
-            Assert.AreEqual(source.container.Require<ByteProperty>(), destination.container.Require<ByteProperty>());
+            Assert.IsTrue(destination.AreEquals(source));
         }
     }
 }

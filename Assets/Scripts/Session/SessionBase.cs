@@ -34,7 +34,8 @@ namespace Session
 
         public bool ShouldRender { get; set; } = true;
 
-        protected SessionBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
+        protected SessionBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
+                              IReadOnlyCollection<Type> commandElements)
         {
             (m_PlayerModifierPrefab, m_PlayerVisualsPrefab) = linker.GetPlayerPrefabs();
         }

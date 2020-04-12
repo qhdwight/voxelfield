@@ -12,6 +12,10 @@ namespace Session
     [Serializable]
     public class ClientCommandsContainer : Container
     {
+        public ClientCommandsContainer()
+        {
+        }
+
         public ClientCommandsContainer(IEnumerable<Type> types) : base(types)
         {
         }
@@ -26,12 +30,13 @@ namespace Session
         private readonly CyclicArray<Container> m_PredictedPlayerComponents;
         private ComponentClientSocket m_Socket;
 
-        protected ClientBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
+        protected ClientBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
+                             IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
             m_RenderSessionContainer = new Container(sessionElements);
             if (m_RenderSessionContainer.If(out PlayerContainerArrayProperty playerContainers))
-                playerContainers.SetAll( () => new Container(playerElements));
+                playerContainers.SetAll(() => new Container(playerElements));
             m_PredictedPlayerCommands = new ClientCommandsContainer(playerElements.Concat(commandElements).Append(typeof(StampComponent)));
             m_PredictedPlayerComponents = new CyclicArray<Container>(250, () => new Container(playerElements.Append(typeof(StampComponent))));
         }

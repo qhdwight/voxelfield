@@ -20,7 +20,7 @@ namespace Networking
         private readonly MemoryStream m_SendStream = new MemoryStream(BufferSize), m_ReadStream = new MemoryStream(BufferSize);
         private readonly BinaryWriter m_Writer;
         private readonly BinaryReader m_Reader;
-        private readonly Dictionary<Type, Pool<ComponentBase>> m_MessagePools = new Dictionary<Type, Pool<ComponentBase>>();
+        private readonly Dictionary<Type, Pool<ElementBase>> m_MessagePools = new Dictionary<Type, Pool<ElementBase>>();
 
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
         private AsyncCallback m_ReceiveCallback;
@@ -37,12 +37,15 @@ namespace Networking
             //                                     pair => new Pool<ComponentBase>(0, () => (ComponentBase) Activator.CreateInstance(pair.Key)));
         }
 
-        public void RegisterComponent(Type componentType)
+        public void RegisterComponent(Type componentType, Container container = null)
         {
-            m_MessagePools[componentType] = new Pool<ComponentBase>(1, () => (ComponentBase) Activator.CreateInstance(componentType));
+            m_Codes.Add(componentType, (byte) m_Codes.Length);
+            m_MessagePools[componentType] = new Pool<ElementBase>(1, () => componentType.IsContainer()
+                                                                      ? container.Clone()
+                                                                      : (ElementBase) Activator.CreateInstance(componentType));
         }
 
-        public void PollReceived(Action<int, ComponentBase> received)
+        public void PollReceived(Action<int, ElementBase> received)
         {
             while (m_RawSocket.Available > 0)
             {
@@ -51,7 +54,7 @@ namespace Networking
                 m_ReadStream.Position = 0;
                 byte code = m_Reader.ReadByte();
                 Type type = m_Codes.GetReverse(code);
-                ComponentBase message = m_MessagePools[type].Obtain();
+                ElementBase message = m_MessagePools[type].Obtain();
                 message.Reset();
                 message.Deserialize(m_ReadStream);
                 received(1, message);

@@ -9,6 +9,8 @@ namespace Collections
 
         public Dictionary<TKey, TValue>.KeyCollection Forwards => m_Forward.Keys;
         public Dictionary<TValue, TKey>.KeyCollection Backwards => m_Reverse.Keys;
+        
+        public int Length => m_Forward.Count;
 
         public DualDictionary(int capacity = 0)
         {

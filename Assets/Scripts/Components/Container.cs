@@ -7,18 +7,24 @@ namespace Components
     [Serializable]
     public class Container : ComponentBase
     {
-        public IDictionary<Type, ElementBase> Children { get; } = new SortedDictionary<Type, ElementBase>();
+        public IDictionary<Type, ElementBase> Children { get; }
 
+        public Container()
+        {
+            Comparer<Type> comparer = Comparer<Type>.Create((t1, t2) => t1.GetHashCode().CompareTo(t2.GetHashCode()));
+            Children = new SortedDictionary<Type, ElementBase>(comparer);
+        }
+        
         public Container(IEnumerable<Type> types) : this(types.ToArray())
         {
         }
 
-        public Container(params Type[] types)
+        public Container(params Type[] types) : this()
         {
             Add(types);
         }
 
-        public void Add(params Type[] types)
+        public void Add(IEnumerable<Type> types)
         {
             foreach (Type type in types)
             {
@@ -27,6 +33,11 @@ namespace Components
                 else
                     throw new ArgumentException("Type must be containable (Property or Component)");
             }
+        }
+
+        public void Add(params Type[] types)
+        {
+            Add((IEnumerable<Type>) types);
         }
 
         public bool If<TElement>(out TElement component) where TElement : ElementBase

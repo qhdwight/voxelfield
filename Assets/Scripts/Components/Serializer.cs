@@ -37,15 +37,16 @@ namespace Components
                 property.Serialize(Writer);
         }
 
-        public static void Serialize(this ComponentBase component, MemoryStream stream)
+        public static void Serialize(this ElementBase component, MemoryStream stream)
         {
             StreamMutex.WaitOne();
             try
             {
                 Stream.Position = 0;
-                Extensions.Navigate((field, property) =>
+                Extensions.Navigate((field, element) =>
                 {
-                    if (!field.IsDefined(typeof(NoSerialization))) WriteFromProperty(property);
+                    if (element is PropertyBase property && (field == null || !field.IsDefined(typeof(NoSerialization))))
+                        WriteFromProperty(property);
                 }, component);
                 var count = (int) Stream.Position;
                 if (stream.Capacity < count)
@@ -59,7 +60,7 @@ namespace Components
             }
         }
 
-        public static void Deserialize(this ComponentBase component, MemoryStream stream)
+        public static void Deserialize(this ElementBase component, MemoryStream stream)
         {
             StreamMutex.WaitOne();
             try
@@ -67,9 +68,10 @@ namespace Components
                 int count = stream.Capacity - (int) stream.Position;
                 Buffer.BlockCopy(stream.GetBuffer(), (int) stream.Position, Stream.GetBuffer(), 0, count);
                 Stream.Position = 0;
-                Extensions.Navigate((field, property) =>
+                Extensions.Navigate((field, element) =>
                 {
-                    if (!field.IsDefined(typeof(NoSerialization))) ReadIntoProperty(property);
+                    if (element is PropertyBase property && (field == null || !field.IsDefined(typeof(NoSerialization))))
+                        ReadIntoProperty(property);
                 }, component);
             }
             finally
