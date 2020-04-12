@@ -13,12 +13,12 @@ namespace Session.Player.Modifiers
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
         }
 
-        internal void ModifyChecked(ContainerBase containerToModify, ContainerBase commands, float duration)
+        internal void ModifyChecked(Container containerToModify, Container commands, float duration)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(containerToModify, commands, duration);
         }
 
-        internal void ModifyTrusted(ContainerBase containerToModify, ContainerBase commands, float duration)
+        internal void ModifyTrusted(Container containerToModify, Container commands, float duration)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(containerToModify, commands, duration);
         }
@@ -34,13 +34,13 @@ namespace Session.Player.Modifiers
         //     return components;
         // }
 
-        internal void ModifyCommands(ContainerBase commandsToModify)
+        internal void ModifyCommands(Container commandsToModify)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(commandsToModify);
         }
     }
 
-    public abstract class PlayerModifierBehaviorBase : MonoBehaviour, IModifierBase<ContainerBase, ContainerBase>
+    public abstract class PlayerModifierBehaviorBase : MonoBehaviour, IModifierBase<Container, Container>
     {
         internal virtual void Setup()
         {
@@ -49,7 +49,7 @@ namespace Session.Player.Modifiers
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
-        public virtual void ModifyChecked(ContainerBase containerToModify, ContainerBase commands, float duration)
+        public virtual void ModifyChecked(Container containerToModify, Container commands, float duration)
         {
             SynchronizeBehavior(containerToModify);
         }
@@ -57,16 +57,16 @@ namespace Session.Player.Modifiers
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>
-        public virtual void ModifyTrusted(ContainerBase containerToModify, ContainerBase commandsContainer, float duration)
+        public virtual void ModifyTrusted(Container containerToModify, Container commandsContainer, float duration)
         {
             SynchronizeBehavior(containerToModify);
         }
 
-        public virtual void ModifyCommands(ContainerBase commandsToModify)
+        public virtual void ModifyCommands(Container commandsToModify)
         {
         }
 
-        protected virtual void SynchronizeBehavior(ContainerBase containersToApply)
+        protected virtual void SynchronizeBehavior(Container containersToApply)
         {
         }
     }

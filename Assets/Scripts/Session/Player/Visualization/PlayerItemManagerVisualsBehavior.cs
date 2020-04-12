@@ -13,7 +13,7 @@ namespace Session.Player.Visualization
             ForEachItemAnimator(animator => animator.Setup());
         }
 
-        public override void Render(ContainerBase playerContainer, bool isLocalPlayer)
+        public override void Render(Container playerContainer, bool isLocalPlayer)
         {
             ForEachItemAnimator(animator => animator.Render(playerContainer, isLocalPlayer));
         }

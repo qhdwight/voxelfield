@@ -19,7 +19,7 @@
             <e p="Cache.cs" t="Include" />
             <e p="ComponentBase.cs" t="Include" />
             <e p="Components.asmdef" t="Include" />
-            <e p="ContainerBase.cs" t="Include" />
+            <e p="Container.cs" t="Include" />
             <e p="Copier.cs" t="Include" />
             <e p="Extensions.cs" t="Include" />
             <e p="Interpolator.cs" t="Include" />

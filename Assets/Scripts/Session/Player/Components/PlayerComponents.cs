@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Components;
 using Session.Items;
 using Session.Items.Modifiers;
@@ -25,20 +26,6 @@ namespace Session.Player.Components
     {
         public bool IsAlive => !IsDead;
         public bool IsDead => Value == 0;
-    }
-
-    [Serializable]
-    public class StandardPlayerContainer : ContainerBase
-    {
-        [TakeSecondForInterpolation] public HealthProperty health;
-        public MoveComponent move;
-        public InventoryComponent inventory;
-        public CameraComponent camera;
-
-        public override string ToString()
-        {
-            return $"Health: {health}";
-        }
     }
 
     [Serializable]

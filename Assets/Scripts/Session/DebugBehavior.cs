@@ -9,10 +9,10 @@ namespace Session
     {
         [Range(0.0f, 1.0f)] public float Rollback;
 
-        public ContainerBase Predicted;
+        public Container Predicted;
 
         public SessionSettingsComponent Settings;
 
-        public ContainerBase RenderOverride;
+        public Container RenderOverride;
     }
 }

@@ -43,12 +43,4 @@ namespace Session.Player.Components
     public class WantedItemIndexProperty : ByteProperty
     {
     }
-
-    [Serializable]
-    public abstract class StandardPlayerCommandsContainer : ContainerBase
-    {
-        public InputFlagProperty inputs;
-        public WantedItemIndexProperty wantedItemIndex;
-        public MouseComponent mouse;
-    }
 }

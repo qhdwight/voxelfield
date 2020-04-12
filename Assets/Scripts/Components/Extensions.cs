@@ -20,6 +20,11 @@ namespace Components
             return type.IsSubclassOf(typeof(ArrayPropertyBase));
         }
 
+        public static bool IsContainable(this Type type)
+        {
+            return type.IsSubclassOf(typeof(ContainableBase));
+        }
+
         /// <summary>
         /// Reset all properties to default values clear has value flags.
         /// </summary>

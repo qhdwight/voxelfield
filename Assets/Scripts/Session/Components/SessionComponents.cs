@@ -1,8 +1,36 @@
 using System;
+using System.Collections.Generic;
 using Components;
+using Session.Player.Components;
 
 namespace Session.Components
 {
+    public static class StandardComponents
+    {
+        public static readonly List<Type> StandardSessionComponents = new List<Type>
+        {
+            typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(StampComponent), typeof(SessionSettingsComponent)
+        };
+
+        public static readonly List<Type> StandardPlayerComponents = new List<Type>
+        {
+            typeof(HealthProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent)
+        };
+
+        public static readonly List<Type> StandardPlayerCommandsComponents = new List<Type>
+        {
+            typeof(InputFlagProperty), typeof(WantedItemIndexProperty), typeof(MouseComponent)
+        };
+    }
+
+    [Serializable]
+    public class PlayerContainerArrayProperty : ArrayProperty<Container>
+    {
+        public PlayerContainerArrayProperty() : base(SessionBase.MaxPlayers)
+        {
+        }
+    }
+
     [Serializable]
     public class PingCheckComponent : ComponentBase
     {
@@ -12,7 +40,7 @@ namespace Session.Components
     [Serializable]
     public class StampedPlayerComponent : ComponentBase
     {
-        public ContainerBase player;
+        public Container player;
         public StampComponent stamp;
     }
 
@@ -30,14 +58,7 @@ namespace Session.Components
     }
 
     [Serializable]
-    public abstract class SessionContainerBase<TPlayerComponent> : ContainerBase
-        where TPlayerComponent : ComponentBase
+    public class LocalPlayerProperty : ByteProperty
     {
-        public ByteProperty localPlayerId;
-        public StampComponent stamp;
-        public ArrayProperty<TPlayerComponent> playerComponents;
-        public SessionSettingsComponent settings;
-
-        public ComponentBase LocalPlayerComponent => localPlayerId.HasValue ? playerComponents[localPlayerId.Value] : null;
     }
 }

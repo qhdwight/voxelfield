@@ -15,7 +15,7 @@ namespace Session.Player.Visualization
         {
         }
 
-        public abstract void Render(ContainerBase playerContainer, bool isLocalPlayer);
+        public abstract void Render(Container playerContainer, bool isLocalPlayer);
     }
 
     [SelectionBase]
@@ -47,24 +47,20 @@ namespace Session.Player.Visualization
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Cleanup();
         }
 
-        public void Render(ContainerBase playerContainer, bool isLocalPlayer)
+        public void Render(Container playerContainer, bool isLocalPlayer)
         {
             if (!m_HasSetup) Setup();
-            if (playerContainer.WithComponent(out MoveComponent moveComponent))
-            {
+            if (playerContainer.With(out MoveComponent moveComponent))
                 transform.position = moveComponent.position;
-            }
-            if (playerContainer.WithComponent(out CameraComponent cameraComponent))
+            if (playerContainer.With(out CameraComponent cameraComponent))
             {
                 transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
                 m_Head.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
                 m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
                 m_Camera.enabled = isLocalPlayer;
             }
-            if (playerContainer.WithProperty(out HealthProperty healthProperty))
-            {
+            if (playerContainer.With(out HealthProperty healthProperty))
                 SetVisible(healthProperty.IsAlive, isLocalPlayer && healthProperty.IsAlive);
-            }
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerContainer, isLocalPlayer);
         }
 

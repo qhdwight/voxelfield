@@ -1,30 +1,30 @@
 using System;
+using System.Collections.Generic;
 using Components;
 using Session.Components;
 
 namespace Session
 {
-    using SessionContainer = SessionContainerBase<StampedPlayerComponent>;
-
     public abstract class HostBase : ServerBase
     {
         private const int HostPlayerId = 0;
 
-        private readonly ContainerBase m_HostPlayerCommands, m_HostPlayerComponent;
+        private readonly Container m_HostPlayerCommands, m_HostPlayerComponent;
         private readonly SessionContainer m_RenderSessionContainer;
 
         private float m_RenderTime;
 
-        protected HostBase(IGameObjectLinker linker, Type sessionType, Type playerType, Type commandsType) : base(linker, sessionType, playerType, commandsType)
+        protected HostBase(IGameObjectLinker linker, List<Type> sessionElements, List<Type> playerElements, List<Type> commandElements)
+            : base(linker, sessionElements, playerElements, commandElements)
         {
-            m_HostPlayerCommands = (ContainerBase) Activator.CreateInstance(commandsType);
-            m_HostPlayerComponent = (ContainerBase) Activator.CreateInstance(playerType);
+            m_HostPlayerCommands = (Container) Activator.CreateInstance(commandsType);
+            m_HostPlayerComponent = (Container) Activator.CreateInstance(playerType);
             m_RenderSessionContainer = (SessionContainer) Activator.CreateInstance(sessionType);
             for (var i = 0; i < m_RenderSessionContainer.playerComponents.Length; i++)
-                m_RenderSessionContainer.playerComponents[i] = new StampedPlayerComponent {player = (ContainerBase) Activator.CreateInstance(playerType)};
+                m_RenderSessionContainer.playerComponents[i] = new StampedPlayerComponent {player = (Container) Activator.CreateInstance(playerType)};
         }
 
-        private void ReadLocalInputs(ContainerBase commandsToFill)
+        private void ReadLocalInputs(Container commandsToFill)
         {
             m_Modifier[HostPlayerId].ModifyCommands(commandsToFill);
         }

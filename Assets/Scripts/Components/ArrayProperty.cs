@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Components
 {
-    public abstract class ArrayPropertyBase
+    public abstract class ArrayPropertyBase : ContainableBase
     {
         public abstract int Length { get; }
 
@@ -22,12 +22,18 @@ namespace Components
 
         public ArrayProperty(params T[] values)
         {
-            m_Values = values;
+            m_Values = (T[]) values.Clone();
         }
 
         public ArrayProperty(int size)
         {
-            m_Values = Enumerable.Range(1, size).Select(_ => Activator.CreateInstance<T>()).ToArray();
+            m_Values = new T[size];
+        }
+
+        public void SetAll(Func<T> constructor)
+        {
+            for (var i = 0; i < m_Values.Length; i++)
+                m_Values[i] = constructor();
         }
 
         public T this[int index]

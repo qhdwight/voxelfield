@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Components;
 using Session.Components;
@@ -15,12 +16,12 @@ namespace Session
 
     public interface IPlayerContainerRenderer
     {
-        void Render(ContainerBase playerContainer, bool isLocalPlayer);
+        // TODO: is local player should use With construct
+        void Render(Container playerContainer, bool isLocalPlayer);
     }
 
     public abstract class SessionBase : IDisposable
     {
-        private readonly Type m_SessionType, m_PlayerType, m_CommandsType;
         internal const int MaxPlayers = 2;
 
         private readonly GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
@@ -33,11 +34,8 @@ namespace Session
 
         public bool ShouldRender { get; set; } = true;
 
-        protected SessionBase(IGameObjectLinker linker, Type sessionType, Type playerType, Type commandsType)
+        protected SessionBase(IGameObjectLinker linker, List<Type> sessionElements, List<Type> playerElements, List<Type> commandElements)
         {
-            m_SessionType = sessionType;
-            m_PlayerType = playerType;
-            m_CommandsType = commandsType;
             (m_PlayerModifierPrefab, m_PlayerVisualsPrefab) = linker.GetPlayerPrefabs();
         }
 

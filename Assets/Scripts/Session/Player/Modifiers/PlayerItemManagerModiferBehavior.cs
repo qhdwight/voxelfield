@@ -10,11 +10,11 @@ namespace Session.Player.Modifiers
     {
         public const byte NoneIndex = 0;
 
-        public override void ModifyChecked(ContainerBase containerToModify, ContainerBase commands, float duration)
+        public override void ModifyChecked(Container containerToModify, Container commands, float duration)
         {
-            if (!containerToModify.WithComponent(out InventoryComponent inventoryComponent)
-             || !containerToModify.WithProperty(out WantedItemIndexProperty wantedItemIndexProperty)
-             || !containerToModify.WithProperty(out InputFlagProperty inputProperty)) return;
+            if (!containerToModify.With(out InventoryComponent inventoryComponent)
+             || !containerToModify.With(out WantedItemIndexProperty wantedItemIndexProperty)
+             || !containerToModify.With(out InputFlagProperty inputProperty)) return;
 
             ModifyEquipStatus(inventoryComponent, wantedItemIndexProperty, duration);
 
@@ -104,19 +104,19 @@ namespace Session.Player.Modifiers
             }
         }
 
-        protected override void SynchronizeBehavior(ContainerBase componentToApply)
+        protected override void SynchronizeBehavior(Container componentToApply)
         {
         }
 
-        public override void ModifyCommands(ContainerBase commands)
+        public override void ModifyCommands(Container commands)
         {
-            if (!commands.WithProperty(out InputFlagProperty inputProperty)) return;
+            if (!commands.With(out InputFlagProperty inputProperty)) return;
             InputProvider input = InputProvider.Singleton;
             inputProperty.SetInput(PlayerInput.UseOne, input.GetInput(InputType.UseOne));
             inputProperty.SetInput(PlayerInput.UseTwo, input.GetInput(InputType.UseTwo));
             inputProperty.SetInput(PlayerInput.Reload, input.GetInput(InputType.Reload));
             inputProperty.SetInput(PlayerInput.Ads, input.GetInput(InputType.Ads));
-            if (!commands.WithProperty(out WantedItemIndexProperty itemIndexProperty)) return;
+            if (!commands.With(out WantedItemIndexProperty itemIndexProperty)) return;
             if (input.GetInput(InputType.ItemOne))
                 itemIndexProperty.Value = 1;
             else if (input.GetInput(InputType.ItemTwo))

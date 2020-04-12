@@ -37,15 +37,15 @@ namespace Session.Player.Modifiers
             m_Controller.enabled = false;
         }
 
-        public override void ModifyChecked(ContainerBase containerToModify, ContainerBase commands, float duration)
+        public override void ModifyChecked(Container containerToModify, Container commands, float duration)
         {
             base.ModifyChecked(containerToModify, commands, duration);
             FullMove(containerToModify, commands, duration);
         }
 
-        public override void ModifyCommands(ContainerBase commandsToModify)
+        public override void ModifyCommands(Container commandsToModify)
         {
-            if (!commandsToModify.WithProperty(out InputFlagProperty inputProperty)) return;
+            if (!commandsToModify.With(out InputFlagProperty inputProperty)) return;
 
             InputProvider input = InputProvider.Singleton;
             inputProperty.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
@@ -55,20 +55,20 @@ namespace Session.Player.Modifiers
             inputProperty.SetInput(PlayerInput.Jump, input.GetInput(InputType.Jump));
         }
 
-        protected override void SynchronizeBehavior(ContainerBase containersToApply)
+        protected override void SynchronizeBehavior(Container containersToApply)
         {
-            if (!containersToApply.WithComponent(out MoveComponent moveComponent)
-             || !containersToApply.WithProperty(out HealthProperty healthProperty)) return;
+            if (!containersToApply.With(out MoveComponent moveComponent)
+             || !containersToApply.With(out HealthProperty healthProperty)) return;
 
             transform.position = moveComponent.position;
             m_Controller.enabled = healthProperty.IsAlive;
         }
 
-        private void FullMove(ContainerBase containerToModify, ContainerBase commands, float duration)
+        private void FullMove(Container containerToModify, Container commands, float duration)
         {
-            if (!containerToModify.WithComponent(out MoveComponent moveComponent)
-             || !containerToModify.WithProperty(out HealthProperty healthProperty)
-             || !commands.WithProperty(out InputFlagProperty inputProperty)) return;
+            if (!containerToModify.With(out MoveComponent moveComponent)
+             || !containerToModify.With(out HealthProperty healthProperty)
+             || !commands.With(out InputFlagProperty inputProperty)) return;
 
             Vector3 initialVelocity = moveComponent.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = LateralMagnitude(endingVelocity);

@@ -41,7 +41,7 @@ namespace Session.Tests
         [Test]
         public void TestCommand()
         {
-            var p = new ClientCommandsComponent {stamp = new StampComponent {tick = new UIntProperty(35)}};
+            var p = new ClientCommandsContainer {stamp = new StampComponent {tick = new UIntProperty(35)}};
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
@@ -61,7 +61,7 @@ namespace Session.Tests
                 {
                     switch (component)
                     {
-                        case ClientCommandsComponent command:
+                        case ClientCommandsContainer command:
                             Assert.AreEqual(35, command.stamp.tick.Value);
                             received++;
                             break;

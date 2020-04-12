@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Components
 {
     [Serializable]
-    public abstract class PropertyBase
+    public abstract class PropertyBase : ContainableBase
     {
         [SerializeField] private bool m_HasValue;
         private bool m_IsModified;

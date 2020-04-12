@@ -42,9 +42,9 @@ namespace Session.Player.Visualization
             AnimationPlayableOutput.Create(m_Graph, $"{m_GraphName} Output", m_Animator);
         }
 
-        public void Render(ContainerBase playerContainer, bool isLocalPlayer)
+        public void Render(Container playerContainer, bool isLocalPlayer)
         {
-            if (!playerContainer.WithComponent(out InventoryComponent inventoryComponent)) return;
+            if (!playerContainer.With(out InventoryComponent inventoryComponent)) return;
 
             m_Visuals = SetupVisualItem(inventoryComponent);
             if (m_Visuals == null) return;
@@ -71,7 +71,7 @@ namespace Session.Player.Visualization
 
             if (m_IsFpv) AnimateAim(inventoryComponent);
 
-            if (!playerContainer.WithComponent(out CameraComponent cameraComponent) || !m_TpvArmsRotator) return;
+            if (!playerContainer.With(out CameraComponent cameraComponent) || !m_TpvArmsRotator) return;
             const float armClamp = 60.0f;
             m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(cameraComponent.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
         }

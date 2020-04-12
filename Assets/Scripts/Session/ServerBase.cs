@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using Collections;
 using Components;
@@ -10,29 +11,36 @@ using Session.Player.Modifiers;
 
 namespace Session
 {
-    using ServerSessionContainer = SessionContainerBase<ServerPlayerContainer>;
+    [Serializable]
+    public class ServerPlayerContainer : Container
+    {
+        public ServerPlayerContainer(IEnumerable<Type> types) : base(types)
+        {
+        }
+
+        public StampComponent serverStamp, clientStamp;
+    }
 
     [Serializable]
-    public class ServerPlayerContainer : ContainerBase
+    public class ServerSessionContainer : Container
     {
-        public ContainerBase player;
-        public StampComponent serverStamp, clientStamp;
     }
 
     public abstract class ServerBase : SessionBase
     {
         private ComponentServerSocket m_Socket;
 
-        protected readonly CyclicArray<ServerSessionContainer> m_SessionComponentHistory;
+        protected readonly CyclicArray<Container> m_SessionComponentHistory;
 
-        protected ServerBase(IGameObjectLinker linker, Type sessionType, Type playerType, Type commandsType) : base(linker, sessionType, playerType, commandsType)
+        protected ServerBase(IGameObjectLinker linker, List<Type> sessionElements, List<Type> playerElements, List<Type> commandElements)
+            : base(linker, sessionElements, playerElements, commandElements)
         {
-            m_SessionComponentHistory = new CyclicArray<ServerSessionContainer>(250, () =>
+            m_SessionComponentHistory = new CyclicArray<Container>(250, () =>
             {
-                var instance = (ServerSessionContainer) Activator.CreateInstance(sessionType);
-                for (var i = 0; i < instance.playerComponents.Length; i++)
-                    instance.playerComponents[i] = new ServerPlayerContainer {player = (ContainerBase) Activator.CreateInstance(playerType)};
-                return instance;
+                var sessionContainer = new Container(sessionElements);
+                if (sessionContainer.With(out PlayerContainerArrayProperty playersProperty))
+                    playersProperty.SetAll(() => new ServerPlayerContainer(playerElements));
+                return sessionContainer;
             });
         }
 
@@ -40,7 +48,7 @@ namespace Session
         {
             base.Start();
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));
-            m_Socket.RegisterComponent(typeof(ClientCommandsComponent));
+            m_Socket.RegisterComponent(typeof(ClientCommandsContainer));
         }
 
         protected virtual void PreTick(ServerSessionContainer tickSessionComponent)
@@ -83,11 +91,11 @@ namespace Session
             {
                 switch (message)
                 {
-                    case ClientCommandsComponent clientCommands:
+                    case ClientCommandsContainer clientCommands:
                         ServerPlayerContainer trustedPlayerComponent = trustedSessionComponent.playerComponents[clientId];
                         float playerCommandsDuration = clientCommands.stamp.duration;
-                        m_Modifier[clientId].ModifyChecked(trustedPlayerComponent.player, clientCommands.playerCommands, playerCommandsDuration);
-                        trustedPlayerComponent.MergeSet(clientCommands.trustedPlayerComponent);
+                        m_Modifier[clientId].ModifyChecked(trustedPlayerComponent.player, clientCommands.playerCommandsContainer, playerCommandsDuration);
+                        trustedPlayerComponent.MergeSet(clientCommands.trustedPlayerContainer);
                         trustedPlayerComponent.clientStamp.duration.Value += playerCommandsDuration;
                         // AnalysisLogger.AddDataPoint("", "A", trustedPlayerComponent.position.Value.x);
                         break;
