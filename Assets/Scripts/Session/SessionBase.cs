@@ -16,6 +16,8 @@ namespace Session
 
     public interface IPlayerContainerRenderer
     {
+        void Setup();
+        
         // TODO: is local player should use With construct
         void Render(Container playerContainer, bool isLocalPlayer);
     }
@@ -54,7 +56,7 @@ namespace Session
 
         public virtual void Start()
         {
-            m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => { });
+            m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup());
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, visuals => visuals.Setup());
         }
 

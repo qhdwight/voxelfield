@@ -24,7 +24,7 @@ namespace Components
             }
         }
 
-        public virtual void InterpolateFrom(object c1, object c2, float interpolation)
+        public virtual void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
         {
         }
     }

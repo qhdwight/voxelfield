@@ -33,12 +33,20 @@ namespace Components
         {
             Extensions.NavigateZipped((field, _e1, _e2, _ed) =>
             {
-                if (field == null || field.IsDefined(typeof(CustomInterpolation))) return;
-                if (!(_e1 is PropertyBase p1) || !(_e2 is PropertyBase p2) || !(_ed is PropertyBase pd)) return;
-                if (field.IsDefined(typeof(TakeSecondForInterpolation)))
-                    pd.SetFromIfPresent(p1);
-                else
-                    pd.InterpolateFromIfPresent(p1, p2, interpolation, field);
+                switch (_e1)
+                {
+                    case PropertyBase p1 when _e2 is PropertyBase p2 && _ed is PropertyBase pd:
+                    {
+                        if (field != null && field.IsDefined(typeof(TakeSecondForInterpolation)))
+                            pd.SetFromIfPresent(p1);
+                        else if (field == null || !field.IsDefined(typeof(CustomInterpolation)))
+                            pd.InterpolateFromIfPresent(p1, p2, interpolation, field);
+                        break;
+                    }
+                    case ComponentBase c1 when _e2 is ComponentBase c2 && _ed is ComponentBase cd:
+                        cd.InterpolateFrom(c1, c2, interpolation);
+                        break;
+                }
             }, e1, e2, ed);
         }
     }

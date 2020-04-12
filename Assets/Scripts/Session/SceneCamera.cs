@@ -16,7 +16,7 @@ namespace Session
             m_AudioListener = GetComponent<AudioListener>();
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (Camera.allCamerasCount > 1)
                 SetEnabled(false);

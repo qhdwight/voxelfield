@@ -1,3 +1,4 @@
+using System;
 using Components;
 using Session.Player.Components;
 using UnityEngine;
@@ -24,13 +25,12 @@ namespace Session.Player.Visualization
         private AudioListener m_AudioListener;
 
         private Camera m_Camera;
-        private bool m_HasSetup;
         [SerializeField] private Transform m_Head = default;
         [SerializeField] private Renderer[] m_Renders = default;
         [SerializeField] private bool m_IsDebugRender = default;
 
         private PlayerVisualsBehaviorBase[] m_Visuals;
-
+        
         public void Setup()
         {
             m_Visuals = GetComponents<PlayerVisualsBehaviorBase>();
@@ -39,7 +39,6 @@ namespace Session.Player.Visualization
             m_AudioListener = GetComponentInChildren<AudioListener>();
             m_Camera.enabled = false;
             SetVisible(false, false);
-            m_HasSetup = true;
         }
 
         private void OnDestroy()
@@ -49,7 +48,6 @@ namespace Session.Player.Visualization
 
         public void Render(Container playerContainer, bool isLocalPlayer)
         {
-            if (!m_HasSetup) Setup();
             if (playerContainer.If(out MoveComponent moveComponent))
                 transform.position = moveComponent.position;
             if (playerContainer.If(out CameraComponent cameraComponent))

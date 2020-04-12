@@ -91,7 +91,7 @@ namespace Session.Player.Components
         public bool HasItemEquipped => !HasNoItemEquipped;
         public bool HasNoItemEquipped => equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex;
 
-        public override void InterpolateFrom(object c1, object c2, float interpolation)
+        public override void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
         {
             var i1 = (InventoryComponent) c1;
             var i2 = (InventoryComponent) c2;

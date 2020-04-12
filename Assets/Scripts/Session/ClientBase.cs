@@ -6,7 +6,9 @@ using Collections;
 using Components;
 using Networking;
 using Session.Components;
+using Session.Items.Modifiers;
 using Session.Player.Components;
+using Session.Player.Modifiers;
 using UnityEngine;
 
 namespace Session
@@ -96,6 +98,7 @@ namespace Session
                     if (tick == 0)
                     {
                         predictedPlayerComponent.Require<HealthProperty>().Value = 100;
+                        PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.Require<InventoryComponent>(), ItemId.TestingRifle, 1);
                     }
                     var predictedStampComponent = predictedPlayerComponent.Require<StampComponent>();
                     predictedStampComponent.tick.Value = tick;

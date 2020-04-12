@@ -1,3 +1,4 @@
+using System;
 using Components;
 using Input;
 using Session.Items;
@@ -12,9 +13,10 @@ namespace Session.Player.Modifiers
 
         public override void ModifyChecked(Container containerToModify, Container commands, float duration)
         {
-            if (!containerToModify.If(out InventoryComponent inventoryComponent)
-             || !containerToModify.If(out WantedItemIndexProperty wantedItemIndexProperty)
-             || !containerToModify.If(out InputFlagProperty inputProperty)) return;
+            if (!containerToModify.If(out InventoryComponent inventoryComponent)) return;
+
+            var inputProperty = commands.Require<InputFlagProperty>();
+            var wantedItemIndexProperty = commands.Require<WantedItemIndexProperty>();
 
             ModifyEquipStatus(inventoryComponent, wantedItemIndexProperty, duration);
 
@@ -140,6 +142,7 @@ namespace Session.Player.Modifiers
 
         public static void SetItemAtIndex(InventoryComponent inventoryComponent, byte itemId, int index)
         {
+            if (index <= NoneIndex) throw new ArgumentException("Invalid item index");
             ItemComponent itemComponent = inventoryComponent.itemComponents[index - 1];
             itemComponent.id.Value = itemId;
             if (itemId == ItemId.None) return;
