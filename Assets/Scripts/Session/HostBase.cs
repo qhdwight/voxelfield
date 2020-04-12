@@ -35,7 +35,7 @@ namespace Session
             m_Modifier[HostPlayerId].ModifyChecked(m_HostPlayerCommands, m_HostPlayerCommands, delta);
         }
 
-        protected override void Render(float renderDelta, float timeSinceTick, float renderTime)
+        protected override void Render(float timeSinceTick, float renderTime)
         {
             if (m_RenderSessionContainer.If(out PlayerContainerArrayProperty renderPlayersProperty)
              && m_RenderSessionContainer.If(out LocalPlayerProperty localPlayerProperty))

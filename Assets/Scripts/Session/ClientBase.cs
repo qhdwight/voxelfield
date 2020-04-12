@@ -6,6 +6,8 @@ using Collections;
 using Components;
 using Networking;
 using Session.Components;
+using Session.Player.Components;
+using UnityEngine;
 
 namespace Session
 {
@@ -59,7 +61,7 @@ namespace Session
             m_Modifier[LocalPlayerId].ModifyTrusted(m_PredictedPlayerCommands, m_PredictedPlayerCommands, delta);
         }
 
-        protected override void Render(float renderDelta, float timeSinceTick, float renderTime)
+        protected override void Render(float timeSinceTick, float renderTime)
         {
             if (m_RenderSessionContainer.If(out PlayerContainerArrayProperty playersProperty)
              && m_RenderSessionContainer.If(out LocalPlayerProperty localPlayerProperty))
@@ -91,21 +93,24 @@ namespace Session
                 {
                     predictedPlayerComponent.Reset();
                     predictedPlayerComponent.MergeSet(lastPredictedPlayerComponent);
-                    var stampComponent = predictedPlayerComponent.Require<StampComponent>();
-                    stampComponent.tick.Value = m_Tick;
-                    stampComponent.time.Value = time;
-                    float duration = time - lastPredictedPlayerComponent.Require<StampComponent>().time.OrElse(time);
-                    stampComponent.duration.Value = duration;
+                    if (tick == 0)
+                    {
+                        predictedPlayerComponent.Require<HealthProperty>().Value = 100;
+                    }
+                    var predictedStampComponent = predictedPlayerComponent.Require<StampComponent>();
+                    predictedStampComponent.tick.Value = tick;
+                    predictedStampComponent.time.Value = time;
+                    float lastTime = lastPredictedPlayerComponent.Require<StampComponent>().time.OrElse(time),
+                          duration = time - lastTime;
+                    predictedStampComponent.duration.Value = duration;
 
                     // Inject trusted component
-                    predictedPlayerComponent.MergeSet(m_PredictedPlayerCommands);
                     var commandsStampComponent = m_PredictedPlayerCommands.Require<StampComponent>();
-                    commandsStampComponent.duration.Value = duration;
+                    commandsStampComponent.MergeSet(predictedStampComponent);
+                    predictedPlayerComponent.MergeSet(m_PredictedPlayerCommands);
                     m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayerComponent, m_PredictedPlayerCommands, duration);
 
                     // Send off commands to server for checking
-                    commandsStampComponent.tick.Value = tick;
-                    commandsStampComponent.time.Value = time;
                     m_Socket.SendToServer(m_PredictedPlayerCommands);
 
                     DebugBehavior.Singleton.Predicted = predictedPlayerComponent;

@@ -62,11 +62,11 @@ namespace Session
         {
             float time = Time.realtimeSinceStartup, delta = time - m_RenderTime;
             Input(delta);
-            if (ShouldRender) Render(delta, time - m_FixedUpdateTime, time);
+            if (ShouldRender) Render(time - m_FixedUpdateTime, time);
             m_RenderTime = time;
         }
 
-        protected virtual void Render(float renderDelta, float timeSinceTick, float renderTime)
+        protected virtual void Render(float timeSinceTick, float renderTime)
         {
         }
 
