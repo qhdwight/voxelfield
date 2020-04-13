@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Components;
 using Session.Components;
-using UnityEngine;
 
 namespace Session
 {
@@ -67,7 +66,7 @@ namespace Session
                                 Interpolator.InterpolateInto(fromComponent, toComponent, renderPlayersProperty[playerId], interpolation);
                                 break;
                             }
-                            
+
                             // Debug.LogWarning("Not enough fresh sessions to render smoothly");
                             // renderPlayersProperty[playerId].MergeSet(GetInHistory(0));
                         }

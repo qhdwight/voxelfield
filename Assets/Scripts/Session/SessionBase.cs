@@ -17,7 +17,7 @@ namespace Session
     public interface IPlayerContainerRenderer
     {
         void Setup();
-        
+
         // TODO: is local player should use With construct
         void Render(Container playerContainer, bool isLocalPlayer);
     }

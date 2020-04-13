@@ -9,7 +9,7 @@ using Session.Player.Components;
 
 namespace Session.Tests
 {
-    public class InterpolationTest
+    public class SessionTests
     {
         [Test]
         public void TestInterpolation()
@@ -45,7 +45,11 @@ namespace Session.Tests
             var clientCommands = new ClientCommandsContainer(StandardComponents.StandardPlayerComponents
                                                                                .Concat(StandardComponents.StandardPlayerCommandsComponents)
                                                                                .Append(typeof(StampComponent)));
-            clientCommands.Require<StampComponent>().tick.Value = 35;
+            const int tick = 35;
+            const float duration = 0.241f;
+
+            clientCommands.Require<StampComponent>().tick.Value = tick;
+            clientCommands.Require<StampComponent>().duration.Value = duration;
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
@@ -69,7 +73,8 @@ namespace Session.Tests
                     switch (component)
                     {
                         case ClientCommandsContainer command:
-                            Assert.AreEqual(35, command.Require<StampComponent>().tick.Value);
+                            Assert.AreEqual(tick, command.Require<StampComponent>().tick.Value);
+                            Assert.AreEqual(duration, command.Require<StampComponent>().duration.Value);
                             received++;
                             break;
                     }

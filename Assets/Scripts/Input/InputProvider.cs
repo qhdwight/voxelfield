@@ -18,7 +18,11 @@ namespace Input
         ItemOne,
         ItemTwo,
         ItemThree,
-        Ads
+        Ads,
+        ToggleConsole,
+        AutocompleteConsole,
+        PreviousConsoleCommand,
+        NextConsoleCommand
     }
 
     public enum MouseMovement
@@ -53,7 +57,11 @@ namespace Input
                     [InputType.ItemOne] = KeyCode.Alpha1,
                     [InputType.ItemTwo] = KeyCode.Alpha2,
                     [InputType.ItemThree] = KeyCode.Alpha3,
-                    [InputType.Ads] = KeyCode.Mouse1
+                    [InputType.Ads] = KeyCode.Mouse1,
+                    [InputType.ToggleConsole] = KeyCode.BackQuote,
+                    [InputType.AutocompleteConsole] = KeyCode.Tab,
+                    [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
+                    [InputType.NextConsoleCommand] = KeyCode.DownArrow,
                 }
             };
         }
@@ -66,6 +74,15 @@ namespace Input
         public bool GetInput(InputType type)
         {
             return UnityEngine.Input.GetKey(m_Settings.Get(type));
+        }
+
+        /// <summary>
+        ///     Should be called in normal Unity Update() methods
+        /// </summary>
+        /// <returns>If this is the first Unity frame an input is pressed</returns>
+        public bool GetInputDown(InputType type)
+        {
+            return UnityEngine.Input.GetKeyDown(m_Settings.Get(type));
         }
 
         public static float GetMouseInput(MouseMovement mouseMovement)

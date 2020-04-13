@@ -1,4 +1,3 @@
-using System;
 using Components;
 using Session.Player.Components;
 using UnityEngine;
@@ -30,7 +29,7 @@ namespace Session.Player.Visualization
         [SerializeField] private bool m_IsDebugRender = default;
 
         private PlayerVisualsBehaviorBase[] m_Visuals;
-        
+
         public void Setup()
         {
             m_Visuals = GetComponents<PlayerVisualsBehaviorBase>();

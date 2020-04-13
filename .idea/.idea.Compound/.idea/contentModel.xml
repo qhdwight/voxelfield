@@ -44,13 +44,16 @@
               <e p="SessionManager.cs" t="Include" />
             </e>
           </e>
+          <e p="Console" t="Include">
+            <e p="Console.asmdef" t="Include" />
+            <e p="ConsoleCommandExecutor.cs" t="Include" />
+            <e p="Interface" t="Include">
+              <e p="ConsoleInterface.cs" t="Include" />
+            </e>
+          </e>
           <e p="Input" t="Include">
             <e p="Input.asmdef" t="Include" />
             <e p="InputProvider.cs" t="Include" />
-          </e>
-          <e p="Interfaces" t="Include">
-            <e p="InterfaceBehavior.cs" t="Include" />
-            <e p="Interfaces.asmdef" t="Include" />
           </e>
           <e p="Networking" t="Include">
             <e p="ComponentClientSocket.cs" t="Include" />
@@ -103,13 +106,18 @@
             <e p="SessionBase.cs" t="Include" />
             <e p="Tests" t="Include">
               <e p="SessionTests.asmdef" t="Include" />
-              <e p="TestInterpolation.cs" t="Include" />
+              <e p="SessionTests.cs" t="Include" />
             </e>
           </e>
           <e p="Util" t="Include">
             <e p="AnalysisLogger.cs" t="Include" />
-            <e p="ArmIK.cs" t="Include" />
-            <e p="Extensions.cs" t="Include" />
+            <e p="Animation" t="Include">
+              <e p="ArmIK.cs" t="Include" />
+            </e>
+            <e p="Interface" t="Include">
+              <e p="InterfaceBehaviorBase.cs" t="Include" />
+              <e p="SingletonInterfaceBehaviorBase.cs" t="Include" />
+            </e>
             <e p="SingletonBehavior.cs" t="Include" />
             <e p="Util.asmdef" t="Include" />
           </e>
@@ -120,8 +128,8 @@
       <e p="ComponentTests.csproj" t="IncludeRecursive" />
       <e p="Compound.csproj" t="IncludeRecursive" />
       <e p="Compound.sln" t="IncludeFlat" />
+      <e p="Console.csproj" t="IncludeRecursive" />
       <e p="Input.csproj" t="IncludeRecursive" />
-      <e p="Interfaces.csproj" t="IncludeRecursive" />
       <e p="Networking.csproj" t="IncludeRecursive" />
       <e p="obj" t="ExcludeRecursive" />
       <e p="packages" t="ExcludeRecursive" />

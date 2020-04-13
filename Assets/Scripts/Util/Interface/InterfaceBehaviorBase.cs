@@ -1,11 +1,11 @@
 using UnityEngine;
 
-namespace Interfaces
+namespace Util.Interface
 {
     [RequireComponent(typeof(CanvasGroup))]
-    public class InterfaceBehavior : MonoBehaviour
+    public abstract class InterfaceBehaviorBase : MonoBehaviour
     {
-        protected const float InvisibleAlpha = 0.0f, OpaqueAlpha = 1.0f;
+        private const float InvisibleAlpha = 0.0f, OpaqueAlpha = 1.0f;
 
         private CanvasGroup m_CanvasGroup;
 

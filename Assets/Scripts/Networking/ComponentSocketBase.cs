@@ -70,7 +70,7 @@ namespace Networking
                 m_SendStream.Position = 0;
                 m_Writer.Write(code);
                 message.Serialize(m_SendStream);
-                int sent = m_RawSocket.SendTo(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position, SocketFlags.None, endPoint);
+                int sent = m_RawSocket.SendTo(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position + 1, SocketFlags.None, endPoint);
                 return true;
             }
             catch (Exception exception)

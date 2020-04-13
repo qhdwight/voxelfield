@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace Components
@@ -47,7 +46,7 @@ namespace Components
         {
             var clone = (TElement) Activator.CreateInstance(component.GetType());
             if (clone is Container container)
-                container.Add(((Container) (object) component).Children.Keys.ToArray());
+                container.Add(((Container) (object) component).ElementTypes);
             clone.MergeSet(component);
             return clone;
         }
@@ -104,14 +103,11 @@ namespace Components
                     var zippedContainers = new TriArray<Container>();
                     for (var i = 0; i < size; i++)
                         zippedContainers[i] = (Container) _zip[i];
-                    foreach (Type childType in zippedContainers[0].Children.Keys)
+                    foreach (Type childType in zippedContainers[0].ElementTypes)
                     {
                         var zippedChildren = new TriArray<ElementBase>();
                         for (var i = 0; i < size; i++)
-                        {
-                            zippedContainers[i].Children.TryGetValue(childType, out ElementBase child);
-                            zippedChildren[i] = child;
-                        }
+                            zippedChildren[i] = zippedContainers[i].TryGet(childType);
                         NavigateRecursively(zippedChildren, null);
                     }
                 }

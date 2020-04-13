@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 using UnityEngine.Rendering;
-using Util;
+using Util.Animation;
 
 namespace Session.Player.Visualization
 {

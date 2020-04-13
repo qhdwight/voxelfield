@@ -20,7 +20,7 @@ namespace Compound.Session
                 {
                     m_Session = new Host(this);
                     // m_Session = new Client(this);
-                    m_DebugSession = new Client(this) {ShouldRender = false};
+                    // m_DebugSession = new Client(this) {ShouldRender = false};
                 }
                 else
                 {
@@ -77,6 +77,8 @@ namespace Compound.Session
         private void OnDestroy()
         {
             m_Session?.Dispose();
+
+            m_DebugSession?.Dispose();
         }
 
         public (GameObject, GameObject) GetPlayerPrefabs()

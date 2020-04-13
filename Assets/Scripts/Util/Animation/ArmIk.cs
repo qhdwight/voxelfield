@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Util
+namespace Util.Animation
 {
     [ExecuteInEditMode]
     public class ArmIk : MonoBehaviour
