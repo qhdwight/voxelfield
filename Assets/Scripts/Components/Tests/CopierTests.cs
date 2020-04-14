@@ -8,14 +8,14 @@ namespace Components.Tests
         public void TestEquals()
         {
             OuterComponent c1 = OuterComponent.Arbitrary, c2 = OuterComponent.Arbitrary;
-            Assert.IsTrue(c1.AreEquals(c2));
+            Assert.IsTrue(c1.EqualTo(c2));
         }
 
         [Test]
         public void TestClone()
         {
             OuterComponent component = OuterComponent.Arbitrary;
-            Assert.IsTrue(component.AreEquals(component.Clone()));
+            Assert.IsTrue(component.EqualTo(component.Clone()));
         }
 
         [Test]
@@ -24,7 +24,7 @@ namespace Components.Tests
             OuterComponent source = OuterComponent.Arbitrary;
             var destination = new OuterComponent();
             destination.MergeSet(source);
-            Assert.IsTrue(destination.AreEquals(source));
+            Assert.IsTrue(destination.EqualTo(source));
         }
     }
 }

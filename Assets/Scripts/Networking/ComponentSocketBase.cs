@@ -21,7 +21,7 @@ namespace Networking
         private readonly BinaryWriter m_Writer;
         private readonly BinaryReader m_Reader;
         private readonly Dictionary<Type, Pool<ElementBase>> m_MessagePools = new Dictionary<Type, Pool<ElementBase>>();
-        protected readonly List<EndPoint> m_Connections = new List<EndPoint>();
+        protected readonly HashSet<EndPoint> m_Connections = new HashSet<EndPoint>();
 
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
         private AsyncCallback m_ReceiveCallback;

@@ -9,7 +9,7 @@ namespace Compound.Session
     {
         private SessionBase m_Session;
         private SessionBase m_DebugSession = default;
-
+    
         [SerializeField] private GameObject m_PlayerModifierPrefab = default, m_PlayerVisualsPrefab = default;
 
         private void StartSession()
@@ -18,9 +18,9 @@ namespace Compound.Session
             {
                 if (Application.isEditor)
                 {
-                    m_Session = new Host(this);
+                    m_Session = new Host(this) {ShouldRender = false};
                     // m_Session = new Client(this);
-                    // m_DebugSession = new Client(this) {ShouldRender = false};
+                    m_DebugSession = new Client(this) {ShouldRender = true};
                 }
                 else
                 {
@@ -32,9 +32,7 @@ namespace Compound.Session
                 Debug.LogError(exception);
                 m_Session = null;
             }
-
             m_Session?.Start();
-
             m_DebugSession?.Start();
         }
 
@@ -49,13 +47,13 @@ namespace Compound.Session
             try
             {
                 m_DebugSession?.Update();
-
                 m_Session?.Update();
             }
             catch (Exception exception)
             {
                 Debug.LogError(exception);
                 m_Session = null;
+                m_DebugSession = null;
             }
         }
 
@@ -64,20 +62,19 @@ namespace Compound.Session
             try
             {
                 m_Session?.FixedUpdate();
-
                 m_DebugSession?.FixedUpdate();
             }
             catch (Exception exception)
             {
                 Debug.LogError(exception);
                 m_Session = null;
+                m_DebugSession = null;
             }
         }
 
         private void OnDestroy()
         {
             m_Session?.Dispose();
-
             m_DebugSession?.Dispose();
         }
 

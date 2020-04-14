@@ -8,6 +8,7 @@
     <explicitIncludes>
       <Path>Library/PackageCache/com.unity.ext.nunit@1.0.0</Path>
       <Path>Library/PackageCache/com.unity.ide.rider@1.2.1</Path>
+      <Path>Library/PackageCache/com.unity.ide.vscode@1.1.4</Path>
       <Path>Library/PackageCache/com.unity.playablegraph-visualizer@0.2.1-preview.3</Path>
       <Path>Library/PackageCache/com.unity.polybrush@1.0.1</Path>
       <Path>Library/PackageCache/com.unity.probuilder@4.2.3</Path>
@@ -22,6 +23,7 @@
     <explicitExcludes>
       <Path>.git</Path>
       <Path>.idea</Path>
+      <Path>.vscode</Path>
       <Path>Builds</Path>
       <Path>Library</Path>
       <Path>Logs</Path>

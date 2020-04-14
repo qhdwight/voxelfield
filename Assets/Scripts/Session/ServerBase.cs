@@ -34,31 +34,22 @@ namespace Session
     {
     }
 
-    public abstract class ServerBase : SessionBase
+    public abstract class ServerBase : NetworkedSessionBase
     {
         private ComponentServerSocket m_Socket;
-
-        protected readonly CyclicArray<Container> m_SessionComponentHistory;
 
         protected ServerBase(IGameObjectLinker linker,
                              IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
-            m_SessionComponentHistory = new CyclicArray<Container>(250, () =>
-            {
-                var sessionContainer = new Container(sessionElements.Append(typeof(ServerStampComponent)));
-                if (sessionContainer.If(out PlayerContainerArrayProperty playersProperty))
-                    playersProperty.SetAll(() => new ServerSessionContainer(m_ServerElements));
-                return sessionContainer;
-            });
         }
 
         public override void Start()
         {
             base.Start();
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Loopback, 7777));
-            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), new ClientCommandsContainer(m_ClientElements));
-            m_Socket.RegisterMessage(typeof(ServerSessionContainer), new ServerSessionContainer(m_ServerElements));
+            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_ClientCommandsContainer);
+            m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_ServerSessionContainer);
         }
 
         protected virtual void PreTick(Container tickSessionContainer)

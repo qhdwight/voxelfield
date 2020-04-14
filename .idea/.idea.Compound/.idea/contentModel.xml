@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
-    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2020.1/extResources" t="IncludeRecursive" />
-    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2020.1/resharper-host/local/Transient/ReSharperHost/v201/SolutionCaches/_Compound.-1205327708.00" t="ExcludeRecursive" />
-    <e p="$PROJECT_DIR$" t="IncludeRecursive">
+    <e p="C:\Users\qhdwi\AppData\local\JetBrains\Rider2020.1\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\qhdwi\AppData\local\JetBrains\Rider2020.1\resharper-host\local\Transient\ReSharperHost\v201\SolutionCaches\_Compound.-1869316390.00" t="ExcludeRecursive" />
+    <e p="C:\Users\qhdwi\AppData\Roaming\JetBrains\Rider2020.1\scratches" t="IncludeRecursive" />
+    <e p="C:\Users\qhdwi\Projects\Programming\Unity\Compound" t="IncludeRecursive">
       <e p="Assets" t="Include">
         <e p="Scripts" t="Include">
           <e p="Collections" t="Include">
@@ -80,6 +81,7 @@
                 <e p="ItemVisualBehavior.cs" t="Include" />
               </e>
             </e>
+            <e p="NetworkedSessionBase.cs" t="Include" />
             <e p="Player" t="Include">
               <e p="Components" t="Include">
                 <e p="CommandsComponent.cs" t="Include" />
@@ -134,7 +136,7 @@
       <e p="packages" t="ExcludeRecursive" />
       <e p="Session.csproj" t="IncludeRecursive" />
       <e p="SessionTests.csproj" t="IncludeRecursive" />
-      <e p="Temp/bin" t="ExcludeRecursive" />
+      <e p="Temp\bin" t="ExcludeRecursive" />
       <e p="Util.csproj" t="IncludeRecursive" />
     </e>
   </component>

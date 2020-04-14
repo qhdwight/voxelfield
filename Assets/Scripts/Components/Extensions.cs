@@ -45,13 +45,16 @@ namespace Components
         public static TElement Clone<TElement>(this TElement component) where TElement : ElementBase
         {
             var clone = (TElement) Activator.CreateInstance(component.GetType());
-            if (clone is Container container)
-                container.Add(((Container) (object) component).ElementTypes);
+            NavigateZipped((field, e1, e2) =>
+            {
+                if (e1 is Container p1 && e2 is Container p2)
+                    p2.Add(p1.ElementTypes);
+            }, component, clone);
             clone.MergeSet(component);
             return clone;
         }
 
-        public static bool AreEquals<T>(this T component, T other) where T : ElementBase
+        public static bool EqualTo<T>(this T component, T other) where T : ElementBase
         {
             var areEqual = true;
             NavigateZipped((field, e1, e2) =>

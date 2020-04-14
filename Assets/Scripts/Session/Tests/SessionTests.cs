@@ -12,7 +12,7 @@ namespace Session.Tests
     public class SessionTests
     {
         [Test]
-        public void TestInterpolation()
+        public void TestItemInterpolation()
         {
             var i1 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(0), elapsed = new FloatProperty(1.870f)}};
             var i2 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(1), elapsed = new FloatProperty(0.038f)}};
@@ -22,6 +22,16 @@ namespace Session.Tests
             id.InterpolateFrom(i1, i2, interpolation);
             Assert.AreEqual(1, id.status.id.Value);
             Assert.AreEqual(0.021f, id.status.elapsed.Value, 1e-3f);
+        }
+
+        [Test]
+        public void TestSessionClone()
+        {
+            var s1 = new ServerSessionContainer(StandardComponents.StandardSessionComponents.Append(typeof(ServerStampComponent)));
+            if (s1.If(out PlayerContainerArrayProperty p))
+                p.SetAll(() => new Container(StandardComponents.StandardPlayerComponents.Concat(StandardComponents.StandardPlayerCommandsComponents).Append(typeof(StampComponent))));
+            ServerSessionContainer s2 = s1.Clone();
+            Assert.IsTrue(s1.EqualTo(s2));
         }
 
         // [Test]
@@ -40,7 +50,7 @@ namespace Session.Tests
         // }
 
         [Test]
-        public void TestCommand()
+        public void TestCommandNetworking()
         {
             var clientCommands = new ClientCommandsContainer(StandardComponents.StandardPlayerComponents
                                                                                .Concat(StandardComponents.StandardPlayerCommandsComponents)
