@@ -15,6 +15,10 @@ namespace Session
     [Serializable]
     public class ServerSessionContainer : Container
     {
+        public ServerSessionContainer()
+        {
+        }
+
         public ServerSessionContainer(IEnumerable<Type> types) : base(types)
         {
         }
@@ -36,8 +40,6 @@ namespace Session
 
         protected readonly CyclicArray<Container> m_SessionComponentHistory;
 
-        private readonly IEnumerable<Type> m_ClientElements;
-
         protected ServerBase(IGameObjectLinker linker,
                              IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
@@ -46,43 +48,43 @@ namespace Session
             {
                 var sessionContainer = new Container(sessionElements.Append(typeof(ServerStampComponent)));
                 if (sessionContainer.If(out PlayerContainerArrayProperty playersProperty))
-                    playersProperty.SetAll(() => new ServerSessionContainer(playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))));
+                    playersProperty.SetAll(() => new ServerSessionContainer(m_ServerElements));
                 return sessionContainer;
             });
-            m_ClientElements = playerElements.Concat(commandElements).Append(typeof(StampComponent));
         }
 
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));
-            m_Socket.ResgisterMessage(typeof(ClientCommandsContainer), new ClientCommandsContainer(m_ClientElements));
+            m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Loopback, 7777));
+            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), new ClientCommandsContainer(m_ClientElements));
+            m_Socket.RegisterMessage(typeof(ServerSessionContainer), new ServerSessionContainer(m_ServerElements));
         }
 
-        protected virtual void PreTick(Container tickSessionComponent)
+        protected virtual void PreTick(Container tickSessionContainer)
         {
         }
 
-        protected virtual void PostTick(Container tickSessionComponent)
+        protected virtual void PostTick(Container tickSessionContainer)
         {
         }
 
         protected sealed override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
-            Container lastTrustedSessionComponent = m_SessionComponentHistory.Peek(),
-                      trustedSessionComponent = m_SessionComponentHistory.ClaimNext();
-            trustedSessionComponent.Reset();
-            trustedSessionComponent.MergeSet(lastTrustedSessionComponent);
-            if (trustedSessionComponent.If(out ServerStampComponent stampComponent))
+            Container lastTrustedSessionContainer = m_SessionComponentHistory.Peek(),
+                      trustedSessionContainer = m_SessionComponentHistory.ClaimNext();
+            trustedSessionContainer.Reset();
+            trustedSessionContainer.MergeSet(lastTrustedSessionContainer);
+            if (trustedSessionContainer.If(out ServerStampComponent stampComponent))
             {
                 stampComponent.tick.Value = tick;
                 stampComponent.time.Value = time;
-                float duration = time - lastTrustedSessionComponent.Require<ServerStampComponent>().time.OrElse(time);
+                float duration = time - lastTrustedSessionContainer.Require<ServerStampComponent>().time.OrElse(time);
                 stampComponent.duration.Value = duration;
-                PreTick(trustedSessionComponent);
-                Tick(trustedSessionComponent);
-                PostTick(trustedSessionComponent);
+                PreTick(trustedSessionContainer);
+                Tick(trustedSessionContainer);
+                PostTick(trustedSessionContainer);
             }
         }
 
@@ -107,6 +109,7 @@ namespace Session
                 switch (message)
                 {
                     case ClientCommandsContainer clientCommandsContainer:
+                    {
                         Container trustedPlayerComponent = serverPlayerComponents[clientId];
                         var playerCommandsStampComponent = clientCommandsContainer.Require<StampComponent>();
                         m_Modifier[clientId].ModifyChecked(trustedPlayerComponent, clientCommandsContainer, playerCommandsStampComponent.duration);
@@ -116,8 +119,10 @@ namespace Session
                         // trustedPlayerComponent.Require<ServerStampComponent>().duration.Value += playerCommandsDuration;
                         // AnalysisLogger.AddDataPoint("", "A", trustedPlayerComponent.position.Value.x);
                         break;
+                    }
                 }
             });
+            m_Socket.SendToAll(m_SessionComponentHistory.Peek());
         }
 
         public override void Dispose()

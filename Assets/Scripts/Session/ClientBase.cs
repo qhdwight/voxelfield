@@ -9,19 +9,16 @@ using Session.Components;
 using Session.Items.Modifiers;
 using Session.Player.Components;
 using Session.Player.Modifiers;
+using UnityEngine;
 
 namespace Session
 {
     [Serializable]
     public class ClientCommandsContainer : Container
     {
-        public ClientCommandsContainer()
-        {
-        }
+        public ClientCommandsContainer() { }
 
-        public ClientCommandsContainer(IEnumerable<Type> types) : base(types)
-        {
-        }
+        public ClientCommandsContainer(IEnumerable<Type> types) : base(types) { }
     }
 
     public abstract class ClientBase : SessionBase
@@ -40,21 +37,19 @@ namespace Session
             m_RenderSessionContainer = new Container(sessionElements);
             if (m_RenderSessionContainer.If(out PlayerContainerArrayProperty playerContainers))
                 playerContainers.SetAll(() => new Container(playerElements));
-            m_PredictedPlayerCommands = new ClientCommandsContainer(playerElements.Concat(commandElements).Append(typeof(StampComponent)));
+            m_PredictedPlayerCommands = new ClientCommandsContainer(m_ClientElements);
             m_PredictedPlayerComponents = new CyclicArray<Container>(250, () => new Container(playerElements.Append(typeof(StampComponent))));
         }
 
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentClientSocket(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));
-            m_Socket.ResgisterMessage(typeof(ClientCommandsContainer), m_PredictedPlayerCommands);
+            m_Socket = new ComponentClientSocket(new IPEndPoint(IPAddress.Loopback, 7777));
+            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), new ClientCommandsContainer(m_ClientElements));
+            m_Socket.RegisterMessage(typeof(ServerSessionContainer), new ServerSessionContainer(m_ServerElements));
         }
 
-        private void ReadLocalInputs()
-        {
-            m_Modifier[LocalPlayerId].ModifyCommands(m_PredictedPlayerCommands);
-        }
+        private void ReadLocalInputs() { m_Modifier[LocalPlayerId].ModifyCommands(m_PredictedPlayerCommands); }
 
         public override void Input(float delta)
         {
@@ -119,11 +114,22 @@ namespace Session
                     DebugBehavior.Singleton.Predicted = predictedPlayerComponent;
                 }
             }
+
+            {
+                m_Socket.PollReceived((id, message) =>
+                {
+                    switch (message)
+                    {
+                        case ServerSessionContainer serverSessionContainer:
+                        {
+                            Debug.Log("Received");
+                            break;
+                        }
+                    }
+                });
+            }
         }
 
-        public override void Dispose()
-        {
-            m_Socket.Dispose();
-        }
+        public override void Dispose() { m_Socket.Dispose(); }
     }
 }

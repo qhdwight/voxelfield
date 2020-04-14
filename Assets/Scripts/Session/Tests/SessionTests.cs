@@ -56,8 +56,8 @@ namespace Session.Tests
             using (var server = new ComponentServerSocket(localHost))
             using (var client = new ComponentClientSocket(localHost))
             {
-                server.ResgisterMessage(typeof(ClientCommandsContainer), clientCommands);
-                client.ResgisterMessage(typeof(ClientCommandsContainer), clientCommands);
+                server.RegisterMessage(typeof(ClientCommandsContainer), clientCommands);
+                client.RegisterMessage(typeof(ClientCommandsContainer), clientCommands);
 
                 const int send = 120;
 

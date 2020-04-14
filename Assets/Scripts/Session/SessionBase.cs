@@ -27,6 +27,7 @@ namespace Session
         internal const int MaxPlayers = 2;
 
         private readonly GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
+        protected readonly IEnumerable<Type> m_ClientElements, m_ServerElements;
 
         private float m_FixedUpdateTime, m_RenderTime;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
@@ -40,6 +41,8 @@ namespace Session
                               IReadOnlyCollection<Type> commandElements)
         {
             (m_PlayerModifierPrefab, m_PlayerVisualsPrefab) = linker.GetPlayerPrefabs();
+            m_ServerElements = playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent));
+            m_ClientElements = playerElements.Concat(commandElements).Append(typeof(StampComponent));
         }
 
         private static T[] Instantiate<T>(GameObject prefab, int length, Action<T> setup)

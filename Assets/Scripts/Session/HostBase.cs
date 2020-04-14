@@ -83,16 +83,16 @@ namespace Session
             }
         }
 
-        protected override void PreTick(Container tickSessionComponent)
+        protected override void PreTick(Container tickSessionContainer)
         {
             // Inject our current player component before normal update cycle
-            tickSessionComponent.Require<PlayerContainerArrayProperty>()[HostPlayerId].MergeSet(m_HostPlayerCommands);
+            tickSessionContainer.Require<PlayerContainerArrayProperty>()[HostPlayerId].MergeSet(m_HostPlayerCommands);
         }
 
-        protected override void PostTick(Container tickSessionComponent)
+        protected override void PostTick(Container tickSessionContainer)
         {
             // Merge host component updates that happen on normal server update cycle
-            m_HostPlayerCommands.MergeSet(tickSessionComponent.Require<PlayerContainerArrayProperty>()[HostPlayerId]);
+            m_HostPlayerCommands.MergeSet(tickSessionContainer.Require<PlayerContainerArrayProperty>()[HostPlayerId]);
         }
     }
 }

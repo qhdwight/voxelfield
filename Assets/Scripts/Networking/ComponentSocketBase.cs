@@ -21,6 +21,7 @@ namespace Networking
         private readonly BinaryWriter m_Writer;
         private readonly BinaryReader m_Reader;
         private readonly Dictionary<Type, Pool<ElementBase>> m_MessagePools = new Dictionary<Type, Pool<ElementBase>>();
+        protected readonly List<EndPoint> m_Connections = new List<EndPoint>();
 
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
         private AsyncCallback m_ReceiveCallback;
@@ -37,7 +38,7 @@ namespace Networking
             //                                     pair => new Pool<ComponentBase>(0, () => (ComponentBase) Activator.CreateInstance(pair.Key)));
         }
 
-        public void ResgisterMessage(Type componentType, Container container = null)
+        public void RegisterMessage(Type componentType, Container container = null)
         {
             m_Codes.Add(componentType, (byte) m_Codes.Length);
             m_MessagePools[componentType] = new Pool<ElementBase>(1, () => componentType.IsContainer()
@@ -51,6 +52,7 @@ namespace Networking
             {
                 // TODO: use bytes received for performance
                 int bytesReceived = m_RawSocket.ReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint);
+                m_Connections.Add(m_ReceiveEndPoint);
                 m_ReadStream.Position = 0;
                 byte code = m_Reader.ReadByte();
                 Type type = m_Codes.GetReverse(code);
