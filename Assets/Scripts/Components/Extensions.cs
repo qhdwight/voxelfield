@@ -48,7 +48,7 @@ namespace Components
             NavigateZipped((field, e1, e2) =>
             {
                 if (e1 is Container p1 && e2 is Container p2)
-                    p2.Add(p1.ElementTypes);
+                    p2.Set(p1.ElementTypes);
             }, component, clone);
             clone.MergeSet(component);
             return clone;

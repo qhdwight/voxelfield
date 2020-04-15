@@ -128,8 +128,6 @@ namespace Session
         protected static void RenderInterpolatedPlayer<TStampComponent>(float renderTime, Container renderPlayerContainer, int maxRollback, Func<int, Container> getInHistory)
             where TStampComponent : StampComponent
         {
-            float rollback = DebugBehavior.Singleton.Rollback * 3,
-                  interpolatedTime = renderTime - rollback;
             // Interpolate all remote players
             for (var historyIndex = 0; historyIndex < maxRollback; historyIndex++)
             {
@@ -137,9 +135,9 @@ namespace Session
                           toComponent = getInHistory(historyIndex);
                 float toTime = toComponent.Require<TStampComponent>().time,
                       fromTime = fromComponent.Require<TStampComponent>().time;
-                if (interpolatedTime > fromTime && interpolatedTime < toTime)
+                if (renderTime > fromTime && renderTime < toTime)
                 {
-                    float interpolation = (interpolatedTime - fromTime) / (toTime - fromTime);
+                    float interpolation = (renderTime - fromTime) / (toTime - fromTime);
                     Interpolator.InterpolateInto(fromComponent, toComponent, renderPlayerContainer, interpolation);
                     return;
                 }

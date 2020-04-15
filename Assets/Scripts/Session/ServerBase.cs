@@ -111,7 +111,14 @@ namespace Session
                     }
                 }
             });
-            m_Socket.SendToAll(m_SessionComponentHistory.Peek());
+            // if (m_Tick % 30 == 0)
+            // {
+            //     for (var i = 0; i < serverPlayerComponents.Length; i++)
+            //     {
+            //         Debug.Log(i + "," + serverPlayerComponents[i].Require<HealthProperty>().Value);
+            //     }
+            // }
+            m_Socket.SendToAll(serverSessionComponent);
         }
 
         public override void Dispose()

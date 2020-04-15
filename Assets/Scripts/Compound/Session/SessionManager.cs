@@ -9,7 +9,7 @@ namespace Compound.Session
     {
         private SessionBase m_Session;
         private SessionBase m_DebugSession = default;
-    
+
         [SerializeField] private GameObject m_PlayerModifierPrefab = default, m_PlayerVisualsPrefab = default;
 
         private void StartSession()
@@ -18,9 +18,9 @@ namespace Compound.Session
             {
                 if (Application.isEditor)
                 {
-                    m_Session = new Host(this) {ShouldRender = false};
+                    m_Session = new Host(this) {ShouldRender = true};
                     // m_Session = new Client(this);
-                    m_DebugSession = new Client(this) {ShouldRender = true};
+                    m_DebugSession = new Client(this) {ShouldRender = false};
                 }
                 else
                 {

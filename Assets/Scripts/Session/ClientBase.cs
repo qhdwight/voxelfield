@@ -9,7 +9,6 @@ using Session.Components;
 using Session.Items.Modifiers;
 using Session.Player.Components;
 using Session.Player.Modifiers;
-using UnityEngine;
 
 namespace Session
 {
@@ -73,24 +72,28 @@ namespace Session
                 for (var playerId = 0; playerId < playersProperty.Length; playerId++)
                 {
                     bool isLocalPlayer = playerId == localPlayerProperty;
-                    Container localPlayerRenderComponent = playersProperty[localPlayerProperty];
+                    Container playerRenderComponent = playersProperty[playerId];
                     if (isLocalPlayer)
                     {
                         // 1.0f / m_Settings.tickRate * 1.2f
-                        InterpolateHistoryInto(localPlayerRenderComponent,
-                                               i => m_PredictedPlayerComponents.Get(i), m_PredictedPlayerComponents.Size,
-                                               i => m_PredictedPlayerComponents.Get(i).Require<StampComponent>().duration,
-                                               DebugBehavior.Singleton.Rollback, timeSinceTick);
-                        localPlayerRenderComponent.MergeSet(m_PredictedPlayerCommands);
+                        // InterpolateHistoryInto(playerRenderComponent,
+                        //                        i => m_PredictedPlayerComponents.Get(i), m_PredictedPlayerComponents.Size,
+                        //                        i => m_PredictedPlayerComponents.Get(i).Require<StampComponent>().duration,
+                        //                        DebugBehavior.Singleton.Rollback, timeSinceTick);
+                        Container GetInHistory(int historyIndex) => m_PredictedPlayerComponents.Get(-historyIndex);
+                        float rollback = DebugBehavior.Singleton.Rollback;
+                        RenderInterpolatedPlayer<StampComponent>(renderTime - rollback, playerRenderComponent, m_PredictedPlayerComponents.Size, GetInHistory);
+                        playerRenderComponent.MergeSet(m_PredictedPlayerCommands);
                         // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                     }
                     else
                     {
                         int copiedPlayerId = playerId;
-                        Container GetInHistory(int historyIndex) => m_SessionComponentHistory.Get(historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
-                        RenderInterpolatedPlayer<ServerStampComponent>(renderTime, localPlayerRenderComponent, m_SessionComponentHistory.Size, GetInHistory);
+                        Container GetInHistory(int historyIndex) => m_SessionComponentHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
+                        float rollback = DebugBehavior.Singleton.Rollback * 3;
+                        RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, playerRenderComponent, m_SessionComponentHistory.Size, GetInHistory);
                     }
-                    m_Visuals[playerId].Render(playersProperty[playerId], isLocalPlayer);
+                    m_Visuals[playerId].Render(playerRenderComponent, isLocalPlayer);
                 }
             }
         }
@@ -150,6 +153,15 @@ namespace Session
                     {
                         ServerSessionContainer sessionContainer = m_SessionComponentHistory.ClaimNext();
                         sessionContainer.MergeSet(serverSessionContainer);
+
+                        // if (m_Tick % 30 == 0)
+                        // {
+                        //     var serverPlayerComponents = sessionContainer.Require<PlayerContainerArrayProperty>();
+                        //     for (var i = 0; i < serverPlayerComponents.Length; i++)
+                        //     {
+                        //         Debug.Log(i + "," + serverPlayerComponents[i].Require<ServerStampComponent>().time.Value);
+                        //     }
+                        // }
                         break;
                     }
                 }

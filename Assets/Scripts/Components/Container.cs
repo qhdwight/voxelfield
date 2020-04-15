@@ -58,6 +58,13 @@ namespace Components
             Add((IEnumerable<Type>) types);
         }
 
+        public void Set(IEnumerable<Type> types)
+        {
+            m_TypeToId.Clear();
+            m_Children.Clear();
+            Add(types);
+        }
+
         public bool If<TElement>(out TElement component) where TElement : ElementBase
         {
             bool hasComponent = m_Children.TryGetValue(typeof(TElement), out ElementBase child);

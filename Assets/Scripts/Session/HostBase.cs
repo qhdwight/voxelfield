@@ -52,7 +52,8 @@ namespace Session
                     {
                         int copiedPlayerId = playerId;
                         Container GetInHistory(int historyIndex) => m_SessionComponentHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
-                        RenderInterpolatedPlayer<ClientStampComponent>(renderTime, renderPlayersProperty[playerId], m_SessionComponentHistory.Size, GetInHistory);
+                        float rollback = DebugBehavior.Singleton.Rollback * 3;
+                        RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayersProperty[playerId], m_SessionComponentHistory.Size, GetInHistory);
                     }
                     m_Visuals[playerId].Render(renderPlayersProperty[playerId], playerId == localPlayerProperty);
                 }

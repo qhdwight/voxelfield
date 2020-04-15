@@ -1,5 +1,8 @@
+using System;
+
 namespace Components.Tests
 {
+    [Serializable]
     internal class OuterComponent : ComponentBase
     {
         public FloatProperty @float;

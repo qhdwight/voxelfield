@@ -29,7 +29,8 @@ namespace Session.Tests
         {
             var s1 = new ServerSessionContainer(StandardComponents.StandardSessionComponents.Append(typeof(ServerStampComponent)));
             if (s1.If(out PlayerContainerArrayProperty p))
-                p.SetAll(() => new Container(StandardComponents.StandardPlayerComponents.Concat(StandardComponents.StandardPlayerCommandsComponents).Append(typeof(StampComponent))));
+                p.SetAll(() => new Container(StandardComponents.StandardPlayerComponents.Concat(StandardComponents.StandardPlayerCommandsComponents)
+                                                               .Append(typeof(StampComponent))));
             ServerSessionContainer s2 = s1.Clone();
             Assert.IsTrue(s1.EqualTo(s2));
         }
@@ -50,16 +51,52 @@ namespace Session.Tests
         // }
 
         [Test]
+        public void TestSessionNetworking()
+        {
+            var sessionContainer = new ServerSessionContainer(StandardComponents.StandardSessionComponents.Append(typeof(ServerStampComponent)));
+            if (sessionContainer.If(out PlayerContainerArrayProperty playersProperty))
+                playersProperty.SetAll(() => new Container(StandardComponents.StandardPlayerComponents.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))));
+            const float time = 0.241f;
+            sessionContainer.Require<ServerStampComponent>().time.Value = time;
+
+            var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
+
+            using (var server = new ComponentServerSocket(localHost))
+            using (var client = new ComponentClientSocket(localHost))
+            {
+                server.RegisterMessage(typeof(ServerSessionContainer), sessionContainer);
+                client.RegisterMessage(typeof(ServerSessionContainer), sessionContainer);
+
+                client.SendToServer(sessionContainer);
+
+                var received = 0;
+
+                Thread.Sleep(100);
+
+                server.PollReceived((id, component) =>
+                {
+                    switch (component)
+                    {
+                        case ServerSessionContainer container:
+                            Assert.AreEqual(time, container.Require<ServerStampComponent>().time.Value, 1e-6f);
+                            received++;
+                            break;
+                    }
+                });
+
+                Assert.AreEqual(1, received);
+            }
+        }
+
+        [Test]
         public void TestCommandNetworking()
         {
             var clientCommands = new ClientCommandsContainer(StandardComponents.StandardPlayerComponents
                                                                                .Concat(StandardComponents.StandardPlayerCommandsComponents)
                                                                                .Append(typeof(StampComponent)));
-            const int tick = 35;
-            const float duration = 0.241f;
 
-            clientCommands.Require<StampComponent>().tick.Value = tick;
-            clientCommands.Require<StampComponent>().duration.Value = duration;
+            clientCommands.Require<StampComponent>().tick.Value = 35;
+            clientCommands.Require<StampComponent>().duration.Value = 0.241f;
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
@@ -83,8 +120,7 @@ namespace Session.Tests
                     switch (component)
                     {
                         case ClientCommandsContainer command:
-                            Assert.AreEqual(tick, command.Require<StampComponent>().tick.Value);
-                            Assert.AreEqual(duration, command.Require<StampComponent>().duration.Value);
+                            Assert.IsTrue(clientCommands.EqualTo(command));
                             received++;
                             break;
                     }
