@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using Collections;
 using Components;
 using Networking;
 using Session.Components;
@@ -63,19 +61,19 @@ namespace Session
         protected sealed override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
-            Container lastTrustedSessionContainer = m_SessionComponentHistory.Peek(),
-                      trustedSessionContainer = m_SessionComponentHistory.ClaimNext();
-            trustedSessionContainer.Reset();
-            trustedSessionContainer.MergeSet(lastTrustedSessionContainer);
-            if (trustedSessionContainer.If(out ServerStampComponent stampComponent))
+            Container lastServerSessionContainer = m_SessionComponentHistory.Peek(),
+                      serverSessionContainer = m_SessionComponentHistory.ClaimNext();
+            serverSessionContainer.Reset();
+            serverSessionContainer.MergeSet(lastServerSessionContainer);
+            if (serverSessionContainer.If(out ServerStampComponent serverStampComponent))
             {
-                stampComponent.tick.Value = tick;
-                stampComponent.time.Value = time;
-                float duration = time - lastTrustedSessionContainer.Require<ServerStampComponent>().time.OrElse(time);
-                stampComponent.duration.Value = duration;
-                PreTick(trustedSessionContainer);
-                Tick(trustedSessionContainer);
-                PostTick(trustedSessionContainer);
+                serverStampComponent.tick.Value = tick;
+                serverStampComponent.time.Value = time;
+                float duration = time - lastServerSessionContainer.Require<ServerStampComponent>().time.OrElse(time);
+                serverStampComponent.duration.Value = duration;
+                PreTick(serverSessionContainer);
+                Tick(serverSessionContainer);
+                PostTick(serverSessionContainer);
             }
         }
 

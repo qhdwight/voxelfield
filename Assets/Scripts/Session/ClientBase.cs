@@ -73,9 +73,9 @@ namespace Session
                 for (var playerId = 0; playerId < playersProperty.Length; playerId++)
                 {
                     bool isLocalPlayer = playerId == localPlayerProperty;
+                    Container localPlayerRenderComponent = playersProperty[localPlayerProperty];
                     if (isLocalPlayer)
                     {
-                        Container localPlayerRenderComponent = playersProperty[localPlayerProperty];
                         // 1.0f / m_Settings.tickRate * 1.2f
                         InterpolateHistoryInto(localPlayerRenderComponent,
                                                i => m_PredictedPlayerComponents.Get(i), m_PredictedPlayerComponents.Size,
@@ -86,7 +86,9 @@ namespace Session
                     }
                     else
                     {
-                        playersProperty[playerId].MergeSet(m_SessionComponentHistory.Peek().Require<PlayerContainerArrayProperty>()[playerId]);
+                        int copiedPlayerId = playerId;
+                        Container GetInHistory(int historyIndex) => m_SessionComponentHistory.Get(historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
+                        RenderInterpolatedPlayer<ServerStampComponent>(renderTime, localPlayerRenderComponent, m_SessionComponentHistory.Size, GetInHistory);
                     }
                     m_Visuals[playerId].Render(playersProperty[playerId], isLocalPlayer);
                 }
@@ -148,7 +150,6 @@ namespace Session
                     {
                         ServerSessionContainer sessionContainer = m_SessionComponentHistory.ClaimNext();
                         sessionContainer.MergeSet(serverSessionContainer);
-                        Debug.Log("Success");
                         break;
                     }
                 }

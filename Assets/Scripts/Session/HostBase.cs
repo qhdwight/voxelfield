@@ -50,33 +50,9 @@ namespace Session
                     }
                     else
                     {
-                        float rollback = DebugBehavior.Singleton.Rollback * 3,
-                              interpolatedTime = renderTime - rollback;
-                        // Interpolate all remote players
-                        for (var historyIndex = 0; historyIndex < m_SessionComponentHistory.Size; historyIndex++)
-                        {
-                            Container GetInHistory(int offset) => m_SessionComponentHistory.Get(-offset).Require<PlayerContainerArrayProperty>()[playerId];
-                            Container fromComponent = GetInHistory(historyIndex + 1),
-                                      toComponent = GetInHistory(historyIndex);
-                            float toTime = toComponent.Require<ClientStampComponent>().time,
-                                  fromTime = fromComponent.Require<ClientStampComponent>().time;
-                            if (interpolatedTime > fromTime && interpolatedTime < toTime)
-                            {
-                                float interpolation = (interpolatedTime - fromTime) / (toTime - fromTime);
-                                Interpolator.InterpolateInto(fromComponent, toComponent, renderPlayersProperty[playerId], interpolation);
-                                break;
-                            }
-
-                            // Debug.LogWarning("Not enough fresh sessions to render smoothly");
-                            // renderPlayersProperty[playerId].MergeSet(GetInHistory(0));
-                        }
-                        // AnalysisLogger.AddDataPoint("", "V", m_RenderSessionContainer.playerComponents[playerId].position.Value.x);
-
-                        // float timeSinceLastUpdate = renderTime - m_SessionComponentHistory.Peek().playerComponents[i].stamp.time;
-                        // InterpolateHistoryInto(m_RenderSessionComponent.playerComponents[i],
-                        //                        j => m_SessionComponentHistory.Get(j).playerComponents[i], m_SessionComponentHistory.Size,
-                        //                        playerComponent => playerComponent.stamp.duration,
-                        //                        DebugBehavior.Singleton.Rollback * 2, timeSinceLastUpdate);
+                        int copiedPlayerId = playerId;
+                        Container GetInHistory(int historyIndex) => m_SessionComponentHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
+                        RenderInterpolatedPlayer<ClientStampComponent>(renderTime, renderPlayersProperty[playerId], m_SessionComponentHistory.Size, GetInHistory);
                     }
                     m_Visuals[playerId].Render(renderPlayersProperty[playerId], playerId == localPlayerProperty);
                 }
