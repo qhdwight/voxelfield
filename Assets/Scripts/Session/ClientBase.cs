@@ -41,7 +41,12 @@ namespace Session
             if (m_RenderSessionContainer.If(out PlayerContainerArrayProperty playerContainers))
                 playerContainers.SetAll(() => new Container(playerElements));
             m_PredictedPlayerCommands = m_ClientCommandsContainer.Clone();
-            m_PredictedPlayerComponents = new CyclicArray<Container>(250, () => new Container(playerElements.Append(typeof(StampComponent))));
+            m_PredictedPlayerComponents = new CyclicArray<Container>(250, () =>
+            {
+                // IEnumerable<Type> predictedElements = playerElements.Except(new[] {typeof(HealthProperty)}).Append(typeof(StampComponent));
+                IEnumerable<Type> predictedElements = playerElements.Append(typeof(StampComponent));
+                return new Container(predictedElements);
+            });
         }
 
         public override void Start()
@@ -91,7 +96,7 @@ namespace Session
                         int copiedPlayerId = playerId;
                         Container GetInHistory(int historyIndex) => m_SessionComponentHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
                         float rollback = DebugBehavior.Singleton.Rollback * 3;
-                        RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, playerRenderComponent, m_SessionComponentHistory.Size, GetInHistory);
+                        RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, playerRenderComponent, m_SessionComponentHistory.Size, GetInHistory);
                     }
                     m_Visuals[playerId].Render(playerRenderComponent, isLocalPlayer);
                 }

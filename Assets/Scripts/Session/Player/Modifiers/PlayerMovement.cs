@@ -60,8 +60,8 @@ namespace Session.Player.Modifiers
             if (!containersToApply.If(out MoveComponent moveComponent)
              || !containersToApply.If(out HealthProperty healthProperty)) return;
 
-            transform.position = moveComponent.position;
-            m_Controller.enabled = healthProperty.IsAlive;
+            if (moveComponent.position.HasValue) transform.position = moveComponent.position;
+            if (healthProperty.HasValue) m_Controller.enabled = healthProperty.IsAlive;
         }
 
         private void FullMove(Container containerToModify, Container commands, float duration)

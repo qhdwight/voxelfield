@@ -18,6 +18,11 @@ namespace Session.Player.Components
     {
         public VectorProperty position, velocity;
         public ByteProperty groundTick;
+
+        public override string ToString()
+        {
+            return $"Position: {position}";
+        }
     }
 
     [Serializable]

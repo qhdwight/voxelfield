@@ -42,12 +42,12 @@ namespace Session
             (m_PlayerModifierPrefab, m_PlayerVisualsPrefab) = linker.GetPlayerPrefabs();
         }
 
-        private static T[] Instantiate<T>(GameObject prefab, int length, Action<T> setup)
+        private T[] Instantiate<T>(GameObject prefab, int length, Action<T> setup)
         {
             return Enumerable.Range(0, length).Select(i =>
             {
                 GameObject instance = UnityObject.Instantiate(prefab);
-                instance.name = $"{prefab.name} ({i})";
+                instance.name = $"[{GetType().Name}] {prefab.name} ({i})";
                 var component = instance.GetComponent<T>();
                 setup(component);
                 return component;

@@ -48,6 +48,11 @@ namespace Session.Components
     {
         public UIntProperty tick;
         public FloatProperty time, duration;
+
+        public override string ToString()
+        {
+            return $"Tick: {tick}, Time: {time}, Duration: {duration}";
+        }
     }
 
     [Serializable]
