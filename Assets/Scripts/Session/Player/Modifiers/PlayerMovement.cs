@@ -57,6 +57,7 @@ namespace Session.Player.Modifiers
 
         protected override void SynchronizeBehavior(Container containersToApply)
         {
+            m_Controller.enabled = false;
             if (!containersToApply.If(out MoveComponent moveComponent)
              || !containersToApply.If(out HealthProperty healthProperty)) return;
 
@@ -81,7 +82,7 @@ namespace Session.Player.Modifiers
             {
                 float distance = m_CachedGroundHits[0].distance;
                 endingVelocity.y = DefaultDownSpeed;
-                if (!inputProperty.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
+                // if (!inputProperty.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
             }
             Vector3 wishDirection =
                 inputProperty.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * playerTransform.forward +

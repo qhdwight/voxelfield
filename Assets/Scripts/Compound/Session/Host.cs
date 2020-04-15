@@ -6,7 +6,7 @@ namespace Compound.Session
     public class Host : HostBase
     {
         public Host(IGameObjectLinker linker)
-            : base(linker, StandardComponents.StandardSessionComponents, StandardComponents.StandardPlayerComponents, StandardComponents.StandardPlayerCommandsComponents)
+            : base(linker, StandardComponents.StandardSessionElements, StandardComponents.StandardPlayerElements, StandardComponents.StandardPlayerCommandsElements)
         {
         }
     }

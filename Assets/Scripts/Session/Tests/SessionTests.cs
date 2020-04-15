@@ -27,9 +27,9 @@ namespace Session.Tests
         [Test]
         public void TestSessionClone()
         {
-            var s1 = new ServerSessionContainer(StandardComponents.StandardSessionComponents.Append(typeof(ServerStampComponent)));
+            var s1 = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
             if (s1.If(out PlayerContainerArrayProperty p))
-                p.SetAll(() => new Container(StandardComponents.StandardPlayerComponents.Concat(StandardComponents.StandardPlayerCommandsComponents)
+                p.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Concat(StandardComponents.StandardPlayerCommandsElements)
                                                                .Append(typeof(StampComponent))));
             ServerSessionContainer s2 = s1.Clone();
             Assert.IsTrue(s1.EqualTo(s2));
@@ -53,9 +53,9 @@ namespace Session.Tests
         [Test]
         public void TestSessionNetworking()
         {
-            var sessionContainer = new ServerSessionContainer(StandardComponents.StandardSessionComponents.Append(typeof(ServerStampComponent)));
+            var sessionContainer = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
             if (sessionContainer.If(out PlayerContainerArrayProperty playersProperty))
-                playersProperty.SetAll(() => new Container(StandardComponents.StandardPlayerComponents.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))));
+                playersProperty.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))));
             const float time = 0.241f;
             sessionContainer.Require<ServerStampComponent>().time.Value = time;
 
@@ -91,8 +91,8 @@ namespace Session.Tests
         [Test]
         public void TestCommandNetworking()
         {
-            var clientCommands = new ClientCommandsContainer(StandardComponents.StandardPlayerComponents
-                                                                               .Concat(StandardComponents.StandardPlayerCommandsComponents)
+            var clientCommands = new ClientCommandsContainer(StandardComponents.StandardPlayerElements
+                                                                               .Concat(StandardComponents.StandardPlayerCommandsElements)
                                                                                .Append(typeof(StampComponent)));
 
             clientCommands.Require<StampComponent>().tick.Value = 35;

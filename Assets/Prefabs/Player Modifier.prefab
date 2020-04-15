@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5689005421655001698}
   - component: {fileID: 3621098284609304118}
   - component: {fileID: -7077651449580160097}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player Modifier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -102,7 +102,6 @@ MonoBehaviour:
   m_ForwardSpeed: 30
   m_SideSpeed: 30
   m_GravityFactor: 23
-  m_SlopeAngleLimit: 45
   m_MaxStickDistance: 0.25
   m_GroundMask:
     serializedVersion: 2

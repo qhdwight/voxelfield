@@ -12,8 +12,6 @@ namespace Session
 
         private readonly Container m_HostPlayerCommands, m_RenderSessionContainer;
 
-        private float m_RenderTime;
-
         protected HostBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {

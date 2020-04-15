@@ -10,13 +10,14 @@ namespace Session.Player.Components
     [Serializable]
     public class CameraComponent : ComponentBase
     {
-        public FloatProperty yaw, pitch;
+        [Angle] public FloatProperty yaw;
+        public FloatProperty pitch;
     }
 
     [Serializable]
     public class MoveComponent : ComponentBase
     {
-        public VectorProperty position, velocity;
+        [Tolerance(0.1f)] public VectorProperty position, velocity;
         public ByteProperty groundTick;
 
         public override string ToString()

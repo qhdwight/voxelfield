@@ -27,7 +27,7 @@ namespace Session.Player.Modifiers
         protected override void SynchronizeBehavior(Container containersToApply)
         {
             if (!containersToApply.If(out CameraComponent cameraComponent)) return;
-            transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
+            if (cameraComponent.yaw.HasValue) transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
         }
     }
 }

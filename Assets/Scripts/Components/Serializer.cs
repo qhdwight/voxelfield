@@ -43,11 +43,12 @@ namespace Components
             try
             {
                 Stream.Position = 0;
-                Extensions.Navigate((field, element) =>
+                component.Navigate((field, element) =>
                 {
                     if (element is PropertyBase property && (field == null || !field.IsDefined(typeof(NoSerialization))))
                         WriteFromProperty(property);
-                }, component);
+                    return Navigation.Continue;
+                });
                 var count = (int) Stream.Position;
                 if (stream.Capacity < count)
                     stream.Capacity = count;
@@ -68,11 +69,12 @@ namespace Components
                 int count = stream.Capacity - (int) stream.Position;
                 Buffer.BlockCopy(stream.GetBuffer(), (int) stream.Position, Stream.GetBuffer(), 0, count);
                 Stream.Position = 0;
-                Extensions.Navigate((field, element) =>
+                component.Navigate((field, element) =>
                 {
                     if (element is PropertyBase property && (field == null || !field.IsDefined(typeof(NoSerialization))))
                         ReadIntoProperty(property);
-                }, component);
+                    return Navigation.Continue;
+                });
             }
             finally
             {

@@ -1,10 +1,28 @@
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Components
 {
     public abstract class ElementBase
     {
+        private bool Equals(ElementBase other)
+        {
+            return this.EqualTo(other);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return other.GetType() == GetType() && Equals((ElementBase) other);
+        }
+
+        public override int GetHashCode()
+        {
+            //TODO: revisit
+            return RuntimeHelpers.GetHashCode(this);
+        }
     }
 
     public abstract class ComponentBase : ElementBase

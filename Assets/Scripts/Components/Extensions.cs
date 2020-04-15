@@ -3,6 +3,13 @@ using System.Reflection;
 
 namespace Components
 {
+    public enum Navigation
+    {
+        Continue,
+        Skip,
+        Exit
+    }
+
     public static class Extensions
     {
         public static bool IsComponent(this Type type)
@@ -35,8 +42,11 @@ namespace Components
         /// </summary>
         public static void Reset(this ElementBase component)
         {
-            var zip = new TriArray<ElementBase> {[0] = component};
-            Navigate((field, properties) => (properties[0] as PropertyBase)?.Clear(), zip, 1);
+            component.Navigate((field, property) =>
+            {
+                (property as PropertyBase)?.Clear();
+                return Navigation.Continue;
+            });
         }
 
         /// <summary>
@@ -49,6 +59,7 @@ namespace Components
             {
                 if (e1 is Container p1 && e2 is Container p2)
                     p2.Set(p1.ElementTypes);
+                return Navigation.Continue;
             }, component, clone);
             clone.MergeSet(component);
             return clone;
@@ -60,35 +71,44 @@ namespace Components
             NavigateZipped((field, e1, e2) =>
             {
                 if (e1 is PropertyBase p1 && e2 is PropertyBase p2 && !p1.Equals(p2))
+                {
                     areEqual = false;
+                    return Navigation.Exit;
+                }
+                return Navigation.Continue;
             }, component, other);
             return areEqual;
         }
 
-        internal static void Navigate(Action<FieldInfo, ElementBase> visitProperty, ElementBase e)
+        public static void Navigate(this ElementBase e, Func<FieldInfo, ElementBase, Navigation> visitProperty)
         {
             var zip = new TriArray<ElementBase> {[0] = e};
             Navigate((field, properties) => visitProperty(field, properties[0]), zip, 1);
         }
 
-        internal static void NavigateZipped(Action<FieldInfo, ElementBase, ElementBase> visitProperty, ElementBase e1, ElementBase e2)
+        public static void NavigateZipped(Func<FieldInfo, ElementBase, ElementBase, Navigation> visitProperty, ElementBase e1, ElementBase e2)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2};
             Navigate((field, properties) => visitProperty(field, properties[0], properties[1]), zip, 2);
         }
 
-        internal static void NavigateZipped(Action<FieldInfo, ElementBase, ElementBase, ElementBase> visitProperty, ElementBase e1, ElementBase e2, ElementBase e3)
+        public static void NavigateZipped(Func<FieldInfo, ElementBase, ElementBase, ElementBase, Navigation> visitProperty, ElementBase e1, ElementBase e2, ElementBase e3)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2, [2] = e3};
             Navigate((field, properties) => visitProperty(field, properties[0], properties[1], properties[2]), zip, 3);
         }
 
-        private static void Navigate(Action<FieldInfo, TriArray<ElementBase>> visit, in TriArray<ElementBase> zip, int size)
+        private static void Navigate(Func<FieldInfo, TriArray<ElementBase>, Navigation> visit, in TriArray<ElementBase> zip, int size)
         {
             if (size <= 0) throw new ArgumentException("Size needs to be greater than zero");
+            var exitAll = false;
             void NavigateRecursively(in TriArray<ElementBase> _zip, FieldInfo _field)
             {
-                visit(_field, _zip);
+                Navigation navigation = visit(_field, _zip);
+                if (navigation == Navigation.Exit)
+                    exitAll = true;
+                if (exitAll || navigation == Navigation.Skip)
+                    return;
                 Type type = _zip[0].GetType();
                 FieldInfo[] fields = Cache.GetFieldInfo(type);
                 // Polymorphism get the top shared base by examining number of fields

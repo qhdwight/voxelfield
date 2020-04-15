@@ -27,6 +27,22 @@ namespace Components
         }
     }
 
+    [AttributeUsage(AttributeTargets.Field)]
+    public class Angle : Attribute
+    {
+    }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public class Tolerance : Attribute
+    {
+        public readonly float tolerance;
+
+        public Tolerance(float tolerance)
+        {
+            this.tolerance = tolerance;
+        }
+    }
+
     public static class Interpolator
     {
         public static void InterpolateInto<T>(T e1, T e2, T ed, float interpolation) where T : ElementBase
@@ -47,6 +63,7 @@ namespace Components
                         cd.InterpolateFrom(c1, c2, interpolation);
                         break;
                 }
+                return Navigation.Continue;
             }, e1, e2, ed);
         }
     }

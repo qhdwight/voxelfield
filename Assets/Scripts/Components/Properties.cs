@@ -82,14 +82,16 @@ namespace Components
 
         public override bool Equals(PropertyBase other)
         {
-            return other is FloatProperty otherProperty && Mathf.Approximately(otherProperty.Value, Value);
+            return other is FloatProperty otherProperty && Mathf.Abs(otherProperty.Value - Value) < 0.1f;
         }
 
         public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
         {
             CheckInterpolatable(p1, p2, out PropertyBase<float> fp1, out PropertyBase<float> fp2);
             float f1 = fp1, f2 = fp2;
-            if (field.IsDefined(typeof(Cyclic)))
+            if (field.IsDefined(typeof(Angle)))
+                Value = Mathf.LerpAngle(f1, f2, interpolation);
+            else if (field.IsDefined(typeof(Cyclic)))
             {
                 var attribute = field.GetCustomAttribute<Cyclic>();
                 float range = attribute.maximum - attribute.minimum;
@@ -158,7 +160,9 @@ namespace Components
 
         public override bool Equals(PropertyBase other)
         {
-            return other is VectorProperty otherProperty && otherProperty.Value == Value;
+            return other is VectorProperty otherProperty && Mathf.Abs(Value.x - otherProperty.Value.x) < 0.1f
+                                                         && Mathf.Abs(Value.y - otherProperty.Value.y) < 0.1f
+                                                         && Mathf.Abs(Value.z - otherProperty.Value.z) < 0.1f;
         }
 
         public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)

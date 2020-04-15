@@ -39,6 +39,13 @@ namespace Console.Interface
         private int m_CommandHistoryIndex;
         private string m_CurrentAutocomplete;
 
+        [RuntimeInitializeOnLoadMethod]
+        private static void RunOnStart()
+        {
+            // Conform with https://docs.unity3d.com/Manual/DomainReloading.html
+            Application.logMessageReceived -= Singleton.Log;
+        }
+
         protected override void Awake()
         {
             base.Awake();

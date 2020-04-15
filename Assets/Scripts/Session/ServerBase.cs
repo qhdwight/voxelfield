@@ -80,18 +80,24 @@ namespace Session
         private void Tick(Container serverSessionComponent)
         {
             var serverPlayerComponents = serverSessionComponent.Require<PlayerContainerArrayProperty>();
+            var i = 0;
             foreach (Container playerContainer in serverPlayerComponents)
             {
-                if (playerContainer.If(out HealthProperty healthProperty))
-                    healthProperty.Value = 100;
                 if (playerContainer.If(out ClientStampComponent clientStampComponent))
                     clientStampComponent.duration.Value = 0u;
                 var serverStampComponent = serverSessionComponent.Require<ServerStampComponent>();
                 if (playerContainer.If(out ServerStampComponent playerServerStampComponent))
                     playerServerStampComponent.MergeSet(serverStampComponent);
-                if (serverStampComponent.tick > 0u || !playerContainer.If(out InventoryComponent inventoryComponent)) continue;
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 2);
+                if (serverStampComponent.tick == 0u)
+                {
+                    if (playerContainer.If(out HealthProperty healthProperty))
+                        healthProperty.Value = 100;
+                    if (playerContainer.If(out InventoryComponent inventoryComponent))
+                    {
+                        PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 1);
+                        PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 2);
+                    }
+                }
             }
             m_Socket.PollReceived((clientId, message) =>
             {
@@ -101,8 +107,8 @@ namespace Session
                     {
                         Container trustedPlayerComponent = serverPlayerComponents[clientId];
                         var playerCommandsStampComponent = clientCommandsContainer.Require<StampComponent>();
-                        m_Modifier[clientId].ModifyChecked(trustedPlayerComponent, clientCommandsContainer, playerCommandsStampComponent.duration);
                         trustedPlayerComponent.MergeSet(clientCommandsContainer);
+                        m_Modifier[clientId].ModifyChecked(trustedPlayerComponent, clientCommandsContainer, playerCommandsStampComponent.duration);
                         var clientStampComponent = trustedPlayerComponent.Require<ClientStampComponent>();
                         clientStampComponent.MergeSet(playerCommandsStampComponent);
                         // trustedPlayerComponent.Require<ServerStampComponent>().duration.Value += playerCommandsDuration;

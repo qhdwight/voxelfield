@@ -6,9 +6,8 @@ using Collections;
 using Components;
 using Networking;
 using Session.Components;
-using Session.Items.Modifiers;
 using Session.Player.Components;
-using Session.Player.Modifiers;
+using UnityEngine;
 
 namespace Session
 {
@@ -29,8 +28,8 @@ namespace Session
         private const int LocalPlayerId = 0;
 
         private readonly Container m_RenderSessionContainer;
-        private readonly ClientCommandsContainer m_PredictedPlayerCommands;
-        private readonly CyclicArray<Container> m_PredictedPlayerComponents;
+        private readonly CyclicArray<ClientCommandsContainer> m_PredictedPlayerCommands;
+        private readonly CyclicArray<Container> m_PredictedPlayerContainers;
         private ComponentClientSocket m_Socket;
 
         protected ClientBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
@@ -40,11 +39,11 @@ namespace Session
             m_RenderSessionContainer = new Container(sessionElements);
             if (m_RenderSessionContainer.If(out PlayerContainerArrayProperty playerContainers))
                 playerContainers.SetAll(() => new Container(playerElements));
-            m_PredictedPlayerCommands = m_ClientCommandsContainer.Clone();
-            m_PredictedPlayerComponents = new CyclicArray<Container>(250, () =>
+            m_PredictedPlayerCommands = new CyclicArray<ClientCommandsContainer>(250, () => m_ClientCommandsContainer.Clone());
+            m_PredictedPlayerContainers = new CyclicArray<Container>(250, () =>
             {
                 // IEnumerable<Type> predictedElements = playerElements.Except(new[] {typeof(HealthProperty)}).Append(typeof(StampComponent));
-                IEnumerable<Type> predictedElements = playerElements.Append(typeof(StampComponent));
+                IEnumerable<Type> predictedElements = playerElements.Append(typeof(ClientStampComponent));
                 return new Container(predictedElements);
             });
         }
@@ -59,13 +58,13 @@ namespace Session
 
         private void UpdateInputs()
         {
-            m_Modifier[LocalPlayerId].ModifyCommands(m_PredictedPlayerCommands);
+            m_Modifier[LocalPlayerId].ModifyCommands(m_PredictedPlayerCommands.Peek());
         }
 
         public override void Input(float delta)
         {
             UpdateInputs();
-            m_Modifier[LocalPlayerId].ModifyTrusted(m_PredictedPlayerCommands, m_PredictedPlayerCommands, delta);
+            m_Modifier[LocalPlayerId].ModifyTrusted(m_PredictedPlayerCommands.Peek(), m_PredictedPlayerCommands.Peek(), delta);
         }
 
         protected override void Render(float timeSinceTick, float renderTime)
@@ -85,10 +84,10 @@ namespace Session
                         //                        i => m_PredictedPlayerComponents.Get(i), m_PredictedPlayerComponents.Size,
                         //                        i => m_PredictedPlayerComponents.Get(i).Require<StampComponent>().duration,
                         //                        DebugBehavior.Singleton.Rollback, timeSinceTick);
-                        Container GetInHistory(int historyIndex) => m_PredictedPlayerComponents.Get(-historyIndex);
+                        Container GetInHistory(int historyIndex) => m_PredictedPlayerContainers.Get(-historyIndex);
                         float rollback = DebugBehavior.Singleton.Rollback;
-                        RenderInterpolatedPlayer<StampComponent>(renderTime - rollback, playerRenderComponent, m_PredictedPlayerComponents.Size, GetInHistory);
-                        playerRenderComponent.MergeSet(m_PredictedPlayerCommands);
+                        RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, playerRenderComponent, m_PredictedPlayerContainers.Size, GetInHistory);
+                        playerRenderComponent.MergeSet(m_PredictedPlayerCommands.Peek());
                         // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                     }
                     else
@@ -116,35 +115,95 @@ namespace Session
 
         private void Predict(uint tick, float time)
         {
-            Container lastPredictedPlayerComponent = m_PredictedPlayerComponents.Peek(),
-                      predictedPlayerComponent = m_PredictedPlayerComponents.ClaimNext();
-            if (predictedPlayerComponent.Has<StampComponent>())
+            // TODO: refactor into common logic of claiming and resetting
+            Container previousPredictedPlayer = m_PredictedPlayerContainers.Peek(),
+                      predictedPlayer = m_PredictedPlayerContainers.ClaimNext();
+            ClientCommandsContainer previousCommand = m_PredictedPlayerCommands.Peek(),
+                                    commands = m_PredictedPlayerCommands.ClaimNext();
+            if (predictedPlayer.Has<ClientStampComponent>())
             {
-                predictedPlayerComponent.Reset();
-                predictedPlayerComponent.MergeSet(lastPredictedPlayerComponent);
-                if (tick == 0)
-                {
-                    predictedPlayerComponent.Require<HealthProperty>().Value = 100;
-                    PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.Require<InventoryComponent>(), ItemId.TestingRifle, 1);
-                    PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayerComponent.Require<InventoryComponent>(), ItemId.TestingRifle, 2);
-                }
-                var predictedStampComponent = predictedPlayerComponent.Require<StampComponent>();
-                predictedStampComponent.tick.Value = tick;
-                predictedStampComponent.time.Value = time;
-                float lastTime = lastPredictedPlayerComponent.Require<StampComponent>().time.OrElse(time),
+                predictedPlayer.Reset();
+                predictedPlayer.MergeSet(previousPredictedPlayer);
+                commands.Reset();
+                commands.MergeSet(previousCommand);
+                // if (tick == 0)
+                // {
+                //     predictedPlayer.Require<HealthProperty>().Value = 100;
+                //     PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayer.Require<InventoryComponent>(), ItemId.TestingRifle, 1);
+                //     PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayer.Require<InventoryComponent>(), ItemId.TestingRifle, 2);
+                // }
+                var predictedStamp = predictedPlayer.Require<ClientStampComponent>();
+                predictedStamp.tick.Value = tick;
+                predictedStamp.time.Value = time;
+                float lastTime = previousPredictedPlayer.Require<ClientStampComponent>().time.OrElse(time),
                       duration = time - lastTime;
-                predictedStampComponent.duration.Value = duration;
+                predictedStamp.duration.Value = duration;
 
                 // Inject trusted component
-                var commandsStampComponent = m_PredictedPlayerCommands.Require<StampComponent>();
-                commandsStampComponent.MergeSet(predictedStampComponent);
-                predictedPlayerComponent.MergeSet(m_PredictedPlayerCommands);
-                m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayerComponent, m_PredictedPlayerCommands, duration);
+                ClientCommandsContainer predictedCommands = m_PredictedPlayerCommands.Peek();
+                var predictedCommandsStamp = predictedCommands.Require<StampComponent>();
+                predictedCommandsStamp.MergeSet(predictedStamp);
+                predictedPlayer.MergeSet(predictedCommands);
+                m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayer, predictedCommands, duration);
 
                 // Send off commands to server for checking
-                m_Socket.SendToServer(m_PredictedPlayerCommands);
+                m_Socket.SendToServer(predictedCommands);
 
-                DebugBehavior.Singleton.Predicted = predictedPlayerComponent;
+                DebugBehavior.Singleton.Predicted = predictedPlayer;
+            }
+        }
+
+        private void CheckPrediction(Container serverPlayer)
+        {
+            uint targetTick = serverPlayer.Require<ClientStampComponent>().tick;
+            for (var playerHistoryIndex = 0; playerHistoryIndex < m_PredictedPlayerContainers.Size; playerHistoryIndex++)
+            {
+                {
+                    Container predictedPlayer = m_PredictedPlayerContainers.Get(-playerHistoryIndex);
+                    if (predictedPlayer.Require<ClientStampComponent>().tick != targetTick) continue;
+                    var areEqual = true;
+                    Extensions.NavigateZipped((field, e1, e2) =>
+                    {
+                        switch (e1)
+                        {
+                            case CameraComponent _:
+                                return Navigation.Skip;
+                            case PropertyBase p1 when e2 is PropertyBase p2 && !p1.Equals(p2):
+                                areEqual = false;
+                                return Navigation.Exit;
+                        }
+                        return Navigation.Continue;
+                    }, predictedPlayer, serverPlayer);
+                    if (areEqual) continue;
+                }
+                /* Was not predicted properly */
+                Debug.LogWarning("Prediction error");
+                // Place base from verified server
+                m_PredictedPlayerContainers.Get(-playerHistoryIndex).Reset();
+                m_PredictedPlayerContainers.Get(-playerHistoryIndex).MergeSet(serverPlayer);
+                // Replay old commands up until most recent to get back on track
+                for (int commandHistoryIndex = playerHistoryIndex - 1; commandHistoryIndex >= 0; commandHistoryIndex--)
+                {
+                    ClientCommandsContainer commands = m_PredictedPlayerCommands.Get(-commandHistoryIndex);
+                    Container predictedPlayer = m_PredictedPlayerContainers.Get(-commandHistoryIndex);
+                    ClientStampComponent yuh = predictedPlayer.Require<ClientStampComponent>().Clone();
+                    predictedPlayer.Reset();
+                    predictedPlayer.MergeSet(m_PredictedPlayerContainers.Get(-commandHistoryIndex - 1));
+                    predictedPlayer.Require<ClientStampComponent>().MergeSet(yuh);
+                    // predictedPlayer.MergeSet(serverPlayer);
+                    m_Modifier[LocalPlayerId].ModifyChecked(predictedPlayer, commands, commands.Require<StampComponent>().duration);
+                }
+                // Extensions.NavigateZipped((field, e1, e2) =>
+                // {
+                //     if (e1 is PropertyBase p1 && e2 is PropertyBase p2)
+                //     {
+                //         if (!p1.Equals(p2))
+                //         {
+                //             
+                //         }
+                //     }
+                // }, predictedPlayerContainer, serverPlayerContainer);
+                break;
             }
         }
 
@@ -154,19 +213,13 @@ namespace Session
             {
                 switch (message)
                 {
-                    case ServerSessionContainer serverSessionContainer:
+                    case ServerSessionContainer receivedServerSessionContainer:
                     {
-                        ServerSessionContainer sessionContainer = m_SessionComponentHistory.ClaimNext();
-                        sessionContainer.MergeSet(serverSessionContainer);
+                        ServerSessionContainer serverSessionContainer = m_SessionComponentHistory.ClaimNext();
+                        serverSessionContainer.MergeSet(receivedServerSessionContainer);
 
-                        // if (m_Tick % 30 == 0)
-                        // {
-                        //     var serverPlayerComponents = sessionContainer.Require<PlayerContainerArrayProperty>();
-                        //     for (var i = 0; i < serverPlayerComponents.Length; i++)
-                        //     {
-                        //         Debug.Log(i + "," + serverPlayerComponents[i].Require<ServerStampComponent>().time.Value);
-                        //     }
-                        // }
+                        CheckPrediction(serverSessionContainer.Require<PlayerContainerArrayProperty>()[1]);
+
                         break;
                     }
                 }

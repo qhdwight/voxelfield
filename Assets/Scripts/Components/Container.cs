@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Components
@@ -7,6 +8,7 @@ namespace Components
     [Serializable]
     public class Container : ComponentBase
     {
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
         private IDictionary<Type, ElementBase> m_Children;
 
         private Dictionary<Type, int> m_TypeToId = new Dictionary<Type, int>();

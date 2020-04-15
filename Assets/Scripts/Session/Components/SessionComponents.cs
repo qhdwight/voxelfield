@@ -7,17 +7,17 @@ namespace Session.Components
 {
     public static class StandardComponents
     {
-        public static readonly IReadOnlyCollection<Type> StandardSessionComponents = new List<Type>
+        public static readonly IReadOnlyCollection<Type> StandardSessionElements = new List<Type>
         {
             typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(StampComponent), typeof(SessionSettingsComponent)
         };
 
-        public static readonly IReadOnlyCollection<Type> StandardPlayerComponents = new List<Type>
+        public static readonly IReadOnlyCollection<Type> StandardPlayerElements = new List<Type>
         {
             typeof(HealthProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent)
         };
 
-        public static readonly IReadOnlyCollection<Type> StandardPlayerCommandsComponents = new List<Type>
+        public static readonly IReadOnlyCollection<Type> StandardPlayerCommandsElements = new List<Type>
         {
             typeof(InputFlagProperty), typeof(WantedItemIndexProperty), typeof(MouseComponent)
         };

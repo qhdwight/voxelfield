@@ -15,6 +15,7 @@ namespace Components
             {
                 if (_destination is PropertyBase destinationProperty && _source is PropertyBase sourceProperty)
                     destinationProperty.SetFromIfPresent(sourceProperty);
+                return Navigation.Continue;
             }, destination, source);
         }
     }
