@@ -63,12 +63,12 @@ namespace Session
         public void Update()
         {
             float time = Time.realtimeSinceStartup, delta = time - m_RenderTime;
-            Input(delta);
-            if (ShouldRender) Render(time - m_FixedUpdateTime, time);
+            Input(time, delta);
+            if (ShouldRender) Render(time);
             m_RenderTime = time;
         }
 
-        protected virtual void Render(float timeSinceTick, float renderTime)
+        protected virtual void Render(float renderTime)
         {
         }
 
@@ -77,7 +77,7 @@ namespace Session
             Time.fixedDeltaTime = 1.0f / m_Settings.tickRate;
         }
 
-        public virtual void Input(float delta)
+        public virtual void Input(float time, float delta)
         {
         }
 

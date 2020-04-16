@@ -7,6 +7,7 @@ using Session.Components;
 using Session.Items.Modifiers;
 using Session.Player.Components;
 using Session.Player.Modifiers;
+using UnityEngine;
 
 namespace Session
 {
@@ -46,8 +47,8 @@ namespace Session
         {
             base.Start();
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Loopback, 7777));
-            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_ClientCommandsContainer);
-            m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_ServerSessionContainer);
+            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_EmptyClientCommands);
+            m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
         }
 
         protected virtual void PreTick(Container tickSession)
@@ -61,8 +62,8 @@ namespace Session
         protected sealed override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
-            Container previousServerSession = m_SessionComponentHistory.Peek(),
-                      serverSession = m_SessionComponentHistory.ClaimNext();
+            Container previousServerSession = m_SessionHistory.Peek(),
+                      serverSession = m_SessionHistory.ClaimNext();
             serverSession.CopyFrom(previousServerSession);
             if (serverSession.If(out ServerStampComponent serverStamp))
             {
@@ -70,23 +71,29 @@ namespace Session
                 serverStamp.time.Value = time;
                 float duration = time - previousServerSession.Require<ServerStampComponent>().time.OrElse(time);
                 serverStamp.duration.Value = duration;
+
+                var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
+                foreach (Container serverPlayer in serverPlayers)
+                {
+                    if (serverPlayer.If(out ClientStampComponent clientStamp))
+                        clientStamp.duration.Value = 0u;
+                    if (serverPlayer.If(out ServerStampComponent serverPlayerStamp))
+                        serverPlayerStamp.CopyFrom(serverStamp);
+                }
+                
                 PreTick(serverSession);
-                Tick(serverSession);
+                Tick(previousServerSession, serverSession);
                 PostTick(serverSession);
             }
         }
 
-        private void Tick(Container serverSession)
+        private void Tick(Container previousServerSession, Container serverSession)
         {
             var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
             foreach (Container serverPlayer in serverPlayers)
             {
-                if (serverPlayer.If(out ClientStampComponent clientStamp))
-                    clientStamp.duration.Value = 0u;
-                var serverStampComponent = serverSession.Require<ServerStampComponent>();
-                if (serverPlayer.If(out ServerStampComponent serverStamp))
-                    serverStamp.CopyFrom(serverStampComponent);
-                if (serverStampComponent.tick == 0u)
+                var serverStamp = serverSession.Require<ServerStampComponent>();
+                if (serverStamp.tick == 0u)
                 {
                     if (serverPlayer.If(out HealthProperty healthProperty))
                         healthProperty.Value = 100;
@@ -103,20 +110,28 @@ namespace Session
                 {
                     case ClientCommandsContainer clientCommands:
                     {
+                        var clientStamp = clientCommands.Require<ClientStampComponent>();
+                        // Make sure this is newer tick
+                        uint previousClientTick = previousServerSession.Require<PlayerContainerArrayProperty>()[clientId].Require<ClientStampComponent>().tick;
+                        if (clientStamp.tick <= previousClientTick)
+                        {
+                            Debug.LogWarning($"[{GetType().Name}] Received out of order client command");
+                            break;
+                        }
+                        
                         Container serverPlayer = serverPlayers[clientId];
-                        var clientStamp = clientCommands.Require<StampComponent>();
                         serverPlayer.MergeSet(clientCommands);
                         m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
                         var serverClientStamp = serverPlayer.Require<ClientStampComponent>();
-                        serverClientStamp.CopyFrom(clientStamp);
-                        // trustedPlayerComponent.Require<ServerStampComponent>().duration.Value += playerCommandsDuration;
-                        // AnalysisLogger.AddDataPoint("", "A", trustedPlayerComponent.position.Value.x);
+                        serverClientStamp.tick.Value = clientStamp.tick;
+                        serverClientStamp.time.Value = clientStamp.time;
+                        serverClientStamp.duration.Value += clientStamp.duration;
                         break;
                     }
                 }
             });
             var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
-            foreach (KeyValuePair<IPEndPoint,Container> pair in m_Socket.Connections)
+            foreach (KeyValuePair<IPEndPoint, Container> pair in m_Socket.Connections)
             {
                 byte playerId = pair.Value.Require<ByteProperty>();
                 localPlayerProperty.Value = playerId;

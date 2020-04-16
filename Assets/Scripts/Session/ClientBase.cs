@@ -37,7 +37,7 @@ namespace Session
             m_RenderSession = new Container(sessionElements);
             if (m_RenderSession.If(out PlayerContainerArrayProperty players))
                 players.SetAll(() => new Container(playerElements));
-            m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_ClientCommandsContainer.Clone());
+            m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
             m_PlayerPredictionHistory = new CyclicArray<Container>(250, () =>
             {
                 // IEnumerable<Type> predictedElements = playerElements.Except(new[] {typeof(HealthProperty)}).Append(typeof(StampComponent));
@@ -50,8 +50,8 @@ namespace Session
         {
             base.Start();
             m_Socket = new ComponentClientSocket(new IPEndPoint(IPAddress.Loopback, 7777));
-            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_ClientCommandsContainer);
-            m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_ServerSessionContainer);
+            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_EmptyClientCommands);
+            m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
         }
 
         private void UpdateInputs()
@@ -60,7 +60,7 @@ namespace Session
                 m_Modifier[localPlayerId].ModifyCommands(m_CommandHistory.Peek());
         }
 
-        public override void Input(float delta)
+        public override void Input(float time, float delta)
         {
             if (GetLocalPlayerId(out int localPlayerId))
             {
@@ -69,7 +69,7 @@ namespace Session
             }
         }
 
-        protected override void Render(float timeSinceTick, float renderTime)
+        protected override void Render(float renderTime)
         {
             if (!m_RenderSession.If(out PlayerContainerArrayProperty players) || !GetLocalPlayerId(out int localPlayerId)) return;
 
@@ -88,9 +88,9 @@ namespace Session
                 else
                 {
                     int copiedPlayerId = playerId;
-                    Container GetInHistory(int historyIndex) => m_SessionComponentHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
+                    Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
                     float rollback = DebugBehavior.Singleton.Rollback * 3;
-                    RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionComponentHistory.Size, GetInHistory);
+                    RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(renderPlayer, isLocalPlayer);
             }
@@ -114,7 +114,7 @@ namespace Session
                       predictedPlayer = m_PlayerPredictionHistory.ClaimNext();
             ClientCommandsContainer previousCommand = m_CommandHistory.Peek(),
                                     commands = m_CommandHistory.ClaimNext();
-            if (predictedPlayer.Has<ClientStampComponent>())
+            if (predictedPlayer.If(out ClientStampComponent predictedStamp))
             {
                 predictedPlayer.CopyFrom(previousPredictedPlayer);
                 commands.CopyFrom(previousCommand);
@@ -124,7 +124,6 @@ namespace Session
                 //     PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayer.Require<InventoryComponent>(), ItemId.TestingRifle, 1);
                 //     PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayer.Require<InventoryComponent>(), ItemId.TestingRifle, 2);
                 // }
-                var predictedStamp = predictedPlayer.Require<ClientStampComponent>();
                 predictedStamp.tick.Value = tick;
                 predictedStamp.time.Value = time;
                 float lastTime = previousPredictedPlayer.Require<ClientStampComponent>().time.OrElse(time),
@@ -133,8 +132,8 @@ namespace Session
 
                 // Inject trusted component
                 ClientCommandsContainer predictedCommands = m_CommandHistory.Peek();
-                var predictedCommandsStamp = predictedCommands.Require<StampComponent>();
-                predictedCommandsStamp.MergeSet(predictedStamp);
+                var predictedCommandsStamp = predictedCommands.Require<ClientStampComponent>();
+                predictedCommandsStamp.CopyFrom(predictedStamp);
                 predictedPlayer.MergeSet(predictedCommands);
                 m_Modifier[localPlayerId].ModifyChecked(predictedPlayer, predictedCommands, duration);
 
@@ -184,8 +183,8 @@ namespace Session
                     Container predictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
                     ClientStampComponent stamp = predictedPlayer.Require<ClientStampComponent>().Clone(); // TODO: performance remove clone
                     predictedPlayer.CopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
-                    predictedPlayer.Require<ClientStampComponent>().MergeSet(stamp);
-                    m_Modifier[localPlayerId].ModifyChecked(predictedPlayer, commands, commands.Require<StampComponent>().duration);
+                    predictedPlayer.Require<ClientStampComponent>().CopyFrom(stamp);
+                    m_Modifier[localPlayerId].ModifyChecked(predictedPlayer, commands, commands.Require<ClientStampComponent>().duration);
                 }
                 break;
             }
@@ -197,13 +196,13 @@ namespace Session
             {
                 switch (message)
                 {
-                    case ServerSessionContainer receivedServerSessionContainer:
+                    case ServerSessionContainer receivedServerSession:
                     {
-                        ServerSessionContainer serverSessionContainer = m_SessionComponentHistory.ClaimNext();
-                        serverSessionContainer.CopyFrom(receivedServerSessionContainer);
+                        ServerSessionContainer serverSession = m_SessionHistory.ClaimNext();
+                        serverSession.CopyFrom(receivedServerSession);
 
                         if (GetLocalPlayerId(out int localPlayerId))
-                            CheckPrediction(serverSessionContainer.Require<PlayerContainerArrayProperty>()[localPlayerId]);
+                            CheckPrediction(serverSession.Require<PlayerContainerArrayProperty>()[localPlayerId]);
 
                         break;
                     }
