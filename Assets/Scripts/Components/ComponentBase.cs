@@ -33,7 +33,7 @@ namespace Components
             foreach (FieldInfo field in fieldInfos)
             {
                 Type fieldType = field.FieldType;
-                if (!fieldType.IsAbstract && field.GetValue(this) == null && fieldType.IsContainable())
+                if (!fieldType.IsAbstract && field.GetValue(this) == null && fieldType.IsElement())
                 {
                     object instance = Activator.CreateInstance(fieldType);
                     field.SetValue(this, instance);

@@ -50,49 +50,47 @@ namespace Session
             m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_ServerSessionContainer);
         }
 
-        protected virtual void PreTick(Container tickSessionContainer)
+        protected virtual void PreTick(Container tickSession)
         {
         }
 
-        protected virtual void PostTick(Container tickSessionContainer)
+        protected virtual void PostTick(Container tickSession)
         {
         }
 
         protected sealed override void Tick(uint tick, float time)
         {
             base.Tick(tick, time);
-            Container lastServerSessionContainer = m_SessionComponentHistory.Peek(),
-                      serverSessionContainer = m_SessionComponentHistory.ClaimNext();
-            serverSessionContainer.Reset();
-            serverSessionContainer.MergeSet(lastServerSessionContainer);
-            if (serverSessionContainer.If(out ServerStampComponent serverStampComponent))
+            Container previousServerSession = m_SessionComponentHistory.Peek(),
+                      serverSession = m_SessionComponentHistory.ClaimNext();
+            serverSession.CopyFrom(previousServerSession);
+            if (serverSession.If(out ServerStampComponent serverStamp))
             {
-                serverStampComponent.tick.Value = tick;
-                serverStampComponent.time.Value = time;
-                float duration = time - lastServerSessionContainer.Require<ServerStampComponent>().time.OrElse(time);
-                serverStampComponent.duration.Value = duration;
-                PreTick(serverSessionContainer);
-                Tick(serverSessionContainer);
-                PostTick(serverSessionContainer);
+                serverStamp.tick.Value = tick;
+                serverStamp.time.Value = time;
+                float duration = time - previousServerSession.Require<ServerStampComponent>().time.OrElse(time);
+                serverStamp.duration.Value = duration;
+                PreTick(serverSession);
+                Tick(serverSession);
+                PostTick(serverSession);
             }
         }
 
-        private void Tick(Container serverSessionComponent)
+        private void Tick(Container serverSession)
         {
-            var serverPlayerComponents = serverSessionComponent.Require<PlayerContainerArrayProperty>();
-            var i = 0;
-            foreach (Container playerContainer in serverPlayerComponents)
+            var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
+            foreach (Container serverPlayer in serverPlayers)
             {
-                if (playerContainer.If(out ClientStampComponent clientStampComponent))
-                    clientStampComponent.duration.Value = 0u;
-                var serverStampComponent = serverSessionComponent.Require<ServerStampComponent>();
-                if (playerContainer.If(out ServerStampComponent playerServerStampComponent))
-                    playerServerStampComponent.MergeSet(serverStampComponent);
+                if (serverPlayer.If(out ClientStampComponent clientStamp))
+                    clientStamp.duration.Value = 0u;
+                var serverStampComponent = serverSession.Require<ServerStampComponent>();
+                if (serverPlayer.If(out ServerStampComponent serverStamp))
+                    serverStamp.CopyFrom(serverStampComponent);
                 if (serverStampComponent.tick == 0u)
                 {
-                    if (playerContainer.If(out HealthProperty healthProperty))
+                    if (serverPlayer.If(out HealthProperty healthProperty))
                         healthProperty.Value = 100;
-                    if (playerContainer.If(out InventoryComponent inventoryComponent))
+                    if (serverPlayer.If(out InventoryComponent inventoryComponent))
                     {
                         PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 1);
                         PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 2);
@@ -103,28 +101,27 @@ namespace Session
             {
                 switch (message)
                 {
-                    case ClientCommandsContainer clientCommandsContainer:
+                    case ClientCommandsContainer clientCommands:
                     {
-                        Container trustedPlayerComponent = serverPlayerComponents[clientId];
-                        var playerCommandsStampComponent = clientCommandsContainer.Require<StampComponent>();
-                        trustedPlayerComponent.MergeSet(clientCommandsContainer);
-                        m_Modifier[clientId].ModifyChecked(trustedPlayerComponent, clientCommandsContainer, playerCommandsStampComponent.duration);
-                        var clientStampComponent = trustedPlayerComponent.Require<ClientStampComponent>();
-                        clientStampComponent.MergeSet(playerCommandsStampComponent);
+                        Container serverPlayer = serverPlayers[clientId];
+                        var clientStamp = clientCommands.Require<StampComponent>();
+                        serverPlayer.MergeSet(clientCommands);
+                        m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
+                        var serverClientStamp = serverPlayer.Require<ClientStampComponent>();
+                        serverClientStamp.CopyFrom(clientStamp);
                         // trustedPlayerComponent.Require<ServerStampComponent>().duration.Value += playerCommandsDuration;
                         // AnalysisLogger.AddDataPoint("", "A", trustedPlayerComponent.position.Value.x);
                         break;
                     }
                 }
             });
-            // if (m_Tick % 30 == 0)
-            // {
-            //     for (var i = 0; i < serverPlayerComponents.Length; i++)
-            //     {
-            //         Debug.Log(i + "," + serverPlayerComponents[i].Require<HealthProperty>().Value);
-            //     }
-            // }
-            m_Socket.SendToAll(serverSessionComponent);
+            var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
+            foreach (KeyValuePair<IPEndPoint,Container> pair in m_Socket.Connections)
+            {
+                byte playerId = pair.Value.Require<ByteProperty>();
+                localPlayerProperty.Value = playerId;
+                m_Socket.Send(serverSession, pair.Key);
+            }
         }
 
         public override void Dispose()

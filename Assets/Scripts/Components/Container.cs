@@ -43,7 +43,7 @@ namespace Components
         {
             foreach (Type type in types)
             {
-                if (type.IsContainable())
+                if (type.IsElement())
                 {
                     if (m_TypeToId.ContainsKey(type))
                         throw new ArgumentException("Containers can only have one of each type! Make a subclass if necessary");

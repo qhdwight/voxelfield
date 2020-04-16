@@ -6,8 +6,8 @@ namespace Components
     public enum Navigation
     {
         Continue,
-        Skip,
-        Exit
+        Skip, // Skip all children of current node
+        Exit  // Exit entire tree immediately
     }
 
     public static class Extensions
@@ -27,7 +27,7 @@ namespace Components
             return type.IsSubclassOf(typeof(ArrayPropertyBase));
         }
 
-        public static bool IsContainable(this Type type)
+        public static bool IsElement(this Type type)
         {
             return type.IsSubclassOf(typeof(ElementBase));
         }
@@ -167,7 +167,7 @@ namespace Components
 
         private struct TriArray<T>
         {
-            private T e1, e2, e3;
+            private T m_E1, m_E2, m_E3;
 
             public T this[int index]
             {
@@ -175,9 +175,9 @@ namespace Components
                 {
                     switch (index)
                     {
-                        case 0:  return e1;
-                        case 1:  return e2;
-                        case 2:  return e3;
+                        case 0:  return m_E1;
+                        case 1:  return m_E2;
+                        case 2:  return m_E3;
                         default: throw new IndexOutOfRangeException();
                     }
                 }
@@ -186,9 +186,9 @@ namespace Components
                     // @formatter:off
                     switch (index)
                     {
-                        case 0: e1 = value; break;
-                        case 1: e2 = value; break;
-                        case 2: e3 = value; break;
+                        case 0: m_E1 = value; break;
+                        case 1: m_E2 = value; break;
+                        case 2: m_E3 = value; break;
                         default: throw new IndexOutOfRangeException();
                     }
                     // @formatter:on

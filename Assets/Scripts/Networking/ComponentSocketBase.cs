@@ -15,16 +15,16 @@ namespace Networking
 
         protected readonly IPEndPoint m_Ip;
         protected readonly Socket m_RawSocket;
+        protected readonly Dictionary<IPEndPoint, Container> m_Connections = new Dictionary<IPEndPoint, Container>();
 
         private readonly DualDictionary<Type, byte> m_Codes;
         private readonly MemoryStream m_SendStream = new MemoryStream(BufferSize), m_ReadStream = new MemoryStream(BufferSize);
         private readonly BinaryWriter m_Writer;
         private readonly BinaryReader m_Reader;
         private readonly Dictionary<Type, Pool<ElementBase>> m_MessagePools = new Dictionary<Type, Pool<ElementBase>>();
-        protected readonly HashSet<EndPoint> m_Connections = new HashSet<EndPoint>();
-
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
-        private AsyncCallback m_ReceiveCallback;
+
+        public Dictionary<IPEndPoint, Container> Connections => m_Connections;
 
         protected ComponentSocketBase(IPEndPoint ip)
         {
@@ -38,28 +38,47 @@ namespace Networking
             //                                     pair => new Pool<ComponentBase>(0, () => (ComponentBase) Activator.CreateInstance(pair.Key)));
         }
 
-        public void RegisterMessage(Type componentType, Container container = null)
+        /// <summary>
+        /// Register element type for serialization over network.
+        /// Assigns an ID to each type. Order of registration is important.
+        /// Container types must have an instance passed to figure out its children elements.
+        /// The order of those element types is also important.
+        /// </summary>
+        public void RegisterMessage(Type elementType, Container container = null)
         {
-            m_Codes.Add(componentType, (byte) m_Codes.Length);
-            m_MessagePools[componentType] = new Pool<ElementBase>(1, () => componentType.IsContainer()
-                                                                      ? container.Clone()
-                                                                      : (ElementBase) Activator.CreateInstance(componentType));
+            m_Codes.Add(elementType, (byte) m_Codes.Length);
+            m_MessagePools[elementType] = new Pool<ElementBase>(1, () => elementType.IsContainer()
+                                                                    ? container.Clone()
+                                                                    : (ElementBase) Activator.CreateInstance(elementType));
         }
 
         public void PollReceived(Action<int, ElementBase> received)
         {
             while (m_RawSocket.Available > 0)
             {
-                // TODO: use bytes received for performance
+                // TODO: performance use bytes received
                 int bytesReceived = m_RawSocket.ReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint);
-                m_Connections.Add(m_ReceiveEndPoint);
+                if (!(m_ReceiveEndPoint is IPEndPoint ipEndPoint)) continue;
+                // TODO: performance object pool
+                if (!m_Connections.ContainsKey(ipEndPoint))
+                {
+                    var container = new Container(typeof(ByteProperty));
+                    checked
+                    {
+                        var newConnectionId = (byte) (m_Connections.Count + 1);
+                        container.Require<ByteProperty>().Value = newConnectionId;
+                        Debug.Log($"[{GetType().Name}] Added player with id {newConnectionId}");
+                    }
+                    m_Connections.Add(ipEndPoint, container);
+                }
                 m_ReadStream.Position = 0;
                 byte code = m_Reader.ReadByte();
                 Type type = m_Codes.GetReverse(code);
                 ElementBase message = m_MessagePools[type].Obtain();
                 message.Reset();
                 message.Deserialize(m_ReadStream);
-                received(1, message);
+                byte connectionId = m_Connections[ipEndPoint].Require<ByteProperty>();
+                received(connectionId, message);
                 m_MessagePools[message.GetType()].Return(message);
             }
         }

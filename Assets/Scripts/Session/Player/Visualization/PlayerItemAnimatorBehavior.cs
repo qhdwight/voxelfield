@@ -56,7 +56,7 @@ namespace Session.Player.Visualization
                       ? m_Visuals.ModiferProperties.GetStatusModifierProperties(expressedStatus.id)
                       : m_Visuals.ModiferProperties.GetEquipStatusModifierProperties(expressedStatus.id)).duration,
                   interpolation = expressedStatus.elapsed / duration;
-            // TODO: generalize logic for viewable
+            // TODO: refactor generalize logic for viewable
             if (m_FpvArmsRenderer)
             {
                 m_FpvArmsRenderer.enabled = isLocalPlayer;

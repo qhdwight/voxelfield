@@ -14,10 +14,8 @@ namespace Networking
 
         public void SendToAll(ComponentBase message)
         {
-            foreach (EndPoint endPoint in m_Connections)
-            {
-                Send(message, endPoint as IPEndPoint);
-            }
+            foreach (IPEndPoint endPoint in m_Connections.Keys)
+                Send(message, endPoint);
         }
     }
 }

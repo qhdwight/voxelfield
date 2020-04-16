@@ -41,6 +41,7 @@
               <e p="Client.cs" t="Include" />
               <e p="Components.cs" t="Include" />
               <e p="Host.cs" t="Include" />
+              <e p="Server.cs" t="Include" />
               <e p="SessionManager.cs" t="Include" />
             </e>
           </e>

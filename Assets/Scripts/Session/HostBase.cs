@@ -10,15 +10,15 @@ namespace Session
     {
         private const int HostPlayerId = 0;
 
-        private readonly Container m_HostPlayerCommands, m_RenderSessionContainer;
+        private readonly Container m_HostCommands, m_RenderSession;
 
         protected HostBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
-            m_HostPlayerCommands = new Container(commandElements.Concat(playerElements));
-            m_RenderSessionContainer = new Container(sessionElements);
-            if (m_RenderSessionContainer.If(out PlayerContainerArrayProperty playerContainers))
-                playerContainers.SetAll(() => new Container(playerElements));
+            m_HostCommands = new Container(commandElements.Concat(playerElements));
+            m_RenderSession = new Container(sessionElements);
+            if (m_RenderSession.If(out PlayerContainerArrayProperty players))
+                players.SetAll(() => new Container(playerElements));
         }
 
         private void ReadLocalInputs(Container commandsToFill)
@@ -28,46 +28,50 @@ namespace Session
 
         public override void Input(float delta)
         {
-            ReadLocalInputs(m_HostPlayerCommands);
-            m_Modifier[HostPlayerId].ModifyTrusted(m_HostPlayerCommands, m_HostPlayerCommands, delta);
-            m_Modifier[HostPlayerId].ModifyChecked(m_HostPlayerCommands, m_HostPlayerCommands, delta);
+            ReadLocalInputs(m_HostCommands);
+            m_Modifier[HostPlayerId].ModifyTrusted(m_HostCommands, m_HostCommands, delta);
+            m_Modifier[HostPlayerId].ModifyChecked(m_HostCommands, m_HostCommands, delta);
         }
 
         protected override void Render(float timeSinceTick, float renderTime)
         {
-            if (m_RenderSessionContainer.If(out PlayerContainerArrayProperty renderPlayersProperty)
-             && m_RenderSessionContainer.If(out LocalPlayerProperty localPlayerProperty))
+            if (!m_RenderSession.If(out PlayerContainerArrayProperty renderPlayers)
+             || !m_RenderSession.If(out LocalPlayerProperty localPlayer)) return;
+            
+            localPlayer.Value = HostPlayerId;
+            for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
-                localPlayerProperty.Value = HostPlayerId;
-                for (var playerId = 0; playerId < renderPlayersProperty.Length; playerId++)
+                if (playerId == localPlayer)
                 {
-                    if (playerId == localPlayerProperty)
-                    {
-                        // Inject host player component
-                        renderPlayersProperty[playerId].MergeSet(m_HostPlayerCommands);
-                    }
-                    else
-                    {
-                        int copiedPlayerId = playerId;
-                        Container GetInHistory(int historyIndex) => m_SessionComponentHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
-                        float rollback = DebugBehavior.Singleton.Rollback * 3;
-                        RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayersProperty[playerId], m_SessionComponentHistory.Size, GetInHistory);
-                    }
-                    m_Visuals[playerId].Render(renderPlayersProperty[playerId], playerId == localPlayerProperty);
+                    // Inject host player component
+                    renderPlayers[playerId].CopyFrom(m_HostCommands);
                 }
+                else
+                {
+                    int copiedPlayerId = playerId;
+                    Container GetInHistory(int historyIndex) => m_SessionComponentHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
+                    float rollback = DebugBehavior.Singleton.Rollback * 3;
+                    RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayers[playerId], m_SessionComponentHistory.Size, GetInHistory);
+                }
+                m_Visuals[playerId].Render(renderPlayers[playerId], playerId == localPlayer);
             }
         }
 
-        protected override void PreTick(Container tickSessionContainer)
+        protected override void PreTick(Container tickSession)
         {
             // Inject our current player component before normal update cycle
-            tickSessionContainer.Require<PlayerContainerArrayProperty>()[HostPlayerId].MergeSet(m_HostPlayerCommands);
+            Container hostPlayer = tickSession.Require<PlayerContainerArrayProperty>()[HostPlayerId];
+            StampComponent hostClientStamp = hostPlayer.Require<ClientStampComponent>();
+            StampComponent serverStamp = tickSession.Require<ServerStampComponent>();
+            hostClientStamp.CopyFrom(serverStamp);
+            hostPlayer.MergeSet(m_HostCommands);
+            
         }
 
-        protected override void PostTick(Container tickSessionContainer)
+        protected override void PostTick(Container tickSession)
         {
             // Merge host component updates that happen on normal server update cycle
-            m_HostPlayerCommands.MergeSet(tickSessionContainer.Require<PlayerContainerArrayProperty>()[HostPlayerId]);
+            m_HostCommands.MergeSet(tickSession.Require<PlayerContainerArrayProperty>()[HostPlayerId]);
         }
     }
 }

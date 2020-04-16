@@ -31,5 +31,16 @@ namespace Session
             m_ClientCommandsContainer = new ClientCommandsContainer(clientElements);
             m_ServerSessionContainer = ServerSessionContainerConstructor();
         }
+        
+        protected bool GetLocalPlayerId(out int localPlayerId)
+        {
+            if (m_SessionComponentHistory.Peek().If(out LocalPlayerProperty localPlayerProperty) && localPlayerProperty.HasValue)
+            {
+                localPlayerId = localPlayerProperty;
+                return true;
+            }
+            localPlayerId = default;
+            return false;
+        }
     }
 }

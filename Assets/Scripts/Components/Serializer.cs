@@ -61,7 +61,7 @@ namespace Components
             }
         }
 
-        public static void Deserialize(this ElementBase component, MemoryStream stream)
+        public static void Deserialize(this ElementBase component, MemoryStream stream, int? length = null)
         {
             StreamMutex.WaitOne();
             try
@@ -72,7 +72,10 @@ namespace Components
                 component.Navigate((field, element) =>
                 {
                     if (element is PropertyBase property && (field == null || !field.IsDefined(typeof(NoSerialization))))
+                    {
+                        property.Clear();
                         ReadIntoProperty(property);
+                    }
                     return Navigation.Continue;
                 });
             }

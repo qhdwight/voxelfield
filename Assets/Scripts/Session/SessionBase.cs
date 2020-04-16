@@ -18,7 +18,7 @@ namespace Session
     {
         void Setup();
 
-        // TODO: is local player should use With construct
+        // TODO: refactor is local player should use If construct
         void Render(Container playerContainer, bool isLocalPlayer);
     }
 
@@ -143,7 +143,7 @@ namespace Session
                 }
             }
             // Take last if we do not have enough history
-            renderPlayerContainer.MergeSet(getInHistory(1));
+            renderPlayerContainer.CopyFrom(getInHistory(1));
         }
     }
 }
