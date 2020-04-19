@@ -17,7 +17,8 @@ namespace Session
                                        IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
-            IReadOnlyList<Type> serverPlayerElements = playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent)).ToArray(),
+            IReadOnlyList<Type> serverPlayerElements = playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))
+                                                                     .Append(typeof(TrackedClientTimeProperty)).ToArray(),
                                 clientCommandElements = playerElements.Concat(commandElements).Append(typeof(ClientStampComponent)).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor()
             {

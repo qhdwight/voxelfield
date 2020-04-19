@@ -102,13 +102,13 @@ namespace Session
             UpdateInputs();
             Predict(tick, time);
             Send();
-            Receive();
+            Receive(time);
         }
 
         private void Predict(uint tick, float time)
         {
             if (!GetLocalPlayerId(out int localPlayerId)) return;
-            
+
             // TODO: refactor into common logic of claiming and resetting
             Container previousPredictedPlayer = m_PlayerPredictionHistory.Peek(),
                       predictedPlayer = m_PlayerPredictionHistory.ClaimNext();
@@ -149,7 +149,7 @@ namespace Session
         private void CheckPrediction(Container serverPlayer)
         {
             if (!GetLocalPlayerId(out int localPlayerId)) return;
-            
+
             uint targetTick = serverPlayer.Require<ClientStampComponent>().tick;
             for (var playerHistoryIndex = 0; playerHistoryIndex < m_PlayerPredictionHistory.Size; playerHistoryIndex++)
             {
@@ -190,7 +190,7 @@ namespace Session
             }
         }
 
-        private void Receive()
+        private void Receive(float time)
         {
             m_Socket.PollReceived((_, message) =>
             {
@@ -200,6 +200,9 @@ namespace Session
                     {
                         ServerSessionContainer serverSession = m_SessionHistory.ClaimNext();
                         serverSession.CopyFrom(receivedServerSession);
+
+                        // float serverTime = serverSession.Require<ServerStampComponent>().time;
+                        // Debug.Log($"{time}, {serverTime}, {serverTime - time}");
 
                         if (GetLocalPlayerId(out int localPlayerId))
                             CheckPrediction(serverSession.Require<PlayerContainerArrayProperty>()[localPlayerId]);

@@ -18,9 +18,9 @@ namespace Compound.Session
             {
                 if (Application.isEditor)
                 {
-                    m_Session = new Host(this) {ShouldRender = false};
+                    m_Session = new Host(this) {ShouldRender = true};
                     // m_Session = new Client(this);
-                    m_DebugSession = new Client(this) {ShouldRender = true};
+                    m_DebugSession = new Client(this) {ShouldRender = false};
                 }
                 else
                 {

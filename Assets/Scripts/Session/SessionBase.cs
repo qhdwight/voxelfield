@@ -143,7 +143,7 @@ namespace Session
                 }
             }
             // Take last if we do not have enough history
-            renderPlayerContainer.CopyFrom(getInHistory(1));
+            renderPlayerContainer.CopyFrom(getInHistory(0));
         }
     }
 }

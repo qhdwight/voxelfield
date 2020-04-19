@@ -24,6 +24,11 @@ namespace Session
     }
 
     [Serializable]
+    public class TrackedClientTimeProperty : FloatProperty
+    {
+    }
+
+    [Serializable]
     public class ServerStampComponent : StampComponent
     {
     }
@@ -77,10 +82,10 @@ namespace Session
                 {
                     if (serverPlayer.If(out ClientStampComponent clientStamp))
                         clientStamp.duration.Value = 0u;
-                    if (serverPlayer.If(out ServerStampComponent serverPlayerStamp))
-                        serverPlayerStamp.CopyFrom(serverStamp);
+                    if (serverPlayer.If(out TrackedClientTimeProperty trackedClientTime) && trackedClientTime.HasValue)
+                        trackedClientTime.Value += duration;
                 }
-                
+
                 PreTick(serverSession);
                 Tick(previousServerSession, serverSession);
                 PostTick(serverSession);
@@ -90,9 +95,9 @@ namespace Session
         private void Tick(Container previousServerSession, Container serverSession)
         {
             var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
+            var serverStamp = serverSession.Require<ServerStampComponent>();
             foreach (Container serverPlayer in serverPlayers)
             {
-                var serverStamp = serverSession.Require<ServerStampComponent>();
                 if (serverStamp.tick == 0u)
                 {
                     if (serverPlayer.If(out HealthProperty healthProperty))
@@ -111,6 +116,7 @@ namespace Session
                     case ClientCommandsContainer clientCommands:
                     {
                         var clientStamp = clientCommands.Require<ClientStampComponent>();
+
                         // Make sure this is newer tick
                         uint previousClientTick = previousServerSession.Require<PlayerContainerArrayProperty>()[clientId].Require<ClientStampComponent>().tick;
                         if (clientStamp.tick <= previousClientTick)
@@ -118,14 +124,21 @@ namespace Session
                             Debug.LogWarning($"[{GetType().Name}] Received out of order client command");
                             break;
                         }
-                        
+                        // Update tracked client time
                         Container serverPlayer = serverPlayers[clientId];
+                        var trackedClientTime = serverPlayer.Require<TrackedClientTimeProperty>();
+                        if (!trackedClientTime.HasValue)
+                            trackedClientTime.Value = clientStamp.time;
+
+                        if (serverPlayer.If(out ServerStampComponent serverPlayerStamp))
+                            serverPlayerStamp.CopyFrom(serverStamp);
+                        
+                        var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
+                        float newDuration = serverPlayerClientStamp.duration + clientStamp.duration;
                         serverPlayer.MergeSet(clientCommands);
                         m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
-                        var serverClientStamp = serverPlayer.Require<ClientStampComponent>();
-                        serverClientStamp.tick.Value = clientStamp.tick;
-                        serverClientStamp.time.Value = clientStamp.time;
-                        serverClientStamp.duration.Value += clientStamp.duration;
+                        serverPlayerClientStamp.duration.Value = newDuration;
+
                         break;
                     }
                 }

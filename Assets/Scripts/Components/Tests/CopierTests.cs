@@ -23,7 +23,7 @@ namespace Components.Tests
         {
             OuterComponent source = OuterComponent.Arbitrary;
             var destination = new OuterComponent();
-            destination.MergeSet(source);
+            destination.CopyFrom(source);
             Assert.IsTrue(destination.EqualTo(source));
         }
     }
