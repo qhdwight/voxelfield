@@ -23,6 +23,11 @@ namespace Session
         }
     }
 
+    [Serializable]
+    public class ClientStampComponent : StampComponent
+    {
+    }
+
     public abstract class ClientBase : NetworkedSessionBase
     {
         private readonly Container m_RenderSession;
@@ -37,6 +42,7 @@ namespace Session
             m_RenderSession = new Container(sessionElements);
             if (m_RenderSession.If(out PlayerContainerArrayProperty players))
                 players.SetAll(() => new Container(playerElements));
+            /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
             m_PlayerPredictionHistory = new CyclicArray<Container>(250, () =>
             {
@@ -44,6 +50,9 @@ namespace Session
                 IEnumerable<Type> predictedElements = playerElements.Append(typeof(ClientStampComponent));
                 return new Container(predictedElements);
             });
+            // Allows us to mark when each server session is received in client time
+            foreach (ServerSessionContainer serverSession in m_SessionHistory)
+                serverSession.Add(typeof(SimulatedTimeProperty));
         }
 
         public override void Start()
@@ -69,7 +78,7 @@ namespace Session
             }
         }
 
-        protected override void Render(float renderTime)
+        protected override void Render(float renderTime, float tickElapsed)
         {
             if (!m_RenderSession.If(out PlayerContainerArrayProperty players) || !GetLocalPlayerId(out int localPlayerId)) return;
 
@@ -89,20 +98,24 @@ namespace Session
                 {
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
+
+                    float elapsed = renderTime - GetInHistory(0).Require<ClientStampComponent>().time;
+                    float trackedServerTime = m_SessionHistory.Get(0).Require<SimulatedTimeProperty>();
+
                     float rollback = DebugBehavior.Singleton.Rollback * 3;
-                    RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
+                    RenderInterpolatedPlayer<ServerStampComponent>(trackedServerTime + elapsed - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(renderPlayer, isLocalPlayer);
             }
         }
 
-        protected override void Tick(uint tick, float time)
+        protected override void Tick(uint tick, float time, float duration)
         {
-            base.Tick(tick, time);
+            base.Tick(tick, time, duration);
             UpdateInputs();
             Predict(tick, time);
             Send();
-            Receive(time);
+            Receive(duration);
         }
 
         private void Predict(uint tick, float time)
@@ -118,12 +131,7 @@ namespace Session
             {
                 predictedPlayer.CopyFrom(previousPredictedPlayer);
                 commands.CopyFrom(previousCommand);
-                // if (tick == 0)
-                // {
-                //     predictedPlayer.Require<HealthProperty>().Value = 100;
-                //     PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayer.Require<InventoryComponent>(), ItemId.TestingRifle, 1);
-                //     PlayerItemManagerModiferBehavior.SetItemAtIndex(predictedPlayer.Require<InventoryComponent>(), ItemId.TestingRifle, 2);
-                // }
+
                 predictedStamp.tick.Value = tick;
                 predictedStamp.time.Value = time;
                 float lastTime = previousPredictedPlayer.Require<ClientStampComponent>().time.OrElse(time),
@@ -190,19 +198,26 @@ namespace Session
             }
         }
 
-        private void Receive(float time)
+        private void Receive(float duration)
         {
+            ServerSessionContainer previousServerSession = m_SessionHistory.Peek();
+            var trackedTime = previousServerSession.Require<SimulatedTimeProperty>();
+            if (trackedTime.HasValue)
+                trackedTime.Value += duration;
             m_Socket.PollReceived((_, message) =>
             {
                 switch (message)
                 {
                     case ServerSessionContainer receivedServerSession:
                     {
-                        ServerSessionContainer serverSession = m_SessionHistory.ClaimNext();
-                        serverSession.CopyFrom(receivedServerSession);
+                        if (!trackedTime.HasValue)
+                            trackedTime.Value = receivedServerSession.Require<ServerStampComponent>().time;
 
-                        // float serverTime = serverSession.Require<ServerStampComponent>().time;
-                        // Debug.Log($"{time}, {serverTime}, {serverTime - time}");
+                        // Debug.Log($"{receivedServerSession.Require<ServerStampComponent>().time} {trackedTime.Value}");
+                        
+                        ServerSessionContainer serverSession = m_SessionHistory.ClaimNext();
+                        serverSession.CopyFrom(previousServerSession);
+                        serverSession.MergeSet(receivedServerSession);
 
                         if (GetLocalPlayerId(out int localPlayerId))
                             CheckPrediction(serverSession.Require<PlayerContainerArrayProperty>()[localPlayerId]);

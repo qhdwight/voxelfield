@@ -64,15 +64,15 @@ namespace Session
         {
             float time = Time.realtimeSinceStartup, delta = time - m_RenderTime;
             Input(time, delta);
-            if (ShouldRender) Render(time);
+            if (ShouldRender) Render(time, time - m_FixedUpdateTime);
             m_RenderTime = time;
         }
 
-        protected virtual void Render(float renderTime)
+        protected virtual void Render(float renderTime, float tickElapsed)
         {
         }
 
-        protected virtual void Tick(uint tick, float time)
+        protected virtual void Tick(uint tick, float time, float duration)
         {
             Time.fixedDeltaTime = 1.0f / m_Settings.tickRate;
         }
@@ -83,7 +83,9 @@ namespace Session
 
         public void FixedUpdate()
         {
-            Tick(m_Tick++, m_FixedUpdateTime = Time.realtimeSinceStartup);
+            float time = Time.realtimeSinceStartup, duration = Time.realtimeSinceStartup - m_FixedUpdateTime;
+            m_FixedUpdateTime = time;
+            Tick(m_Tick++, time, duration);
         }
 
         // protected void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, CyclicArray<TComponent> componentHistory,

@@ -18,7 +18,7 @@ namespace Session
             : base(linker, sessionElements, playerElements, commandElements)
         {
             IReadOnlyList<Type> serverPlayerElements = playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))
-                                                                     .Append(typeof(TrackedClientTimeProperty)).ToArray(),
+                                                                     .Append(typeof(SimulatedTimeProperty)).ToArray(),
                                 clientCommandElements = playerElements.Concat(commandElements).Append(typeof(ClientStampComponent)).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor()
             {

@@ -24,17 +24,12 @@ namespace Session
     }
 
     [Serializable]
-    public class TrackedClientTimeProperty : FloatProperty
-    {
-    }
-
-    [Serializable]
     public class ServerStampComponent : StampComponent
     {
     }
 
     [Serializable]
-    public class ClientStampComponent : StampComponent
+    public class SimulatedTimeProperty : FloatProperty
     {
     }
 
@@ -64,9 +59,9 @@ namespace Session
         {
         }
 
-        protected sealed override void Tick(uint tick, float time)
+        protected sealed override void Tick(uint tick, float time, float duration)
         {
-            base.Tick(tick, time);
+            base.Tick(tick, time, duration);
             Container previousServerSession = m_SessionHistory.Peek(),
                       serverSession = m_SessionHistory.ClaimNext();
             serverSession.CopyFrom(previousServerSession);
@@ -74,15 +69,16 @@ namespace Session
             {
                 serverStamp.tick.Value = tick;
                 serverStamp.time.Value = time;
-                float duration = time - previousServerSession.Require<ServerStampComponent>().time.OrElse(time);
                 serverStamp.duration.Value = duration;
 
                 var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
                 foreach (Container serverPlayer in serverPlayers)
                 {
-                    if (serverPlayer.If(out ClientStampComponent clientStamp))
-                        clientStamp.duration.Value = 0u;
-                    if (serverPlayer.If(out TrackedClientTimeProperty trackedClientTime) && trackedClientTime.HasValue)
+                    if (serverPlayer.If(out ClientStampComponent playerClientStamp))
+                        playerClientStamp.duration.Value = 0u;
+                    if (serverPlayer.If(out ServerStampComponent playerServerStamp))
+                        playerServerStamp.duration.Value = 0u;
+                    if (serverPlayer.If(out SimulatedTimeProperty trackedClientTime) && trackedClientTime.HasValue)
                         trackedClientTime.Value += duration;
                 }
 
@@ -116,28 +112,27 @@ namespace Session
                     case ClientCommandsContainer clientCommands:
                     {
                         var clientStamp = clientCommands.Require<ClientStampComponent>();
-
-                        // Make sure this is newer tick
+                        // Make sure this is the newest tick
                         uint previousClientTick = previousServerSession.Require<PlayerContainerArrayProperty>()[clientId].Require<ClientStampComponent>().tick;
                         if (clientStamp.tick <= previousClientTick)
                         {
                             Debug.LogWarning($"[{GetType().Name}] Received out of order client command");
                             break;
                         }
-                        // Update tracked client time
+                        // Set initial tracked client time
                         Container serverPlayer = serverPlayers[clientId];
-                        var trackedClientTime = serverPlayer.Require<TrackedClientTimeProperty>();
+                        var trackedClientTime = serverPlayer.Require<SimulatedTimeProperty>();
                         if (!trackedClientTime.HasValue)
                             trackedClientTime.Value = clientStamp.time;
-
-                        if (serverPlayer.If(out ServerStampComponent serverPlayerStamp))
-                            serverPlayerStamp.CopyFrom(serverStamp);
                         
+                        var serverPlayerStamp = serverPlayer.Require<ServerStampComponent>();
+                        serverPlayerStamp.time.Value = serverStamp.time;
+                        serverPlayerStamp.duration.Value += clientStamp.duration;
+
                         var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
-                        float newDuration = serverPlayerClientStamp.duration + clientStamp.duration;
                         serverPlayer.MergeSet(clientCommands);
+                        serverPlayerClientStamp.duration.Value += clientStamp.duration;
                         m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
-                        serverPlayerClientStamp.duration.Value = newDuration;
 
                         break;
                     }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Collections
 {
@@ -7,7 +9,7 @@ namespace Collections
     /// <see cref="m_Pointer"/> refers to the current "starting" index in the array.
     /// </summary>
     /// <typeparam name="TElement">Type of element to store</typeparam>
-    public class CyclicArray<TElement>
+    public class CyclicArray<TElement> : IEnumerable<TElement>
     {
         public delegate bool GetPredicate(in TElement element);
 
@@ -133,6 +135,16 @@ namespace Collections
         public ref TElement Peek()
         {
             return ref Get(0);
+        }
+
+        public IEnumerator<TElement> GetEnumerator()
+        {
+            return ((IEnumerable<TElement>) m_InternalArray).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return m_InternalArray.GetEnumerator();
         }
     }
 }

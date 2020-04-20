@@ -48,6 +48,18 @@ namespace Components
                 return Navigation.Continue;
             });
         }
+        
+        /// <summary>
+        /// Reset all properties to default values with has value flag set.
+        /// </summary>
+        public static void Zero(this ElementBase component)
+        {
+            component.Navigate((field, property) =>
+            {
+                (property as PropertyBase)?.Zero();
+                return Navigation.Continue;
+            });
+        }
 
         /// <summary>
         /// Allocates a cloned instance. Do not use in loops.

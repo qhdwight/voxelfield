@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Components;
 using Session.Components;
-using UnityEngine;
 
 namespace Session
 {
@@ -38,7 +37,7 @@ namespace Session
             clientStamp.tick.Value = m_SessionHistory.Peek().Require<ServerStampComponent>().tick;
         }
 
-        protected override void Render(float renderTime)
+        protected override void Render(float renderTime, float tickElapsed)
         {
             if (!m_RenderSession.If(out PlayerContainerArrayProperty renderPlayers)
              || !m_RenderSession.If(out LocalPlayerProperty localPlayer)) return;
@@ -59,20 +58,10 @@ namespace Session
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
                     float elapsed = renderTime - GetInHistory(0).Require<ServerStampComponent>().time;
-                    float baseTime = GetInHistory(0).Require<TrackedClientTimeProperty>();
-                    float c = GetInHistory(0).Require<ClientStampComponent>().time;
+                    float trackedClientTime = GetInHistory(0).Require<SimulatedTimeProperty>();
 
-                    Debug.Log($"{c} {baseTime}");
-                    
-                    
-                    RenderInterpolatedPlayer<ClientStampComponent>(baseTime + elapsed - rollback, renderPlayers[playerId],
+                    RenderInterpolatedPlayer<ClientStampComponent>(trackedClientTime + elapsed - rollback, renderPlayers[playerId],
                                                                    m_SessionHistory.Size, GetInHistory);
-
-                    // Container Get(int i) => m_SessionHistory.Get(i).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
-                    // float lastTime = Get(0).Require<ServerStampComponent>().time;
-                    // InterpolateHistoryInto(renderPlayers[copiedPlayerId], Get, m_SessionHistory.Size,
-                    //                        i => Get(i).Require<ClientStampComponent>().duration, rollback,
-                    //                        renderTime - lastTime);
                 }
                 m_Visuals[playerId].Render(renderPlayers[playerId], playerId == localPlayer);
             }
