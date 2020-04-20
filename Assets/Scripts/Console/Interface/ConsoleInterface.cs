@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Input;
+using Swihoni.Util.Interface;
 using TMPro;
 using UnityEngine;
-using Util.Interface;
 
 namespace Console.Interface
 {

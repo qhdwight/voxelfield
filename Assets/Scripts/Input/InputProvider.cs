@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Swihoni.Util;
 using UnityEngine;
-using Util;
 
 namespace Input
 {

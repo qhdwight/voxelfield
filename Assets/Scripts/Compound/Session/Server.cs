@@ -1,5 +1,5 @@
-using Session;
-using Session.Components;
+using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
 
 namespace Compound.Session
 {

@@ -1,3 +1,0 @@
-namespace Session.Player.Visualization
-{
-}

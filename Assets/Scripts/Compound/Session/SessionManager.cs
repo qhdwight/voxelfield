@@ -1,7 +1,7 @@
 using System;
-using Session;
+using Swihoni.Sessions;
+using Swihoni.Util;
 using UnityEngine;
-using Util;
 
 namespace Compound.Session
 {

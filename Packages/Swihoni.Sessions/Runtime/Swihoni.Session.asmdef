@@ -1,0 +1,19 @@
+{
+    "name": "Swihoni.Session",
+    "references": [
+        "GUID:f3a68b7e3f7640a4d8d06a2fdadbcd13",
+        "GUID:675b7d67bbbe3ea41b2c0d6e53daebc9",
+        "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7",
+        "GUID:14a55343bfee0c249a3a0f3864272e10",
+        "GUID:0973fa815d434514e9ad7174c0d75ca9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

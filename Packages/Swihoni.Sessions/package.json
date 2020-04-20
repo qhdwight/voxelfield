@@ -1,0 +1,11 @@
+{
+  "name": "com.swihoni.sessions",
+  "version": "0.0.1",
+  "displayName": "Swihoni Sessions",
+  "dependencies": {
+    "com.swihoni.collections": "0.0.1",
+    "com.swihoni.components": "0.0.1",
+    "com.swihoni.networking": "0.0.1",
+    "com.swihoni.util": "0.0.1"
+  }
+}
