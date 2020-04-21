@@ -28,6 +28,11 @@ namespace Swihoni.Sessions
     {
     }
 
+    [Serializable]
+    public class LocalizedClientStampComponent : StampComponent
+    {
+    }
+
     public abstract class ClientBase : NetworkedSessionBase
     {
         private readonly Container m_RenderSession;
@@ -50,9 +55,9 @@ namespace Swihoni.Sessions
                 IEnumerable<Type> predictedElements = playerElements.Append(typeof(ClientStampComponent));
                 return new Container(predictedElements);
             });
-            // Allows us to mark when each server session is received in client time
             foreach (ServerSessionContainer serverSession in m_SessionHistory)
-                serverSession.Add(typeof(SimulatedTimeProperty));
+            foreach (Container player in serverSession.Require<PlayerContainerArrayProperty>())
+                player.Add(typeof(LocalizedClientStampComponent));
         }
 
         public override void Start()
@@ -99,11 +104,8 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
-                    float elapsed = renderTime - GetInHistory(0).Require<ClientStampComponent>().time;
-                    float trackedServerTime = m_SessionHistory.Get(0).Require<SimulatedTimeProperty>();
-
                     float rollback = DebugBehavior.Singleton.Rollback * 3;
-                    RenderInterpolatedPlayer<ServerStampComponent>(trackedServerTime + elapsed - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
+                    RenderInterpolatedPlayer<LocalizedClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(renderPlayer, isLocalPlayer);
             }
@@ -115,7 +117,7 @@ namespace Swihoni.Sessions
             UpdateInputs();
             Predict(tick, time);
             Send();
-            Receive(duration);
+            Receive(time);
         }
 
         private void Predict(uint tick, float time)
@@ -198,26 +200,42 @@ namespace Swihoni.Sessions
             }
         }
 
-        private void Receive(float duration)
+        private void Receive(float time)
         {
-            ServerSessionContainer previousServerSession = m_SessionHistory.Peek();
-            var trackedTime = previousServerSession.Require<SimulatedTimeProperty>();
-            if (trackedTime.HasValue)
-                trackedTime.Value += duration;
             m_Socket.PollReceived((_, message) =>
             {
                 switch (message)
                 {
                     case ServerSessionContainer receivedServerSession:
                     {
-                        if (!trackedTime.HasValue)
-                            trackedTime.Value = receivedServerSession.Require<ServerStampComponent>().time;
-
-                        // Debug.Log($"{receivedServerSession.Require<ServerStampComponent>().time} {trackedTime.Value}");
-                        
-                        ServerSessionContainer serverSession = m_SessionHistory.ClaimNext();
+                        ServerSessionContainer previousServerSession = m_SessionHistory.Peek(),
+                                               serverSession = m_SessionHistory.ClaimNext();
                         serverSession.CopyFrom(previousServerSession);
                         serverSession.MergeSet(receivedServerSession);
+
+                        if (serverSession.Require<ServerStampComponent>().tick <= previousServerSession.Require<ServerStampComponent>().tick)
+                        {
+                            Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
+                            break;
+                        }
+                        
+                        var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
+                        for (var id = 0; id < serverPlayers.Length; id++)
+                        {
+                            if (id == 1) continue;
+                            Container serverPlayer = serverPlayers[id];
+                            FloatProperty serverTime = serverPlayer.Require<ServerStampComponent>().time,
+                                          localClientTime = serverPlayer.Require<LocalizedClientStampComponent>().time;
+                            if (localClientTime.HasValue && serverTime.HasValue)
+                            {
+                                float previousServerTime = previousServerSession.Require<PlayerContainerArrayProperty>()[id].Require<ServerStampComponent>().time;
+                                localClientTime.Value += serverTime - previousServerTime;
+                            }
+                            else
+                                localClientTime.Value = time;
+                        }
+
+                        // Debug.Log($"{receivedServerSession.Require<ServerStampComponent>().time} {trackedTime.Value}");
 
                         if (GetLocalPlayerId(out int localPlayerId))
                             CheckPrediction(serverSession.Require<PlayerContainerArrayProperty>()[localPlayerId]);

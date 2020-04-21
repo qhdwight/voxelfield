@@ -24,6 +24,7 @@ namespace Swihoni.Components
 
         private static void ReadIntoProperty(PropertyBase property)
         {
+            
             bool hasValue = Reader.ReadBoolean();
             if (hasValue)
                 property.Deserialize(Reader);
@@ -31,7 +32,7 @@ namespace Swihoni.Components
 
         private static void WriteFromProperty(PropertyBase property)
         {
-            bool hasValue = property.HasValue;
+            bool hasValue = property.DoSerialization && property.HasValue;
             Writer.Write(hasValue);
             if (hasValue)
                 property.Serialize(Writer);

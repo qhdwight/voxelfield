@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Swihoni.Components;
 using Swihoni.Collections;
+using Swihoni.Components;
 using Swihoni.Sessions.Components;
 
 namespace Swihoni.Sessions
@@ -17,8 +17,7 @@ namespace Swihoni.Sessions
                                        IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
-            IReadOnlyList<Type> serverPlayerElements = playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))
-                                                                     .Append(typeof(SimulatedTimeProperty)).ToArray(),
+            IReadOnlyCollection<Type> serverPlayerElements = playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent)).ToArray(),
                                 clientCommandElements = playerElements.Concat(commandElements).Append(typeof(ClientStampComponent)).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor()
             {

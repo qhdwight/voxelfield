@@ -28,11 +28,6 @@ namespace Swihoni.Sessions
     {
     }
 
-    [Serializable]
-    public class SimulatedTimeProperty : FloatProperty
-    {
-    }
-
     public abstract class ServerBase : NetworkedSessionBase
     {
         private ComponentServerSocket m_Socket;
@@ -41,6 +36,9 @@ namespace Swihoni.Sessions
                              IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
+            // foreach (ServerSessionContainer serverSession in m_SessionHistory)
+            // foreach (Container player in serverSession.Require<PlayerContainerArrayProperty>())
+            //     player.Require<ClientStampComponent>().time.DoSerialization = false;
         }
 
         public override void Start()
@@ -70,17 +68,6 @@ namespace Swihoni.Sessions
                 serverStamp.tick.Value = tick;
                 serverStamp.time.Value = time;
                 serverStamp.duration.Value = duration;
-
-                var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
-                foreach (Container serverPlayer in serverPlayers)
-                {
-                    if (serverPlayer.If(out ClientStampComponent playerClientStamp))
-                        playerClientStamp.duration.Value = 0u;
-                    if (serverPlayer.If(out ServerStampComponent playerServerStamp))
-                        playerServerStamp.duration.Value = 0u;
-                    if (serverPlayer.If(out SimulatedTimeProperty trackedClientTime) && trackedClientTime.HasValue)
-                        trackedClientTime.Value += duration;
-                }
 
                 PreTick(serverSession);
                 Tick(previousServerSession, serverSession);
@@ -113,25 +100,21 @@ namespace Swihoni.Sessions
                     {
                         var clientStamp = clientCommands.Require<ClientStampComponent>();
                         // Make sure this is the newest tick
-                        uint previousClientTick = previousServerSession.Require<PlayerContainerArrayProperty>()[clientId].Require<ClientStampComponent>().tick;
-                        if (clientStamp.tick <= previousClientTick)
+                        var previousClientStamp = previousServerSession.Require<PlayerContainerArrayProperty>()[clientId].Require<ClientStampComponent>();
+                        if (clientStamp.tick <= previousClientStamp.tick)
                         {
                             Debug.LogWarning($"[{GetType().Name}] Received out of order client command");
                             break;
                         }
-                        // Set initial tracked client time
                         Container serverPlayer = serverPlayers[clientId];
-                        var trackedClientTime = serverPlayer.Require<SimulatedTimeProperty>();
-                        if (!trackedClientTime.HasValue)
-                            trackedClientTime.Value = clientStamp.time;
-                        
                         var serverPlayerStamp = serverPlayer.Require<ServerStampComponent>();
-                        serverPlayerStamp.time.Value = serverStamp.time;
-                        serverPlayerStamp.duration.Value += clientStamp.duration;
+                        if (serverPlayerStamp.time.HasValue)
+                            serverPlayerStamp.time.Value += clientStamp.time - previousClientStamp.time;
+                        else
+                            serverPlayerStamp.time.Value = serverStamp.time;
 
-                        var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
+                        serverPlayer.Require<ClientStampComponent>().duration.Reset();
                         serverPlayer.MergeSet(clientCommands);
-                        serverPlayerClientStamp.duration.Value += clientStamp.duration;
                         m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
 
                         break;

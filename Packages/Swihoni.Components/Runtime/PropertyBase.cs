@@ -10,7 +10,7 @@ namespace Swihoni.Components
     public abstract class PropertyBase : ElementBase
     {
         [SerializeField] private bool m_HasValue;
-        private bool m_IsModified;
+        private bool m_DoSerialize = true;
 
         public bool HasValue
         {
@@ -18,10 +18,10 @@ namespace Swihoni.Components
             protected set => m_HasValue = value;
         }
 
-        public bool IsModified
+        public bool DoSerialization
         {
-            get => m_IsModified;
-            protected set => m_IsModified = value;
+            get => m_DoSerialize;
+            set => m_DoSerialize = value;
         }
 
         public abstract void Serialize(BinaryWriter writer);
@@ -51,16 +51,6 @@ namespace Swihoni.Components
             {
                 m_Value = value;
                 HasValue = true;
-            }
-        }
-
-        public T Modified
-        {
-            get => m_Value;
-            set
-            {
-                Value = value;
-                IsModified = true;
             }
         }
 

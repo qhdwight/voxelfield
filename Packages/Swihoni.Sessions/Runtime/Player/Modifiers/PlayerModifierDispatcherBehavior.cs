@@ -13,12 +13,12 @@ namespace Swihoni.Sessions.Player.Modifiers
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
         }
 
-        internal void ModifyChecked(Container containerToModify, Container commands, float duration)
+        public void ModifyChecked(Container containerToModify, Container commands, float duration)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(containerToModify, commands, duration);
         }
 
-        internal void ModifyTrusted(Container containerToModify, Container commands, float duration)
+        public void ModifyTrusted(Container containerToModify, Container commands, float duration)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(containerToModify, commands, duration);
         }
@@ -34,7 +34,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         //     return components;
         // }
 
-        internal void ModifyCommands(Container commandsToModify)
+        public void ModifyCommands(Container commandsToModify)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(commandsToModify);
         }
