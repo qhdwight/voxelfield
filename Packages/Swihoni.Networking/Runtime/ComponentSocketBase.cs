@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using Swihoni.Components;
 using Swihoni.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Swihoni.Networking
 {
@@ -15,7 +16,7 @@ namespace Swihoni.Networking
 
         protected readonly IPEndPoint m_Ip;
         protected readonly Socket m_RawSocket;
-        protected readonly Dictionary<IPEndPoint, Container> m_Connections = new Dictionary<IPEndPoint, Container>();
+        protected readonly HashSet<IPEndPoint> m_Connections = new HashSet<IPEndPoint>();
 
         private readonly DualDictionary<Type, byte> m_Codes;
         private readonly MemoryStream m_SendStream = new MemoryStream(BufferSize), m_ReadStream = new MemoryStream(BufferSize);
@@ -24,7 +25,7 @@ namespace Swihoni.Networking
         private readonly Dictionary<Type, Pool<ElementBase>> m_MessagePools = new Dictionary<Type, Pool<ElementBase>>();
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-        public Dictionary<IPEndPoint, Container> Connections => m_Connections;
+        public HashSet<IPEndPoint> Connections => m_Connections;
 
         protected ComponentSocketBase(IPEndPoint ip)
         {
@@ -52,34 +53,34 @@ namespace Swihoni.Networking
                                                                     : (ElementBase) Activator.CreateInstance(elementType));
         }
 
-        public void PollReceived(Action<int, ElementBase> received)
+        public void PollReceived(Action<IPEndPoint, ElementBase> received)
         {
             while (m_RawSocket.Available > 0)
             {
-                // TODO: performance use bytes received
-                int bytesReceived = m_RawSocket.ReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint);
-                if (!(m_ReceiveEndPoint is IPEndPoint ipEndPoint)) continue;
-                // TODO: performance object pool
-                if (!m_Connections.ContainsKey(ipEndPoint))
+                // TODO:performance use bytes receive
+                try
                 {
-                    var container = new Container(typeof(ByteProperty));
-                    checked
+                    int bytesReceived = m_RawSocket.ReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint);
+                    if (!(m_ReceiveEndPoint is IPEndPoint ipEndPoint)) continue;
+                    bool isNewConnection = !m_Connections.Contains(ipEndPoint);
+                    if (isNewConnection)
                     {
-                        var newConnectionId = (byte) (m_Connections.Count + 1);
-                        container.Require<ByteProperty>().Value = newConnectionId;
-                        Debug.Log($"[{GetType().Name}] Added player with id {newConnectionId}");
+                        Debug.Log($"[{GetType().Name}] Received new connection {m_ReceiveEndPoint}");
+                        m_Connections.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port));
                     }
-                    m_Connections.Add(ipEndPoint, container);
+                    m_ReadStream.Position = 0;
+                    byte code = m_Reader.ReadByte();
+                    Type type = m_Codes.GetReverse(code);
+                    ElementBase message = m_MessagePools[type].Obtain();
+                    message.Reset();
+                    message.Deserialize(m_ReadStream);
+                    received(ipEndPoint, message);
+                    m_MessagePools[message.GetType()].Return(message);
                 }
-                m_ReadStream.Position = 0;
-                byte code = m_Reader.ReadByte();
-                Type type = m_Codes.GetReverse(code);
-                ElementBase message = m_MessagePools[type].Obtain();
-                message.Reset();
-                message.Deserialize(m_ReadStream);
-                byte connectionId = m_Connections[ipEndPoint].Require<ByteProperty>();
-                received(connectionId, message);
-                m_MessagePools[message.GetType()].Return(message);
+                catch (Exception exception)
+                {
+                    Debug.LogError(exception);
+                }
             }
         }
 
@@ -103,6 +104,8 @@ namespace Swihoni.Networking
 
         public void Dispose()
         {
+            if (m_RawSocket.Connected)
+                m_RawSocket.Shutdown(SocketShutdown.Both);
             m_RawSocket.Dispose();
             m_SendStream.Dispose();
             m_Writer.Dispose();

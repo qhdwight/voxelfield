@@ -28,7 +28,10 @@ namespace Swihoni.Components
 
         public abstract void Deserialize(BinaryReader reader);
 
-        public abstract bool Equals(PropertyBase other);
+        public virtual bool Equals(PropertyBase other)
+        {
+            return other.GetType() == GetType() && HasValue && other.HasValue;
+        }
 
         public abstract void Clear();
 
@@ -46,7 +49,12 @@ namespace Swihoni.Components
 
         public T Value
         {
-            get => m_Value;
+            get
+            {
+                if (HasValue)
+                    return m_Value;
+                throw new Exception("No value!");
+            }
             set
             {
                 m_Value = value;
@@ -72,7 +80,8 @@ namespace Swihoni.Components
         {
             if (other is null) throw new ArgumentException("Second in equality comparison was null");
             if (ReferenceEquals(this, other)) return true;
-            return other.GetType() == GetType() && Equals((PropertyBase<T>) other);
+            var otherProperty = (PropertyBase<T>) other;
+            return Equals(otherProperty);
         }
 
         public static implicit operator T(PropertyBase<T> property)
@@ -116,7 +125,7 @@ namespace Swihoni.Components
 
         public override string ToString()
         {
-            return m_Value.ToString();
+            return HasValue ? m_Value.ToString() : "No Value";
         }
 
         public override void SetFromIfPresent(PropertyBase other)

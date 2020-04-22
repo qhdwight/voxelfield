@@ -17,6 +17,7 @@ namespace Swihoni.Sessions
             : base(linker, sessionElements, playerElements, commandElements)
         {
             m_HostCommands = new Container(commandElements.Concat(playerElements).Append(typeof(ServerStampComponent)));
+            m_HostCommands.Zero();
             m_RenderSession = new Container(sessionElements);
             if (m_RenderSession.If(out PlayerContainerArrayProperty players))
                 players.SetAll(() => new Container(playerElements));
@@ -37,7 +38,7 @@ namespace Swihoni.Sessions
             stamp.tick.Value = m_SessionHistory.Peek().Require<ServerStampComponent>().tick;
         }
 
-        protected override void Render(float renderTime, float tickElapsed)
+        protected override void Render(float renderTime)
         {
             if (!m_RenderSession.If(out PlayerContainerArrayProperty renderPlayers)
              || !m_RenderSession.If(out LocalPlayerProperty localPlayer)) return;
@@ -66,8 +67,11 @@ namespace Swihoni.Sessions
 
         protected override void PreTick(Container tickSession)
         {
+            Container hostPlayer = tickSession.Require<PlayerContainerArrayProperty>()[HostPlayerId];
             // Inject our current player component before normal update cycle
-            tickSession.Require<PlayerContainerArrayProperty>()[HostPlayerId].MergeSet(m_HostCommands);
+            hostPlayer.MergeSet(m_HostCommands);
+            // Set up new player component data
+            if (tickSession.Require<ServerStampComponent>().tick == 0u) NewPlayer(hostPlayer);
         }
 
         protected override void PostTick(Container tickSession)

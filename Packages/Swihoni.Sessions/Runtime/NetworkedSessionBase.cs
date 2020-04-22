@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -18,7 +19,7 @@ namespace Swihoni.Sessions
             : base(linker, sessionElements, playerElements, commandElements)
         {
             IReadOnlyCollection<Type> serverPlayerElements = playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent)).ToArray(),
-                                clientCommandElements = playerElements.Concat(commandElements).Append(typeof(ClientStampComponent)).ToArray();
+                                      clientCommandElements = playerElements.Concat(commandElements).Append(typeof(ClientStampComponent)).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor()
             {
                 var session = new ServerSessionContainer(sessionElements.Append(typeof(ServerStampComponent)));
@@ -31,7 +32,7 @@ namespace Swihoni.Sessions
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);
             m_EmptyServerSession = ServerSessionContainerConstructor();
         }
-        
+
         protected bool GetLocalPlayerId(out int localPlayerId)
         {
             if (m_SessionHistory.Peek().If(out LocalPlayerProperty localPlayerProperty) && localPlayerProperty.HasValue)

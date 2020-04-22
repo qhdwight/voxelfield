@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Networking;
-using Swihoni.Collections;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
@@ -28,7 +28,7 @@ namespace Swihoni.Sessions
     {
     }
 
-    [Serializable]
+    [Serializable] // TODO:refactor use client stamp component instead and don't send that when on server
     public class LocalizedClientStampComponent : StampComponent
     {
     }
@@ -49,6 +49,7 @@ namespace Swihoni.Sessions
                 players.SetAll(() => new Container(playerElements));
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
+            // m_CommandHistory.Peek().Zero();
             m_PlayerPredictionHistory = new CyclicArray<Container>(250, () =>
             {
                 // IEnumerable<Type> predictedElements = playerElements.Except(new[] {typeof(HealthProperty)}).Append(typeof(StampComponent));
@@ -83,7 +84,7 @@ namespace Swihoni.Sessions
             }
         }
 
-        protected override void Render(float renderTime, float tickElapsed)
+        protected override void Render(float renderTime)
         {
             if (!m_RenderSession.If(out PlayerContainerArrayProperty players) || !GetLocalPlayerId(out int localPlayerId)) return;
 
@@ -202,7 +203,7 @@ namespace Swihoni.Sessions
 
         private void Receive(float time)
         {
-            m_Socket.PollReceived((_, message) =>
+            m_Socket.PollReceived((ipEndPoint, message) =>
             {
                 switch (message)
                 {
@@ -218,7 +219,7 @@ namespace Swihoni.Sessions
                             Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
                             break;
                         }
-                        
+
                         var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
                         for (var id = 0; id < serverPlayers.Length; id++)
                         {

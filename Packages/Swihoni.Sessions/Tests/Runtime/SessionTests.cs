@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Net;
 using System.Threading;
+using NUnit.Framework;
 using Swihoni.Components;
 using Swihoni.Networking;
-using NUnit.Framework;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 
@@ -31,6 +31,7 @@ namespace Swihoni.Sessions.Tests
             if (s1.If(out PlayerContainerArrayProperty p))
                 p.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Concat(StandardComponents.StandardPlayerCommandsElements)
                                                                .Append(typeof(StampComponent))));
+            s1.Zero();
             ServerSessionContainer s2 = s1.Clone();
             Assert.IsTrue(s1.EqualTo(s2));
         }
@@ -73,7 +74,7 @@ namespace Swihoni.Sessions.Tests
 
                 Thread.Sleep(100);
 
-                server.PollReceived((id, component) =>
+                server.PollReceived((ipEndPoint, component) =>
                 {
                     switch (component)
                     {
@@ -115,7 +116,7 @@ namespace Swihoni.Sessions.Tests
 
                 Thread.Sleep(100);
 
-                server.PollReceived((id, component) =>
+                server.PollReceived((ipEndPoint, component) =>
                 {
                     switch (component)
                     {

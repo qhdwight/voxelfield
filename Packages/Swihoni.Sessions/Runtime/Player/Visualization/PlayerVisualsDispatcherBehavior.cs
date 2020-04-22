@@ -56,7 +56,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
                 m_Camera.enabled = isLocalPlayer;
             }
-            if (playerContainer.If(out HealthProperty healthProperty))
+            if (playerContainer.IfAndPreset(out HealthProperty healthProperty))
                 SetVisible(healthProperty.IsAlive, isLocalPlayer && healthProperty.IsAlive);
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerContainer, isLocalPlayer);
         }

@@ -67,6 +67,16 @@ namespace Swihoni.Components
             Add(types);
         }
 
+        public bool Without<TElement>(out TElement component) where TElement : ElementBase
+        {
+            return !If(out component);
+        }
+        
+        public bool IfAndPreset<TElement>(out TElement component) where TElement : PropertyBase
+        {
+            return If(out component) && component.HasValue;
+        }
+
         public bool If<TElement>(out TElement component) where TElement : ElementBase
         {
             bool hasComponent = m_Children.TryGetValue(typeof(TElement), out ElementBase child);

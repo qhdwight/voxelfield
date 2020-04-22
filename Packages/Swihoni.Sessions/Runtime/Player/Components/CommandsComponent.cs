@@ -30,8 +30,8 @@ namespace Swihoni.Sessions.Player.Components
 
         public void SetInput(int input, bool enabled)
         {
-            if (enabled)
-                Value |= (ushort) (1 << input);
+            if (!HasValue) Value = 0;
+            if (enabled) Value |= (ushort) (1 << input);
             else Value &= (ushort) ~(1 << input);
         }
 

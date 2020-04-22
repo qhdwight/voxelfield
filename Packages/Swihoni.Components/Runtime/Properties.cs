@@ -28,7 +28,7 @@ namespace Swihoni.Components
 
         public override bool Equals(PropertyBase other)
         {
-            return other is UIntProperty otherProperty && otherProperty.Value == Value;
+            return base.Equals(other) && ((UIntProperty) other).Value == Value;
         }
     }
 
@@ -55,7 +55,7 @@ namespace Swihoni.Components
 
         public override bool Equals(PropertyBase other)
         {
-            return other is UShortProperty otherProperty && otherProperty.Value == Value;
+            return base.Equals(other) && ((UShortProperty) other).Value == Value;
         }
     }
 
@@ -82,7 +82,8 @@ namespace Swihoni.Components
 
         public override bool Equals(PropertyBase other)
         {
-            return other is FloatProperty otherProperty && Mathf.Abs(otherProperty.Value - Value) < 0.1f;
+            // TODO:feature add tolerance
+            return base.Equals(other) && Mathf.Abs(((FloatProperty) other).Value - Value) < 0.1f;
         }
 
         public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
@@ -127,7 +128,7 @@ namespace Swihoni.Components
 
         public override bool Equals(PropertyBase other)
         {
-            return other is ByteProperty otherProperty && otherProperty.Value == Value;
+            return base.Equals(other) && ((ByteProperty) other).Value == Value;
         }
     }
 
@@ -160,9 +161,9 @@ namespace Swihoni.Components
 
         public override bool Equals(PropertyBase other)
         {
-            return other is VectorProperty otherProperty && Mathf.Abs(Value.x - otherProperty.Value.x) < 0.1f
-                                                         && Mathf.Abs(Value.y - otherProperty.Value.y) < 0.1f
-                                                         && Mathf.Abs(Value.z - otherProperty.Value.z) < 0.1f;
+            return base.Equals(other) && Mathf.Abs(Value.x - ((VectorProperty) other).Value.x) < 0.1f
+                                      && Mathf.Abs(Value.y - ((VectorProperty) other).Value.y) < 0.1f
+                                      && Mathf.Abs(Value.z - ((VectorProperty) other).Value.z) < 0.1f;
         }
 
         public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)

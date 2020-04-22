@@ -68,8 +68,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         private void FullMove(Container containerToModify, Container commands, float duration)
         {
             if (!containerToModify.If(out MoveComponent moveComponent)
-             || !containerToModify.If(out HealthProperty healthProperty)
-             || healthProperty.IsDead
+             || !containerToModify.IfAndPreset(out HealthProperty healthProperty) && healthProperty.IsDead
              || !commands.If(out InputFlagProperty inputProperty)) return;
 
             Vector3 initialVelocity = moveComponent.velocity, endingVelocity = initialVelocity;

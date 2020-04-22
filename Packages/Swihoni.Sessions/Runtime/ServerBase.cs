@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using Swihoni.Networking;
+using Swihoni.Collections;
 using Swihoni.Components;
+using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
@@ -31,6 +32,7 @@ namespace Swihoni.Sessions
     public abstract class ServerBase : NetworkedSessionBase
     {
         private ComponentServerSocket m_Socket;
+        protected readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
 
         protected ServerBase(IGameObjectLinker linker,
                              IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
@@ -75,25 +77,35 @@ namespace Swihoni.Sessions
             }
         }
 
+        protected static void NewPlayer(Container player)
+        {
+            player.Zero();
+            player.Require<ClientStampComponent>().Reset();
+            player.Require<ServerStampComponent>().Reset();
+            if (player.If(out HealthProperty healthProperty))
+                healthProperty.Value = 100;
+            if (player.If(out InventoryComponent inventoryComponent))
+            {
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 1);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 2);
+            }
+        }
+
         private void Tick(Container previousServerSession, Container serverSession)
         {
-            var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
-            var serverStamp = serverSession.Require<ServerStampComponent>();
-            foreach (Container serverPlayer in serverPlayers)
+            m_Socket.PollReceived((ipEndPoint, message) =>
             {
-                if (serverStamp.tick == 0u)
+                bool isNewPlayer = !m_PlayerIds.ContainsForward(ipEndPoint);
+                if (isNewPlayer)
                 {
-                    if (serverPlayer.If(out HealthProperty healthProperty))
-                        healthProperty.Value = 100;
-                    if (serverPlayer.If(out InventoryComponent inventoryComponent))
+                    checked
                     {
-                        PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 1);
-                        PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 2);
+                        m_PlayerIds.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port), (byte) (m_PlayerIds.Length + 1));
                     }
                 }
-            }
-            m_Socket.PollReceived((clientId, message) =>
-            {
+                byte clientId = m_PlayerIds.GetForward(ipEndPoint);
+                Container serverPlayer = serverSession.Require<PlayerContainerArrayProperty>()[clientId];
+                if (isNewPlayer) NewPlayer(serverPlayer);
                 switch (message)
                 {
                     case ClientCommandsContainer clientCommands:
@@ -106,12 +118,21 @@ namespace Swihoni.Sessions
                             Debug.LogWarning($"[{GetType().Name}] Received out of order client command");
                             break;
                         }
-                        Container serverPlayer = serverPlayers[clientId];
                         var serverPlayerStamp = serverPlayer.Require<ServerStampComponent>();
+                        float serverTime = serverSession.Require<ServerStampComponent>().time;
                         if (serverPlayerStamp.time.HasValue)
                             serverPlayerStamp.time.Value += clientStamp.time - previousClientStamp.time;
                         else
-                            serverPlayerStamp.time.Value = serverStamp.time;
+                        {
+                            serverPlayerStamp.time.Value = serverTime;
+                        }
+
+                        if (Mathf.Abs(serverPlayerStamp.time.Value - serverTime) > 0.2f)
+                        {
+                            Debug.LogError($"{serverPlayerStamp.time} {serverTime} :: {clientStamp.time} {previousClientStamp.time} ;; {clientStamp.time - previousClientStamp.time}");
+                        }
+
+                        // Debug.Log($"{serverPlayerStamp.time} :: {serverTime} :: {clientStamp.time - previousClientStamp.time}");
 
                         serverPlayer.Require<ClientStampComponent>().duration.Reset();
                         serverPlayer.MergeSet(clientCommands);
@@ -122,11 +143,10 @@ namespace Swihoni.Sessions
                 }
             });
             var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
-            foreach (KeyValuePair<IPEndPoint, Container> pair in m_Socket.Connections)
+            foreach ((IPEndPoint ipEndPoint, byte id) in m_PlayerIds)
             {
-                byte playerId = pair.Value.Require<ByteProperty>();
-                localPlayerProperty.Value = playerId;
-                m_Socket.Send(serverSession, pair.Key);
+                localPlayerProperty.Value = id;
+                m_Socket.Send(serverSession, ipEndPoint);
             }
         }
 

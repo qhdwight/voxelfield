@@ -18,9 +18,9 @@ namespace Compound.Session
             {
                 if (Application.isEditor)
                 {
-                    m_Session = new Host(this) {ShouldRender = false};
+                    m_Session = new Host(this) {ShouldRender = true};
                     // m_Session = new Client(this);
-                    m_DebugSession = new Client(this) {ShouldRender = true};
+                    // m_DebugSession = new Client(this) {ShouldRender = false};
                 }
                 else
                 {
@@ -33,7 +33,7 @@ namespace Compound.Session
                 m_Session = null;
             }
             m_Session?.Start();
-            m_DebugSession?.Start();
+            m_DebugSession?.Start();    
         }
 
         private void Start()
@@ -44,10 +44,21 @@ namespace Compound.Session
 
         private void Update()
         {
+            // if (m_DebugSession == null && Time.realtimeSinceStartup > 1.0f)
+            // {
+            //     m_DebugSession = new Client(this) {ShouldRender = false};
+            //     m_DebugSession.Start();
+            // }
+            // if (Input.GetKeyDown(KeyCode.P))
+            // {
+            //     m_DebugSession?.Dispose();
+            //     m_DebugSession = null;
+            // }
+            float time = Time.realtimeSinceStartup;
             try
             {
-                m_DebugSession?.Update();
-                m_Session?.Update();
+                m_DebugSession?.Update(time + 25.0f);
+                m_Session?.Update(time);
             }
             catch (Exception exception)
             {
@@ -59,10 +70,11 @@ namespace Compound.Session
 
         private void FixedUpdate()
         {
+            float time = Time.realtimeSinceStartup;
             try
             {
-                m_Session?.FixedUpdate();
-                m_DebugSession?.FixedUpdate();
+                m_Session?.FixedUpdate(time);
+                m_DebugSession?.FixedUpdate(time + 25.0f);
             }
             catch (Exception exception)
             {

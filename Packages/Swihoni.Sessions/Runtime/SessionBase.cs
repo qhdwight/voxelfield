@@ -60,15 +60,15 @@ namespace Swihoni.Sessions
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, visuals => visuals.Setup());
         }
 
-        public void Update()
+        public void Update(float time)
         {
-            float time = Time.realtimeSinceStartup, delta = time - m_RenderTime;
+            float delta = time - m_RenderTime;
             Input(time, delta);
-            if (ShouldRender) Render(time, time - m_FixedUpdateTime);
+            if (ShouldRender) Render(time);
             m_RenderTime = time;
         }
 
-        protected virtual void Render(float renderTime, float tickElapsed)
+        protected virtual void Render(float renderTime)
         {
         }
 
@@ -81,9 +81,9 @@ namespace Swihoni.Sessions
         {
         }
 
-        public void FixedUpdate()
+        public void FixedUpdate(float time)
         {
-            float time = Time.realtimeSinceStartup, duration = Time.realtimeSinceStartup - m_FixedUpdateTime;
+            float duration = time - m_FixedUpdateTime;
             m_FixedUpdateTime = time;
             Tick(m_Tick++, time, duration);
         }

@@ -11,7 +11,9 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyTrusted(Container containerToModify, Container commandsContainer, float duration)
         {
-            if (!containerToModify.If(out CameraComponent cameraComponent) || !commandsContainer.If(out MouseComponent mouseComponent)) return;
+            if (containerToModify.Without(out CameraComponent cameraComponent)
+             || commandsContainer.Without(out MouseComponent mouseComponent)
+             || containerToModify.IfAndPreset(out HealthProperty healthProperty) && healthProperty.IsDead) return;
             base.ModifyTrusted(containerToModify, commandsContainer, duration);
             cameraComponent.yaw.Value = Mathf.Repeat(cameraComponent.yaw + mouseComponent.mouseDeltaX * m_Sensitivity, 360.0f);
             cameraComponent.pitch.Value = Mathf.Clamp(cameraComponent.pitch - mouseComponent.mouseDeltaY * m_Sensitivity, -90.0f, 90.0f);
