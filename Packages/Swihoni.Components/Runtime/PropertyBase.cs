@@ -65,7 +65,7 @@ namespace Swihoni.Components
             return Equals(otherProperty);
         }
 
-        public static implicit operator T(PropertyBase<T> property) { return property.m_Value; }
+        public static implicit operator T(PropertyBase<T> property) { return property.Value; }
 
         public static bool operator ==(PropertyBase<T> p1, PropertyBase<T> p2)
         {

@@ -47,18 +47,22 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void Render(Container playerContainer, bool isLocalPlayer)
         {
-            if (playerContainer.If(out MoveComponent moveComponent))
-                transform.position = moveComponent.position;
-            if (playerContainer.If(out CameraComponent cameraComponent))
+            var health = playerContainer.Require<HealthProperty>();
+            bool isVisible = health.HasValue && health.IsAlive;
+            if (isVisible)
             {
-                transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
-                m_Head.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
-                m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
-                m_Camera.enabled = isLocalPlayer;
+                if (playerContainer.Has(out MoveComponent moveComponent))
+                    transform.position = moveComponent.position;
+                if (playerContainer.Has(out CameraComponent cameraComponent))
+                {
+                    transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
+                    m_Head.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
+                    m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
+                    m_Camera.enabled = isLocalPlayer;
+                }
+                foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerContainer, isLocalPlayer);
             }
-            if (playerContainer.IfAndPreset(out HealthProperty healthProperty))
-                SetVisible(healthProperty.IsAlive, isLocalPlayer && healthProperty.IsAlive);
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerContainer, isLocalPlayer);
+            SetVisible(isVisible, isVisible && isLocalPlayer);
         }
 
         private void SetVisible(bool isVisible, bool isListenerEnabled)

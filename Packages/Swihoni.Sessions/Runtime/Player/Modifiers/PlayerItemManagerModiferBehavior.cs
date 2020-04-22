@@ -1,6 +1,6 @@
 using System;
-using Swihoni.Components;
 using Input;
+using Swihoni.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
@@ -13,7 +13,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyChecked(Container containerToModify, Container commands, float duration)
         {
-            if (!containerToModify.If(out InventoryComponent inventoryComponent)) return;
+            if (!containerToModify.Has(out InventoryComponent inventoryComponent)) return;
 
             var inputProperty = commands.Require<InputFlagProperty>();
             var wantedItemIndexProperty = commands.Require<WantedItemIndexProperty>();
@@ -112,19 +112,21 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyCommands(Container commands)
         {
-            if (!commands.If(out InputFlagProperty inputProperty)) return;
+            if (!commands.Has(out InputFlagProperty inputProperty)) return;
             InputProvider input = InputProvider.Singleton;
             inputProperty.SetInput(PlayerInput.UseOne, input.GetInput(InputType.UseOne));
             inputProperty.SetInput(PlayerInput.UseTwo, input.GetInput(InputType.UseTwo));
             inputProperty.SetInput(PlayerInput.Reload, input.GetInput(InputType.Reload));
             inputProperty.SetInput(PlayerInput.Ads, input.GetInput(InputType.Ads));
-            if (!commands.If(out WantedItemIndexProperty itemIndexProperty)) return;
+            if (!commands.Has(out WantedItemIndexProperty itemIndexProperty)) return;
             if (input.GetInput(InputType.ItemOne))
                 itemIndexProperty.Value = 1;
             else if (input.GetInput(InputType.ItemTwo))
                 itemIndexProperty.Value = 2;
             else if (input.GetInput(InputType.ItemThree))
                 itemIndexProperty.Value = 3;
+            else
+                itemIndexProperty.Value = 0;
         }
 
         private static bool FindReplacement(InventoryComponent inventoryComponent, out byte replacementIndex)

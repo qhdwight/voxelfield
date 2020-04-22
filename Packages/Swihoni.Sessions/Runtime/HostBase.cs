@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using UnityEngine;
 
 namespace Swihoni.Sessions
 {
@@ -19,7 +18,7 @@ namespace Swihoni.Sessions
             m_HostCommands = new Container(commandElements.Concat(playerElements).Append(typeof(ServerStampComponent)));
             m_HostCommands.Zero();
             m_RenderSession = new Container(sessionElements);
-            if (m_RenderSession.If(out PlayerContainerArrayProperty players))
+            if (m_RenderSession.Has(out PlayerContainerArrayProperty players))
                 players.SetAll(() => new Container(playerElements));
         }
 
@@ -40,8 +39,8 @@ namespace Swihoni.Sessions
 
         protected override void Render(float renderTime)
         {
-            if (!m_RenderSession.If(out PlayerContainerArrayProperty renderPlayers)
-             || !m_RenderSession.If(out LocalPlayerProperty localPlayer)) return;
+            if (!m_RenderSession.Has(out PlayerContainerArrayProperty renderPlayers)
+             || !m_RenderSession.Has(out LocalPlayerProperty localPlayer)) return;
 
             localPlayer.Value = HostPlayerId;
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)

@@ -135,8 +135,9 @@ namespace Swihoni.Sessions
             {
                 Container fromComponent = getInHistory(historyIndex + 1),
                           toComponent = getInHistory(historyIndex);
-                float toTime = toComponent.Require<TStampComponent>().time,
-                      fromTime = fromComponent.Require<TStampComponent>().time;
+                FloatProperty toTime = toComponent.Require<TStampComponent>().time,
+                              fromTime = fromComponent.Require<TStampComponent>().time;
+                if (!fromTime.HasValue) break;
                 if (renderTime > fromTime && renderTime < toTime)
                 {
                     float interpolation = (renderTime - fromTime) / (toTime - fromTime);

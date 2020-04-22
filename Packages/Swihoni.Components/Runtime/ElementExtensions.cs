@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace Swihoni.Components
@@ -11,7 +10,7 @@ namespace Swihoni.Components
         Exit  // Exit entire tree immediately
     }
 
-    public static class Extensions
+    public static class ElementExtensions
     {
         public static bool IsComponent(this Type type)
         {

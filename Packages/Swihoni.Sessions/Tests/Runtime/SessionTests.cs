@@ -28,7 +28,7 @@ namespace Swihoni.Sessions.Tests
         public void TestSessionClone()
         {
             var s1 = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
-            if (s1.If(out PlayerContainerArrayProperty p))
+            if (s1.Has(out PlayerContainerArrayProperty p))
                 p.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Concat(StandardComponents.StandardPlayerCommandsElements)
                                                                .Append(typeof(StampComponent))));
             s1.Zero();
@@ -55,7 +55,7 @@ namespace Swihoni.Sessions.Tests
         public void TestSessionNetworking()
         {
             var sessionContainer = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
-            if (sessionContainer.If(out PlayerContainerArrayProperty playersProperty))
+            if (sessionContainer.Has(out PlayerContainerArrayProperty playersProperty))
                 playersProperty.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))));
             const float time = 0.241f;
             sessionContainer.Require<ServerStampComponent>().time.Value = time;

@@ -47,7 +47,7 @@ namespace Swihoni.Components
     {
         public static void InterpolateInto<T>(T e1, T e2, T ed, float interpolation) where T : ElementBase
         {
-            Extensions.NavigateZipped((field, _e1, _e2, _ed) =>
+            ElementExtensions.NavigateZipped((field, _e1, _e2, _ed) =>
             {
                 switch (_e1)
                 {

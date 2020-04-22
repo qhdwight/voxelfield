@@ -44,7 +44,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void Render(Container playerContainer, bool isLocalPlayer)
         {
-            if (!playerContainer.If(out InventoryComponent inventoryComponent)) return;
+            if (!playerContainer.Has(out InventoryComponent inventoryComponent)) return;
 
             m_Visuals = SetupVisualItem(inventoryComponent);
             if (m_Visuals == null) return;
@@ -71,7 +71,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
             if (m_IsFpv) AnimateAim(inventoryComponent);
 
-            if (!playerContainer.If(out CameraComponent cameraComponent) || !m_TpvArmsRotator) return;
+            if (!playerContainer.Has(out CameraComponent cameraComponent) || !m_TpvArmsRotator) return;
             const float armClamp = 60.0f;
             m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(cameraComponent.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
         }

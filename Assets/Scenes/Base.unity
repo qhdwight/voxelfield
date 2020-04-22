@@ -203,7 +203,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1571494958}
   m_HandleRect: {fileID: 1571494957}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -666,7 +666,7 @@ MonoBehaviour:
   Settings:
     tickRate:
       m_HasValue: 1
-      m_Value: 30
+      m_Value: 20
 --- !u!1 &754540770
 GameObject:
   m_ObjectHideFlags: 0
@@ -1063,6 +1063,8 @@ MonoBehaviour:
     type: 3}
   m_PlayerVisualsPrefab: {fileID: 4224837671832740950, guid: fafdfda233569534ab011266eae78b95,
     type: 3}
+  m_AddClient: 1
+  m_RenderClient: 1
 --- !u!1 &1133061148
 GameObject:
   m_ObjectHideFlags: 0

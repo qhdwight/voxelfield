@@ -52,7 +52,7 @@
             <e p="ComponentBase.cs" t="Include" />
             <e p="Container.cs" t="Include" />
             <e p="Copier.cs" t="Include" />
-            <e p="Extensions.cs" t="Include" />
+            <e p="ElementExtensions.cs" t="Include" />
             <e p="Interpolator.cs" t="Include" />
             <e p="Properties.cs" t="Include" />
             <e p="PropertyBase.cs" t="Include" />

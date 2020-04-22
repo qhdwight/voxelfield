@@ -1,5 +1,5 @@
-using Swihoni.Components;
 using Input;
+using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -45,7 +45,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyCommands(Container commandsToModify)
         {
-            if (!commandsToModify.If(out InputFlagProperty inputProperty)) return;
+            if (!commandsToModify.Has(out InputFlagProperty inputProperty)) return;
 
             InputProvider input = InputProvider.Singleton;
             inputProperty.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
@@ -58,8 +58,8 @@ namespace Swihoni.Sessions.Player.Modifiers
         protected override void SynchronizeBehavior(Container containersToApply)
         {
             m_Controller.enabled = false;
-            if (!containersToApply.If(out MoveComponent moveComponent)
-             || !containersToApply.If(out HealthProperty healthProperty)) return;
+            if (!containersToApply.Has(out MoveComponent moveComponent)
+             || !containersToApply.Has(out HealthProperty healthProperty)) return;
 
             if (moveComponent.position.HasValue) transform.position = moveComponent.position;
             if (healthProperty.HasValue) m_Controller.enabled = healthProperty.IsAlive;
@@ -68,7 +68,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         private void FullMove(Container containerToModify, Container commands, float duration)
         {
             if (containerToModify.Without(out MoveComponent moveComponent)
-             || containerToModify.IfAndPreset(out HealthProperty healthProperty) && healthProperty.IsDead
+             || containerToModify.Present(out HealthProperty healthProperty) && healthProperty.IsDead
              || commands.Without(out InputFlagProperty inputProperty)) return;
 
             Vector3 initialVelocity = moveComponent.velocity, endingVelocity = initialVelocity;

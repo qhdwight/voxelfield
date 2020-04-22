@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -23,7 +22,7 @@ namespace Swihoni.Sessions
             ServerSessionContainer ServerSessionContainerConstructor()
             {
                 var session = new ServerSessionContainer(sessionElements.Append(typeof(ServerStampComponent)));
-                if (session.If(out PlayerContainerArrayProperty players))
+                if (session.Has(out PlayerContainerArrayProperty players))
                     players.SetAll(() => new Container(serverPlayerElements));
                 return session;
             }
@@ -32,16 +31,13 @@ namespace Swihoni.Sessions
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);
             m_EmptyServerSession = ServerSessionContainerConstructor();
         }
+    }
 
-        protected bool GetLocalPlayerId(out int localPlayerId)
+    internal static class NetworkSessionExtensions
+    {
+        internal static Container GetPlayer(this Container session, int index)
         {
-            if (m_SessionHistory.Peek().If(out LocalPlayerProperty localPlayerProperty) && localPlayerProperty.HasValue)
-            {
-                localPlayerId = localPlayerProperty;
-                return true;
-            }
-            localPlayerId = default;
-            return false;
+            return session.Require<PlayerContainerArrayProperty>()[index];
         }
     }
 }
