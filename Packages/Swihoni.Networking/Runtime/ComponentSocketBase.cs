@@ -76,6 +76,9 @@ namespace Swihoni.Networking
                     received(ipEndPoint, message);
                     m_MessagePools[message.GetType()].Return(message);
                 }
+                catch (SocketException socketException)
+                {
+                }
                 catch (Exception exception)
                 {
                     Debug.LogError(exception);
@@ -97,7 +100,7 @@ namespace Swihoni.Networking
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                return false;    
+                return false;
             }
         }
 

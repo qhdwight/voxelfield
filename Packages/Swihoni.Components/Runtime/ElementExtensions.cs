@@ -48,7 +48,7 @@ namespace Swihoni.Components
                 return Navigation.Continue;
             });
         }
-        
+
         /// <summary>
         /// Reset all properties to default values with has value flag set.
         /// </summary>

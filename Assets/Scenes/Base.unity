@@ -662,7 +662,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75bfa6a2e5724c1c818772ff876c90cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Rollback: 0.033333335
+  RollbackOverride:
+    m_HasValue: 0
+    m_Value: 0
   Settings:
     tickRate:
       m_HasValue: 1
@@ -1063,8 +1065,8 @@ MonoBehaviour:
     type: 3}
   m_PlayerVisualsPrefab: {fileID: 4224837671832740950, guid: fafdfda233569534ab011266eae78b95,
     type: 3}
-  m_AddClient: 1
-  m_RenderClient: 1
+  m_AddClient: 0
+  m_RenderClient: 0
 --- !u!1 &1133061148
 GameObject:
   m_ObjectHideFlags: 0

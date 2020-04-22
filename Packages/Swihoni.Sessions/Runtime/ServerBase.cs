@@ -127,16 +127,11 @@ namespace Swihoni.Sessions
                         else
                             serverPlayerTime.Value = serverTime;
 
-                        // Debug.Log($"{clientStamp.time}, {previousClientStamp.time}");
-
                         if (Mathf.Abs(serverPlayerTime.Value - serverTime) > 0.2f)
                         {
-                            // Debug.LogError($"{serverPlayerStamp.time} {serverTime} :: {clientStamp.time} {previousClientStamp.time} ;; {clientStamp.time - previousClientStamp.time}");
-                            // serverPlayerTime.Value = serverTime;
                             Debug.LogError("Server Reset");
+                            serverPlayerTime.Value = serverTime;
                         }
-
-                        // Debug.Log($"{serverPlayerStamp.time} :: {serverTime} :: {clientStamp.time - previousClientStamp.time}");
 
                         serverPlayer.MergeSet(clientCommands);
                         m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);

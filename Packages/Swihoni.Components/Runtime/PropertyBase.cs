@@ -12,9 +12,17 @@ namespace Swihoni.Components
         [SerializeField] private bool m_HasValue;
         private bool m_DoSerialize = true;
 
-        public bool HasValue { get => m_HasValue; protected set => m_HasValue = value; }
+        public bool HasValue
+        {
+            get => m_HasValue;
+            protected set => m_HasValue = value;
+        }
 
-        public bool DoSerialization { get => m_DoSerialize; set => m_DoSerialize = value; }
+        public bool DoSerialization
+        {
+            get => m_DoSerialize;
+            set => m_DoSerialize = value;
+        }
 
         public abstract void Serialize(BinaryWriter writer);
 
@@ -51,11 +59,19 @@ namespace Swihoni.Components
             }
         }
 
-        protected PropertyBase() { }
+        protected PropertyBase()
+        {
+        }
 
-        protected PropertyBase(T value) { Value = value; }
+        protected PropertyBase(T value)
+        {
+            Value = value;
+        }
 
-        public override int GetHashCode() { return RuntimeHelpers.GetHashCode(this); }
+        public override int GetHashCode()
+        {
+            return RuntimeHelpers.GetHashCode(this);
+        }
 
         public override bool Equals(object other)
         {
@@ -65,7 +81,10 @@ namespace Swihoni.Components
             return Equals(otherProperty);
         }
 
-        public static implicit operator T(PropertyBase<T> property) { return property.Value; }
+        public static implicit operator T(PropertyBase<T> property)
+        {
+            return property.Value;
+        }
 
         public static bool operator ==(PropertyBase<T> p1, PropertyBase<T> p2)
         {
@@ -74,7 +93,10 @@ namespace Swihoni.Components
             return p1.Equals(p2);
         }
 
-        public static bool operator !=(PropertyBase<T> p1, PropertyBase<T> p2) { return !(p1 == p2); }
+        public static bool operator !=(PropertyBase<T> p1, PropertyBase<T> p2)
+        {
+            return !(p1 == p2);
+        }
 
         public PropertyBase<T> IfPresent(Action<T> action)
         {
@@ -88,9 +110,15 @@ namespace Swihoni.Components
             m_Value = default;
         }
 
-        public override void Zero() { Value = default; }
+        public override void Zero()
+        {
+            Value = default;
+        }
 
-        public T OrElse(T @default) { return HasValue ? m_Value : @default; }
+        public T OrElse(T @default)
+        {
+            return HasValue ? m_Value : @default;
+        }
 
         public override bool Equals(PropertyBase other)
         {
@@ -101,7 +129,10 @@ namespace Swihoni.Components
 
         public abstract bool ValueEquals(PropertyBase<T> other);
 
-        public override string ToString() { return HasValue ? m_Value.ToString() : "No Value"; }
+        public override string ToString()
+        {
+            return HasValue ? m_Value.ToString() : "No Value";
+        }
 
         public override void SetFromIfPresent(PropertyBase other)
         {
@@ -119,6 +150,9 @@ namespace Swihoni.Components
             op2 = (PropertyBase<T>) p2;
         }
 
-        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null) { SetFromIfPresent(p2); }
+        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
+        {
+            SetFromIfPresent(p2);
+        }
     }
 }

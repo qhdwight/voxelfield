@@ -71,7 +71,7 @@ namespace Swihoni.Components
         {
             return !Has(out component);
         }
-        
+
         public bool Present<TElement>(out TElement component) where TElement : PropertyBase
         {
             return Has(out component) && component.HasValue;

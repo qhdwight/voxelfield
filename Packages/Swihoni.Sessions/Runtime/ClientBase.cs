@@ -80,7 +80,7 @@ namespace Swihoni.Sessions
         {
             if (!GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
                 return;
-            
+
             UpdateInputs(localPlayerId);
             m_Modifier[localPlayerId].ModifyTrusted(m_CommandHistory.Peek(), m_CommandHistory.Peek(), delta);
         }
@@ -97,7 +97,7 @@ namespace Swihoni.Sessions
                 if (isLocalPlayer)
                 {
                     Container GetInHistory(int historyIndex) => m_PlayerPredictionHistory.Get(-historyIndex);
-                    float rollback = DebugBehavior.Singleton.Rollback;
+                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(m_Settings.TickInterval);
                     RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
                     renderPlayer.MergeSet(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
@@ -107,7 +107,7 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
-                    float rollback = DebugBehavior.Singleton.Rollback * 3;
+                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(m_Settings.TickInterval) * 3;
                     RenderInterpolatedPlayer<LocalizedClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(renderPlayer, isLocalPlayer);
@@ -164,10 +164,10 @@ namespace Swihoni.Sessions
         {
             if (!GetLocalPlayerId(serverSession, out int localPlayerId))
                 return;
-            
+
             Container serverPlayer = serverSession.GetPlayer(localPlayerId);
             UIntProperty targetTick = serverPlayer.Require<ClientStampComponent>().tick;
-            
+
             if (!targetTick.HasValue)
                 return;
             for (var playerHistoryIndex = 0; playerHistoryIndex < m_PlayerPredictionHistory.Size; playerHistoryIndex++)
@@ -240,7 +240,6 @@ namespace Swihoni.Sessions
                             {
                                 float previousServerTime = previousServerSession.Require<PlayerContainerArrayProperty>()[playerId].Require<ServerStampComponent>().time;
                                 localizedServerTime.Value += serverTime - previousServerTime;
-                                Debug.Log($"{serverTime} {previousServerTime}");
                             }
                             else
                                 localizedServerTime.Value = time;
@@ -248,6 +247,7 @@ namespace Swihoni.Sessions
                             if (Mathf.Abs(localizedServerTime.Value - time) > 0.2f)
                             {
                                 Debug.LogError("Client Reset");
+                                localizedServerTime.Value = time;
                             }
                         }
 

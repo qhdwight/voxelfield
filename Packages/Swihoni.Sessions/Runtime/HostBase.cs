@@ -53,10 +53,10 @@ namespace Swihoni.Sessions
                 else
                 {
                     int copiedPlayerId = playerId;
-                    float rollback = DebugBehavior.Singleton.Rollback * 3;
+                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(m_Settings.TickInterval) * 3;
 
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
-                    
+
                     RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, renderPlayers[playerId],
                                                                    m_SessionHistory.Size, GetInHistory);
                 }

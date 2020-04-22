@@ -24,7 +24,6 @@ namespace Swihoni.Components
 
         private static void ReadIntoProperty(PropertyBase property)
         {
-            
             bool hasValue = Reader.ReadBoolean();
             if (hasValue)
                 property.Deserialize(Reader);

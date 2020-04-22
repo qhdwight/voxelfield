@@ -38,6 +38,7 @@ namespace Compound.Session
 
         private void Start()
         {
+            QualitySettings.vSyncCount = 0;
             AnalysisLogger.Reset("");
             StartSession();
         }

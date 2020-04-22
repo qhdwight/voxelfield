@@ -41,6 +41,8 @@ namespace Swihoni.Sessions.Components
     public class SessionSettingsComponent : ComponentBase
     {
         public ByteProperty tickRate;
+
+        public float TickInterval => 1.0f / tickRate;
     }
 
     [Serializable]

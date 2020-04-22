@@ -10,7 +10,7 @@ namespace Swihoni.Collections
 
         public Dictionary<TKey, TValue>.KeyCollection Forwards => m_Forward.Keys;
         public Dictionary<TValue, TKey>.KeyCollection Backwards => m_Reverse.Keys;
-        
+
         public int Length => m_Forward.Count;
 
         public DualDictionary(int capacity = 0)
@@ -69,7 +69,7 @@ namespace Swihoni.Collections
 
         public IEnumerator<(TKey, TValue)> GetEnumerator()
         {
-            foreach (KeyValuePair<TKey,TValue> pair in m_Forward)
+            foreach (KeyValuePair<TKey, TValue> pair in m_Forward)
             {
                 yield return (pair.Key, pair.Value);
             }
