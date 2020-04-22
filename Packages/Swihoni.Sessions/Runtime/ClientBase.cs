@@ -234,6 +234,12 @@ namespace Swihoni.Sessions
                             }
                             else
                                 localClientTime.Value = time;
+                            
+                            if (Mathf.Abs(localClientTime.Value - time) > 0.2f)
+                            {
+                                localClientTime.Value = time;
+                                Debug.LogError("Client Reset");
+                            }
                         }
 
                         // Debug.Log($"{receivedServerSession.Require<ServerStampComponent>().time} {trackedTime.Value}");

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace Swihoni.Components
@@ -82,8 +83,10 @@ namespace Swihoni.Components
             var areEqual = true;
             NavigateZipped((field, e1, e2) =>
             {
-                if (e1 is PropertyBase p1 && e2 is PropertyBase p2 && !p1.Equals(p2))
+                if (e1 is PropertyBase p1 && e2 is PropertyBase p2)
                 {
+                    if (p1.Equals(p2))
+                        return Navigation.Continue;
                     areEqual = false;
                     return Navigation.Exit;
                 }

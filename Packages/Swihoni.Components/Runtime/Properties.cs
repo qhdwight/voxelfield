@@ -8,82 +8,46 @@ namespace Swihoni.Components
     [Serializable]
     public class UIntProperty : PropertyBase<uint>
     {
-        public UIntProperty(uint value) : base(value)
-        {
-        }
+        public UIntProperty(uint value) : base(value) { }
 
-        public UIntProperty()
-        {
-        }
+        public UIntProperty() { }
 
-        public override void Serialize(BinaryWriter writer)
-        {
-            writer.Write(Value);
-        }
+        public override void Serialize(BinaryWriter writer) { writer.Write(Value); }
 
-        public override void Deserialize(BinaryReader reader)
-        {
-            Value = reader.ReadUInt32();
-        }
+        public override void Deserialize(BinaryReader reader) { Value = reader.ReadUInt32(); }
 
-        public override bool Equals(PropertyBase other)
-        {
-            return base.Equals(other) && ((UIntProperty) other).Value == Value;
-        }
+        public override bool ValueEquals(PropertyBase<uint> other) { return other.Value == Value; }
     }
 
     [Serializable]
     public class UShortProperty : PropertyBase<ushort>
     {
-        public UShortProperty(ushort value) : base(value)
-        {
-        }
+        public UShortProperty(ushort value) : base(value) { }
 
-        public UShortProperty()
-        {
-        }
+        public UShortProperty() { }
 
-        public override void Serialize(BinaryWriter writer)
-        {
-            writer.Write(Value);
-        }
+        public override void Serialize(BinaryWriter writer) { writer.Write(Value); }
 
-        public override void Deserialize(BinaryReader reader)
-        {
-            Value = reader.ReadUInt16();
-        }
+        public override void Deserialize(BinaryReader reader) { Value = reader.ReadUInt16(); }
 
-        public override bool Equals(PropertyBase other)
-        {
-            return base.Equals(other) && ((UShortProperty) other).Value == Value;
-        }
+        public override bool ValueEquals(PropertyBase<ushort> other) { return other.Value == Value; }
     }
 
     [Serializable]
     public class FloatProperty : PropertyBase<float>
     {
-        public FloatProperty(float value) : base(value)
-        {
-        }
+        public FloatProperty(float value) : base(value) { }
 
-        public FloatProperty()
-        {
-        }
+        public FloatProperty() { }
 
-        public override void Serialize(BinaryWriter writer)
-        {
-            writer.Write(Value);
-        }
+        public override void Serialize(BinaryWriter writer) { writer.Write(Value); }
 
-        public override void Deserialize(BinaryReader reader)
-        {
-            Value = reader.ReadSingle();
-        }
+        public override void Deserialize(BinaryReader reader) { Value = reader.ReadSingle(); }
 
-        public override bool Equals(PropertyBase other)
+        public override bool ValueEquals(PropertyBase<float> other)
         {
             // TODO:feature add tolerance
-            return base.Equals(other) && Mathf.Abs(((FloatProperty) other).Value - Value) < 0.1f;
+            return Mathf.Abs(other.Value - Value) < 0.1f;
         }
 
         public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
@@ -108,44 +72,25 @@ namespace Swihoni.Components
     [Serializable]
     public class ByteProperty : PropertyBase<byte>
     {
-        public ByteProperty(byte value) : base(value)
-        {
-        }
+        public ByteProperty(byte value) : base(value) { }
 
-        public ByteProperty()
-        {
-        }
+        public ByteProperty() { }
 
-        public override void Serialize(BinaryWriter writer)
-        {
-            writer.Write(Value);
-        }
+        public override void Serialize(BinaryWriter writer) { writer.Write(Value); }
 
-        public override void Deserialize(BinaryReader reader)
-        {
-            Value = reader.ReadByte();
-        }
+        public override void Deserialize(BinaryReader reader) { Value = reader.ReadByte(); }
 
-        public override bool Equals(PropertyBase other)
-        {
-            return base.Equals(other) && ((ByteProperty) other).Value == Value;
-        }
+        public override bool ValueEquals(PropertyBase<byte> other) { return other.Value == Value; }
     }
 
     [Serializable]
     public class VectorProperty : PropertyBase<Vector3>
     {
-        public VectorProperty(Vector3 value) : base(value)
-        {
-        }
+        public VectorProperty(Vector3 value) : base(value) { }
 
-        public VectorProperty(float x, float y, float z) : base(new Vector3(x, y, z))
-        {
-        }
+        public VectorProperty(float x, float y, float z) : base(new Vector3(x, y, z)) { }
 
-        public VectorProperty()
-        {
-        }
+        public VectorProperty() { }
 
         public override void Serialize(BinaryWriter writer)
         {
@@ -154,16 +99,13 @@ namespace Swihoni.Components
             writer.Write(Value.z);
         }
 
-        public override void Deserialize(BinaryReader reader)
-        {
-            Value = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-        }
+        public override void Deserialize(BinaryReader reader) { Value = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()); }
 
-        public override bool Equals(PropertyBase other)
+        public override bool ValueEquals(PropertyBase<Vector3> other)
         {
-            return base.Equals(other) && Mathf.Abs(Value.x - ((VectorProperty) other).Value.x) < 0.1f
-                                      && Mathf.Abs(Value.y - ((VectorProperty) other).Value.y) < 0.1f
-                                      && Mathf.Abs(Value.z - ((VectorProperty) other).Value.z) < 0.1f;
+            return Mathf.Abs(Value.x - other.Value.x) < 0.1f
+                && Mathf.Abs(Value.y - other.Value.y) < 0.1f
+                && Mathf.Abs(Value.z - other.Value.z) < 0.1f;
         }
 
         public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)

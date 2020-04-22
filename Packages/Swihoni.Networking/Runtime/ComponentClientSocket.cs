@@ -7,12 +7,11 @@ namespace Swihoni.Networking
     {
         public ComponentClientSocket(IPEndPoint ip) : base(ip)
         {
-            m_RawSocket.Connect(ip);
         }
 
         public bool SendToServer(ComponentBase message)
         {
-            return m_RawSocket.Connected && Send(message, m_Ip);
+            return Send(message, m_Ip);
         }
     }
 }

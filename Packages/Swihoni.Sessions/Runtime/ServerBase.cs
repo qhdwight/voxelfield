@@ -123,13 +123,15 @@ namespace Swihoni.Sessions
                         if (serverPlayerStamp.time.HasValue)
                             serverPlayerStamp.time.Value += clientStamp.time - previousClientStamp.time;
                         else
-                        {
                             serverPlayerStamp.time.Value = serverTime;
-                        }
+
+                        Debug.Log($"{clientStamp.time}, {previousClientStamp.time}");
 
                         if (Mathf.Abs(serverPlayerStamp.time.Value - serverTime) > 0.2f)
                         {
-                            Debug.LogError($"{serverPlayerStamp.time} {serverTime} :: {clientStamp.time} {previousClientStamp.time} ;; {clientStamp.time - previousClientStamp.time}");
+                            // Debug.LogError($"{serverPlayerStamp.time} {serverTime} :: {clientStamp.time} {previousClientStamp.time} ;; {clientStamp.time - previousClientStamp.time}");
+                            serverPlayerStamp.time.Value = serverTime;
+                            Debug.LogError("Server Reset");
                         }
 
                         // Debug.Log($"{serverPlayerStamp.time} :: {serverTime} :: {clientStamp.time - previousClientStamp.time}");

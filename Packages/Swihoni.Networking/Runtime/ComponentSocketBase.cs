@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using Swihoni.Components;
 using Swihoni.Collections;
+using Swihoni.Components;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Swihoni.Networking
 {
@@ -98,14 +97,12 @@ namespace Swihoni.Networking
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                return false;
+                return false;    
             }
         }
 
         public void Dispose()
         {
-            if (m_RawSocket.Connected)
-                m_RawSocket.Shutdown(SocketShutdown.Both);
             m_RawSocket.Dispose();
             m_SendStream.Dispose();
             m_Writer.Dispose();

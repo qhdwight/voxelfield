@@ -116,16 +116,17 @@ namespace Swihoni.Collections
             return Get(index - size + 1);
         }
 
-        /// <summary>
-        /// Negative indices or ones that are the internal arrays size or more need to be wraped around
+        /// <summary>    
+        /// Negative indices or ones that are the internal arrays size or more need to be wrapped around
         /// to properly index the internal array. This helper function finds that desired valid index.
         /// </summary>
         /// <param name="index">Index to wrap into internal array index</param>
         /// <returns>Valid index into internal array</returns>
         private int Wrap(int index)
         {
-            int remainder = index % m_Size;
-            return remainder < 0 ? remainder + m_Size : remainder;
+            while (index >= m_Size) index -= m_Size;
+            while (index < 0) index += m_Size;
+            return index;
         }
 
         /// <summary>
