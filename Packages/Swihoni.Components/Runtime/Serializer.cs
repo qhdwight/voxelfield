@@ -43,9 +43,9 @@ namespace Swihoni.Components
             try
             {
                 Stream.Position = 0;
-                component.Navigate((field, element) =>
+                component.Navigate(element =>
                 {
-                    if (element is PropertyBase property && (field == null || !field.IsDefined(typeof(NoSerialization))))
+                    if (element is PropertyBase property)
                         WriteFromProperty(property);
                     return Navigation.Continue;
                 });
@@ -69,9 +69,9 @@ namespace Swihoni.Components
                 int count = stream.Capacity - (int) stream.Position;
                 Buffer.BlockCopy(stream.GetBuffer(), (int) stream.Position, Stream.GetBuffer(), 0, count);
                 Stream.Position = 0;
-                component.Navigate((field, element) =>
+                component.Navigate(element =>
                 {
-                    if (element is PropertyBase property && (field == null || !field.IsDefined(typeof(NoSerialization))))
+                    if (element is PropertyBase property)
                     {
                         property.Clear();
                         ReadIntoProperty(property);

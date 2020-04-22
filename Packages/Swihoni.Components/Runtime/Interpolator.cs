@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 
 namespace Swihoni.Components
 {
@@ -47,16 +46,13 @@ namespace Swihoni.Components
     {
         public static void InterpolateInto<T>(T e1, T e2, T ed, float interpolation) where T : ElementBase
         {
-            ElementExtensions.NavigateZipped((field, _e1, _e2, _ed) =>
+            ElementExtensions.NavigateZipped((_e1, _e2, _ed) =>
             {
                 switch (_e1)
                 {
                     case PropertyBase p1 when _e2 is PropertyBase p2 && _ed is PropertyBase pd:
                     {
-                        if (field != null && field.IsDefined(typeof(TakeSecondForInterpolation)))
-                            pd.SetFromIfPresent(p1);
-                        else if (field == null || !field.IsDefined(typeof(CustomInterpolation)))
-                            pd.InterpolateFromIfPresent(p1, p2, interpolation, field);
+                        pd.InterpolateFromIfPresent(p1, p2, interpolation);
                         break;
                     }
                     case ComponentBase c1 when _e2 is ComponentBase c2 && _ed is ComponentBase cd:

@@ -77,7 +77,6 @@ namespace Swihoni.Collections
         /// <returns>Element at the relative offset from the pointer</returns>
         public ref TElement Get(int offset)
         {
-            // TODO safety handle the case where offset is bigger than size?
             return ref m_InternalArray[GetAbsoluteFromRelativeOffset(offset)];
         }
 

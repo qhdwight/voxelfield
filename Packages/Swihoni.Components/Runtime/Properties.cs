@@ -16,12 +16,12 @@ namespace Swihoni.Components
         {
         }
 
-        public override void Serialize(BinaryWriter writer)
+        public override void SerializeValue(BinaryWriter writer)
         {
             writer.Write(Value);
         }
 
-        public override void Deserialize(BinaryReader reader)
+        public override void DeserializeValue(BinaryReader reader)
         {
             Value = reader.ReadUInt32();
         }
@@ -43,12 +43,12 @@ namespace Swihoni.Components
         {
         }
 
-        public override void Serialize(BinaryWriter writer)
+        public override void SerializeValue(BinaryWriter writer)
         {
             writer.Write(Value);
         }
 
-        public override void Deserialize(BinaryReader reader)
+        public override void DeserializeValue(BinaryReader reader)
         {
             Value = reader.ReadUInt16();
         }
@@ -70,38 +70,45 @@ namespace Swihoni.Components
         {
         }
 
-        public override void Serialize(BinaryWriter writer)
+        public override void SerializeValue(BinaryWriter writer)
         {
             writer.Write(Value);
         }
 
-        public override void Deserialize(BinaryReader reader)
+        public override void DeserializeValue(BinaryReader reader)
         {
             Value = reader.ReadSingle();
         }
 
         public override bool ValueEquals(PropertyBase<float> other)
         {
-            // TODO:feature add tolerance
-            return Mathf.Abs(other.Value - Value) < 0.1f;
+            float tolerance;
+            if (Field != null && Field.IsDefined(typeof(Tolerance))) tolerance = Field.GetCustomAttribute<Tolerance>().tolerance;
+            else tolerance = DefaultFloatTolerance;
+            return Mathf.Abs(other.Value - Value) < tolerance;
         }
 
-        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
+        public override void ValueInterpolateFrom(PropertyBase<float> p1, PropertyBase<float> p2, float interpolation)
         {
-            CheckInterpolatable(p1, p2, out PropertyBase<float> fp1, out PropertyBase<float> fp2);
-            float f1 = fp1, f2 = fp2;
-            if (field.IsDefined(typeof(Angle)))
-                Value = Mathf.LerpAngle(f1, f2, interpolation);
-            else if (field.IsDefined(typeof(Cyclic)))
+            float f1 = p1, f2 = p2;
+            if (Field != null)
             {
-                var attribute = field.GetCustomAttribute<Cyclic>();
-                float range = attribute.maximum - attribute.minimum;
-                while (f1 > f2)
-                    f2 += range;
-                Value = attribute.minimum + Mathf.Repeat(Mathf.Lerp(f1, f2, interpolation), range);
+                if (Field.IsDefined(typeof(Angle)))
+                {
+                    Value = Mathf.LerpAngle(f1, f2, interpolation);
+                    return;
+                }
+                if (Field.IsDefined(typeof(Cyclic)))
+                {
+                    var cyclicAttribute = Field.GetCustomAttribute<Cyclic>();
+                    float range = cyclicAttribute.maximum - cyclicAttribute.minimum;
+                    while (f1 > f2)
+                        f2 += range;
+                    Value = cyclicAttribute.minimum + Mathf.Repeat(Mathf.Lerp(f1, f2, interpolation), range);
+                    return;
+                }
             }
-            else
-                Value = Mathf.Lerp(f1, f2, interpolation);
+            Value = Mathf.Lerp(f1, f2, interpolation);
         }
     }
 
@@ -116,12 +123,12 @@ namespace Swihoni.Components
         {
         }
 
-        public override void Serialize(BinaryWriter writer)
+        public override void SerializeValue(BinaryWriter writer)
         {
             writer.Write(Value);
         }
 
-        public override void Deserialize(BinaryReader reader)
+        public override void DeserializeValue(BinaryReader reader)
         {
             Value = reader.ReadByte();
         }
@@ -147,29 +154,31 @@ namespace Swihoni.Components
         {
         }
 
-        public override void Serialize(BinaryWriter writer)
+        public override void SerializeValue(BinaryWriter writer)
         {
             writer.Write(Value.x);
             writer.Write(Value.y);
             writer.Write(Value.z);
         }
 
-        public override void Deserialize(BinaryReader reader)
+        public override void DeserializeValue(BinaryReader reader)
         {
             Value = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
 
         public override bool ValueEquals(PropertyBase<Vector3> other)
         {
-            return Mathf.Abs(Value.x - other.Value.x) < 0.1f
-                && Mathf.Abs(Value.y - other.Value.y) < 0.1f
-                && Mathf.Abs(Value.z - other.Value.z) < 0.1f;
+            float tolerance;
+            if (Field != null && Field.IsDefined(typeof(Tolerance))) tolerance = Field.GetCustomAttribute<Tolerance>().tolerance;
+            else tolerance = DefaultFloatTolerance;
+            return Mathf.Abs(Value.x - other.Value.x) < tolerance
+                && Mathf.Abs(Value.y - other.Value.y) < tolerance
+                && Mathf.Abs(Value.z - other.Value.z) < tolerance;
         }
 
-        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
+        public override void ValueInterpolateFrom(PropertyBase<Vector3> p1, PropertyBase<Vector3> p2, float interpolation)
         {
-            CheckInterpolatable(p1, p2, out PropertyBase<Vector3> v1, out PropertyBase<Vector3> v2);
-            Value = Vector3.Lerp(v1, v2, interpolation);
+            Value = Vector3.Lerp(p1, p2, interpolation);
         }
     }
 }

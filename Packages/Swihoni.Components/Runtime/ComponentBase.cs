@@ -20,7 +20,6 @@ namespace Swihoni.Components
 
         public override int GetHashCode()
         {
-            //TODO: revisit
             return RuntimeHelpers.GetHashCode(this);
         }
     }
@@ -36,6 +35,7 @@ namespace Swihoni.Components
                 if (!fieldType.IsAbstract && field.GetValue(this) == null && fieldType.IsElement())
                 {
                     object instance = Activator.CreateInstance(fieldType);
+                    if (instance is PropertyBase propertyInstance) propertyInstance.Field = field;
                     field.SetValue(this, instance);
                 }
             }

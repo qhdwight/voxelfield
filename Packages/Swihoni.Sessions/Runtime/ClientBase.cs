@@ -176,7 +176,7 @@ namespace Swihoni.Sessions
                     Container predictedPlayer = m_PlayerPredictionHistory.Get(-playerHistoryIndex);
                     if (predictedPlayer.Require<ClientStampComponent>().tick != targetTick) continue;
                     var areEqual = true;
-                    ElementExtensions.NavigateZipped((field, e1, e2) =>
+                    ElementExtensions.NavigateZipped((e1, e2) =>
                     {
                         switch (e1)
                         {

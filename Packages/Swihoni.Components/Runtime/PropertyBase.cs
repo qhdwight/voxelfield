@@ -12,6 +12,8 @@ namespace Swihoni.Components
         [SerializeField] private bool m_HasValue;
         private bool m_DoSerialize = true;
 
+        public FieldInfo Field { get; set; }
+
         public bool HasValue
         {
             get => m_HasValue;
@@ -36,13 +38,15 @@ namespace Swihoni.Components
 
         public abstract void SetFromIfPresent(PropertyBase other);
 
-        public abstract void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null);
+        public abstract void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation);
     }
 
     [Serializable]
     public abstract class PropertyBase<T> : PropertyBase where T : struct
     {
         [CopyField, SerializeField] private T m_Value;
+
+        protected const float DefaultFloatTolerance = 0.1f;
 
         public T Value
         {
@@ -120,7 +124,7 @@ namespace Swihoni.Components
             return HasValue ? m_Value : @default;
         }
 
-        public override bool Equals(PropertyBase other)
+        public sealed override bool Equals(PropertyBase other)
         {
             return other.GetType() == GetType()
                 && HasValue && other.HasValue && ValueEquals((PropertyBase<T>) other)
@@ -142,17 +146,41 @@ namespace Swihoni.Components
                 Value = otherProperty.m_Value;
         }
 
-        protected void CheckInterpolatable(PropertyBase p1, PropertyBase p2, out PropertyBase<T> op1, out PropertyBase<T> op2)
+        public sealed override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation)
         {
             if (!(p1 is PropertyBase<T>) || !(p2 is PropertyBase<T>))
                 throw new ArgumentException("Properties are not the proper type!");
-            op1 = (PropertyBase<T>) p1;
-            op2 = (PropertyBase<T>) p2;
+            if (Field != null)
+            {
+                if (Field.IsDefined(typeof(CustomInterpolation))) return;
+                if (Field.IsDefined(typeof(TakeSecondForInterpolation)))
+                {
+                    SetFromIfPresent(p2);
+                    return;
+                }
+            }
+            ValueInterpolateFrom((PropertyBase<T>) p1, (PropertyBase<T>) p2, interpolation);
         }
 
-        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation, FieldInfo field = null)
+        public virtual void ValueInterpolateFrom(PropertyBase<T> p1, PropertyBase<T> p2, float interpolation)
         {
             SetFromIfPresent(p2);
         }
+
+        public sealed override void Serialize(BinaryWriter writer)
+        {
+            if (Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            SerializeValue(writer);
+        }
+
+        public sealed override void Deserialize(BinaryReader reader)
+        {
+            if (Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            DeserializeValue(reader);
+        }
+
+        public abstract void SerializeValue(BinaryWriter writer);
+
+        public abstract void DeserializeValue(BinaryReader reader);
     }
 }

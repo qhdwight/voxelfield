@@ -42,7 +42,7 @@ namespace Swihoni.Components
         /// </summary>
         public static void Reset(this ElementBase component)
         {
-            component.Navigate((field, property) =>
+            component.Navigate(property =>
             {
                 (property as PropertyBase)?.Clear();
                 return Navigation.Continue;
@@ -54,7 +54,7 @@ namespace Swihoni.Components
         /// </summary>
         public static void Zero(this ElementBase component)
         {
-            component.Navigate((field, property) =>
+            component.Navigate(property =>
             {
                 (property as PropertyBase)?.Zero();
                 return Navigation.Continue;
@@ -67,7 +67,7 @@ namespace Swihoni.Components
         public static TElement Clone<TElement>(this TElement component) where TElement : ElementBase
         {
             var clone = (TElement) Activator.CreateInstance(component.GetType());
-            NavigateZipped((field, e1, e2) =>
+            NavigateZipped((e1, e2) =>
             {
                 if (e1 is Container p1 && e2 is Container p2)
                     p2.Set(p1.ElementTypes);
@@ -80,7 +80,7 @@ namespace Swihoni.Components
         public static bool EqualTo<T>(this T component, T other) where T : ElementBase
         {
             var areEqual = true;
-            NavigateZipped((field, e1, e2) =>
+            NavigateZipped((e1, e2) =>
             {
                 if (e1 is PropertyBase p1 && e2 is PropertyBase p2)
                 {
@@ -94,31 +94,31 @@ namespace Swihoni.Components
             return areEqual;
         }
 
-        public static void Navigate(this ElementBase e, Func<FieldInfo, ElementBase, Navigation> visitProperty)
+        public static void Navigate(this ElementBase e, Func<ElementBase, Navigation> visitProperty)
         {
             var zip = new TriArray<ElementBase> {[0] = e};
-            Navigate((field, properties) => visitProperty(field, properties[0]), zip, 1);
+            Navigate(properties => visitProperty(properties[0]), zip, 1);
         }
 
-        public static void NavigateZipped(Func<FieldInfo, ElementBase, ElementBase, Navigation> visitProperty, ElementBase e1, ElementBase e2)
+        public static void NavigateZipped(Func<ElementBase, ElementBase, Navigation> visitProperty, ElementBase e1, ElementBase e2)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2};
-            Navigate((field, properties) => visitProperty(field, properties[0], properties[1]), zip, 2);
+            Navigate(properties => visitProperty(properties[0], properties[1]), zip, 2);
         }
 
-        public static void NavigateZipped(Func<FieldInfo, ElementBase, ElementBase, ElementBase, Navigation> visitProperty, ElementBase e1, ElementBase e2, ElementBase e3)
+        public static void NavigateZipped(Func<ElementBase, ElementBase, ElementBase, Navigation> visitProperty, ElementBase e1, ElementBase e2, ElementBase e3)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2, [2] = e3};
-            Navigate((field, properties) => visitProperty(field, properties[0], properties[1], properties[2]), zip, 3);
+            Navigate(properties => visitProperty(properties[0], properties[1], properties[2]), zip, 3);
         }
 
-        private static void Navigate(Func<FieldInfo, TriArray<ElementBase>, Navigation> visit, in TriArray<ElementBase> zip, int size)
+        private static void Navigate(Func<TriArray<ElementBase>, Navigation> visit, in TriArray<ElementBase> zip, int size)
         {
             if (size <= 0) throw new ArgumentException("Size needs to be greater than zero");
             var exitAll = false;
-            void NavigateRecursively(in TriArray<ElementBase> _zip, FieldInfo _field)
+            void NavigateRecursively(in TriArray<ElementBase> _zip)
             {
-                Navigation navigation = visit(_field, _zip);
+                Navigation navigation = visit(_zip);
                 if (navigation == Navigation.Exit)
                     exitAll = true;
                 if (exitAll || navigation == Navigation.Skip)
@@ -145,7 +145,7 @@ namespace Swihoni.Components
                         var zippedChildren = new TriArray<ElementBase>();
                         for (var i = 0; i < size; i++)
                             zippedChildren[i] = zippedContainers[i].TryGet(childType);
-                        NavigateRecursively(zippedChildren, null);
+                        NavigateRecursively(zippedChildren);
                     }
                 }
                 else if (type.IsArrayProperty())
@@ -158,7 +158,7 @@ namespace Swihoni.Components
                         var zippedElements = new TriArray<ElementBase>();
                         for (var i = 0; i < size; i++)
                             zippedElements[i] = (ElementBase) zippedArrays[i].GetValue(j);
-                        NavigateRecursively(zippedElements, _field);
+                        NavigateRecursively(zippedElements);
                     }
                 }
                 else if (type.IsComponent())
@@ -168,7 +168,7 @@ namespace Swihoni.Components
                         var zippedChildren = new TriArray<ElementBase>();
                         for (var i = 0; i < size; i++)
                             zippedChildren[i] = _zip[i] == null ? null : (ElementBase) field.GetValue(_zip[i]);
-                        NavigateRecursively(zippedChildren, field);
+                        NavigateRecursively(zippedChildren);
                     }
                 }
                 else if (!type.IsProperty())
@@ -176,7 +176,7 @@ namespace Swihoni.Components
                     throw new Exception("Expected component or array");
                 }
             }
-            NavigateRecursively(zip, null);
+            NavigateRecursively(zip);
         }
 
         private struct TriArray<T>
