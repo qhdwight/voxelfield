@@ -1066,7 +1066,7 @@ MonoBehaviour:
   m_PlayerVisualsPrefab: {fileID: 4224837671832740950, guid: fafdfda233569534ab011266eae78b95,
     type: 3}
   m_AddClient: 1
-  m_RenderClient: 1
+  m_RenderClient: 0
 --- !u!1 &1133061148
 GameObject:
   m_ObjectHideFlags: 0

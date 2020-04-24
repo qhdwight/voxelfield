@@ -75,5 +75,10 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
         }
+
+        public void Dispose()
+        {
+            Destroy(gameObject);
+        }
     }
 }

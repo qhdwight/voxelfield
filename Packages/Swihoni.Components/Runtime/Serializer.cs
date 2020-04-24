@@ -22,21 +22,6 @@ namespace Swihoni.Components
             Stream.SetLength(Stream.Capacity);
         }
 
-        private static void ReadIntoProperty(PropertyBase property)
-        {
-            bool hasValue = Reader.ReadBoolean();
-            if (hasValue)
-                property.Deserialize(Reader);
-        }
-
-        private static void WriteFromProperty(PropertyBase property)
-        {
-            bool hasValue = property.DoSerialization && property.HasValue;
-            Writer.Write(hasValue);
-            if (hasValue)
-                property.Serialize(Writer);
-        }
-
         public static void Serialize(this ElementBase component, MemoryStream stream)
         {
             StreamMutex.WaitOne();
@@ -46,7 +31,7 @@ namespace Swihoni.Components
                 component.Navigate(element =>
                 {
                     if (element is PropertyBase property)
-                        WriteFromProperty(property);
+                        property.Serialize(Writer);
                     return Navigation.Continue;
                 });
                 var count = (int) Stream.Position;
@@ -74,7 +59,7 @@ namespace Swihoni.Components
                     if (element is PropertyBase property)
                     {
                         property.Clear();
-                        ReadIntoProperty(property);
+                        property.Deserialize(Reader);
                     }
                     return Navigation.Continue;
                 });

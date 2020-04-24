@@ -14,13 +14,8 @@ namespace Swihoni.Sessions
     [Serializable]
     public class ClientCommandsContainer : Container
     {
-        public ClientCommandsContainer()
-        {
-        }
-
-        public ClientCommandsContainer(IEnumerable<Type> types) : base(types)
-        {
-        }
+        public ClientCommandsContainer() { }
+        public ClientCommandsContainer(IEnumerable<Type> types) : base(types) { }
     }
 
     [Serializable]
@@ -40,10 +35,13 @@ namespace Swihoni.Sessions
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
 
-        protected ClientBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
+        public IPEndPoint IpEndPoint { get; }
+
+        protected ClientBase(IGameObjectLinker linker, IPEndPoint ipEndPoint, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
                              IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
+            IpEndPoint = ipEndPoint;
             m_RenderSession = new Container(sessionElements);
             if (m_RenderSession.Has(out PlayerContainerArrayProperty players))
                 players.SetAll(() => new Container(playerElements));
@@ -66,15 +64,12 @@ namespace Swihoni.Sessions
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentClientSocket(new IPEndPoint(IPAddress.Loopback, 7777));
+            m_Socket = new ComponentClientSocket(IpEndPoint);
             m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_EmptyClientCommands);
             m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
         }
 
-        private void UpdateInputs(int localPlayerId)
-        {
-            m_Modifier[localPlayerId].ModifyCommands(m_CommandHistory.Peek());
-        }
+        private void UpdateInputs(int localPlayerId) { m_Modifier[localPlayerId].ModifyCommands(m_CommandHistory.Peek()); }
 
         public override void Input(float time, float delta)
         {
@@ -155,10 +150,7 @@ namespace Swihoni.Sessions
             }
         }
 
-        private void Send()
-        {
-            m_Socket.SendToServer(m_CommandHistory.Peek());
-        }
+        private void Send() { m_Socket.SendToServer(m_CommandHistory.Peek()); }
 
         private void CheckPrediction(Container serverSession)
         {
@@ -232,7 +224,6 @@ namespace Swihoni.Sessions
                         var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
                         for (var playerId = 0; playerId < serverPlayers.Length; playerId++)
                         {
-                            if (playerId == 1) continue;
                             Container serverPlayer = serverPlayers[playerId];
                             FloatProperty serverTime = serverPlayer.Require<ServerStampComponent>().time,
                                           localizedServerTime = serverPlayer.Require<LocalizedClientStampComponent>().time;
@@ -244,7 +235,7 @@ namespace Swihoni.Sessions
                             else
                                 localizedServerTime.Value = time;
 
-                            if (Mathf.Abs(localizedServerTime.Value - time) > 0.2f)
+                            if (Mathf.Abs(localizedServerTime.Value - time) > m_Settings.TickInterval)
                             {
                                 Debug.LogError("Client Reset");
                                 localizedServerTime.Value = time;
@@ -272,9 +263,6 @@ namespace Swihoni.Sessions
             return false;
         }
 
-        public override void Dispose()
-        {
-            m_Socket.Dispose();
-        }
+        public override void Dispose() { m_Socket.Dispose(); }
     }
 }

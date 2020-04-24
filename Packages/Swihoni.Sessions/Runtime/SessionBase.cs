@@ -14,7 +14,7 @@ namespace Swihoni.Sessions
         (GameObject, GameObject) GetPlayerPrefabs();
     }
 
-    public interface IPlayerContainerRenderer
+    public interface IPlayerContainerRenderer : IDisposable
     {
         void Setup();
 
@@ -125,6 +125,12 @@ namespace Swihoni.Sessions
 
         public virtual void Dispose()
         {
+            foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier)
+            {
+                UnityObject.Destroy(modifier);
+            }
+            foreach (IPlayerContainerRenderer visual in m_Visuals)
+                visual.Dispose();
         }
 
         protected static void RenderInterpolatedPlayer<TStampComponent>(float renderTime, Container renderPlayerContainer, int maxRollback, Func<int, Container> getInHistory)

@@ -1,4 +1,6 @@
 using System;
+using System.Net;
+using Console;
 using Swihoni.Sessions;
 using Swihoni.Util;
 using UnityEngine;
@@ -7,73 +9,60 @@ namespace Compound.Session
 {
     public class SessionManager : SingletonBehavior<SessionManager>, IGameObjectLinker
     {
-        private SessionBase m_Session;
-        private SessionBase m_ClientSession;
+        private NetworkedSessionBase m_Host, m_Client;
 
         [SerializeField] private GameObject m_PlayerModifierPrefab = default, m_PlayerVisualsPrefab = default;
-        [SerializeField] private bool m_AddClient = false, m_RenderClient = false;
-
-        private void StartSession()
-        {
-            try
-            {
-                if (Application.isEditor)
-                {
-                    m_Session = new Host(this);
-                    if (m_AddClient) m_ClientSession = new Client(this);
-                }
-                else
-                {
-                    m_Session = new Client(this);
-                }
-            }
-            catch (Exception exception)
-            {
-                Debug.LogError(exception);
-                m_Session = null;
-            }
-            m_Session?.Start();
-            m_ClientSession?.Start();
-        }
 
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
-            AnalysisLogger.Reset("");
-            StartSession();
+            ConsoleCommandExecutor.RegisterCommand("host", args =>
+            {
+                StartHost();
+                return string.Empty;
+            });
+            ConsoleCommandExecutor.RegisterCommand("connect", args =>
+            {
+                Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
+                return $"Started client at {client.IpEndPoint}";
+            });
+        }
+
+        public Host StartHost()
+        {
+            var host = new Host(this);
+            host.Start();
+            m_Host = host;
+            return host;
+        }
+        
+        public Client StartClient(IPEndPoint ipEndPoint)
+        {
+            var client = new Client(this, ipEndPoint);
+            client.Start();
+            m_Client = client;
+            return client;
+        }
+
+        public void Disconnect()
+        {
+            m_Host?.Disconnect();
+            m_Client?.Disconnect();
         }
 
         private void Update()
         {
-            // if (m_DebugSession == null && Time.realtimeSinceStartup > 1.0f)
-            // {
-            //     m_DebugSession = new Client(this) {ShouldRender = false};
-            //     m_DebugSession.Start();
-            // }
-            // if (Input.GetKeyDown(KeyCode.P))
-            // {
-            //     m_DebugSession?.Dispose();
-            //     m_DebugSession = null;
-            // }
             float time = Time.realtimeSinceStartup;
             try
             {
-                if (m_Session != null)
-                {
-                    m_Session.ShouldRender = !m_RenderClient;
-                    m_Session.Update(time);
-                }
-                if (m_ClientSession != null)
-                {
-                    m_ClientSession.ShouldRender = m_RenderClient;
-                    m_ClientSession.Update(time + 25.0f);
-                }
+                m_Host?.Update(time);
+                m_Client?.Update(time);
             }
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                m_Session = null;
-                m_ClientSession = null;
+                m_Host = null;
+                m_Client = null;
             }
         }
 
@@ -82,26 +71,23 @@ namespace Compound.Session
             float time = Time.realtimeSinceStartup;
             try
             {
-                m_Session?.FixedUpdate(time);
-                m_ClientSession?.FixedUpdate(time + 25.0f);
+                m_Host?.FixedUpdate(time);
+                m_Client?.FixedUpdate(time);
             }
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                m_Session = null;
-                m_ClientSession = null;
+                m_Host = null;
+                m_Client = null;
             }
         }
 
         private void OnDestroy()
         {
-            m_Session?.Dispose();
-            m_ClientSession?.Dispose();
+            m_Host?.Disconnect();
+            m_Client?.Disconnect();
         }
 
-        public (GameObject, GameObject) GetPlayerPrefabs()
-        {
-            return (m_PlayerModifierPrefab, m_PlayerVisualsPrefab);
-        }
+        public (GameObject, GameObject) GetPlayerPrefabs() { return (m_PlayerModifierPrefab, m_PlayerVisualsPrefab); }
     }
 }

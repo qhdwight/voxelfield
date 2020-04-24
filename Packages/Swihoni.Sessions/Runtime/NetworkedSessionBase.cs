@@ -31,13 +31,12 @@ namespace Swihoni.Sessions
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);
             m_EmptyServerSession = ServerSessionContainerConstructor();
         }
+
+        public virtual void Disconnect() { Dispose(); }
     }
 
     internal static class NetworkSessionExtensions
     {
-        internal static Container GetPlayer(this Container session, int index)
-        {
-            return session.Require<PlayerContainerArrayProperty>()[index];
-        }
+        internal static Container GetPlayer(this Container session, int index) { return session.Require<PlayerContainerArrayProperty>()[index]; }
     }
 }

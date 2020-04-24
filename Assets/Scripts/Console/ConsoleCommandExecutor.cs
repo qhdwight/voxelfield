@@ -21,6 +21,11 @@ namespace Console
             }
         };
 
+        public static void RegisterCommand(string commandName, Command command)
+        {
+            Commands.Add(commandName, command);
+        }
+
         public static string GetAutocomplete(string stub)
         {
             return Commands.Keys.FirstOrDefault(command => command.StartsWith(stub));

@@ -169,13 +169,17 @@ namespace Swihoni.Components
 
         public sealed override void Serialize(BinaryWriter writer)
         {
-            if (Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            if (!DoSerialization || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            writer.Write(HasValue);
+            if (!HasValue) return;
             SerializeValue(writer);
         }
 
         public sealed override void Deserialize(BinaryReader reader)
         {
-            if (Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            if (!DoSerialization || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            HasValue = reader.ReadBoolean();
+            if (!HasValue) return;
             DeserializeValue(reader);
         }
 

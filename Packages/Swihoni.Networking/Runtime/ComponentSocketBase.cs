@@ -78,6 +78,7 @@ namespace Swihoni.Networking
                 }
                 catch (SocketException socketException)
                 {
+                    // TODO:safety handle
                 }
                 catch (Exception exception)
                 {

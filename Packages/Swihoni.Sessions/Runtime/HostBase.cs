@@ -29,12 +29,15 @@ namespace Swihoni.Sessions
 
         public override void Input(float time, float delta)
         {
+            if (!m_SessionHistory.Peek().Has(out ServerStampComponent serverStamp) || !serverStamp.tick.HasValue)
+                return;
+            
             ReadLocalInputs(m_HostCommands);
             m_Modifier[HostPlayerId].ModifyTrusted(m_HostCommands, m_HostCommands, delta);
             m_Modifier[HostPlayerId].ModifyChecked(m_HostCommands, m_HostCommands, delta);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.time.Value = time;
-            stamp.tick.Value = m_SessionHistory.Peek().Require<ServerStampComponent>().tick;
+            stamp.tick.Value = serverStamp.tick;
         }
 
         protected override void Render(float renderTime)

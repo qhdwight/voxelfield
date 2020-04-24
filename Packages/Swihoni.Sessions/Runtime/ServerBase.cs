@@ -15,13 +15,8 @@ namespace Swihoni.Sessions
     [Serializable]
     public class ServerSessionContainer : Container
     {
-        public ServerSessionContainer()
-        {
-        }
-
-        public ServerSessionContainer(IEnumerable<Type> types) : base(types)
-        {
-        }
+        public ServerSessionContainer() { }
+        public ServerSessionContainer(IEnumerable<Type> types) : base(types) { }
     }
 
     [Serializable]
@@ -51,13 +46,9 @@ namespace Swihoni.Sessions
             m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
         }
 
-        protected virtual void PreTick(Container tickSession)
-        {
-        }
+        protected virtual void PreTick(Container tickSession) { }
 
-        protected virtual void PostTick(Container tickSession)
-        {
-        }
+        protected virtual void PostTick(Container tickSession) { }
 
         protected sealed override void Tick(uint tick, float time, float duration)
         {
@@ -79,6 +70,7 @@ namespace Swihoni.Sessions
 
         protected static void NewPlayer(Container player)
         {
+            // TODO:refactor
             player.Zero();
             player.Require<ClientStampComponent>().Reset();
             player.Require<ServerStampComponent>().Reset();
@@ -127,7 +119,7 @@ namespace Swihoni.Sessions
                         else
                             serverPlayerTime.Value = serverTime;
 
-                        if (Mathf.Abs(serverPlayerTime.Value - serverTime) > 0.2f)
+                        if (Mathf.Abs(serverPlayerTime.Value - serverTime) > m_Settings.TickInterval)
                         {
                             Debug.LogError("Server Reset");
                             serverPlayerTime.Value = serverTime;
@@ -147,10 +139,7 @@ namespace Swihoni.Sessions
                 m_Socket.Send(serverSession, ipEndPoint);
             }
         }
-
-        public override void Dispose()
-        {
-            m_Socket.Dispose();
-        }
+        
+        public override void Dispose() { m_Socket.Dispose(); }
     }
 }
