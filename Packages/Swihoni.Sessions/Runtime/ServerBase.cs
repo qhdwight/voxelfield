@@ -66,16 +66,21 @@ namespace Swihoni.Sessions
                 Tick(serverSession);
                 PostTick(serverSession);
 
-                var players = serverSession.Require<PlayerContainerArrayProperty>();
-                for (byte playerId = 0; playerId < players.Length; playerId++)
-                {
-                    Container player = players[playerId];
-                    FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
-                    if (!serverPlayerTime.HasValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) continue;
-                    Debug.LogWarning($"Dropping player with id: {playerId}");
-                    m_PlayerIds.Remove(playerId);
-                    player.Reset();
-                }
+                HandleTimeouts(time, serverSession);
+            }
+        }
+
+        private void HandleTimeouts(float time, Container serverSession)
+        {
+            var players = serverSession.Require<PlayerContainerArrayProperty>();
+            for (byte playerId = 1; playerId < players.Length; playerId++)
+            {
+                Container player = players[playerId];
+                FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
+                if (!serverPlayerTime.HasValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) continue;
+                Debug.LogWarning($"Dropping player with id: {playerId}");
+                m_PlayerIds.Remove(playerId);
+                player.Reset();
             }
         }
 
@@ -103,7 +108,11 @@ namespace Swihoni.Sessions
                 {
                     checked
                     {
-                        var newPlayerId = (byte) (m_PlayerIds.Length + 1);
+                        byte newPlayerId = 1;
+                        while (m_PlayerIds.ContainsReverse(newPlayerId))
+                        {
+                            newPlayerId++;
+                        }
                         m_PlayerIds.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port), newPlayerId);
                         Debug.Log($"[{GetType().Name}] Received new connection: {ipEndPoint}, setting up id: {newPlayerId}");
                     }

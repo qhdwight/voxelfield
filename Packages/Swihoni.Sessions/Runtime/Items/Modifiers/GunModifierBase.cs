@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Items.Modifiers
@@ -63,14 +65,14 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected override void PrimaryUse(ItemComponent itemComponent) { Fire(itemComponent); }
 
-        // private readonly HashSet<PlayerMain> m_HitPlayers = new HashSet<PlayerMain>();
+        private readonly HashSet<PlayerModifierBehaviorBase> m_HitPlayers = new HashSet<PlayerModifierBehaviorBase>();
 
         protected virtual void Fire(ItemComponent itemComponent)
         {
             itemComponent.gunStatus.ammoInMag.Value--;
-//             Ray ray = m_Game.GetRayForRaycastingPlayer(m_HoldingPlayer);
-//             m_Game.AboutToRaycast(m_HoldingPlayer);
-//             // TODO query layer
+//              Ray ray = m_Game.GetRayForRaycastingPlayer(m_HoldingPlayer);
+//              m_Game.AboutToRaycast(m_HoldingPlayer);
+// //             // TODO query layer
 //             int numberOfHits = Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, LayerManager.PLAYER_RAYCAST_MASK);
 //             for (var hitIndex = 0; hitIndex < numberOfHits; hitIndex++)
 //             {
