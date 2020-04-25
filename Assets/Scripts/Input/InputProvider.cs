@@ -35,10 +35,7 @@ namespace Input
     {
         private Dictionary<InputType, KeyCode> m_Mapping;
 
-        public KeyCode Get(InputType type)
-        {
-            return m_Mapping[type];
-        }
+        public KeyCode Get(InputType type) { return m_Mapping[type]; }
 
         public static InputSettings Defaults()
         {
@@ -71,19 +68,13 @@ namespace Input
     {
         private InputSettings m_Settings = InputSettings.Defaults();
 
-        public bool GetInput(InputType type)
-        {
-            return UnityEngine.Input.GetKey(m_Settings.Get(type));
-        }
+        public bool GetInput(InputType type) { return UnityEngine.Input.GetKey(m_Settings.Get(type)); }
 
         /// <summary>
         ///     Should be called in normal Unity Update() methods
         /// </summary>
         /// <returns>If this is the first Unity frame an input is pressed</returns>
-        public bool GetInputDown(InputType type)
-        {
-            return UnityEngine.Input.GetKeyDown(m_Settings.Get(type));
-        }
+        public bool GetInputDown(InputType type) { return UnityEngine.Input.GetKeyDown(m_Settings.Get(type)); }
 
         public static float GetMouseInput(MouseMovement mouseMovement)
         {
@@ -98,9 +89,6 @@ namespace Input
             }
         }
 
-        public static float GetMouseScrollWheel()
-        {
-            return UnityEngine.Input.GetAxisRaw("Mouse ScrollWheel");
-        }
+        public static float GetMouseScrollWheel() { return UnityEngine.Input.GetAxisRaw("Mouse ScrollWheel"); }
     }
 }

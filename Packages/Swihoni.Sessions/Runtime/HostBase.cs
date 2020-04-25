@@ -22,16 +22,13 @@ namespace Swihoni.Sessions
                 players.SetAll(() => new Container(playerElements));
         }
 
-        private void ReadLocalInputs(Container commandsToFill)
-        {
-            m_Modifier[HostPlayerId].ModifyCommands(commandsToFill);
-        }
+        private void ReadLocalInputs(Container commandsToFill) { m_Modifier[HostPlayerId].ModifyCommands(commandsToFill); }
 
         public override void Input(float time, float delta)
         {
             if (!m_SessionHistory.Peek().Has(out ServerStampComponent serverStamp) || !serverStamp.tick.HasValue)
                 return;
-            
+
             ReadLocalInputs(m_HostCommands);
             m_Modifier[HostPlayerId].ModifyTrusted(m_HostCommands, m_HostCommands, delta);
             m_Modifier[HostPlayerId].ModifyChecked(m_HostCommands, m_HostCommands, delta);

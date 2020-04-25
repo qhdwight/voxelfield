@@ -145,9 +145,6 @@ namespace Swihoni.Sessions.Player.Modifiers
             velocity.z += wishDirection.z * accelerationSpeed;
         }
 
-        private static float LateralMagnitude(Vector3 v)
-        {
-            return Mathf.Sqrt(v.x * v.x + v.z * v.z);
-        }
+        private static float LateralMagnitude(Vector3 v) { return Mathf.Sqrt(v.x * v.x + v.z * v.z); }
     }
 }

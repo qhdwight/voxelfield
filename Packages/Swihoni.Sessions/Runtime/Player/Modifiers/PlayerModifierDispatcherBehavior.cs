@@ -42,32 +42,20 @@ namespace Swihoni.Sessions.Player.Modifiers
 
     public abstract class PlayerModifierBehaviorBase : MonoBehaviour, IModifierBase<Container, Container>
     {
-        internal virtual void Setup()
-        {
-        }
+        internal virtual void Setup() { }
 
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
-        public virtual void ModifyChecked(Container containerToModify, Container commands, float duration)
-        {
-            SynchronizeBehavior(containerToModify);
-        }
+        public virtual void ModifyChecked(Container containerToModify, Container commands, float duration) { SynchronizeBehavior(containerToModify); }
 
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>
-        public virtual void ModifyTrusted(Container containerToModify, Container commandsContainer, float duration)
-        {
-            SynchronizeBehavior(containerToModify);
-        }
+        public virtual void ModifyTrusted(Container containerToModify, Container commandsContainer, float duration) { SynchronizeBehavior(containerToModify); }
 
-        public virtual void ModifyCommands(Container commandsToModify)
-        {
-        }
+        public virtual void ModifyCommands(Container commandsToModify) { }
 
-        protected virtual void SynchronizeBehavior(Container containersToApply)
-        {
-        }
+        protected virtual void SynchronizeBehavior(Container containersToApply) { }
     }
 }

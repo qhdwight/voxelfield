@@ -129,9 +129,6 @@ namespace Swihoni.Sessions.Player.Visualization
             return aimInterpolationValue;
         }
 
-        internal void Cleanup()
-        {
-            m_Graph.Destroy();
-        }
+        internal void Cleanup() { m_Graph.Destroy(); }
     }
 }

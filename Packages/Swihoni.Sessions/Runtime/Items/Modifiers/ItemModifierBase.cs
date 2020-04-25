@@ -43,9 +43,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
 
-        public virtual void ModifyTrusted((ItemComponent, InventoryComponent) containerToModify, InputFlagProperty inputProperty, float duration)
-        {
-        }
+        public virtual void ModifyTrusted((ItemComponent, InventoryComponent) containerToModify, InputFlagProperty inputProperty, float duration) { }
 
         public virtual void ModifyChecked((ItemComponent, InventoryComponent) containerToModify, InputFlagProperty inputProperty, float duration)
         {
@@ -111,25 +109,14 @@ namespace Swihoni.Sessions.Items.Modifiers
          && itemComponent.status.id != ItemStatusId.SecondaryUsing
          && inventoryComponent.equipStatus.id == ItemEquipStatusId.Equipped;
 
-        protected virtual void SecondaryUse()
-        {
-        }
+        protected virtual void SecondaryUse() { }
 
-        protected virtual void PrimaryUse(ItemComponent itemComponent)
-        {
-        }
+        protected virtual void PrimaryUse(ItemComponent itemComponent) { }
 
-        public void ModifyCommands(InputFlagProperty commandsToModify)
-        {
-        }
+        public void ModifyCommands(InputFlagProperty commandsToModify) { }
 
-        protected virtual bool HasSecondaryUse()
-        {
-            return false;
-        }
+        protected virtual bool HasSecondaryUse() { return false; }
 
-        internal virtual void OnUnequip(ItemComponent itemComponent)
-        {
-        }
+        internal virtual void OnUnequip(ItemComponent itemComponent) { }
     }
 }

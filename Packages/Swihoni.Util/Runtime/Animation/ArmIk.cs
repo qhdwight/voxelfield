@@ -75,9 +75,6 @@ namespace Swihoni.Util.Animation
         /// Law of cosines to find angle given three known side lengths.
         /// </summary>
         /// <returns>Angle in degrees across from c</returns>
-        private static float GetAngleFromTriangle(float a, float b, float c)
-        {
-            return Mathf.Rad2Deg * Mathf.Acos((a * a + b * b - c * c) / (2 * a * b));
-        }
+        private static float GetAngleFromTriangle(float a, float b, float c) { return Mathf.Rad2Deg * Mathf.Acos((a * a + b * b - c * c) / (2 * a * b)); }
     }
 }

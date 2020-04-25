@@ -25,10 +25,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         public ItemStatusModiferProperties GetAdsStatusModifierProperties(byte statusId) => m_AdsModifierProperties[statusId];
 
-        protected override bool HasSecondaryUse()
-        {
-            return false;
-        }
+        protected override bool HasSecondaryUse() { return false; }
 
         public override void ModifyChecked((ItemComponent, InventoryComponent) containerToModify, InputFlagProperty inputProperty, float duration)
         {
@@ -64,10 +61,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             return itemComponent.gunStatus.ammoInMag > 0 && base.CanUse(itemComponent, inventoryComponent, justFinishedUse);
         }
 
-        protected override void PrimaryUse(ItemComponent itemComponent)
-        {
-            Fire(itemComponent);
-        }
+        protected override void PrimaryUse(ItemComponent itemComponent) { Fire(itemComponent); }
 
         // private readonly HashSet<PlayerMain> m_HitPlayers = new HashSet<PlayerMain>();
 

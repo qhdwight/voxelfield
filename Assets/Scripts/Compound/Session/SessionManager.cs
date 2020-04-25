@@ -49,7 +49,7 @@ namespace Compound.Session
                 return null;
             }
         }
-        
+
         public Client StartClient(IPEndPoint ipEndPoint)
         {
             var client = new Client(this, ipEndPoint);
@@ -93,7 +93,7 @@ namespace Compound.Session
             if (Input.GetKeyDown(KeyCode.J))
             {
                 Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
-                client.ShouldRender = false;
+                if (Application.isEditor) client.ShouldRender = false;
             }
             if (Input.GetKeyDown(KeyCode.K))
                 DisconnectAll();
@@ -119,10 +119,7 @@ namespace Compound.Session
             }
         }
 
-        private void OnDestroy()
-        {
-            DisconnectAll();
-        }
+        private void OnDestroy() { DisconnectAll(); }
 
         public (GameObject, GameObject) GetPlayerPrefabs() { return (m_PlayerModifierPrefab, m_PlayerVisualsPrefab); }
     }

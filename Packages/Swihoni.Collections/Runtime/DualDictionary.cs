@@ -36,30 +36,15 @@ namespace Swihoni.Collections
             m_Reverse.Add(value, key);
         }
 
-        public bool ContainsForward(TKey key)
-        {
-            return m_Forward.ContainsKey(key);
-        }
+        public bool ContainsForward(TKey key) { return m_Forward.ContainsKey(key); }
 
-        public bool HasBackward(TValue value)
-        {
-            return m_Reverse.ContainsKey(value);
-        }
+        public bool HasBackward(TValue value) { return m_Reverse.ContainsKey(value); }
 
-        public TValue GetForward(TKey key)
-        {
-            return m_Forward[key];
-        }
+        public TValue GetForward(TKey key) { return m_Forward[key]; }
 
-        public bool ContainsReverse(TValue key)
-        {
-            return m_Reverse.ContainsKey(key);
-        }
+        public bool ContainsReverse(TValue key) { return m_Reverse.ContainsKey(key); }
 
-        public TKey GetReverse(TValue value)
-        {
-            return m_Reverse[value];
-        }
+        public TKey GetReverse(TValue value) { return m_Reverse[value]; }
 
         public void Remove(TValue entry)
         {
@@ -75,9 +60,6 @@ namespace Swihoni.Collections
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
     }
 }

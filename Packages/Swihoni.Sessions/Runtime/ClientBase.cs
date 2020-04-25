@@ -228,7 +228,7 @@ namespace Swihoni.Sessions
                         {
                             Container serverPlayer = serverPlayers[playerId];
                             var healthProperty = serverPlayer.Require<HealthProperty>();
-                            if (healthProperty.IsDead) continue;
+                            if (!healthProperty.HasValue || healthProperty.IsDead) continue;
 
                             FloatProperty serverTime = serverPlayer.Require<ServerStampComponent>().time,
                                           localizedServerTime = serverPlayer.Require<LocalizedClientStampComponent>().time;

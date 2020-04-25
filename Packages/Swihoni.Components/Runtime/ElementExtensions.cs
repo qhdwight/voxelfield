@@ -12,30 +12,15 @@ namespace Swihoni.Components
 
     public static class ElementExtensions
     {
-        public static bool IsComponent(this Type type)
-        {
-            return type.IsSubclassOf(typeof(ComponentBase));
-        }
+        public static bool IsComponent(this Type type) { return type.IsSubclassOf(typeof(ComponentBase)); }
 
-        public static bool IsProperty(this Type type)
-        {
-            return type.IsSubclassOf(typeof(PropertyBase));
-        }
+        public static bool IsProperty(this Type type) { return type.IsSubclassOf(typeof(PropertyBase)); }
 
-        public static bool IsArrayProperty(this Type type)
-        {
-            return type.IsSubclassOf(typeof(ArrayPropertyBase));
-        }
+        public static bool IsArrayProperty(this Type type) { return type.IsSubclassOf(typeof(ArrayPropertyBase)); }
 
-        public static bool IsElement(this Type type)
-        {
-            return type.IsSubclassOf(typeof(ElementBase));
-        }
+        public static bool IsElement(this Type type) { return type.IsSubclassOf(typeof(ElementBase)); }
 
-        public static bool IsContainer(this Type type)
-        {
-            return typeof(Container).IsAssignableFrom(type);
-        }
+        public static bool IsContainer(this Type type) { return typeof(Container).IsAssignableFrom(type); }
 
         /// <summary>
         /// Reset all properties to default values clear has value flags.

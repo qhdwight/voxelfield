@@ -24,10 +24,7 @@ namespace Swihoni.Util
 
         private static readonly Dictionary<string, PrefixLogger> Loggers = new Dictionary<string, PrefixLogger>();
 
-        public static void Reset(string prefix)
-        {
-            File.WriteAllText(GetFileName(prefix), string.Empty);
-        }
+        public static void Reset(string prefix) { File.WriteAllText(GetFileName(prefix), string.Empty); }
 
         public static void FlushAll()
         {
@@ -50,9 +47,6 @@ namespace Swihoni.Util
             if (logger.builder.Length > WriteSize) logger.Flush();
         }
 
-        private static string GetFileName(string prefix)
-        {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{prefix}Output.csv");
-        }
+        private static string GetFileName(string prefix) { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{prefix}Output.csv"); }
     }
 }

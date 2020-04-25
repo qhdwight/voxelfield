@@ -65,7 +65,7 @@ namespace Swihoni.Sessions
                 PreTick(serverSession);
                 Tick(serverSession);
                 PostTick(serverSession);
-                
+
                 var players = serverSession.Require<PlayerContainerArrayProperty>();
                 for (byte playerId = 0; playerId < players.Length; playerId++)
                 {
@@ -103,7 +103,9 @@ namespace Swihoni.Sessions
                 {
                     checked
                     {
-                        m_PlayerIds.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port), (byte) (m_PlayerIds.Length + 1));
+                        var newPlayerId = (byte) (m_PlayerIds.Length + 1);
+                        m_PlayerIds.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port), newPlayerId);
+                        Debug.Log($"[{GetType().Name}] Received new connection: {ipEndPoint}, setting up id: {newPlayerId}");
                     }
                 }
                 byte clientId = m_PlayerIds.GetForward(ipEndPoint);
@@ -132,7 +134,7 @@ namespace Swihoni.Sessions
 
                                     if (Mathf.Abs(serverPlayerTime.Value - serverTime) > m_Settings.TickInterval)
                                     {
-                                        Debug.LogWarning($"[{GetType().Name}] reset time for client: {clientId}");
+                                        Debug.LogWarning($"[{GetType().Name}] Reset time for client: {clientId}");
                                         serverPlayerTime.Value = serverTime;
                                     }
 

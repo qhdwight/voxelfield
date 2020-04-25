@@ -65,19 +65,11 @@ namespace Swihoni.Components
 
         public T? NullableValue => HasValue ? m_Value : (T?) null;
 
-        protected PropertyBase()
-        {
-        }
+        protected PropertyBase() { }
 
-        protected PropertyBase(T value)
-        {
-            Value = value;
-        }
+        protected PropertyBase(T value) { Value = value; }
 
-        public override int GetHashCode()
-        {
-            return RuntimeHelpers.GetHashCode(this);
-        }
+        public override int GetHashCode() { return RuntimeHelpers.GetHashCode(this); }
 
         public override bool Equals(object other)
         {
@@ -87,10 +79,7 @@ namespace Swihoni.Components
             return Equals(otherProperty);
         }
 
-        public static implicit operator T(PropertyBase<T> property)
-        {
-            return property.Value;
-        }
+        public static implicit operator T(PropertyBase<T> property) { return property.Value; }
 
         public static bool operator ==(PropertyBase<T> p1, PropertyBase<T> p2)
         {
@@ -99,10 +88,7 @@ namespace Swihoni.Components
             return p1.Equals(p2);
         }
 
-        public static bool operator !=(PropertyBase<T> p1, PropertyBase<T> p2)
-        {
-            return !(p1 == p2);
-        }
+        public static bool operator !=(PropertyBase<T> p1, PropertyBase<T> p2) { return !(p1 == p2); }
 
         public PropertyBase<T> IfPresent(Action<T> action)
         {
@@ -116,15 +102,9 @@ namespace Swihoni.Components
             m_Value = default;
         }
 
-        public override void Zero()
-        {
-            Value = default;
-        }
+        public override void Zero() { Value = default; }
 
-        public T OrElse(T @default)
-        {
-            return HasValue ? m_Value : @default;
-        }
+        public T OrElse(T @default) { return HasValue ? m_Value : @default; }
 
         public sealed override bool Equals(PropertyBase other)
         {
@@ -135,10 +115,7 @@ namespace Swihoni.Components
 
         public abstract bool ValueEquals(PropertyBase<T> other);
 
-        public override string ToString()
-        {
-            return HasValue ? m_Value.ToString() : "No Value";
-        }
+        public override string ToString() { return HasValue ? m_Value.ToString() : "No Value"; }
 
         public override void SetFromIfPresent(PropertyBase other)
         {
@@ -164,10 +141,7 @@ namespace Swihoni.Components
             ValueInterpolateFrom((PropertyBase<T>) p1, (PropertyBase<T>) p2, interpolation);
         }
 
-        public virtual void ValueInterpolateFrom(PropertyBase<T> p1, PropertyBase<T> p2, float interpolation)
-        {
-            SetFromIfPresent(p2);
-        }
+        public virtual void ValueInterpolateFrom(PropertyBase<T> p1, PropertyBase<T> p2, float interpolation) { SetFromIfPresent(p2); }
 
         public sealed override void Serialize(BinaryWriter writer)
         {

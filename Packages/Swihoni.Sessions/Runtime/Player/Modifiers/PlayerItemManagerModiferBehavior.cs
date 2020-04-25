@@ -106,9 +106,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        protected override void SynchronizeBehavior(Container componentToApply)
-        {
-        }
+        protected override void SynchronizeBehavior(Container componentToApply) { }
 
         public override void ModifyCommands(Container commands)
         {

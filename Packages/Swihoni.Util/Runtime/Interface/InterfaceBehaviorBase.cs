@@ -18,10 +18,7 @@ namespace Swihoni.Util.Interface
             // SetInterfaceActive(m_Active);
         }
 
-        public void ToggleInterfaceActive()
-        {
-            SetInterfaceActive(!IsActive);
-        }
+        public void ToggleInterfaceActive() { SetInterfaceActive(!IsActive); }
 
         public virtual void SetInterfaceActive(bool active)
         {

@@ -6,10 +6,7 @@ namespace Swihoni.Components
 {
     public abstract class ElementBase
     {
-        private bool Equals(ElementBase other)
-        {
-            return this.EqualTo(other);
-        }
+        private bool Equals(ElementBase other) { return this.EqualTo(other); }
 
         public override bool Equals(object other)
         {
@@ -18,10 +15,7 @@ namespace Swihoni.Components
             return other.GetType() == GetType() && Equals((ElementBase) other);
         }
 
-        public override int GetHashCode()
-        {
-            return RuntimeHelpers.GetHashCode(this);
-        }
+        public override int GetHashCode() { return RuntimeHelpers.GetHashCode(this); }
     }
 
     public abstract class ComponentBase : ElementBase
@@ -41,8 +35,6 @@ namespace Swihoni.Components
             }
         }
 
-        public virtual void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
-        {
-        }
+        public virtual void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation) { }
     }
 }

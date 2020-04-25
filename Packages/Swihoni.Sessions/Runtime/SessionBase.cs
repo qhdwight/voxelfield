@@ -24,7 +24,7 @@ namespace Swihoni.Sessions
 
     public abstract class SessionBase : IDisposable
     {
-        internal const int MaxPlayers = 2;
+        internal const int MaxPlayers = 3;
 
         private readonly GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
 
@@ -68,18 +68,11 @@ namespace Swihoni.Sessions
             m_RenderTime = time;
         }
 
-        protected virtual void Render(float renderTime)
-        {
-        }
+        protected virtual void Render(float renderTime) { }
 
-        protected virtual void Tick(uint tick, float time, float duration)
-        {
-            Time.fixedDeltaTime = 1.0f / m_Settings.tickRate;
-        }
+        protected virtual void Tick(uint tick, float time, float duration) { Time.fixedDeltaTime = 1.0f / m_Settings.tickRate; }
 
-        public virtual void Input(float time, float delta)
-        {
-        }
+        public virtual void Input(float time, float delta) { }
 
         public void FixedUpdate(float time)
         {
@@ -126,9 +119,8 @@ namespace Swihoni.Sessions
         public virtual void Dispose()
         {
             foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier)
-            {
-                UnityObject.Destroy(modifier.gameObject);
-            }
+                if (modifier)
+                    UnityObject.Destroy(modifier.gameObject);
             foreach (IPlayerContainerRenderer visual in m_Visuals)
                 visual.Dispose();
         }

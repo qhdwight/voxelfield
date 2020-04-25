@@ -47,9 +47,6 @@ namespace Swihoni.Collections
             return obtainedItem;
         }
 
-        protected virtual T GetItemWhenEmpty()
-        {
-            return m_Constructor();
-        }
+        protected virtual T GetItemWhenEmpty() { return m_Constructor(); }
     }
 }

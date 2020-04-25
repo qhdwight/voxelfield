@@ -7,13 +7,9 @@ namespace Swihoni.Sessions.Player.Visualization
 {
     public abstract class PlayerVisualsBehaviorBase : MonoBehaviour
     {
-        internal virtual void Setup()
-        {
-        }
+        internal virtual void Setup() { }
 
-        internal virtual void Cleanup()
-        {
-        }
+        internal virtual void Cleanup() { }
 
         public abstract void Render(Container playerContainer, bool isLocalPlayer);
     }
@@ -78,7 +74,8 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void Dispose()
         {
-            Destroy(gameObject);
+            if (this)
+                Destroy(gameObject);
         }
     }
 }

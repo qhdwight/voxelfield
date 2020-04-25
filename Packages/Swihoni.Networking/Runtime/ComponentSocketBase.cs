@@ -64,7 +64,6 @@ namespace Swihoni.Networking
                     bool isNewConnection = !m_Connections.Contains(ipEndPoint);
                     if (isNewConnection)
                     {
-                        Debug.Log($"[{GetType().Name}] Received new connection {m_ReceiveEndPoint}");
                         m_Connections.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port));
                     }
                     m_ReadStream.Position = 0;

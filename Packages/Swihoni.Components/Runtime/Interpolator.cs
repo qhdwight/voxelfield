@@ -36,10 +36,7 @@ namespace Swihoni.Components
     {
         public readonly float tolerance;
 
-        public Tolerance(float tolerance)
-        {
-            this.tolerance = tolerance;
-        }
+        public Tolerance(float tolerance) { this.tolerance = tolerance; }
     }
 
     public static class Interpolator

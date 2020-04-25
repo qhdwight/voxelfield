@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 
 namespace Swihoni.Components
@@ -17,10 +16,7 @@ namespace Swihoni.Components
         private static readonly BinaryReader Reader = new BinaryReader(Stream);
         private static readonly Mutex StreamMutex = new Mutex();
 
-        static Serializer()
-        {
-            Stream.SetLength(Stream.Capacity);
-        }
+        static Serializer() { Stream.SetLength(Stream.Capacity); }
 
         public static void Serialize(this ElementBase component, MemoryStream stream)
         {

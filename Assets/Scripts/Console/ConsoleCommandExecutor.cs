@@ -13,7 +13,7 @@ namespace Console
         private static readonly string[] CommandSeparator = {"&&"};
 
         private static Dictionary<string, Command> _commands;
-        
+
         [RuntimeInitializeOnLoadMethod]
         private static void RunOnStart()
         {
@@ -28,15 +28,9 @@ namespace Console
             };
         }
 
-        public static void RegisterCommand(string commandName, Command command)
-        {
-            _commands.Add(commandName, command);
-        }
+        public static void RegisterCommand(string commandName, Command command) { _commands.Add(commandName, command); }
 
-        public static string GetAutocomplete(string stub)
-        {
-            return _commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
-        }
+        public static string GetAutocomplete(string stub) { return _commands.Keys.FirstOrDefault(command => command.StartsWith(stub)); }
 
         public static void ExecuteCommand(string fullCommand)
         {

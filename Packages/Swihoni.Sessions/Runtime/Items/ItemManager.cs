@@ -57,9 +57,6 @@ namespace Swihoni.Sessions.Items
             pool.Return(visual);
         }
 
-        public static ItemModifierBase GetModifier(byte itemId)
-        {
-            return ItemResourceManager.ItemModifiers[itemId - 1];
-        }
+        public static ItemModifierBase GetModifier(byte itemId) { return ItemResourceManager.ItemModifiers[itemId - 1]; }
     }
 }

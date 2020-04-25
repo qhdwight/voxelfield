@@ -21,23 +21,15 @@ namespace Swihoni.Components
             m_Children = new SortedDictionary<Type, ElementBase>(comparer);
         }
 
-        public Container(IEnumerable<Type> types) : this(types.ToArray())
-        {
-        }
+        public Container(IEnumerable<Type> types) : this(types.ToArray()) { }
 
         /// <summary>
         /// Order of types determines serialization, so server and client must have the same order.
         /// </summary>
         /// <param name="types"></param>
-        public Container(params Type[] types) : this()
-        {
-            Add(types);
-        }
+        public Container(params Type[] types) : this() { Add(types); }
 
-        public ElementBase TryGet(Type type)
-        {
-            return m_TypeToId.ContainsKey(type) ? m_Children[type] : null;
-        }
+        public ElementBase TryGet(Type type) { return m_TypeToId.ContainsKey(type) ? m_Children[type] : null; }
 
         public void Add(IEnumerable<Type> types)
         {
@@ -55,10 +47,7 @@ namespace Swihoni.Components
             }
         }
 
-        public void Add(params Type[] types)
-        {
-            Add((IEnumerable<Type>) types);
-        }
+        public void Add(params Type[] types) { Add((IEnumerable<Type>) types); }
 
         public void Set(IEnumerable<Type> types)
         {
@@ -67,15 +56,9 @@ namespace Swihoni.Components
             Add(types);
         }
 
-        public bool Without<TElement>(out TElement component) where TElement : ElementBase
-        {
-            return !Has(out component);
-        }
+        public bool Without<TElement>(out TElement component) where TElement : ElementBase { return !Has(out component); }
 
-        public bool Present<TElement>(out TElement component) where TElement : PropertyBase
-        {
-            return Has(out component) && component.HasValue;
-        }
+        public bool Present<TElement>(out TElement component) where TElement : PropertyBase { return Has(out component) && component.HasValue; }
 
         public bool Has<TElement>(out TElement component) where TElement : ElementBase
         {
@@ -84,10 +67,7 @@ namespace Swihoni.Components
             return hasComponent;
         }
 
-        public bool Has<TElement>()
-        {
-            return m_Children.ContainsKey(typeof(TElement));
-        }
+        public bool Has<TElement>() { return m_Children.ContainsKey(typeof(TElement)); }
 
         public TElement Require<TElement>()
         {

@@ -26,9 +26,7 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class PlayerContainerArrayProperty : ArrayProperty<Container>
     {
-        public PlayerContainerArrayProperty() : base(SessionBase.MaxPlayers)
-        {
-        }
+        public PlayerContainerArrayProperty() : base(SessionBase.MaxPlayers) { }
     }
 
     [Serializable]
@@ -51,10 +49,7 @@ namespace Swihoni.Sessions.Components
         public UIntProperty tick;
         public FloatProperty time, duration;
 
-        public override string ToString()
-        {
-            return $"Tick: {tick}, Time: {time}, Duration: {duration}";
-        }
+        public override string ToString() { return $"Tick: {tick}, Time: {time}, Duration: {duration}"; }
     }
 
     [Serializable]
