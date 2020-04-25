@@ -143,7 +143,7 @@ namespace Swihoni.Sessions
                           toComponent = getInHistory(historyIndex);
                 FloatProperty toTime = toComponent.Require<TStampComponent>().time,
                               fromTime = fromComponent.Require<TStampComponent>().time;
-                if (!fromTime.HasValue) break;
+                if (!fromTime.HasValue || !toTime.HasValue) break;
                 if (renderTime > fromTime && renderTime < toTime)
                 {
                     float interpolation = (renderTime - fromTime) / (toTime - fromTime);

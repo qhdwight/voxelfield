@@ -28,7 +28,7 @@ namespace Compound.Session
             });
             ConsoleCommandExecutor.RegisterCommand("disconnect", args =>
             {
-                Disconnect();
+                DisconnectAll();
                 return string.Empty;
             });
         }
@@ -36,20 +36,38 @@ namespace Compound.Session
         public Host StartHost()
         {
             var host = new Host(this);
-            host.Start();
-            m_Host = host;
-            return host;
+            try
+            {
+                host.Start();
+                m_Host = host;
+                return host;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception);
+                host.Dispose();
+                return null;
+            }
         }
         
         public Client StartClient(IPEndPoint ipEndPoint)
         {
             var client = new Client(this, ipEndPoint);
-            client.Start();
-            m_Client = client;
-            return client;
+            try
+            {
+                client.Start();
+                m_Client = client;
+                return client;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception);
+                client.Dispose();
+                return null;
+            }
         }
 
-        public void Disconnect()
+        public void DisconnectAll()
         {
             m_Host?.Disconnect();
             m_Client?.Disconnect();
@@ -67,7 +85,7 @@ namespace Compound.Session
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                m_Host = m_Client = null;
+                DisconnectAll();
             }
 
             if (Input.GetKeyDown(KeyCode.H))
@@ -78,7 +96,12 @@ namespace Compound.Session
                 client.ShouldRender = false;
             }
             if (Input.GetKeyDown(KeyCode.K))
-                Disconnect();
+                DisconnectAll();
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                m_Client?.Disconnect();
+                m_Client = null;
+            }
         }
 
         private void FixedUpdate()
@@ -92,13 +115,13 @@ namespace Compound.Session
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                m_Host = m_Client = null;
+                DisconnectAll();
             }
         }
 
         private void OnDestroy()
         {
-            Disconnect();
+            DisconnectAll();
         }
 
         public (GameObject, GameObject) GetPlayerPrefabs() { return (m_PlayerModifierPrefab, m_PlayerVisualsPrefab); }

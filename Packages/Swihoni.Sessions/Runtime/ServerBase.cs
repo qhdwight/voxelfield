@@ -65,6 +65,17 @@ namespace Swihoni.Sessions
                 PreTick(serverSession);
                 Tick(serverSession);
                 PostTick(serverSession);
+                
+                var players = serverSession.Require<PlayerContainerArrayProperty>();
+                for (byte playerId = 0; playerId < players.Length; playerId++)
+                {
+                    Container player = players[playerId];
+                    FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
+                    if (!serverPlayerTime.HasValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) continue;
+                    Debug.LogWarning($"Dropping player with id: {playerId}");
+                    m_PlayerIds.Remove(playerId);
+                    player.Reset();
+                }
             }
         }
 
@@ -103,8 +114,8 @@ namespace Swihoni.Sessions
                     case ClientCommandsContainer clientCommands:
                     {
                         FloatProperty serverPlayerTime = serverPlayer.Require<ServerStampComponent>().time;
-                        float serverTime = serverSession.Require<ServerStampComponent>().time;
                         var clientStamp = clientCommands.Require<ClientStampComponent>();
+                        float serverTime = serverSession.Require<ServerStampComponent>().time;
                         var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
                         // Clients start to tag with ticks once they receive their first server player state
                         if (clientStamp.tick.HasValue)
@@ -121,7 +132,7 @@ namespace Swihoni.Sessions
 
                                     if (Mathf.Abs(serverPlayerTime.Value - serverTime) > m_Settings.TickInterval)
                                     {
-                                        Debug.LogWarning("Server reset");
+                                        Debug.LogWarning($"[{GetType().Name}] reset time for client: {clientId}");
                                         serverPlayerTime.Value = serverTime;
                                     }
 
@@ -130,7 +141,7 @@ namespace Swihoni.Sessions
                                 }
                                 else
                                 {
-                                    Debug.LogWarning($"[{GetType().Name}] Received out of order client command");
+                                    Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
                                 }
                             }
                         }
@@ -153,7 +164,7 @@ namespace Swihoni.Sessions
         public override void Dispose()
         {
             base.Dispose();
-            m_Socket.Dispose();
+            m_Socket?.Dispose();
         }
     }
 }

@@ -269,7 +269,7 @@ namespace Swihoni.Sessions
         public override void Dispose()
         {
             base.Dispose();
-            m_Socket.Dispose();
+            m_Socket?.Dispose();
         }
     }
 }
