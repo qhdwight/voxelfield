@@ -12,23 +12,30 @@ namespace Console
     {
         private static readonly string[] CommandSeparator = {"&&"};
 
-        private static readonly Dictionary<string, Command> Commands = new Dictionary<string, Command>
+        private static Dictionary<string, Command> _commands;
+        
+        [RuntimeInitializeOnLoadMethod]
+        private static void RunOnStart()
         {
-            ["clear"] = args =>
+            // Conform with https://docs.unity3d.com/Manual/DomainReloading.html
+            _commands = new Dictionary<string, Command>
             {
-                ConsoleInterface.Singleton.ClearConsole();
-                return null;
-            }
-        };
+                ["clear"] = args =>
+                {
+                    ConsoleInterface.Singleton.ClearConsole();
+                    return null;
+                }
+            };
+        }
 
         public static void RegisterCommand(string commandName, Command command)
         {
-            Commands.Add(commandName, command);
+            _commands.Add(commandName, command);
         }
 
         public static string GetAutocomplete(string stub)
         {
-            return Commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
+            return _commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
         }
 
         public static void ExecuteCommand(string fullCommand)
@@ -38,9 +45,9 @@ namespace Console
             {
                 string[] args = command.Trim().Split();
                 string commandName = args.First();
-                if (Commands.ContainsKey(commandName))
+                if (_commands.ContainsKey(commandName))
                 {
-                    string result = Commands[commandName](args);
+                    string result = _commands[commandName](args);
                     if (!string.IsNullOrEmpty(result))
                         Debug.Log(result);
                 }

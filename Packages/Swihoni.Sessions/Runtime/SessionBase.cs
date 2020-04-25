@@ -127,7 +127,7 @@ namespace Swihoni.Sessions
         {
             foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier)
             {
-                UnityObject.Destroy(modifier);
+                UnityObject.Destroy(modifier.gameObject);
             }
             foreach (IPlayerContainerRenderer visual in m_Visuals)
                 visual.Dispose();

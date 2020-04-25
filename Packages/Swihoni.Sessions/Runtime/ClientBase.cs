@@ -50,7 +50,6 @@ namespace Swihoni.Sessions
             m_CommandHistory.Peek().Require<CameraComponent>().Zero();
             m_PlayerPredictionHistory = new CyclicArray<Container>(250, () =>
             {
-                // IEnumerable<Type> predictedElements = playerElements.Except(new[] {typeof(HealthProperty)}).Append(typeof(StampComponent));
                 IEnumerable<Type> predictedElements = playerElements.Append(typeof(ClientStampComponent));
                 return new Container(predictedElements);
             });
@@ -135,16 +134,19 @@ namespace Swihoni.Sessions
 
                 predictedStamp.tick.Value = tick;
                 predictedStamp.time.Value = time;
-                float lastTime = previousPredictedPlayer.Require<ClientStampComponent>().time.OrElse(time),
-                      duration = time - lastTime;
-                predictedStamp.duration.Value = duration;
+                var previousClientStamp = previousPredictedPlayer.Require<ClientStampComponent>();
+                if (previousClientStamp.time.HasValue)
+                {
+                    float lastTime = previousClientStamp.time.OrElse(time),
+                          duration = time - lastTime;
+                    predictedStamp.duration.Value = duration;
+                }
 
                 // Inject trusted component
                 ClientCommandsContainer predictedCommands = m_CommandHistory.Peek();
-                var predictedCommandsStamp = predictedCommands.Require<ClientStampComponent>();
-                predictedCommandsStamp.CopyFrom(predictedStamp);
+                predictedCommands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
                 predictedPlayer.MergeSet(predictedCommands);
-                m_Modifier[localPlayerId].ModifyChecked(predictedPlayer, predictedCommands, duration);
+                if (predictedStamp.duration.HasValue) m_Modifier[localPlayerId].ModifyChecked(predictedPlayer, predictedCommands, predictedStamp.duration);
 
                 DebugBehavior.Singleton.Predicted = predictedPlayer;
             }
@@ -225,19 +227,20 @@ namespace Swihoni.Sessions
                         for (var playerId = 0; playerId < serverPlayers.Length; playerId++)
                         {
                             Container serverPlayer = serverPlayers[playerId];
+                            var healthProperty = serverPlayer.Require<HealthProperty>();
+                            if (healthProperty.IsDead) continue;
+
                             FloatProperty serverTime = serverPlayer.Require<ServerStampComponent>().time,
                                           localizedServerTime = serverPlayer.Require<LocalizedClientStampComponent>().time;
+
                             if (localizedServerTime.HasValue)
-                            {
-                                float previousServerTime = previousServerSession.Require<PlayerContainerArrayProperty>()[playerId].Require<ServerStampComponent>().time;
-                                localizedServerTime.Value += serverTime - previousServerTime;
-                            }
+                                localizedServerTime.Value += serverTime - previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().time;
                             else
                                 localizedServerTime.Value = time;
 
                             if (Mathf.Abs(localizedServerTime.Value - time) > m_Settings.TickInterval)
                             {
-                                Debug.LogError("Client Reset");
+                                Debug.LogWarning("Client reset");
                                 localizedServerTime.Value = time;
                             }
                         }
@@ -263,6 +266,10 @@ namespace Swihoni.Sessions
             return false;
         }
 
-        public override void Dispose() { m_Socket.Dispose(); }
+        public override void Dispose()
+        {
+            base.Dispose();
+            m_Socket.Dispose();
+        }
     }
 }

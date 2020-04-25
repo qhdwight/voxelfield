@@ -63,6 +63,8 @@ namespace Swihoni.Components
             }
         }
 
+        public T? NullableValue => HasValue ? m_Value : (T?) null;
+
         protected PropertyBase()
         {
         }

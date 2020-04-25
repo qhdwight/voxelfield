@@ -15,7 +15,7 @@ namespace Swihoni.Components
     }
 
     [Serializable]
-    public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T> where T : ElementBase
+    public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T> where T : ElementBase, new()
     {
         [CopyField, SerializeField] private T[] m_Values;
 
@@ -27,7 +27,7 @@ namespace Swihoni.Components
         public ArrayProperty(int size)
         {
             m_Values = new T[size];
-            SetAll(Activator.CreateInstance<T>);
+            SetAll(() => new T());
         }
 
         public void SetAll(Func<T> constructor)

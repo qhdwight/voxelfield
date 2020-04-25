@@ -26,6 +26,11 @@ namespace Compound.Session
                 Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
                 return $"Started client at {client.IpEndPoint}";
             });
+            ConsoleCommandExecutor.RegisterCommand("disconnect", args =>
+            {
+                Disconnect();
+                return string.Empty;
+            });
         }
 
         public Host StartHost()
@@ -48,6 +53,7 @@ namespace Compound.Session
         {
             m_Host?.Disconnect();
             m_Client?.Disconnect();
+            m_Host = m_Client = null;
         }
 
         private void Update()
@@ -61,9 +67,18 @@ namespace Compound.Session
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                m_Host = null;
-                m_Client = null;
+                m_Host = m_Client = null;
             }
+
+            if (Input.GetKeyDown(KeyCode.H))
+                StartHost();
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
+                client.ShouldRender = false;
+            }
+            if (Input.GetKeyDown(KeyCode.K))
+                Disconnect();
         }
 
         private void FixedUpdate()
@@ -77,15 +92,13 @@ namespace Compound.Session
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                m_Host = null;
-                m_Client = null;
+                m_Host = m_Client = null;
             }
         }
 
         private void OnDestroy()
         {
-            m_Host?.Disconnect();
-            m_Client?.Disconnect();
+            Disconnect();
         }
 
         public (GameObject, GameObject) GetPlayerPrefabs() { return (m_PlayerModifierPrefab, m_PlayerVisualsPrefab); }

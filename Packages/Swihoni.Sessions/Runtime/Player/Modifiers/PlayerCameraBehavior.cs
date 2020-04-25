@@ -21,14 +21,14 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyCommands(Container commandsToModify)
         {
-            if (!commandsToModify.Has(out MouseComponent mouseComponent)) return;
+            if (commandsToModify.Without(out MouseComponent mouseComponent)) return;
             mouseComponent.mouseDeltaX.Value = InputProvider.GetMouseInput(MouseMovement.X);
             mouseComponent.mouseDeltaY.Value = InputProvider.GetMouseInput(MouseMovement.Y);
         }
 
         protected override void SynchronizeBehavior(Container containersToApply)
         {
-            if (!containersToApply.Has(out CameraComponent cameraComponent)) return;
+            if (containersToApply.Without(out CameraComponent cameraComponent)) return;
             if (cameraComponent.yaw.HasValue) transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
         }
     }

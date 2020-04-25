@@ -102,32 +102,42 @@ namespace Swihoni.Sessions
                 {
                     case ClientCommandsContainer clientCommands:
                     {
-                        var clientStamp = clientCommands.Require<ClientStampComponent>();
-                        if (!clientStamp.tick.HasValue)
-                            break;
-                        // Make sure this is the newest tick
-                        var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
-                        if (serverPlayerClientStamp.tick.HasValue && clientStamp.tick <= serverPlayerClientStamp.tick)
-                        {
-                            Debug.LogWarning($"[{GetType().Name}] Received out of order client command");
-                            break;
-                        }
                         FloatProperty serverPlayerTime = serverPlayer.Require<ServerStampComponent>().time;
                         float serverTime = serverSession.Require<ServerStampComponent>().time;
-                        if (serverPlayerTime.HasValue)
-                            serverPlayerTime.Value += clientStamp.time - serverPlayerClientStamp.time;
-                        else
-                            serverPlayerTime.Value = serverTime;
-
-                        if (Mathf.Abs(serverPlayerTime.Value - serverTime) > m_Settings.TickInterval)
+                        var clientStamp = clientCommands.Require<ClientStampComponent>();
+                        var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
+                        // Clients start to tag with ticks once they receive their first server player state
+                        if (clientStamp.tick.HasValue)
                         {
-                            Debug.LogError("Server Reset");
+                            if (!serverPlayerClientStamp.tick.HasValue)
+                                // Take one tick to set initial server player client stamp
+                                serverPlayerClientStamp.MergeSet(clientStamp);
+                            else
+                            {
+                                // Make sure this is the newest tick
+                                if (clientStamp.tick > serverPlayerClientStamp.tick)
+                                {
+                                    serverPlayerTime.Value += clientStamp.time - serverPlayerClientStamp.time;
+
+                                    if (Mathf.Abs(serverPlayerTime.Value - serverTime) > m_Settings.TickInterval)
+                                    {
+                                        Debug.LogWarning("Server reset");
+                                        serverPlayerTime.Value = serverTime;
+                                    }
+
+                                    serverPlayer.MergeSet(clientCommands);
+                                    m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
+                                }
+                                else
+                                {
+                                    Debug.LogWarning($"[{GetType().Name}] Received out of order client command");
+                                }
+                            }
+                        }
+                        else
+                        {
                             serverPlayerTime.Value = serverTime;
                         }
-
-                        serverPlayer.MergeSet(clientCommands);
-                        m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
-
                         break;
                     }
                 }
@@ -139,7 +149,11 @@ namespace Swihoni.Sessions
                 m_Socket.Send(serverSession, ipEndPoint);
             }
         }
-        
-        public override void Dispose() { m_Socket.Dispose(); }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            m_Socket.Dispose();
+        }
     }
 }
