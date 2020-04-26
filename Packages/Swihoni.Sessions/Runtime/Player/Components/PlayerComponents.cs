@@ -20,7 +20,7 @@ namespace Swihoni.Sessions.Player.Components
         [Tolerance(0.1f)] public VectorProperty position, velocity;
         public ByteProperty groundTick;
 
-        public override string ToString() { return $"Position: {position}"; }
+        public override string ToString() { return $"Position: {position}, Velocity: {velocity}"; }
     }
 
     [Serializable]

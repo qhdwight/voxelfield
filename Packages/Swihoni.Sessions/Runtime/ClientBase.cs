@@ -23,11 +23,14 @@ namespace Swihoni.Sessions
     {
     }
 
-    [Serializable] // TODO:refactor use client stamp component instead and don't send that when on server
+    /// <summary>
+    /// Use to put server time of updates into client time.
+    /// </summary>
+    [Serializable]
     public class LocalizedClientStampComponent : StampComponent
     {
     }
-
+    
     public abstract class ClientBase : NetworkedSessionBase
     {
         private readonly Container m_RenderSession;
@@ -47,17 +50,17 @@ namespace Swihoni.Sessions
                 players.SetAll(() => new Container(playerElements));
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
+            // TODO:refactor zeroing
             m_CommandHistory.Peek().Require<CameraComponent>().Zero();
             m_PlayerPredictionHistory = new CyclicArray<Container>(250, () =>
             {
                 IEnumerable<Type> predictedElements = playerElements.Append(typeof(ClientStampComponent));
                 return new Container(predictedElements);
             });
+            // TODO:refactor zeroing
             m_PlayerPredictionHistory.Peek().Zero();
             m_PlayerPredictionHistory.Peek().Require<ClientStampComponent>().Reset();
-            foreach (ServerSessionContainer serverSession in m_SessionHistory)
-            foreach (Container player in serverSession.Require<PlayerContainerArrayProperty>())
-                player.Add(typeof(LocalizedClientStampComponent));
+            ForEachPlayer(player => player.Add(typeof(LocalizedClientStampComponent)));
         }
 
         public override void Start()

@@ -32,6 +32,13 @@ namespace Swihoni.Sessions
             m_EmptyServerSession = ServerSessionContainerConstructor();
         }
 
+        protected void ForEachPlayer(Action<Container> action)
+        {
+            foreach (ServerSessionContainer serverSession in m_SessionHistory)
+            foreach (Container player in serverSession.Require<PlayerContainerArrayProperty>())
+                action(player);
+        }
+
         public virtual void Disconnect() { Dispose(); }
     }
 

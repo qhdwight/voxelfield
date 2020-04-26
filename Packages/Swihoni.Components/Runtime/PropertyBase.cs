@@ -54,7 +54,7 @@ namespace Swihoni.Components
             {
                 if (HasValue)
                     return m_Value;
-                throw new Exception("No value!");
+                throw new Exception($"No value for: {GetType().Name} attached to field: {Field?.Name ?? "None"}!");
             }
             set
             {

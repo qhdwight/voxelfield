@@ -75,7 +75,7 @@ namespace Swihoni.Networking
                     received(ipEndPoint, message);
                     m_MessagePools[message.GetType()].Return(message);
                 }
-                catch (SocketException socketException)
+                catch (SocketException)
                 {
                     // TODO:safety handle
                 }

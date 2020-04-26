@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Player.Visualization
         private float m_FieldOfView;
         private Animator m_Animator;
         private PlayableGraph m_Graph;
-        private ItemVisualBehavior m_Visuals;
+        private ItemVisualBehavior m_ItemVisual;
 
         public ArmIk ArmIk { get; private set; }
 
@@ -42,82 +42,95 @@ namespace Swihoni.Sessions.Player.Visualization
             AnimationPlayableOutput.Create(m_Graph, $"{m_GraphName} Output", m_Animator);
         }
 
-        public void Render(Container playerContainer, bool isLocalPlayer)
+        public void Render(Container player, bool isLocalPlayer)
         {
-            if (!playerContainer.Has(out InventoryComponent inventoryComponent)) return;
+            if (!player.Has(out InventoryComponent inventory)) return;
 
-            m_Visuals = SetupVisualItem(inventoryComponent);
-            if (m_Visuals == null) return;
-            ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
-            ByteStatusComponent equipStatus = inventoryComponent.equipStatus;
-            bool isEquipped = equipStatus.id == ItemEquipStatusId.Equipped;
-            ByteStatusComponent expressedStatus = isEquipped ? equippedItemComponent.status : equipStatus;
-            float duration = (isEquipped
-                      ? m_Visuals.ModiferProperties.GetStatusModifierProperties(expressedStatus.id)
-                      : m_Visuals.ModiferProperties.GetEquipStatusModifierProperties(expressedStatus.id)).duration,
-                  interpolation = expressedStatus.elapsed / duration;
-            // TODO: refactor generalize logic for viewable
-            if (m_FpvArmsRenderer)
+            bool isVisible = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
+
+            if (isVisible)
             {
-                m_FpvArmsRenderer.enabled = isLocalPlayer;
-                m_FpvArmsRenderer.shadowCastingMode = ShadowCastingMode.Off;
+                m_ItemVisual = SetupVisualItem(inventory);
+                if (m_ItemVisual == null) return;
+                ItemComponent equippedItem = inventory.EquippedItemComponent;
+                ByteStatusComponent equipStatus = inventory.equipStatus;
+                bool isEquipped = equipStatus.id == ItemEquipStatusId.Equipped;
+                ByteStatusComponent expressedStatus = isEquipped ? equippedItem.status : equipStatus;
+                float duration = (isEquipped
+                          ? m_ItemVisual.ModiferProperties.GetStatusModifierProperties(expressedStatus.id)
+                          : m_ItemVisual.ModiferProperties.GetEquipStatusModifierProperties(expressedStatus.id)).duration,
+                      interpolation = expressedStatus.elapsed / duration;
+                // TODO:refactor generalize logic for viewable
+                if (m_FpvArmsRenderer)
+                {
+                    m_FpvArmsRenderer.enabled = isLocalPlayer;
+                    m_FpvArmsRenderer.shadowCastingMode = ShadowCastingMode.Off;
+                }
+                if (m_IsFpv)
+                    m_ItemVisual.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
+                else
+                    m_ItemVisual.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
+
+                SampleItemAnimation(equippedItem, equipStatus, interpolation);
+
+                if (m_IsFpv) AnimateAim(inventory);
+
+                if (!player.Has(out CameraComponent playerCamera) || !m_TpvArmsRotator) return;
+                const float armClamp = 60.0f;
+                m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(playerCamera.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
             }
-            if (m_IsFpv)
-                m_Visuals.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
             else
-                m_Visuals.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
-
-            SampleItemAnimation(equippedItemComponent, equipStatus, interpolation);
-
-            if (m_IsFpv) AnimateAim(inventoryComponent);
-
-            if (!playerContainer.Has(out CameraComponent cameraComponent) || !m_TpvArmsRotator) return;
-            const float armClamp = 60.0f;
-            m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(cameraComponent.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
+            {
+                if (m_ItemVisual)
+                {
+                    ItemManager.Singleton.ReturnVisuals(m_ItemVisual);
+                    m_ItemVisual = null;
+                }
+            }
         }
 
-        private ItemVisualBehavior SetupVisualItem(InventoryComponent inventoryComponent)
+        private ItemVisualBehavior SetupVisualItem(InventoryComponent inventory)
         {
-            if (inventoryComponent.HasNoItemEquipped)
+            if (inventory.HasNoItemEquipped)
             {
-                if (m_Visuals) ItemManager.Singleton.ReturnVisuals(m_Visuals);
+                if (m_ItemVisual) ItemManager.Singleton.ReturnVisuals(m_ItemVisual);
                 return null;
             }
-            byte itemId = inventoryComponent.EquippedItemComponent.id;
-            if (m_Visuals && itemId == m_Visuals.ModiferProperties.id) return m_Visuals;
-            if (m_Visuals) ItemManager.Singleton.ReturnVisuals(m_Visuals); // We have existing visuals but they are the wrong item id
+            byte itemId = inventory.EquippedItemComponent.id;
+            if (m_ItemVisual && itemId == m_ItemVisual.ModiferProperties.id) return m_ItemVisual;
+            if (m_ItemVisual) ItemManager.Singleton.ReturnVisuals(m_ItemVisual); // We have existing visuals but they are the wrong item id
             ItemVisualBehavior newVisuals = ItemManager.Singleton.ObtainVisuals(itemId, this, m_Graph);
             newVisuals.transform.SetParent(transform, false);
-            m_Visuals = newVisuals;
+            m_ItemVisual = newVisuals;
             if (m_IsFpv) transform.localPosition = newVisuals.FpvOffset;
             else newVisuals.transform.localPosition = newVisuals.TpvOffset;
             return newVisuals;
         }
 
-        private void SampleItemAnimation(ItemComponent itemComponent, ByteStatusComponent equipStatus, float statusInterpolation)
+        private void SampleItemAnimation(ItemComponent item, ByteStatusComponent equipStatus, float statusInterpolation)
         {
-            m_Visuals.SampleEvents(itemComponent, equipStatus);
-            m_Visuals.SampleAnimation(itemComponent, equipStatus, statusInterpolation);
+            m_ItemVisual.SampleEvents(item, equipStatus);
+            m_ItemVisual.SampleAnimation(item, equipStatus, statusInterpolation);
         }
 
-        public void AnimateAim(InventoryComponent inventoryComponent)
+        public void AnimateAim(InventoryComponent inventory)
         {
-            if (!(m_Visuals is GunVisualBehavior gunVisuals) || !(m_Visuals.ModiferProperties is GunWithMagazineModifier gunModifier)) return;
-            float adsInterpolation = GetAimInterpolationValue(inventoryComponent);
+            if (!(m_ItemVisual is GunVisualBehavior gunVisuals) || !(m_ItemVisual.ModiferProperties is GunWithMagazineModifier gunModifier)) return;
+            float adsInterpolation = GetAimInterpolationValue(inventory);
             Vector3 adsPosition = -transform.InverseTransformPoint(gunVisuals.AdsTarget.position);
-            transform.localPosition = Vector3.Slerp(m_Visuals.FpvOffset, adsPosition, adsInterpolation);
+            transform.localPosition = Vector3.Slerp(m_ItemVisual.FpvOffset, adsPosition, adsInterpolation);
             m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView / 2, adsInterpolation);
         }
 
-        private static float GetAimInterpolationValue(InventoryComponent inventoryComponent)
+        private static float GetAimInterpolationValue(InventoryComponent inventory)
         {
             var aimInterpolationValue = 0.0f;
-            ByteStatusComponent adsStatus = inventoryComponent.adsStatus;
+            ByteStatusComponent adsStatus = inventory.adsStatus;
             switch (adsStatus.id)
             {
                 case AdsStatusId.ExitingAds:
                 case AdsStatusId.EnteringAds:
-                    var gunModifier = (GunModifierBase) ItemManager.GetModifier(inventoryComponent.EquippedItemComponent.id);
+                    var gunModifier = (GunModifierBase) ItemManager.GetModifier(inventory.EquippedItemComponent.id);
                     float duration = gunModifier.GetAdsStatusModifierProperties(adsStatus.id).duration;
                     aimInterpolationValue = adsStatus.elapsed / duration;
                     break;

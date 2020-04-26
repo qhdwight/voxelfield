@@ -15,9 +15,11 @@ namespace Swihoni.Sessions
         protected HostBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
+            // TODO:refactor zeroing
             m_HostCommands = new Container(commandElements.Concat(playerElements).Append(typeof(ServerStampComponent)));
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Reset();
+            
             m_RenderSession = new Container(sessionElements);
             if (m_RenderSession.Has(out PlayerContainerArrayProperty players))
                 players.SetAll(() => new Container(playerElements));

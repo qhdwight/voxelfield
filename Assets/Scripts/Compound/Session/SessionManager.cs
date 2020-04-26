@@ -96,8 +96,6 @@ namespace Compound.Session
                 if (Application.isEditor) client.ShouldRender = false;
             }
             if (Input.GetKeyDown(KeyCode.K))
-                DisconnectAll();
-            if (Input.GetKeyDown(KeyCode.L))
             {
                 m_Client?.Disconnect();
                 m_Client = null;

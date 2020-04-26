@@ -74,43 +74,43 @@ namespace Swihoni.Sessions.Items.Visuals
             if (m_PlayerGraph.IsValid()) m_PlayerGraph.DestroySubgraph(m_Mixer);
         }
 
-        private (ItemStatusVisualProperties, int) GetVisualProperties(ItemComponent itemComponent, ByteStatusComponent equipStatus)
+        private (ItemStatusVisualProperties, int) GetVisualProperties(ItemComponent item, ByteStatusComponent equipStatus)
         {
             bool useStatus = equipStatus.id == ItemEquipStatusId.Equipped;
             ItemStatusVisualProperties statusVisualProperties = useStatus
-                ? m_StatusVisualProperties[itemComponent.status.id]
+                ? m_StatusVisualProperties[item.status.id]
                 : m_EquipStatusVisualProperties[equipStatus.id];
-            int animationIndex = useStatus ? itemComponent.status.id : equipStatus.id + m_StatusVisualProperties.Length;
+            int animationIndex = useStatus ? item.status.id : equipStatus.id + m_StatusVisualProperties.Length;
             return (statusVisualProperties, animationIndex);
         }
 
-        public void SampleEvents(ItemComponent itemComponent, ByteStatusComponent equipStatus)
+        public void SampleEvents(ItemComponent item, ByteStatusComponent equipStatus)
         {
             ItemComponent lastItemComponent = m_PlayerItemAnimator.LastRenderedItemComponent;
             float? lastStatusElapsed = null;
             if (lastItemComponent != null)
             {
-                bool isSameAnimation = lastItemComponent.id == itemComponent.id && lastItemComponent.status.id == itemComponent.status.id,
-                     isAfter = itemComponent.status.elapsed > lastItemComponent.status.elapsed;
+                bool isSameAnimation = lastItemComponent.id == item.id && lastItemComponent.status.id == item.status.id,
+                     isAfter = item.status.elapsed > lastItemComponent.status.elapsed;
                 if (isSameAnimation && isAfter)
                     lastStatusElapsed = lastItemComponent.status.elapsed;
             }
-            (ItemStatusVisualProperties statusVisualProperties, int _) = GetVisualProperties(itemComponent, equipStatus);
+            (ItemStatusVisualProperties statusVisualProperties, int _) = GetVisualProperties(item, equipStatus);
             ItemStatusVisualProperties.AnimationEvent[] animationEvents = statusVisualProperties.animationEvents;
             foreach (ItemStatusVisualProperties.AnimationEvent animationEvent in animationEvents)
             {
                 bool shouldDoEvent = (!lastStatusElapsed.HasValue || lastStatusElapsed.Value < animationEvent.time)
-                                  && itemComponent.status.elapsed >= animationEvent.time;
+                                  && item.status.elapsed >= animationEvent.time;
                 if (!shouldDoEvent) continue;
                 if (animationEvent.audioSource) animationEvent.audioSource.PlayOneShot(animationEvent.audioSource.clip);
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
             }
-            m_PlayerItemAnimator.LastRenderedItemComponent = itemComponent;
+            m_PlayerItemAnimator.LastRenderedItemComponent = item;
         }
 
-        public void SampleAnimation(ItemComponent itemComponent, ByteStatusComponent equipStatus, float interpolation)
+        public void SampleAnimation(ItemComponent item, ByteStatusComponent equipStatus, float interpolation)
         {
-            (ItemStatusVisualProperties statusVisualProperties, int animationIndex) = GetVisualProperties(itemComponent, equipStatus);
+            (ItemStatusVisualProperties statusVisualProperties, int animationIndex) = GetVisualProperties(item, equipStatus);
             AnimationClip animationClip = statusVisualProperties.animationClip;
             if (!animationClip)
                 return;
@@ -123,13 +123,14 @@ namespace Swihoni.Sessions.Items.Visuals
             m_PlayerGraph.Evaluate();
         }
 
-        public void SetRenderingMode(bool isEnabled, ShadowCastingMode shadowCastingMode)
+        public void SetRenderingMode(bool isEnabled, ShadowCastingMode? shadowCastingMode = null)
         {
             if (m_Renders == null) return;
             foreach (Renderer meshRenderer in m_Renders)
             {
                 meshRenderer.enabled = isEnabled;
-                meshRenderer.shadowCastingMode = shadowCastingMode;
+                if (shadowCastingMode.HasValue)
+                    meshRenderer.shadowCastingMode = shadowCastingMode.Value;
             }
         }
     }

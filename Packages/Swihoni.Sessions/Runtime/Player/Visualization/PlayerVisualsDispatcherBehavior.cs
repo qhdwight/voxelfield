@@ -25,6 +25,7 @@ namespace Swihoni.Sessions.Player.Visualization
         [SerializeField] private bool m_IsDebugRender = default;
 
         private PlayerVisualsBehaviorBase[] m_Visuals;
+        private Rigidbody[] m_RagdollRigidbodies;
 
         public void Setup()
         {
@@ -32,38 +33,44 @@ namespace Swihoni.Sessions.Player.Visualization
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup();
             m_Camera = GetComponentInChildren<Camera>();
             m_AudioListener = GetComponentInChildren<AudioListener>();
-            m_Camera.enabled = false;
+            m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
             SetVisible(false, false);
+            SetRagdollEnabled(false);
         }
 
-        private void OnDestroy()
+        private void SetRagdollEnabled(bool isActive)
         {
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Cleanup();
+            foreach (Rigidbody part in m_RagdollRigidbodies)
+            {
+                part.isKinematic = !isActive;
+                if (isActive) continue;
+                part.velocity = Vector3.zero;
+                part.angularVelocity = Vector3.zero;
+            }
         }
 
-        public void Render(Container playerContainer, bool isLocalPlayer)
+        public void Render(Container player, bool isLocalPlayer)
         {
-            var health = playerContainer.Require<HealthProperty>();
-            bool isVisible = health.HasValue && health.IsAlive;
+            bool isVisible = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
             if (isVisible)
             {
-                if (playerContainer.Has(out MoveComponent moveComponent))
+                if (player.Has(out MoveComponent moveComponent))
                     transform.position = moveComponent.position;
-                if (playerContainer.Has(out CameraComponent cameraComponent))
+                if (player.Has(out CameraComponent cameraComponent))
                 {
                     transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
                     m_Head.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
                     m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
-                    m_Camera.enabled = isLocalPlayer;
                 }
-                foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerContainer, isLocalPlayer);
             }
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(player, isLocalPlayer);
             SetVisible(isVisible, isVisible && isLocalPlayer);
         }
 
         private void SetVisible(bool isVisible, bool isListenerEnabled)
         {
             m_AudioListener.enabled = isListenerEnabled;
+            m_Camera.enabled = isListenerEnabled;
             foreach (Renderer render in m_Renders)
             {
                 render.enabled = isVisible;
@@ -71,9 +78,12 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
         }
-
+        
         public void Dispose()
         {
+            if (m_Visuals != null)
+                foreach (PlayerVisualsBehaviorBase visual in m_Visuals)
+                    visual.Cleanup();
             if (this)
                 Destroy(gameObject);
         }

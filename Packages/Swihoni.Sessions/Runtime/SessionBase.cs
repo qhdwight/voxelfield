@@ -19,7 +19,7 @@ namespace Swihoni.Sessions
         void Setup();
 
         // TODO: refactor is local player should use If construct
-        void Render(Container playerContainer, bool isLocalPlayer);
+        void Render(Container player, bool isLocalPlayer);
     }
 
     public abstract class SessionBase : IDisposable

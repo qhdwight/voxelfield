@@ -33,6 +33,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         internal override void Setup()
         {
+            base.Setup();
             m_Controller = GetComponent<CharacterController>();
             m_Controller.enabled = false;
         }
@@ -53,6 +54,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             inputProperty.SetInput(PlayerInput.Right, input.GetInput(InputType.Right));
             inputProperty.SetInput(PlayerInput.Left, input.GetInput(InputType.Left));
             inputProperty.SetInput(PlayerInput.Jump, input.GetInput(InputType.Jump));
+            inputProperty.SetInput(PlayerInput.Suicide, input.GetInput(InputType.Suicide));
         }
 
         protected override void SynchronizeBehavior(Container containersToApply)

@@ -24,6 +24,11 @@ namespace Swihoni.Sessions
     {
     }
 
+    [Serializable]
+    public class ServerComponent : ComponentBase
+    {
+    }
+
     public abstract class ServerBase : NetworkedSessionBase
     {
         private ComponentServerSocket m_Socket;
@@ -33,9 +38,7 @@ namespace Swihoni.Sessions
                              IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
-            // foreach (ServerSessionContainer serverSession in m_SessionHistory)
-            // foreach (Container player in serverSession.Require<PlayerContainerArrayProperty>())
-            //     player.Require<ClientStampComponent>().time.DoSerialization = false;
+            ForEachPlayer(player => player.Add(typeof(ServerComponent)));
         }
 
         public override void Start()
@@ -86,7 +89,7 @@ namespace Swihoni.Sessions
 
         protected static void NewPlayer(Container player)
         {
-            // TODO:refactor
+            // TODO:refactor zeroing
             player.Zero();
             player.Require<ClientStampComponent>().Reset();
             player.Require<ServerStampComponent>().Reset();
@@ -103,23 +106,7 @@ namespace Swihoni.Sessions
         {
             m_Socket.PollReceived((ipEndPoint, message) =>
             {
-                bool isNewPlayer = !m_PlayerIds.ContainsForward(ipEndPoint);
-                if (isNewPlayer)
-                {
-                    checked
-                    {
-                        byte newPlayerId = 1;
-                        while (m_PlayerIds.ContainsReverse(newPlayerId))
-                        {
-                            newPlayerId++;
-                        }
-                        m_PlayerIds.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port), newPlayerId);
-                        Debug.Log($"[{GetType().Name}] Received new connection: {ipEndPoint}, setting up id: {newPlayerId}");
-                    }
-                }
-                byte clientId = m_PlayerIds.GetForward(ipEndPoint);
-                Container serverPlayer = serverSession.GetPlayer(clientId);
-                if (isNewPlayer) NewPlayer(serverPlayer);
+                (byte clientId, Container serverPlayer) = GetPlayerForEndpoint(serverSession, ipEndPoint);
                 switch (message)
                 {
                     case ClientCommandsContainer clientCommands:
@@ -147,19 +134,16 @@ namespace Swihoni.Sessions
                                         serverPlayerTime.Value = serverTime;
                                     }
 
-                                    serverPlayer.MergeSet(clientCommands);
+                                    m_Modifier[clientId].ModifyTrusted(serverPlayer, clientCommands, clientStamp.duration);
+                                    serverPlayer.MergeSet(clientCommands); // Merge in trusted
                                     m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
                                 }
                                 else
-                                {
                                     Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
-                                }
                             }
                         }
                         else
-                        {
                             serverPlayerTime.Value = serverTime;
-                        }
                         break;
                     }
                 }
@@ -170,6 +154,30 @@ namespace Swihoni.Sessions
                 localPlayerProperty.Value = id;
                 m_Socket.Send(serverSession, ipEndPoint);
             }
+        }
+
+        /// <summary>
+        /// Handles setting up player if new connection.
+        /// </summary>
+        /// <returns>Client id allocated to connection and player container</returns>
+        private (byte clientId, Container serverPlayer) GetPlayerForEndpoint(Container serverSession, IPEndPoint ipEndPoint)
+        {
+            bool isNewPlayer = !m_PlayerIds.ContainsForward(ipEndPoint);
+            if (isNewPlayer)
+            {
+                checked
+                {
+                    byte newPlayerId = 1;
+                    while (m_PlayerIds.ContainsReverse(newPlayerId))
+                        newPlayerId++;
+                    m_PlayerIds.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port), newPlayerId);
+                    Debug.Log($"[{GetType().Name}] Received new connection: {ipEndPoint}, setting up id: {newPlayerId}");
+                }
+            }
+            byte clientId = m_PlayerIds.GetForward(ipEndPoint);
+            Container serverPlayer = serverSession.GetPlayer(clientId);
+            if (isNewPlayer) NewPlayer(serverPlayer);
+            return (clientId, serverPlayer);
         }
 
         public override void Dispose()

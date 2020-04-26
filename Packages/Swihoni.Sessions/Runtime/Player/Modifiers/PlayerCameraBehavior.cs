@@ -13,6 +13,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             if (containerToModify.Without(out CameraComponent cameraComponent)
              || commandsContainer.Without(out MouseComponent mouseComponent)
+             || containerToModify.Has<ServerComponent>() // TODO:refactor use whether or not mouse component has values?
              || containerToModify.Present(out HealthProperty healthProperty) && healthProperty.IsDead) return;
             base.ModifyTrusted(containerToModify, commandsContainer, duration);
             cameraComponent.yaw.Value = Mathf.Repeat(cameraComponent.yaw + mouseComponent.mouseDeltaX * m_Sensitivity, 360.0f);

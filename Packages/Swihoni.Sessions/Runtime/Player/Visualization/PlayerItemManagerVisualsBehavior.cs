@@ -20,8 +20,7 @@ namespace Swihoni.Sessions.Player.Visualization
         private void ForEachItemAnimator(Action<PlayerItemAnimatorBehavior> action)
         {
             foreach (PlayerItemAnimatorBehavior animator in m_ItemAnimators)
-                if (animator.gameObject.activeSelf)
-                    action(animator);
+                action(animator);
         }
     }
 }
