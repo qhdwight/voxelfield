@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Modes;
-using UnityEngine.iOS;
 
 namespace Swihoni.Sessions
 {
@@ -18,10 +16,10 @@ namespace Swihoni.Sessions
             : base(linker, sessionElements, playerElements, commandElements)
         {
             // TODO:refactor zeroing
-            m_HostCommands = new Container(commandElements.Concat(playerElements).Append(typeof(ServerStampComponent)));
+            m_HostCommands = new Container(commandElements.Concat(playerElements).Append(typeof(ServerStampComponent)).Append(typeof(ServerTag)));
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Reset();
-            
+
             m_RenderSession = new Container(sessionElements);
             if (m_RenderSession.Has(out PlayerContainerArrayProperty players))
                 players.SetAll(() => new Container(playerElements));
@@ -37,8 +35,7 @@ namespace Swihoni.Sessions
             ReadLocalInputs(m_HostCommands);
             m_Modifier[HostPlayerId].ModifyTrusted(m_HostCommands, m_HostCommands, delta);
             m_Modifier[HostPlayerId].ModifyChecked(m_HostCommands, m_HostCommands, delta);
-            ModeBase mode = GetMode();
-            mode.Modify(m_HostCommands, m_HostCommands, delta);
+            GetMode().Modify(m_HostCommands, m_HostCommands, delta);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.time.Value = time;
             stamp.tick.Value = serverStamp.tick;
@@ -59,13 +56,12 @@ namespace Swihoni.Sessions
                 }
                 else
                 {
-
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
                     SessionSettingsComponent settings = GetSettings();
                     float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(settings.TickInterval) * 3;
-                    
+
                     RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, renderPlayers[playerId],
                                                                    m_SessionHistory.Size, GetInHistory);
                 }
