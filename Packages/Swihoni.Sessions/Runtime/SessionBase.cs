@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
@@ -31,7 +32,6 @@ namespace Swihoni.Sessions
         private float m_FixedUpdateTime, m_RenderTime;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
         protected IPlayerContainerRenderer[] m_Visuals;
-        protected SessionSettingsComponent m_Settings = DebugBehavior.Singleton.Settings;
         protected uint m_Tick;
 
         public bool ShouldRender { get; set; } = true;
@@ -57,7 +57,7 @@ namespace Swihoni.Sessions
         public virtual void Start()
         {
             m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup());
-            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, visuals => visuals.Setup());
+            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, visuals => visuals.Setup(this));
         }
 
         public void Update(float time)
@@ -70,7 +70,7 @@ namespace Swihoni.Sessions
 
         protected virtual void Render(float renderTime) { }
 
-        protected virtual void Tick(uint tick, float time, float duration) { Time.fixedDeltaTime = 1.0f / m_Settings.tickRate; }
+        protected virtual void Tick(uint tick, float time, float duration) { }
 
         public virtual void Input(float time, float delta) { }
 

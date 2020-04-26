@@ -83,7 +83,7 @@ namespace Swihoni.Sessions.Player.Visualization
             {
                 if (m_ItemVisual)
                 {
-                    ItemManager.Singleton.ReturnVisuals(m_ItemVisual);
+                    ItemManager.ReturnVisuals(m_ItemVisual);
                     m_ItemVisual = null;
                 }
             }
@@ -93,13 +93,13 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             if (inventory.HasNoItemEquipped)
             {
-                if (m_ItemVisual) ItemManager.Singleton.ReturnVisuals(m_ItemVisual);
+                if (m_ItemVisual) ItemManager.ReturnVisuals(m_ItemVisual);
                 return null;
             }
             byte itemId = inventory.EquippedItemComponent.id;
             if (m_ItemVisual && itemId == m_ItemVisual.ModiferProperties.id) return m_ItemVisual;
-            if (m_ItemVisual) ItemManager.Singleton.ReturnVisuals(m_ItemVisual); // We have existing visuals but they are the wrong item id
-            ItemVisualBehavior newVisuals = ItemManager.Singleton.ObtainVisuals(itemId, this, m_Graph);
+            if (m_ItemVisual) ItemManager.ReturnVisuals(m_ItemVisual); // We have existing visuals but they are the wrong item id
+            ItemVisualBehavior newVisuals = ItemManager.ObtainVisuals(itemId, this, m_Graph);
             newVisuals.transform.SetParent(transform, false);
             m_ItemVisual = newVisuals;
             if (m_IsFpv) transform.localPosition = newVisuals.FpvOffset;

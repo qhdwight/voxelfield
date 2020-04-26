@@ -91,10 +91,11 @@ namespace Swihoni.Sessions
             {
                 bool isLocalPlayer = playerId == localPlayerId;
                 Container renderPlayer = players[playerId];
+                SessionSettingsComponent settings = GetSettings();
                 if (isLocalPlayer)
                 {
                     Container GetInHistory(int historyIndex) => m_PlayerPredictionHistory.Get(-historyIndex);
-                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(m_Settings.TickInterval);
+                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(settings.TickInterval);
                     RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
                     renderPlayer.MergeSet(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
@@ -104,7 +105,7 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
-                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(m_Settings.TickInterval) * 3;
+                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(settings.TickInterval) * 3;
                     RenderInterpolatedPlayer<LocalizedClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(renderPlayer, isLocalPlayer);
@@ -182,6 +183,7 @@ namespace Swihoni.Sessions
                                 return Navigation.Skip;
                             case PropertyBase p1 when e2 is PropertyBase p2 && !p1.Equals(p2):
                                 areEqual = false;
+                                Debug.LogWarning($"Prediction error with {p1.GetType().Name} with predicted: {p1} and verified: {p2}");
                                 return Navigation.Exit;
                         }
                         return Navigation.Continue;
@@ -189,7 +191,6 @@ namespace Swihoni.Sessions
                     if (areEqual) continue;
                 }
                 /* Was not predicted properly */
-                Debug.LogWarning("Prediction error");
                 // Place base from verified server
                 m_PlayerPredictionHistory.Get(-playerHistoryIndex).CopyFrom(serverPlayer);
                 // Replay old commands up until most recent to get back on track
@@ -241,7 +242,7 @@ namespace Swihoni.Sessions
                             else
                                 localizedServerTime.Value = time;
 
-                            if (Mathf.Abs(localizedServerTime.Value - time) > m_Settings.TickInterval)
+                            if (Mathf.Abs(localizedServerTime.Value - time) > GetSettings(serverSession).TickInterval)
                             {
                                 Debug.LogWarning("Client reset");
                                 localizedServerTime.Value = time;

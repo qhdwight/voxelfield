@@ -7,10 +7,10 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         private PlayerModifierBehaviorBase[] m_Modifiers;
 
-        internal void Setup()
+        internal void Setup(SessionBase session)
         {
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup(session);
         }
 
         public void ModifyChecked(Container containerToModify, Container commands, float duration)
@@ -40,9 +40,14 @@ namespace Swihoni.Sessions.Player.Modifiers
         }
     }
 
-    public abstract class PlayerModifierBehaviorBase : MonoBehaviour, IModifierBase<Container, Container>
+    public abstract class PlayerModifierBehaviorBase : MonoBehaviour, IModifier<Container, Container>
     {
-        internal virtual void Setup() { }
+        protected SessionBase m_Session;
+
+        internal virtual void Setup(SessionBase session)
+        {
+            m_Session = session;
+        }
 
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate

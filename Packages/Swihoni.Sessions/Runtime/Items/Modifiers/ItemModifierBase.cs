@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Items.Modifiers
     }
 
     [CreateAssetMenu(fileName = "Item", menuName = "Item/Item", order = 0)]
-    public class ItemModifierBase : ScriptableObject, IModifierBase<(ItemComponent, InventoryComponent), InputFlagProperty>
+    public class ItemModifierBase : ScriptableObject, IModifier<(ItemComponent, InventoryComponent), InputFlagProperty>
     {
         public byte id;
         public string itemName;

@@ -1,6 +1,6 @@
 namespace Swihoni.Sessions
 {
-    internal interface IModifierBase<in TComponent, in TCommands>
+    internal interface IModifier<in TComponent, in TCommands>
     {
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate

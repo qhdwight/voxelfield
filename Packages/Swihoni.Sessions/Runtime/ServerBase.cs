@@ -5,9 +5,6 @@ using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Items.Modifiers;
-using Swihoni.Sessions.Player.Components;
-using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Swihoni.Sessions
@@ -25,7 +22,7 @@ namespace Swihoni.Sessions
     }
 
     [Serializable]
-    public class ServerComponent : ComponentBase
+    public class ServerTag : ComponentBase
     {
     }
 
@@ -38,7 +35,7 @@ namespace Swihoni.Sessions
                              IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
-            ForEachPlayer(player => player.Add(typeof(ServerComponent)));
+            ForEachPlayer(player => player.Add(typeof(ServerTag)));
         }
 
         public override void Start()
@@ -59,18 +56,21 @@ namespace Swihoni.Sessions
             Container previousServerSession = m_SessionHistory.Peek(),
                       serverSession = m_SessionHistory.ClaimNext();
             serverSession.CopyFrom(previousServerSession);
-            if (serverSession.Has(out ServerStampComponent serverStamp))
-            {
-                serverStamp.tick.Value = tick;
-                serverStamp.time.Value = time;
-                serverStamp.duration.Value = duration;
 
-                PreTick(serverSession);
-                Tick(serverSession);
-                PostTick(serverSession);
+            SessionSettingsComponent settings = GetSettings(serverSession);
+            settings.CopyFrom(DebugBehavior.Singleton.Settings);
+            Time.fixedDeltaTime = 1.0f / settings.tickRate;
 
-                HandleTimeouts(time, serverSession);
-            }
+            var serverStamp = serverSession.Require<ServerStampComponent>();
+            serverStamp.tick.Value = tick;
+            serverStamp.time.Value = time;
+            serverStamp.duration.Value = duration;
+
+            PreTick(serverSession);
+            Tick(serverSession);
+            PostTick(serverSession);
+
+            HandleTimeouts(time, serverSession);
         }
 
         private void HandleTimeouts(float time, Container serverSession)
@@ -84,21 +84,6 @@ namespace Swihoni.Sessions
                 Debug.LogWarning($"Dropping player with id: {playerId}");
                 m_PlayerIds.Remove(playerId);
                 player.Reset();
-            }
-        }
-
-        protected static void NewPlayer(Container player)
-        {
-            // TODO:refactor zeroing
-            player.Zero();
-            player.Require<ClientStampComponent>().Reset();
-            player.Require<ServerStampComponent>().Reset();
-            if (player.Has(out HealthProperty healthProperty))
-                healthProperty.Value = 100;
-            if (player.Has(out InventoryComponent inventoryComponent))
-            {
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventoryComponent, ItemId.TestingRifle, 2);
             }
         }
 
@@ -128,15 +113,15 @@ namespace Swihoni.Sessions
                                 {
                                     serverPlayerTime.Value += clientStamp.time - serverPlayerClientStamp.time;
 
-                                    if (Mathf.Abs(serverPlayerTime.Value - serverTime) > m_Settings.TickInterval)
+                                    if (Mathf.Abs(serverPlayerTime.Value - serverTime) > GetSettings(serverSession).TickInterval)
                                     {
                                         Debug.LogWarning($"[{GetType().Name}] Reset time for client: {clientId}");
                                         serverPlayerTime.Value = serverTime;
                                     }
 
-                                    m_Modifier[clientId].ModifyTrusted(serverPlayer, clientCommands, clientStamp.duration);
                                     serverPlayer.MergeSet(clientCommands); // Merge in trusted
                                     m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
+                                    GetMode(serverSession).Modify(serverPlayer, clientCommands, clientStamp.duration);
                                 }
                                 else
                                     Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
@@ -176,8 +161,15 @@ namespace Swihoni.Sessions
             }
             byte clientId = m_PlayerIds.GetForward(ipEndPoint);
             Container serverPlayer = serverSession.GetPlayer(clientId);
-            if (isNewPlayer) NewPlayer(serverPlayer);
+            if (isNewPlayer) SetupNewPlayer(serverSession, serverPlayer);
             return (clientId, serverPlayer);
+        }
+
+        protected void SetupNewPlayer(Container session, Container player)
+        {
+            GetMode(session).ResetPlayer(player);
+            player.Require<ClientStampComponent>().Reset();
+            player.Require<ServerStampComponent>().Reset();
         }
 
         public override void Dispose()

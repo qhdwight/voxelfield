@@ -86,7 +86,7 @@
             </e>
             <e p="DebugBehavior.cs" t="Include" />
             <e p="HostBase.cs" t="Include" />
-            <e p="IModifierBase.cs" t="Include" />
+            <e p="IModifier.cs" t="Include" />
             <e p="Items" t="Include">
               <e p="ItemManager.cs" t="Include" />
               <e p="Modifiers" t="Include">
@@ -99,6 +99,11 @@
                 <e p="ItemVisualBehavior.cs" t="Include" />
               </e>
             </e>
+            <e p="Modes" t="Include">
+              <e p="DeathmatchMode.cs" t="Include" />
+              <e p="ModeBase.cs" t="Include" />
+              <e p="ModeManager.cs" t="Include" />
+            </e>
             <e p="NetworkedSessionBase.cs" t="Include" />
             <e p="Player" t="Include">
               <e p="Components" t="Include">
@@ -107,7 +112,6 @@
               </e>
               <e p="Modifiers" t="Include">
                 <e p="PlayerCameraBehavior.cs" t="Include" />
-                <e p="PlayerHealthModifierBehavior.cs" t="Include" />
                 <e p="PlayerItemManagerModiferBehavior.cs" t="Include" />
                 <e p="PlayerModifierDispatcherBehavior.cs" t="Include" />
                 <e p="PlayerMovement.cs" t="Include" />

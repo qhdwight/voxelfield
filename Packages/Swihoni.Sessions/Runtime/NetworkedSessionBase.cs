@@ -4,6 +4,7 @@ using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
 
 namespace Swihoni.Sessions
 {
@@ -37,6 +38,17 @@ namespace Swihoni.Sessions
             foreach (ServerSessionContainer serverSession in m_SessionHistory)
             foreach (Container player in serverSession.Require<PlayerContainerArrayProperty>())
                 action(player);
+        }
+
+        protected SessionSettingsComponent GetSettings(Container session = null)
+        {
+            return session == null ? m_SessionHistory.Peek().Require<SessionSettingsComponent>() : session.Require<SessionSettingsComponent>();
+        }
+        
+        /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
+        protected ModeBase GetMode(Container session = null)
+        {
+            return ModeManager.GetMode(GetSettings(session).modeId);
         }
 
         public virtual void Disconnect() { Dispose(); }

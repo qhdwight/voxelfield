@@ -31,9 +31,9 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         [Header("Movement")] [SerializeField] private LayerMask m_GroundMask = default;
 
-        internal override void Setup()
+        internal override void Setup(SessionBase session)
         {
-            base.Setup();
+            base.Setup(session);
             m_Controller = GetComponent<CharacterController>();
             m_Controller.enabled = false;
         }

@@ -29,6 +29,17 @@ namespace Swihoni.Sessions.Player.Components
         public bool IsAlive => !IsDead;
         public bool IsDead => Value == 0;
     }
+    
+    [Serializable]
+    public class RespawnTimerProperty : FloatProperty
+    {
+    }
+
+    [Serializable]
+    public class TeamProperty : ByteProperty
+    {
+        public const byte None = 0;
+    }
 
     [Serializable]
     public class GunStatusComponent : ComponentBase

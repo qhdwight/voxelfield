@@ -14,7 +14,7 @@ namespace Swihoni.Sessions.Components
 
         public static readonly IReadOnlyCollection<Type> StandardPlayerElements = new List<Type>
         {
-            typeof(HealthProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent)
+            typeof(HealthProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent), typeof(RespawnTimerProperty), typeof(TeamProperty)
         };
 
         public static readonly IReadOnlyCollection<Type> StandardPlayerCommandsElements = new List<Type>
@@ -38,7 +38,7 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class SessionSettingsComponent : ComponentBase
     {
-        public ByteProperty tickRate;
+        public ByteProperty tickRate, modeId;
 
         public float TickInterval => 1.0f / tickRate;
     }

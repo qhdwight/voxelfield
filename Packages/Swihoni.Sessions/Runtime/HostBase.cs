@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
+using UnityEngine.iOS;
 
 namespace Swihoni.Sessions
 {
@@ -35,6 +37,8 @@ namespace Swihoni.Sessions
             ReadLocalInputs(m_HostCommands);
             m_Modifier[HostPlayerId].ModifyTrusted(m_HostCommands, m_HostCommands, delta);
             m_Modifier[HostPlayerId].ModifyChecked(m_HostCommands, m_HostCommands, delta);
+            ModeBase mode = GetMode();
+            mode.Modify(m_HostCommands, m_HostCommands, delta);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.time.Value = time;
             stamp.tick.Value = serverStamp.tick;
@@ -42,8 +46,8 @@ namespace Swihoni.Sessions
 
         protected override void Render(float renderTime)
         {
-            if (!m_RenderSession.Has(out PlayerContainerArrayProperty renderPlayers)
-             || !m_RenderSession.Has(out LocalPlayerProperty localPlayer)) return;
+            if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers)
+             || m_RenderSession.Without(out LocalPlayerProperty localPlayer)) return;
 
             localPlayer.Value = HostPlayerId;
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
@@ -55,11 +59,13 @@ namespace Swihoni.Sessions
                 }
                 else
                 {
-                    int copiedPlayerId = playerId;
-                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(m_Settings.TickInterval) * 3;
 
+                    int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
+                    SessionSettingsComponent settings = GetSettings();
+                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(settings.TickInterval) * 3;
+                    
                     RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, renderPlayers[playerId],
                                                                    m_SessionHistory.Size, GetInHistory);
                 }
@@ -73,7 +79,7 @@ namespace Swihoni.Sessions
             // Inject our current player component before normal update cycle
             hostPlayer.MergeSet(m_HostCommands);
             // Set up new player component data
-            if (tickSession.Require<ServerStampComponent>().tick == 0u) NewPlayer(hostPlayer);
+            if (tickSession.Require<ServerStampComponent>().tick == 0u) SetupNewPlayer(tickSession, hostPlayer);
         }
 
         protected override void PostTick(Container tickSession)
