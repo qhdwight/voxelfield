@@ -1,3 +1,4 @@
+using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
@@ -22,10 +23,10 @@ namespace Swihoni.Sessions.Player.Visualization
         private Camera m_Camera;
         [SerializeField] private Transform m_Head = default;
         [SerializeField] private Renderer[] m_Renders = default;
-        [SerializeField] private bool m_IsDebugRender = default;
 
         private PlayerVisualsBehaviorBase[] m_Visuals;
         private Rigidbody[] m_RagdollRigidbodies;
+        private (Vector3 position, Quaternion rotation)[] m_RagdollInitialTransforms;
 
         public void Setup()
         {
@@ -34,16 +35,20 @@ namespace Swihoni.Sessions.Player.Visualization
             m_Camera = GetComponentInChildren<Camera>();
             m_AudioListener = GetComponentInChildren<AudioListener>();
             m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
-            SetVisible(false, false);
-            SetRagdollEnabled(false);
+            m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();
+            SetVisible(false, false, false);
         }
 
         private void SetRagdollEnabled(bool isActive)
         {
-            foreach (Rigidbody part in m_RagdollRigidbodies)
+            for (var i = 0; i < m_RagdollRigidbodies.Length; i++)
             {
+                Rigidbody part = m_RagdollRigidbodies[i];
                 part.isKinematic = !isActive;
                 if (isActive) continue;
+                Transform partTransform = part.transform;    
+                partTransform.localPosition = m_RagdollInitialTransforms[i].position;
+                partTransform.localRotation = m_RagdollInitialTransforms[i].rotation;
                 part.velocity = Vector3.zero;
                 part.angularVelocity = Vector3.zero;
             }
@@ -51,9 +56,12 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void Render(Container player, bool isLocalPlayer)
         {
-            bool isVisible = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
+            bool usesHealth = player.Has(out HealthProperty health),
+                 isVisible = !usesHealth || health.HasValue;
             if (isVisible)
             {
+                SetRagdollEnabled(health.IsDead);
+                
                 if (player.Has(out MoveComponent moveComponent))
                     transform.position = moveComponent.position;
                 if (player.Has(out CameraComponent cameraComponent))
@@ -63,22 +71,27 @@ namespace Swihoni.Sessions.Player.Visualization
                     m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
                 }
             }
+            else
+                SetRagdollEnabled(false);
+
+            bool isFpv = !usesHealth || health.HasValue && health.IsAlive;
+            SetVisible(isVisible, isFpv,  isLocalPlayer);
+            
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(player, isLocalPlayer);
-            SetVisible(isVisible, isVisible && isLocalPlayer);
         }
 
-        private void SetVisible(bool isVisible, bool isListenerEnabled)
+        private void SetVisible(bool isVisible, bool isFpv, bool isCameraEnabled)
         {
-            m_AudioListener.enabled = isListenerEnabled;
-            m_Camera.enabled = isListenerEnabled;
+            m_AudioListener.enabled = isCameraEnabled;
+            m_Camera.enabled = isCameraEnabled;
             foreach (Renderer render in m_Renders)
             {
                 render.enabled = isVisible;
-                render.shadowCastingMode = isListenerEnabled && !m_IsDebugRender ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
+                render.shadowCastingMode = isFpv ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             }
             gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
         }
-        
+
         public void Dispose()
         {
             if (m_Visuals != null)
