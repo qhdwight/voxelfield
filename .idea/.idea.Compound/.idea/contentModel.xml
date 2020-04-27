@@ -123,6 +123,7 @@
               <e p="PlayerHitbox.cs" t="Include" />
               <e p="PlayerHitboxManager.cs" t="Include" />
               <e p="Visualization" t="Include">
+                <e p="PlayerBodyAnimatorBehavior.cs" t="Include" />
                 <e p="PlayerItemAnimatorBehavior.cs" t="Include" />
                 <e p="PlayerItemManagerVisualsBehavior.cs" t="Include" />
                 <e p="PlayerVisualsBehaviorBase.cs" t="Include" />
@@ -132,7 +133,6 @@
             <e p="SceneCamera.cs" t="Include" />
             <e p="ServerBase.cs" t="Include" />
             <e p="SessionBase.cs" t="Include" />
-            <e p="SessionGameObjectLinker.cs" t="Include" />
             <e p="Swihoni.Session.asmdef" t="Include" />
           </e>
           <e p="Tests" t="Include">

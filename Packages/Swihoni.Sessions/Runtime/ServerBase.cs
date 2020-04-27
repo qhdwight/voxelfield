@@ -6,6 +6,7 @@ using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Modes;
+using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Swihoni.Sessions
@@ -32,8 +33,9 @@ namespace Swihoni.Sessions
         private ComponentServerSocket m_Socket;
         protected readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
 
-        protected ServerBase(IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
-            : base(sessionElements, playerElements, commandElements)
+        protected ServerBase(IGameObjectLinker linker,
+                             IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
+            : base(linker, sessionElements, playerElements, commandElements)
         {
             ForEachPlayer(player => player.Add(typeof(ServerTag)));
         }
@@ -180,7 +182,11 @@ namespace Swihoni.Sessions
 
         public override void AboutToRaycast(int playerId)
         {
-            
+            for (var i = 0; i < m_Modifier.Length; i++)
+            {
+                PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
+                modifier.EvaluateHitboxes(i, m_SessionHistory.Peek().GetPlayer(i));
+            }
         }
 
         public override void Dispose()

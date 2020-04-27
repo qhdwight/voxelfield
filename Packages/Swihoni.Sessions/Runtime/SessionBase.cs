@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -19,6 +18,13 @@ namespace Swihoni.Sessions
         void Render(int playerId, Container player, bool isLocalPlayer);
     }
 
+    public interface IGameObjectLinker
+    {
+        GameObject GetPlayerModifierPrefab();
+
+        GameObject GetPlayerVisualsPrefab();
+    }
+
     public abstract class SessionBase : IDisposable
     {
         internal const int MaxPlayers = 3;
@@ -33,10 +39,10 @@ namespace Swihoni.Sessions
 
         public bool ShouldRender { get; set; } = true;
 
-        protected SessionBase(IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
+        protected SessionBase(IGameObjectLinker linker)
         {
-            m_PlayerModifierPrefab = SessionGameObjectLinker.Singleton.PlayerModifierPrefab;
-            m_PlayerVisualsPrefab = SessionGameObjectLinker.Singleton.PlayerVisualsPrefab;
+            m_PlayerModifierPrefab = linker.GetPlayerModifierPrefab();
+            m_PlayerVisualsPrefab = linker.GetPlayerVisualsPrefab();
             m_PlayerHud = PlayerHudBase.Singleton;
         }
 

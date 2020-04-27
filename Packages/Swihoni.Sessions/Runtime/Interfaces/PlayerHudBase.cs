@@ -18,22 +18,29 @@ namespace Swihoni.Sessions.Interfaces
 
         public virtual void Render(Container localPlayer)
         {
-            if (localPlayer.Has(out HealthProperty health))
-                m_HealthText.Set(builder => builder.Append("Health: ").Append(health.Value));
-            if (localPlayer.Has(out InventoryComponent inventory) && inventory.HasItemEquipped)
-                m_AmmoText.Set(builder =>
-                {
-                    ItemComponent equippedItem = inventory.EquippedItemComponent;
-                    ItemModifierBase modifier = ItemManager.GetModifier(equippedItem.id);
-                    if (modifier is GunModifierBase gunModifier)
-                        builder
-                           .Append("Ammo ")
-                           .Append(equippedItem.gunStatus.ammoInMag)
-                           .Append("/")
-                           .Append(gunModifier.MagSize)
-                           .Append(" x")
-                           .Append(equippedItem.gunStatus.ammoInReserve);
-                });
+            bool isVisible = localPlayer.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
+
+            if (isVisible)
+            {
+                if (localPlayer.Has<HealthProperty>())
+                    m_HealthText.Set(builder => builder.Append("Health: ").Append(health.Value));
+                if (localPlayer.Has(out InventoryComponent inventory) && inventory.HasItemEquipped)
+                    m_AmmoText.Set(builder =>
+                    {
+                        ItemComponent equippedItem = inventory.EquippedItemComponent;
+                        ItemModifierBase modifier = ItemManager.GetModifier(equippedItem.id);
+                        if (modifier is GunModifierBase gunModifier)
+                            builder
+                               .Append("Ammo ")
+                               .Append(equippedItem.gunStatus.ammoInMag)
+                               .Append("/")
+                               .Append(gunModifier.MagSize)
+                               .Append(" x")
+                               .Append(equippedItem.gunStatus.ammoInReserve);
+                    });
+            }
+            
+            SetInterfaceActive(isVisible);
         }
     }
 }

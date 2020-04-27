@@ -833,7 +833,7 @@ MonoBehaviour:
   Settings:
     tickRate:
       m_HasValue: 1
-      m_Value: 60
+      m_Value: 20
     modeId:
       m_HasValue: 1
       m_Value: 0
@@ -1493,6 +1493,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82e5e2d0be9647baafbbf679a47ef01c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_PlayerModifierPrefab: {fileID: 3621098284609304107, guid: 71ac0441fdf298943a3d88cc15dabbdb,
+    type: 3}
+  m_PlayerVisualsPrefab: {fileID: 4224837671832740950, guid: fafdfda233569534ab011266eae78b95,
+    type: 3}
 --- !u!1 &1133061148
 GameObject:
   m_ObjectHideFlags: 0

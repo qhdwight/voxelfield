@@ -5,8 +5,8 @@ namespace Compound.Session
 {
     public class Server : ServerBase
     {
-        public Server()
-            : base(StandardComponents.StandardSessionElements, StandardComponents.StandardPlayerElements, StandardComponents.StandardPlayerCommandsElements)
+        public Server(IGameObjectLinker linker)
+            : base(linker, StandardComponents.StandardSessionElements, StandardComponents.StandardPlayerElements, StandardComponents.StandardPlayerCommandsElements)
         {
         }
     }

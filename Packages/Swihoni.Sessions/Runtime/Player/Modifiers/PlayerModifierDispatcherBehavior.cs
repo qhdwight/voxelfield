@@ -6,11 +6,14 @@ namespace Swihoni.Sessions.Player.Modifiers
     public class PlayerModifierDispatcherBehavior : MonoBehaviour
     {
         private PlayerModifierBehaviorBase[] m_Modifiers;
+        private PlayerHitboxManager m_HitboxManager;
 
         internal void Setup()
         {
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
+            m_HitboxManager = GetComponent<PlayerHitboxManager>();
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
+            if (m_HitboxManager) m_HitboxManager.Setup();
         }
 
         public void ModifyChecked(SessionBase session, int playerId, Container containerToModify, Container commands, float duration)
@@ -37,6 +40,11 @@ namespace Swihoni.Sessions.Player.Modifiers
         public void ModifyCommands(SessionBase session, Container commandsToModify)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
+        }
+
+        public void EvaluateHitboxes(int playerId, Container player)
+        {
+            m_HitboxManager.Render(playerId, player, false);
         }
     }
 

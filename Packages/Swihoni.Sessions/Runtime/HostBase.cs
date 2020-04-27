@@ -14,8 +14,9 @@ namespace Swihoni.Sessions
 
         private readonly Container m_HostCommands, m_RenderSession;
 
-        protected HostBase(IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
-            : base(sessionElements, playerElements, commandElements)
+        protected HostBase(IGameObjectLinker linker,
+                           IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
+            : base(linker, sessionElements, playerElements, commandElements)
         {
             // TODO:refactor zeroing
             m_HostCommands = new Container(commandElements.Concat(playerElements).Append(typeof(ServerStampComponent)).Append(typeof(ServerTag)));

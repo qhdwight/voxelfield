@@ -12,7 +12,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         internal virtual void Cleanup() { }
 
-        public abstract void Render(int playerId, Container playerContainer, bool isLocalPlayer);
+        public abstract void Render(int playerId, Container player, bool isLocalPlayer);
     }
 
     [SelectionBase]
@@ -21,8 +21,6 @@ namespace Swihoni.Sessions.Player.Visualization
         private AudioListener m_AudioListener;
 
         private Camera m_Camera;
-        [SerializeField] private Transform m_Head = default;
-        [SerializeField] private Renderer[] m_Renders = default;
 
         private PlayerVisualsBehaviorBase[] m_Visuals;
         private Rigidbody[] m_RagdollRigidbodies;
@@ -36,7 +34,7 @@ namespace Swihoni.Sessions.Player.Visualization
             m_AudioListener = GetComponentInChildren<AudioListener>();
             m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
             m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();
-            SetVisible(false, false, false);
+            SetVisible(false, false);
         }
 
         private void SetRagdollEnabled(bool isActive)
@@ -61,34 +59,23 @@ namespace Swihoni.Sessions.Player.Visualization
             if (isVisible)
             {
                 SetRagdollEnabled(health.IsDead);
-
-                if (player.Has(out MoveComponent moveComponent))
-                    transform.position = moveComponent.position;
+                
                 if (player.Has(out CameraComponent cameraComponent))
-                {
-                    transform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
-                    m_Head.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
                     m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
-                }
             }
             else
                 SetRagdollEnabled(false);
 
-            bool isFpv = isLocalPlayer && (!usesHealth || health.HasValue && health.IsAlive);
-            SetVisible(isVisible, isFpv, isLocalPlayer);
+            SetVisible(isVisible, isLocalPlayer);
 
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerId, player, isLocalPlayer);
         }
 
-        private void SetVisible(bool isVisible, bool isFpv, bool isCameraEnabled)
+        private void SetVisible(bool isVisible, bool isCameraEnabled)
         {
             m_AudioListener.enabled = isCameraEnabled;
             m_Camera.enabled = isCameraEnabled;
-            foreach (Renderer render in m_Renders)
-            {
-                render.enabled = isVisible;
-                render.shadowCastingMode = isFpv ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
-            }
+
             gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
         }
 

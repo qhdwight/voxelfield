@@ -14,8 +14,9 @@ namespace Swihoni.Sessions
         protected readonly ClientCommandsContainer m_EmptyClientCommands;
         protected readonly ServerSessionContainer m_EmptyServerSession;
 
-        protected NetworkedSessionBase(IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
-            : base(sessionElements, playerElements, commandElements)
+        protected NetworkedSessionBase(IGameObjectLinker linker,
+                                       IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
+            : base(linker)
         {
             IReadOnlyCollection<Type> serverPlayerElements = playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent)).ToArray(),
                                       clientCommandElements = playerElements.Concat(commandElements).Append(typeof(ClientStampComponent)).ToArray();
