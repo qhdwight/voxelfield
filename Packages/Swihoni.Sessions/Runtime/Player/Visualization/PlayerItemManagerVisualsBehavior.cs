@@ -13,12 +13,12 @@ namespace Swihoni.Sessions.Player.Visualization
             ForEachItemAnimator(animator => animator.Setup());
         }
 
-        public override void Render(int playerId, Container player, bool isLocalPlayer)
+        public override void Render(Container player, bool isLocalPlayer)
         {
             ForEachItemAnimator(animator => animator.Render(player, isLocalPlayer));
         }
 
-        internal override void Cleanup() { ForEachItemAnimator(animator => animator.Cleanup()); }
+        public override void Dispose() { ForEachItemAnimator(animator => animator.Dispose()); }
 
         private void ForEachItemAnimator(Action<PlayerItemAnimatorBehavior> action)
         {

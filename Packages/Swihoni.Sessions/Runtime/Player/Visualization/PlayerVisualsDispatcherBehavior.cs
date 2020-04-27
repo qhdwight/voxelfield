@@ -1,18 +1,18 @@
+using System;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Swihoni.Sessions.Player.Visualization
 {
-    public abstract class PlayerVisualsBehaviorBase : MonoBehaviour
+    public abstract class PlayerVisualsBehaviorBase : MonoBehaviour, IDisposable
     {
         internal virtual void Setup() { }
 
-        internal virtual void Cleanup() { }
+        public virtual void Dispose() { }
 
-        public abstract void Render(int playerId, Container player, bool isLocalPlayer);
+        public abstract void Render(Container player, bool isLocalPlayer);
     }
 
     [SelectionBase]
@@ -68,7 +68,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
             SetVisible(isVisible, isLocalPlayer);
 
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerId, player, isLocalPlayer);
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(player, isLocalPlayer);
         }
 
         private void SetVisible(bool isVisible, bool isCameraEnabled)
@@ -83,7 +83,7 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             if (m_Visuals != null)
                 foreach (PlayerVisualsBehaviorBase visual in m_Visuals)
-                    visual.Cleanup();
+                    visual.Dispose();
             if (this)
                 Destroy(gameObject);
         }

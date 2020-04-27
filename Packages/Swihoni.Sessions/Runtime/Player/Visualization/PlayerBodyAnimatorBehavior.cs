@@ -10,7 +10,7 @@ namespace Swihoni.Sessions.Player.Visualization
         [SerializeField] private Transform m_Head = default;
         [SerializeField] private Renderer[] m_FpvRenders = default;
 
-        public override void Render(int playerId, Container player, bool isLocalPlayer)
+        public override void Render(Container player, bool isLocalPlayer)
         {
             bool usesHealth = player.Has(out HealthProperty health),
                  isVisible = !usesHealth || health.HasValue;

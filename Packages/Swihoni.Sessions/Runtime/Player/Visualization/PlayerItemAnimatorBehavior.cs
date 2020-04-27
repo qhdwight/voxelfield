@@ -13,7 +13,7 @@ using UnityEngine.Rendering;
 namespace Swihoni.Sessions.Player.Visualization
 {
     [Serializable, RequireComponent(typeof(Animator), typeof(ArmIk))]
-    public class PlayerItemAnimatorBehavior : MonoBehaviour
+    public class PlayerItemAnimatorBehavior : MonoBehaviour, IDisposable
     {
         public const int OutputIndex = 0;
 
@@ -172,6 +172,6 @@ namespace Swihoni.Sessions.Player.Visualization
             return aimInterpolationValue;
         }
 
-        internal void Cleanup() { m_Graph.Destroy(); }
+        public void Dispose() { m_Graph.Destroy(); }
     }
 }

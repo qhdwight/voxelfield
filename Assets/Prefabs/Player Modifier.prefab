@@ -206,6 +206,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Head: {fileID: 4341770902972035209}
+  m_FpvRenders: []
 --- !u!136 &3095306032246126162
 CapsuleCollider:
   m_ObjectHideFlags: 0
