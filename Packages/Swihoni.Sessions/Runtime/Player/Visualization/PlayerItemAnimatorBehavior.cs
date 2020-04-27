@@ -19,7 +19,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         [SerializeField] private string m_GraphName = default;
         [SerializeField] private Transform m_TpvArmsRotator = default;
-        [SerializeField] protected bool m_IsFpv;
+        [SerializeField] protected bool m_IsFpv, m_RenderItems = true;
         [SerializeField] private Renderer m_FpvArmsRenderer = default;
         [SerializeField] private Camera m_FpvCamera = default;
 
@@ -30,7 +30,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public ArmIk ArmIk { get; private set; }
 
-        public ItemComponent LastRenderedItemComponent { internal get; set; }
+        public ItemComponent LastRenderedItem { internal get; set; }
 
         internal void Setup()
         {
@@ -47,7 +47,7 @@ namespace Swihoni.Sessions.Player.Visualization
             if (!player.Has(out InventoryComponent inventory)) return;
 
             bool isVisible = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
-            
+
             if (isVisible)
             {
                 m_ItemVisual = SetupVisualItem(inventory);
@@ -67,10 +67,17 @@ namespace Swihoni.Sessions.Player.Visualization
                         m_FpvArmsRenderer.enabled = isLocalPlayer;
                         m_FpvArmsRenderer.shadowCastingMode = ShadowCastingMode.Off;
                     }
-                    if (m_IsFpv)
-                        m_ItemVisual.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
+                    if (m_RenderItems)
+                    {
+                        if (m_IsFpv)
+                            m_ItemVisual.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
+                        else
+                            m_ItemVisual.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
+                    }
                     else
-                        m_ItemVisual.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
+                    {
+                        m_ItemVisual.SetRenderingMode(false);
+                    }
 
                     SampleItemAnimation(equippedItem, equipStatus, interpolation);
 
@@ -79,7 +86,7 @@ namespace Swihoni.Sessions.Player.Visualization
                     if (player.Has(out CameraComponent playerCamera) && m_TpvArmsRotator)
                     {
                         const float armClamp = 60.0f;
-                        m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(playerCamera.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);   
+                        m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(playerCamera.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);
                     }
                 }
             }
@@ -91,9 +98,7 @@ namespace Swihoni.Sessions.Player.Visualization
                     m_ItemVisual = null;
                 }
                 if (m_FpvArmsRenderer)
-                {
                     m_FpvArmsRenderer.enabled = false;
-                }
             }
             m_Animator.enabled = isVisible;
             ArmIk.enabled = isVisible;

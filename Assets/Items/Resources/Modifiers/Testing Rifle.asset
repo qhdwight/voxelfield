@@ -27,6 +27,9 @@ MonoBehaviour:
   - duration: Infinity
   m_MagSize: 30
   m_StartingAmmoInReserve: 90
+  m_PlayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
   m_AdsModifierProperties:
   - duration: Infinity
   - duration: 0.1

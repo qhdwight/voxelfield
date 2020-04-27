@@ -55,7 +55,7 @@ namespace Swihoni.Components
             m_Children.Clear();
             Add(types);
         }
-        
+
         public bool Without<TElement>() where TElement : ElementBase { return !Has<TElement>(); }
 
         public bool Without<TElement>(out TElement component) where TElement : ElementBase { return !Has(out component); }
@@ -65,8 +65,13 @@ namespace Swihoni.Components
         public bool Has<TElement>(out TElement component) where TElement : ElementBase
         {
             bool hasComponent = m_TypeToId.ContainsKey(typeof(TElement));
-            component = (TElement) m_Children[typeof(TElement)];
-            return hasComponent;
+            if (hasComponent)
+            {
+                component = (TElement) m_Children[typeof(TElement)];
+                return true;
+            }
+            component = null;
+            return false;
         }
 
         public bool Has<TElement>() { return m_TypeToId.ContainsKey(typeof(TElement)); }

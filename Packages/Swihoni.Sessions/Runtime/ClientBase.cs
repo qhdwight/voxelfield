@@ -30,7 +30,7 @@ namespace Swihoni.Sessions
     public class LocalizedClientStampComponent : StampComponent
     {
     }
-    
+
     public abstract class ClientBase : NetworkedSessionBase
     {
         private readonly Container m_RenderSession;
@@ -40,9 +40,9 @@ namespace Swihoni.Sessions
 
         public IPEndPoint IpEndPoint { get; }
 
-        protected ClientBase(IGameObjectLinker linker, IPEndPoint ipEndPoint, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
+        protected ClientBase(IPEndPoint ipEndPoint, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
                              IReadOnlyCollection<Type> commandElements)
-            : base(linker, sessionElements, playerElements, commandElements)
+            : base(sessionElements, playerElements, commandElements)
         {
             IpEndPoint = ipEndPoint;
             m_RenderSession = new Container(sessionElements);
@@ -71,26 +71,26 @@ namespace Swihoni.Sessions
             m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
         }
 
-        private void UpdateInputs(int localPlayerId) { m_Modifier[localPlayerId].ModifyCommands(m_CommandHistory.Peek()); }
+        private void UpdateInputs(int localPlayerId) { m_Modifier[localPlayerId].ModifyCommands(this, m_CommandHistory.Peek()); }
 
-        public override void Input(float time, float delta)
+        protected override void Input(float time, float delta)
         {
             if (!GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
                 return;
 
             UpdateInputs(localPlayerId);
-            m_Modifier[localPlayerId].ModifyTrusted(m_CommandHistory.Peek(), m_CommandHistory.Peek(), delta);
+            m_Modifier[localPlayerId].ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), m_CommandHistory.Peek(), delta);
         }
 
         protected override void Render(float renderTime)
         {
-            if (!m_RenderSession.Has(out PlayerContainerArrayProperty players) || !GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
+            if (!m_RenderSession.Has(out PlayerContainerArrayProperty renderPlayers) || !GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
                 return;
 
-            for (var playerId = 0; playerId < players.Length; playerId++)
+            for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
                 bool isLocalPlayer = playerId == localPlayerId;
-                Container renderPlayer = players[playerId];
+                Container renderPlayer = renderPlayers[playerId];
                 SessionSettingsComponent settings = GetSettings();
                 if (isLocalPlayer)
                 {
@@ -108,7 +108,8 @@ namespace Swihoni.Sessions
                     float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(settings.TickInterval) * 3;
                     RenderInterpolatedPlayer<LocalizedClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
-                m_Visuals[playerId].Render(renderPlayer, isLocalPlayer);
+                m_Visuals[playerId].Render(playerId, renderPlayer, isLocalPlayer);
+                m_PlayerHud.Render(renderPlayers[localPlayerId]);
             }
         }
 
@@ -150,7 +151,8 @@ namespace Swihoni.Sessions
                 ClientCommandsContainer predictedCommands = m_CommandHistory.Peek();
                 predictedCommands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
                 predictedPlayer.MergeSet(predictedCommands);
-                if (predictedStamp.duration.HasValue) m_Modifier[localPlayerId].ModifyChecked(predictedPlayer, predictedCommands, predictedStamp.duration);
+                if (predictedStamp.duration.HasValue)
+                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, predictedCommands, predictedStamp.duration);
 
                 DebugBehavior.Singleton.Predicted = predictedPlayer;
             }
@@ -201,7 +203,7 @@ namespace Swihoni.Sessions
                     ClientStampComponent stamp = predictedPlayer.Require<ClientStampComponent>().Clone(); // TODO: performance remove clone
                     predictedPlayer.CopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
                     predictedPlayer.Require<ClientStampComponent>().CopyFrom(stamp);
-                    m_Modifier[localPlayerId].ModifyChecked(predictedPlayer, commands, commands.Require<ClientStampComponent>().duration);
+                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, commands.Require<ClientStampComponent>().duration);
                 }
                 break;
             }
@@ -269,6 +271,10 @@ namespace Swihoni.Sessions
             localPlayerId = default;
             return false;
         }
+
+        public override Ray GetRayForPlayer(int holdingPlayer) { return new Ray(); }
+
+        public override void AboutToRaycast(int playerId) { }
 
         public override void Dispose()
         {

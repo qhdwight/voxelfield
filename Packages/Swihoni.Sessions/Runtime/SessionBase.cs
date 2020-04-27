@@ -3,23 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Interfaces;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
 namespace Swihoni.Sessions
 {
-    public interface IGameObjectLinker
-    {
-        (GameObject, GameObject) GetPlayerPrefabs();
-    }
-
     public interface IPlayerContainerRenderer : IDisposable
     {
         void Setup();
 
         // TODO: refactor is local player should use If construct
-        void Render(Container player, bool isLocalPlayer);
+        void Render(int playerId, Container player, bool isLocalPlayer);
     }
 
     public abstract class SessionBase : IDisposable
@@ -27,18 +24,20 @@ namespace Swihoni.Sessions
         internal const int MaxPlayers = 3;
 
         private readonly GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
-
+        
+        protected readonly PlayerHudBase m_PlayerHud;
         private float m_FixedUpdateTime, m_RenderTime;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
         protected IPlayerContainerRenderer[] m_Visuals;
-        protected uint m_Tick;
+        private uint m_Tick;
 
         public bool ShouldRender { get; set; } = true;
 
-        protected SessionBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
-                              IReadOnlyCollection<Type> commandElements)
+        protected SessionBase(IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
         {
-            (m_PlayerModifierPrefab, m_PlayerVisualsPrefab) = linker.GetPlayerPrefabs();
+            m_PlayerModifierPrefab = SessionGameObjectLinker.Singleton.PlayerModifierPrefab;
+            m_PlayerVisualsPrefab = SessionGameObjectLinker.Singleton.PlayerVisualsPrefab;
+            m_PlayerHud = PlayerHudBase.Singleton;
         }
 
         private T[] Instantiate<T>(GameObject prefab, int length, Action<T> setup)
@@ -56,7 +55,7 @@ namespace Swihoni.Sessions
         public virtual void Start()
         {
             m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup());
-            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, visuals => visuals.Setup(this));
+            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, modifier => modifier.Setup());
         }
 
         public void Update(float time)
@@ -71,7 +70,7 @@ namespace Swihoni.Sessions
 
         protected virtual void Tick(uint tick, float time, float duration) { }
 
-        public virtual void Input(float time, float delta) { }
+        protected virtual void Input(float time, float delta) { }
 
         public void FixedUpdate(float time)
         {
@@ -145,5 +144,11 @@ namespace Swihoni.Sessions
             // Take last if we do not have enough history
             renderPlayerContainer.CopyFrom(getInHistory(0));
         }
+
+        public abstract Ray GetRayForPlayer(int holdingPlayer);
+
+        public abstract void AboutToRaycast(int playerId);
+
+        public abstract ModeBase GetMode(Container session = null);
     }
 }

@@ -7,20 +7,20 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         private PlayerModifierBehaviorBase[] m_Modifiers;
 
-        internal void Setup(SessionBase session)
+        internal void Setup()
         {
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup(session);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
         }
 
-        public void ModifyChecked(Container containerToModify, Container commands, float duration)
+        public void ModifyChecked(SessionBase session, int playerId, Container containerToModify, Container commands, float duration)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(containerToModify, commands, duration);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, containerToModify, commands, duration);
         }
 
-        public void ModifyTrusted(Container containerToModify, Container commands, float duration)
+        public void ModifyTrusted(SessionBase session, int playerId, Container containerToModify, Container commands, float duration)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(containerToModify, commands, duration);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(session, playerId, containerToModify, commands, duration);
         }
 
         // public List<TComponent> GetInterfaces<TComponent>() where TComponent : class
@@ -34,33 +34,28 @@ namespace Swihoni.Sessions.Player.Modifiers
         //     return components;
         // }
 
-        public void ModifyCommands(Container commandsToModify)
+        public void ModifyCommands(SessionBase session, Container commandsToModify)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(commandsToModify);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
         }
     }
 
-    public abstract class PlayerModifierBehaviorBase : MonoBehaviour, IModifier<Container, Container>
+    public abstract class PlayerModifierBehaviorBase : MonoBehaviour
     {
-        protected SessionBase m_Session;
-
-        internal virtual void Setup(SessionBase session)
-        {
-            m_Session = session;
-        }
+        internal virtual void Setup() { }
 
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
-        public virtual void ModifyChecked(Container containerToModify, Container commands, float duration) { SynchronizeBehavior(containerToModify); }
+        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration) { SynchronizeBehavior(player); }
 
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>
-        public virtual void ModifyTrusted(Container containerToModify, Container commandsContainer, float duration) { SynchronizeBehavior(containerToModify); }
+        public virtual void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) { SynchronizeBehavior(player); }
 
-        public virtual void ModifyCommands(Container commandsToModify) { }
+        public virtual void ModifyCommands(SessionBase session, Container commands) { }
 
-        protected virtual void SynchronizeBehavior(Container containersToApply) { }
+        protected virtual void SynchronizeBehavior(Container player) { }
     }
 }

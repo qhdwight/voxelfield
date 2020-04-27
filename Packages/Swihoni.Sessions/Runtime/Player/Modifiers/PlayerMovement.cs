@@ -5,12 +5,13 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Modifiers
 {
-    [RequireComponent(typeof(CharacterController))]
     public class PlayerMovement : PlayerModifierBehaviorBase
     {
         private const float DefaultDownSpeed = -1.0f, RaycastOffset = 0.05f;
 
         private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
+
+        [SerializeField] private Transform m_MoveTransform = default;
 
         [SerializeField] private float
             m_Acceleration = 10.0f,
@@ -31,22 +32,22 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         [Header("Movement")] [SerializeField] private LayerMask m_GroundMask = default;
 
-        internal override void Setup(SessionBase session)
+        internal override void Setup()
         {
-            base.Setup(session);
-            m_Controller = GetComponent<CharacterController>();
+            base.Setup();
+            m_Controller = m_MoveTransform.GetComponent<CharacterController>();
             m_Controller.enabled = false;
         }
 
-        public override void ModifyChecked(Container containerToModify, Container commands, float duration)
+        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration)
         {
-            base.ModifyChecked(containerToModify, commands, duration);
-            FullMove(containerToModify, commands, duration);
+            base.ModifyChecked(session, playerId, player, commands, duration);
+            FullMove(player, commands, duration);
         }
 
-        public override void ModifyCommands(Container commandsToModify)
+        public override void ModifyCommands(SessionBase session, Container commands)
         {
-            if (commandsToModify.Without(out InputFlagProperty inputProperty)) return;
+            if (commands.Without(out InputFlagProperty inputProperty)) return;
 
             InputProvider input = InputProvider.Singleton;
             inputProperty.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
@@ -57,13 +58,13 @@ namespace Swihoni.Sessions.Player.Modifiers
             inputProperty.SetInput(PlayerInput.Suicide, input.GetInput(InputType.Suicide));
         }
 
-        protected override void SynchronizeBehavior(Container containersToApply)
+        protected override void SynchronizeBehavior(Container player)
         {
             m_Controller.enabled = false;
-            if (containersToApply.Without(out MoveComponent moveComponent)
-             || containersToApply.Without(out HealthProperty healthProperty)) return;
+            if (player.Without(out MoveComponent moveComponent)
+             || player.Without(out HealthProperty healthProperty)) return;
 
-            if (moveComponent.position.HasValue) transform.position = moveComponent.position;
+            if (moveComponent.position.HasValue) m_MoveTransform.position = moveComponent.position;
             if (healthProperty.HasValue) m_Controller.enabled = healthProperty.IsAlive;
         }
 
@@ -75,8 +76,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             Vector3 initialVelocity = moveComponent.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = LateralMagnitude(endingVelocity);
-            Transform playerTransform = transform;
-            bool isGrounded = Physics.RaycastNonAlloc(playerTransform.position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
+            bool isGrounded = Physics.RaycastNonAlloc(m_MoveTransform.position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
                                                       m_MaxStickDistance + RaycastOffset, m_GroundMask) > 0,
                  withinAngleLimit = isGrounded && Vector3.Angle(m_CachedGroundHits[0].normal, Vector3.up) < m_Controller.slopeLimit;
             if (withinAngleLimit && endingVelocity.y < 0.0f) // Stick to ground. Only on way down, if done on way up it negates jump
@@ -86,8 +86,8 @@ namespace Swihoni.Sessions.Player.Modifiers
                 // if (!inputProperty.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
             }
             Vector3 wishDirection =
-                inputProperty.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * playerTransform.forward +
-                inputProperty.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * playerTransform.right;
+                inputProperty.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * m_MoveTransform.forward +
+                inputProperty.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * m_MoveTransform.right;
             float wishSpeed = wishDirection.magnitude;
             wishDirection.Normalize();
             if (wishSpeed > m_MaxSpeed) wishSpeed = m_MaxSpeed;
@@ -121,7 +121,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 }
             }
             m_Controller.Move((initialVelocity + endingVelocity) / 2.0f * duration);
-            moveComponent.position.Value = transform.position;
+            moveComponent.position.Value = m_MoveTransform.position;
             moveComponent.velocity.Value = endingVelocity;
         }
 

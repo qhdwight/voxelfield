@@ -185,9 +185,9 @@ namespace Swihoni.Components
                     // @formatter:off
                     switch (index)
                     {
-                        case 0: m_E1 = value; break;
-                        case 1: m_E2 = value; break;
-                        case 2: m_E3 = value; break;
+                        case 0:  m_E1 = value; break;
+                        case 1:  m_E2 = value; break;
+                        case 2:  m_E3 = value; break;
                         default: throw new IndexOutOfRangeException();
                     }
                     // @formatter:on

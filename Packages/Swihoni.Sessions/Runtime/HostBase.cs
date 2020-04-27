@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Player.Components;
+using UnityEngine;
 
 namespace Swihoni.Sessions
 {
@@ -12,8 +14,8 @@ namespace Swihoni.Sessions
 
         private readonly Container m_HostCommands, m_RenderSession;
 
-        protected HostBase(IGameObjectLinker linker, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
-            : base(linker, sessionElements, playerElements, commandElements)
+        protected HostBase(IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
+            : base(sessionElements, playerElements, commandElements)
         {
             // TODO:refactor zeroing
             m_HostCommands = new Container(commandElements.Concat(playerElements).Append(typeof(ServerStampComponent)).Append(typeof(ServerTag)));
@@ -25,16 +27,16 @@ namespace Swihoni.Sessions
                 players.SetAll(() => new Container(playerElements));
         }
 
-        private void ReadLocalInputs(Container commandsToFill) { m_Modifier[HostPlayerId].ModifyCommands(commandsToFill); }
+        private void ReadLocalInputs(SessionBase session, Container commandsToFill) { m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill); }
 
-        public override void Input(float time, float delta)
+        protected override void Input(float time, float delta)
         {
             if (!m_SessionHistory.Peek().Has(out ServerStampComponent serverStamp) || !serverStamp.tick.HasValue)
                 return;
 
-            ReadLocalInputs(m_HostCommands);
-            m_Modifier[HostPlayerId].ModifyTrusted(m_HostCommands, m_HostCommands, delta);
-            m_Modifier[HostPlayerId].ModifyChecked(m_HostCommands, m_HostCommands, delta);
+            ReadLocalInputs(this, m_HostCommands);
+            m_Modifier[HostPlayerId].ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
+            m_Modifier[HostPlayerId].ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
             GetMode().Modify(m_HostCommands, m_HostCommands, delta);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.time.Value = time;
@@ -65,8 +67,9 @@ namespace Swihoni.Sessions
                     RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, renderPlayers[playerId],
                                                                    m_SessionHistory.Size, GetInHistory);
                 }
-                m_Visuals[playerId].Render(renderPlayers[playerId], playerId == localPlayer);
+                m_Visuals[playerId].Render(playerId, renderPlayers[playerId], playerId == localPlayer);
             }
+            m_PlayerHud.Render(renderPlayers[HostPlayerId]);
         }
 
         protected override void PreTick(Container tickSession)
@@ -82,6 +85,20 @@ namespace Swihoni.Sessions
         {
             // Merge host component updates that happen on normal server update cycle
             m_HostCommands.MergeSet(tickSession.Require<PlayerContainerArrayProperty>()[HostPlayerId]);
+        }
+
+        public override Ray GetRayForPlayer(int holdingPlayer)
+        {
+            if (holdingPlayer == HostPlayerId)
+            {
+                var camera = m_HostCommands.Require<CameraComponent>();
+                float yaw = camera.yaw * Mathf.Deg2Rad, pitch = camera.pitch * Mathf.Deg2Rad;
+                var direction = new Vector3(Mathf.Sin(yaw), -Mathf.Sin(pitch), Mathf.Cos(yaw));
+                Vector3 position = m_HostCommands.Require<MoveComponent>().position + new Vector3 {y = 1.8f};
+                var ray = new Ray(position, direction);
+                return ray;
+            }
+            return base.GetRayForPlayer(holdingPlayer);
         }
     }
 }

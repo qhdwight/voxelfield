@@ -5,6 +5,7 @@ using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
 using UnityEngine;
 
 namespace Swihoni.Sessions
@@ -31,9 +32,8 @@ namespace Swihoni.Sessions
         private ComponentServerSocket m_Socket;
         protected readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
 
-        protected ServerBase(IGameObjectLinker linker,
-                             IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
-            : base(linker, sessionElements, playerElements, commandElements)
+        protected ServerBase(IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
+            : base(sessionElements, playerElements, commandElements)
         {
             ForEachPlayer(player => player.Add(typeof(ServerTag)));
         }
@@ -119,9 +119,10 @@ namespace Swihoni.Sessions
                                         serverPlayerTime.Value = serverTime;
                                     }
 
+                                    ModeBase mode = GetMode(serverSession);
                                     serverPlayer.MergeSet(clientCommands); // Merge in trusted
-                                    m_Modifier[clientId].ModifyChecked(serverPlayer, clientCommands, clientStamp.duration);
-                                    GetMode(serverSession).Modify(serverPlayer, clientCommands, clientStamp.duration);
+                                    m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, clientCommands, clientStamp.duration);
+                                    mode.Modify(serverPlayer, clientCommands, clientStamp.duration);
                                 }
                                 else
                                     Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
@@ -170,6 +171,16 @@ namespace Swihoni.Sessions
             GetMode(session).ResetPlayer(player);
             player.Require<ClientStampComponent>().Reset();
             player.Require<ServerStampComponent>().Reset();
+        }
+
+        public override Ray GetRayForPlayer(int holdingPlayer)
+        {
+            return new Ray();
+        }
+
+        public override void AboutToRaycast(int playerId)
+        {
+            
         }
 
         public override void Dispose()

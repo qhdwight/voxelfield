@@ -12,7 +12,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         internal virtual void Cleanup() { }
 
-        public abstract void Render(Container playerContainer, bool isLocalPlayer);
+        public abstract void Render(int playerId, Container playerContainer, bool isLocalPlayer);
     }
 
     [SelectionBase]
@@ -46,7 +46,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 Rigidbody part = m_RagdollRigidbodies[i];
                 part.isKinematic = !isActive;
                 if (isActive) continue;
-                Transform partTransform = part.transform;    
+                Transform partTransform = part.transform;
                 partTransform.localPosition = m_RagdollInitialTransforms[i].position;
                 partTransform.localRotation = m_RagdollInitialTransforms[i].rotation;
                 part.velocity = Vector3.zero;
@@ -54,14 +54,14 @@ namespace Swihoni.Sessions.Player.Visualization
             }
         }
 
-        public void Render(Container player, bool isLocalPlayer)
+        public void Render(int playerId, Container player, bool isLocalPlayer)
         {
             bool usesHealth = player.Has(out HealthProperty health),
                  isVisible = !usesHealth || health.HasValue;
             if (isVisible)
             {
                 SetRagdollEnabled(health.IsDead);
-                
+
                 if (player.Has(out MoveComponent moveComponent))
                     transform.position = moveComponent.position;
                 if (player.Has(out CameraComponent cameraComponent))
@@ -75,9 +75,9 @@ namespace Swihoni.Sessions.Player.Visualization
                 SetRagdollEnabled(false);
 
             bool isFpv = isLocalPlayer && (!usesHealth || health.HasValue && health.IsAlive);
-            SetVisible(isVisible, isFpv,  isLocalPlayer);
-            
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(player, isLocalPlayer);
+            SetVisible(isVisible, isFpv, isLocalPlayer);
+
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(playerId, player, isLocalPlayer);
         }
 
         private void SetVisible(bool isVisible, bool isFpv, bool isCameraEnabled)

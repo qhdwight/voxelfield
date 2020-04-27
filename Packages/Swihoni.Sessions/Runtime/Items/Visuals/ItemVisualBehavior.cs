@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Swihoni.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Visualization;
@@ -86,7 +87,7 @@ namespace Swihoni.Sessions.Items.Visuals
 
         public void SampleEvents(ItemComponent item, ByteStatusComponent equipStatus)
         {
-            ItemComponent lastItemComponent = m_PlayerItemAnimator.LastRenderedItemComponent;
+            ItemComponent lastItemComponent = m_PlayerItemAnimator.LastRenderedItem;
             float? lastStatusElapsed = null;
             if (lastItemComponent != null)
             {
@@ -105,7 +106,8 @@ namespace Swihoni.Sessions.Items.Visuals
                 if (animationEvent.audioSource) animationEvent.audioSource.PlayOneShot(animationEvent.audioSource.clip);
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
             }
-            m_PlayerItemAnimator.LastRenderedItemComponent = item;
+            if (lastItemComponent == null) m_PlayerItemAnimator.LastRenderedItem = item.Clone();
+            else lastItemComponent.CopyFrom(item);
         }
 
         public void SampleAnimation(ItemComponent item, ByteStatusComponent equipStatus, float interpolation)

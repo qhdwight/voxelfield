@@ -11,14 +11,14 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         public const byte NoneIndex = 0;
 
-        public override void ModifyChecked(Container player, Container commands, float duration)
+        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration)
         {
             if (!player.Has(out InventoryComponent inventoryComponent)) return;
 
             var inputProperty = commands.Require<InputFlagProperty>();
             var wantedItemIndexProperty = commands.Require<WantedItemIndexProperty>();
 
-            ModifyEquipStatus(inventoryComponent, wantedItemIndexProperty, duration);
+            ModifyEquipStatus(session, playerId, inventoryComponent, wantedItemIndexProperty, duration);
 
             if (inventoryComponent.HasNoItemEquipped) return;
 
@@ -26,11 +26,11 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             // Modify equipped item component
             ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
-            ItemModifierBase modifier = ItemManager.GetModifier(equippedItemComponent.id);
-            modifier.ModifyChecked((equippedItemComponent, inventoryComponent), inputProperty, duration);
+            ItemModifierBase itemModifier = ItemManager.GetModifier(equippedItemComponent.id);
+            itemModifier.ModifyChecked(session, playerId, equippedItemComponent, inventoryComponent, inputProperty, duration);
         }
 
-        private static void ModifyEquipStatus(InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex, float duration)
+        private static void ModifyEquipStatus(SessionBase session, int playerId, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex, float duration)
         {
             byte wantedIndex = wantedItemIndex;
             ByteStatusComponent equipStatus = inventory.equipStatus;
@@ -62,7 +62,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (equipStatus.id != ItemEquipStatusId.Unequipped) return;
             // We have just unequipped the current index
             ItemComponent equippedItemComponent = inventory.EquippedItemComponent;
-            modifier.OnUnequip(equippedItemComponent);
+            modifier.OnUnequip(session, playerId, equippedItemComponent);
             if (hasValidWantedIndex)
                 inventory.equippedIndex.Value = wantedIndex;
             else if (FindReplacement(inventory, out byte replacementIndex))
@@ -106,9 +106,9 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        protected override void SynchronizeBehavior(Container componentToApply) { }
+        protected override void SynchronizeBehavior(Container player) { }
 
-        public override void ModifyCommands(Container commands)
+        public override void ModifyCommands(SessionBase session, Container commands)
         {
             if (!commands.Has(out InputFlagProperty inputProperty)) return;
             InputProvider input = InputProvider.Singleton;

@@ -29,7 +29,7 @@ namespace Swihoni.Sessions.Player.Components
         public bool IsAlive => !IsDead;
         public bool IsDead => Value == 0;
     }
-    
+
     [Serializable]
     public class RespawnTimerProperty : FloatProperty
     {
