@@ -34,7 +34,7 @@ namespace Swihoni.Sessions.Modes
 
             health.Value = 0;
             if (player.Has(out RespawnTimerProperty respawnTimer))
-                respawnTimer.Value = 5.0f;
+                respawnTimer.Value = 2.0f;
         }
 
         internal override void Modify(Container playerToModify, Container commands, float duration)

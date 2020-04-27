@@ -90,6 +90,10 @@ namespace Swihoni.Sessions.Player.Visualization
                     ItemManager.ReturnVisuals(m_ItemVisual);
                     m_ItemVisual = null;
                 }
+                if (m_FpvArmsRenderer)
+                {
+                    m_FpvArmsRenderer.enabled = false;
+                }
             }
             m_Animator.enabled = isVisible;
             ArmIk.enabled = isVisible;
