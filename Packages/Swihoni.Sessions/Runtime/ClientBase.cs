@@ -242,9 +242,9 @@ namespace Swihoni.Sessions
                             else
                                 localizedServerTime.Value = time;
 
-                            if (Mathf.Abs(localizedServerTime.Value - time) > GetSettings(serverSession).TickInterval)
+                            if (Mathf.Abs(localizedServerTime.Value - time) > GetSettings(serverSession).TickInterval * 3)
                             {
-                                Debug.LogWarning("Client reset");
+                                Debug.LogWarning($"[{GetType().Name}] Client reset");
                                 localizedServerTime.Value = time;
                             }
                         }

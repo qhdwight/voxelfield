@@ -113,7 +113,7 @@ namespace Swihoni.Sessions
                                 {
                                     serverPlayerTime.Value += clientStamp.time - serverPlayerClientStamp.time;
 
-                                    if (Mathf.Abs(serverPlayerTime.Value - serverTime) > GetSettings(serverSession).TickInterval)
+                                    if (Mathf.Abs(serverPlayerTime.Value - serverTime) > GetSettings(serverSession).TickInterval * 3)
                                     {
                                         Debug.LogWarning($"[{GetType().Name}] Reset time for client: {clientId}");
                                         serverPlayerTime.Value = serverTime;

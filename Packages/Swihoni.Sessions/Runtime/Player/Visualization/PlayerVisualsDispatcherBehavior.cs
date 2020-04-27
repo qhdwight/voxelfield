@@ -74,7 +74,7 @@ namespace Swihoni.Sessions.Player.Visualization
             else
                 SetRagdollEnabled(false);
 
-            bool isFpv = !usesHealth || health.HasValue && health.IsAlive;
+            bool isFpv = isLocalPlayer && (!usesHealth || health.HasValue && health.IsAlive);
             SetVisible(isVisible, isFpv,  isLocalPlayer);
             
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(player, isLocalPlayer);
