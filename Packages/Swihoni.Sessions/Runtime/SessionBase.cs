@@ -4,6 +4,7 @@ using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
+using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
@@ -12,24 +13,17 @@ namespace Swihoni.Sessions
 {
     public interface IPlayerContainerRenderer : IDisposable
     {
-        void Setup();
+        void Setup(SessionBase session);
 
         // TODO: refactor is local player should use If construct
         void Render(int playerId, Container player, bool isLocalPlayer);
-    }
-
-    public interface IGameObjectLinker
-    {
-        GameObject GetPlayerModifierPrefab();
-
-        GameObject GetPlayerVisualsPrefab();
     }
 
     public abstract class SessionBase : IDisposable
     {
         internal const int MaxPlayers = 3;
 
-        private readonly GameObject m_PlayerModifierPrefab, m_PlayerVisualsPrefab;
+        private readonly GameObject m_PlayerVisualsPrefab;
         
         protected readonly PlayerHudBase m_PlayerHud;
         private float m_FixedUpdateTime, m_RenderTime;
@@ -38,10 +32,11 @@ namespace Swihoni.Sessions
         private uint m_Tick;
 
         public bool ShouldRender { get; set; } = true;
+        public GameObject PlayerModifierPrefab { get; }
 
-        protected SessionBase(IGameObjectLinker linker)
+        protected SessionBase(ISessionGameObjectLinker linker)
         {
-            m_PlayerModifierPrefab = linker.GetPlayerModifierPrefab();
+            PlayerModifierPrefab = linker.GetPlayerModifierPrefab();
             m_PlayerVisualsPrefab = linker.GetPlayerVisualsPrefab();
             m_PlayerHud = PlayerHudBase.Singleton;
         }
@@ -60,8 +55,8 @@ namespace Swihoni.Sessions
 
         public virtual void Start()
         {
-            m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup());
-            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(m_PlayerModifierPrefab, MaxPlayers, modifier => modifier.Setup());
+            m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup(this));
+            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, modifier => modifier.Setup(this));
         }
 
         public void Update(float time)
@@ -123,8 +118,7 @@ namespace Swihoni.Sessions
         public virtual void Dispose()
         {
             foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier)
-                if (modifier)
-                    modifier.Dispose();
+                modifier.Dispose();
             foreach (IPlayerContainerRenderer visual in m_Visuals)
                 visual.Dispose();
         }
@@ -151,10 +145,22 @@ namespace Swihoni.Sessions
             renderPlayerContainer.CopyFrom(getInHistory(0));
         }
 
-        public abstract Ray GetRayForPlayer(int holdingPlayer);
+        public abstract Ray GetRayForPlayerId(int playerId);
 
         public abstract void AboutToRaycast(int playerId);
 
         public abstract ModeBase GetMode(Container session = null);
+
+        protected static Ray GetRayForPlayer(Container player)
+        {
+            var camera = player.Require<CameraComponent>();
+            float yaw = camera.yaw * Mathf.Deg2Rad, pitch = camera.pitch * Mathf.Deg2Rad;
+            var direction = new Vector3(Mathf.Sin(yaw), -Mathf.Sin(pitch), Mathf.Cos(yaw));
+            Vector3 position = player.Require<MoveComponent>().position + new Vector3 {y = 1.8f};
+            var ray = new Ray(position, direction);
+            return ray;
+        }
+
+        public virtual Container GetPlayerFromId(int playerId) { throw new NotImplementedException(); }
     }
 }

@@ -5,7 +5,7 @@ namespace Compound.Session
 {
     public class Server : ServerBase
     {
-        public Server(IGameObjectLinker linker)
+        public Server(ISessionGameObjectLinker linker)
             : base(linker, StandardComponents.StandardSessionElements, StandardComponents.StandardPlayerElements, StandardComponents.StandardPlayerCommandsElements)
         {
         }

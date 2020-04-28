@@ -133,6 +133,7 @@
             <e p="SceneCamera.cs" t="Include" />
             <e p="ServerBase.cs" t="Include" />
             <e p="SessionBase.cs" t="Include" />
+            <e p="SessionGameObjectLinker.cs" t="Include" />
             <e p="Swihoni.Session.asmdef" t="Include" />
           </e>
           <e p="Tests" t="Include">
@@ -154,6 +155,7 @@
             </e>
             <e p="SingletonBehavior.cs" t="Include" />
             <e p="Swihoni.Util.asmdef" t="Include" />
+            <e p="VectorMath.cs" t="Include" />
           </e>
         </e>
       </e>

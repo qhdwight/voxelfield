@@ -23,11 +23,13 @@ namespace Swihoni.Sessions.Items.Modifiers
         private static readonly RaycastHit[] RaycastHits = new RaycastHit[MaxRaycastDetections];
 
         [SerializeField] protected ushort m_MagSize;
+        [SerializeField] private byte m_Damage = default;
         [SerializeField] private ushort m_StartingAmmoInReserve = default;
         [SerializeField] private LayerMask m_PlayerMask = default;
         [SerializeField] private ItemStatusModiferProperties[] m_AdsModifierProperties = default;
 
         public ushort MagSize => m_MagSize;
+        public byte Damage => m_Damage;
         public ItemStatusModiferProperties GetAdsStatusModifierProperties(byte statusId) => m_AdsModifierProperties[statusId];
 
         protected override bool HasSecondaryUse() { return false; }
@@ -73,7 +75,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         {
             item.gunStatus.ammoInMag.Value--;
             
-            Ray ray = session.GetRayForPlayer(playerId);
+            Ray ray = session.GetRayForPlayerId(playerId);
             session.AboutToRaycast(playerId);
             
             ModeBase mode = session.GetMode();
@@ -81,14 +83,11 @@ namespace Swihoni.Sessions.Items.Modifiers
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)
             {
                 RaycastHit hit = RaycastHits[hitIndex];
-                var receivingPlayerHitbox = hit.collider.GetComponent<PlayerHitbox>();
-                if (!receivingPlayerHitbox || m_HitPlayers.Contains(receivingPlayerHitbox.Manager)) continue;
-                m_HitPlayers.Add(receivingPlayerHitbox.Manager);
-                mode.PlayerHit(receivingPlayerHitbox.Manager.PlayerId,
-                               playerId,
-                               receivingPlayerHitbox,
-                               this,
-                               hit.distance);
+                var hitbox = hit.collider.GetComponent<PlayerHitbox>();
+                if (!hitbox || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
+                m_HitPlayers.Add(hitbox.Manager);
+                Debug.Log($"Player: {playerId} hit player: {hitbox.Manager.PlayerId}");
+                mode.PlayerHit(session.GetPlayerFromId(hitbox.Manager.PlayerId), session.GetPlayerFromId(playerId), hitbox, this, hit.distance);
             }
             m_HitPlayers.Clear();
         }

@@ -33,7 +33,7 @@ namespace Swihoni.Sessions
         private ComponentServerSocket m_Socket;
         protected readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
 
-        protected ServerBase(IGameObjectLinker linker,
+        protected ServerBase(ISessionGameObjectLinker linker,
                              IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
@@ -175,9 +175,9 @@ namespace Swihoni.Sessions
             player.Require<ServerStampComponent>().Reset();
         }
 
-        public override Ray GetRayForPlayer(int holdingPlayer)
+        public override Ray GetRayForPlayerId(int playerId)
         {
-            return new Ray();
+            return GetRayForPlayer(m_SessionHistory.Peek().GetPlayer(playerId));
         }
 
         public override void AboutToRaycast(int playerId)

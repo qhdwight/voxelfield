@@ -26,6 +26,7 @@ MonoBehaviour:
   - duration: Infinity
   - duration: Infinity
   m_MagSize: 30
+  m_Damage: 30
   m_StartingAmmoInReserve: 90
   m_PlayerMask:
     serializedVersion: 2

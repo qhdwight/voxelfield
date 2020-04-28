@@ -2,6 +2,7 @@ using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player;
+using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Modes
@@ -12,7 +13,10 @@ namespace Swihoni.Sessions.Modes
 
         internal abstract void ResetPlayer(Container player);
 
-        internal abstract void KillPlayer(Container player);
+        internal virtual void KillPlayer(Container player)
+        {
+            if (player.Has(out HealthProperty health)) health.Value = 0;
+        }
 
         internal abstract void Modify(Container playerToModify, Container commands, float duration);
 
@@ -22,9 +26,22 @@ namespace Swihoni.Sessions.Modes
 
         public void ModifyCommands(ModeBase mode, Container commandsToModify) { throw new NotImplementedException(); }
 
-        public virtual void PlayerHit(int hitPlayerId, int inflictingPlayerId, PlayerHitbox receivingPlayerHitbox, GunModifierBase gun, float distance)
+        public virtual void PlayerHit(Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, GunModifierBase gun, float distance)
         {
-            Debug.Log($"Player: {inflictingPlayerId} hit player: {hitPlayerId}");
+            if (hitPlayer.Present(out HealthProperty health))
+            {
+                checked
+                {
+                    if (gun.Damage >= health)
+                    {
+                       KillPlayer(hitPlayer);
+                    }
+                    else
+                    {
+                        health.Value -= gun.Damage;
+                    }
+                }
+            }
         }
     }
 }

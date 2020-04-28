@@ -56,17 +56,18 @@ namespace Swihoni.Sessions.Items.Visuals
             m_Renders = GetComponentsInChildren<Renderer>();
             ModiferProperties = ItemManager.GetModifier(m_Id);
             playerItemAnimator.ArmIk.SetTargets(m_IkL, m_IkR);
-            ItemStatusVisualProperties[] properties = m_StatusVisualProperties.Concat(m_EquipStatusVisualProperties).ToArray();
-            m_Mixer = AnimationMixerPlayable.Create(playerGraph, properties.Length);
-            m_Animations = new AnimationClipPlayable[properties.Length];
-            m_Animations = properties.Select((statusProperty, i) =>
+            ItemStatusVisualProperties[] visualProperties = m_StatusVisualProperties.Concat(m_EquipStatusVisualProperties).ToArray();
+            m_Mixer = AnimationMixerPlayable.Create(playerGraph, visualProperties.Length);
+            m_Animations = new AnimationClipPlayable[visualProperties.Length];
+            for (var i = 0; i < visualProperties.Length; i++)
             {
+                ItemStatusVisualProperties statusProperty = visualProperties[i];
                 AnimationClip clip = statusProperty.animationClip;
-                if (!clip) return default;
+                if (!clip) continue;
                 var playable = AnimationClipPlayable.Create(m_PlayerGraph, clip);
                 m_PlayerGraph.Connect(playable, PlayerItemAnimatorBehavior.OutputIndex, m_Mixer, i);
-                return playable;
-            }).ToArray();
+                m_Animations[i] = playable;
+            }
             m_PlayerGraph.GetOutput(PlayerItemAnimatorBehavior.OutputIndex).SetSourcePlayable(m_Mixer);
         }
 

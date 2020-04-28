@@ -13,14 +13,14 @@ namespace Swihoni.Sessions.Player
 
         public int PlayerId { get; private set; }
 
-        internal void Setup()
+        internal void Setup(SessionBase session)
         {
             m_PlayerHitboxes = GetComponentsInChildren<PlayerHitbox>();
             m_BodyAnimator = GetComponent<PlayerBodyAnimatorBehavior>();
             m_ItemAnimator = GetComponentInChildren<PlayerItemAnimatorBehavior>();
             foreach (PlayerHitbox hitbox in m_PlayerHitboxes)
                 hitbox.Setup(this);
-            m_BodyAnimator.Setup();
+            m_BodyAnimator.Setup(session);
             m_ItemAnimator.Setup();
         }
 

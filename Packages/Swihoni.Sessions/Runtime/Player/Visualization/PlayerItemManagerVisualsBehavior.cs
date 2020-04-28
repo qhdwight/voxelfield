@@ -7,7 +7,7 @@ namespace Swihoni.Sessions.Player.Visualization
     {
         private PlayerItemAnimatorBehavior[] m_ItemAnimators;
 
-        internal override void Setup()
+        internal override void Setup(SessionBase session)
         {
             m_ItemAnimators = GetComponentsInChildren<PlayerItemAnimatorBehavior>(true);
             ForEachItemAnimator(animator => animator.Setup());

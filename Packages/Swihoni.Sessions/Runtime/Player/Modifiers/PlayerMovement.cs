@@ -1,6 +1,7 @@
 using Input;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Modifiers
@@ -8,6 +9,8 @@ namespace Swihoni.Sessions.Player.Modifiers
     public class PlayerMovement : PlayerModifierBehaviorBase
     {
         private const float DefaultDownSpeed = -1.0f, RaycastOffset = 0.05f;
+
+        public const byte Idle = 0, Moving = 1, InAir = 2;
 
         private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
 
@@ -27,10 +30,14 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_SideSpeed = 30.0f,
             m_GravityFactor = 23.0f,
             m_MaxStickDistance = 0.25f;
+        [SerializeField] private float m_WalkStateDuration = 1.0f;
+        [SerializeField] private LayerMask m_GroundMask = default;
 
         private CharacterController m_Controller;
 
-        [Header("Movement")] [SerializeField] private LayerMask m_GroundMask = default;
+        public LayerMask GroundMask => m_GroundMask;
+        public float MaxSpeed => m_MaxSpeed;
+        public float WalkStateDuration => m_WalkStateDuration;
 
         internal override void Setup()
         {
@@ -41,8 +48,42 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration)
         {
+            if (player.Without(out MoveComponent move)
+             || player.Present(out HealthProperty health) && health.IsDead
+             || commands.Without(out InputFlagProperty inputs)) return;
+            
             base.ModifyChecked(session, playerId, player, commands, duration);
-            FullMove(player, commands, duration);
+            
+            FullMove(move, inputs, duration);
+            
+            ModifyStatus(move, duration);
+        }
+
+        private void ModifyStatus(MoveComponent move, float duration)
+        {
+            ByteStatusComponent status = move.status;
+            if (move.groundTick >= 1)
+            {
+                if (VectorMath.LateralMagnitude(move.velocity) < 1e-2f)
+                {
+                    status.id.Value = Idle;
+                    status.elapsed.Value = 0.0f;
+                }
+                else
+                {
+                    status.id.Value = Moving;
+                    status.elapsed.Value += duration;
+                    while (status.elapsed > m_WalkStateDuration)
+                    {
+                        status.elapsed.Value -= m_WalkStateDuration;
+                    }
+                }
+            }
+            else
+            {
+                status.id.Value = InAir;
+                status.elapsed.Value = 0.0f;
+            }
         }
 
         public override void ModifyCommands(SessionBase session, Container commands)
@@ -60,22 +101,15 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         protected override void SynchronizeBehavior(Container player)
         {
-            m_Controller.enabled = false;
-            if (player.Without(out MoveComponent moveComponent)
-             || player.Without(out HealthProperty healthProperty)) return;
-
-            if (moveComponent.position.HasValue) m_MoveTransform.position = moveComponent.position;
-            if (healthProperty.HasValue) m_Controller.enabled = healthProperty.IsAlive;
+            var move = player.Require<MoveComponent>();
+            if (move.position.HasValue) m_MoveTransform.position = move.position;
+            m_Controller.enabled = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
         }
 
-        private void FullMove(Container containerToModify, Container commands, float duration)
+        private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)
         {
-            if (containerToModify.Without(out MoveComponent moveComponent)
-             || containerToModify.Present(out HealthProperty healthProperty) && healthProperty.IsDead
-             || commands.Without(out InputFlagProperty inputProperty)) return;
-
-            Vector3 initialVelocity = moveComponent.velocity, endingVelocity = initialVelocity;
-            float lateralSpeed = LateralMagnitude(endingVelocity);
+            Vector3 initialVelocity = move.velocity, endingVelocity = initialVelocity;
+            float lateralSpeed = VectorMath.LateralMagnitude(endingVelocity);
             bool isGrounded = Physics.RaycastNonAlloc(m_MoveTransform.position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
                                                       m_MaxStickDistance + RaycastOffset, m_GroundMask) > 0,
                  withinAngleLimit = isGrounded && Vector3.Angle(m_CachedGroundHits[0].normal, Vector3.up) < m_Controller.slopeLimit;
@@ -86,34 +120,34 @@ namespace Swihoni.Sessions.Player.Modifiers
                 // if (!inputProperty.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
             }
             Vector3 wishDirection =
-                inputProperty.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * m_MoveTransform.forward +
-                inputProperty.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * m_MoveTransform.right;
+                inputs.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * m_MoveTransform.forward +
+                inputs.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * m_MoveTransform.right;
             float wishSpeed = wishDirection.magnitude;
             wishDirection.Normalize();
             if (wishSpeed > m_MaxSpeed) wishSpeed = m_MaxSpeed;
             if (isGrounded && withinAngleLimit)
             {
-                if (moveComponent.groundTick >= 1)
+                if (move.groundTick >= 1)
                 {
                     if (lateralSpeed > m_FrictionCutoff) Friction(lateralSpeed, duration, ref endingVelocity);
                     else if (Mathf.Approximately(wishSpeed, 0.0f)) endingVelocity = Vector3.zero;
                     endingVelocity.y = DefaultDownSpeed;
                 }
                 Accelerate(wishDirection, wishSpeed, m_Acceleration, duration, ref endingVelocity);
-                if (inputProperty.GetInput(PlayerInput.Jump))
+                if (inputs.GetInput(PlayerInput.Jump))
                 {
                     initialVelocity.y = m_JumpSpeed;
                     endingVelocity.y = initialVelocity.y - m_GravityFactor * duration;
                 }
-                if (moveComponent.groundTick < byte.MaxValue) moveComponent.groundTick.Value++;
+                if (move.groundTick < byte.MaxValue) move.groundTick.Value++;
             }
             else
             {
-                moveComponent.groundTick.Value = 0;
+                move.groundTick.Value = 0;
                 if (wishSpeed > m_AirSpeedCap) wishSpeed = m_AirSpeedCap;
                 Accelerate(wishDirection, wishSpeed, m_AirAcceleration, duration, ref endingVelocity);
                 endingVelocity.y -= m_GravityFactor * duration;
-                float lateralAirSpeed = LateralMagnitude(endingVelocity);
+                float lateralAirSpeed = VectorMath.LateralMagnitude(endingVelocity);
                 if (lateralAirSpeed > m_MaxAirSpeed)
                 {
                     endingVelocity.x *= m_MaxAirSpeed / lateralAirSpeed;
@@ -121,8 +155,8 @@ namespace Swihoni.Sessions.Player.Modifiers
                 }
             }
             m_Controller.Move((initialVelocity + endingVelocity) / 2.0f * duration);
-            moveComponent.position.Value = m_MoveTransform.position;
-            moveComponent.velocity.Value = endingVelocity;
+            move.position.Value = m_MoveTransform.position;
+            move.velocity.Value = endingVelocity;
         }
 
         private void Friction(float lateralSpeed, float time, ref Vector3 velocity)
@@ -146,7 +180,5 @@ namespace Swihoni.Sessions.Player.Modifiers
             velocity.x += wishDirection.x * accelerationSpeed;
             velocity.z += wishDirection.z * accelerationSpeed;
         }
-
-        private static float LateralMagnitude(Vector3 v) { return Mathf.Sqrt(v.x * v.x + v.z * v.z); }
     }
 }

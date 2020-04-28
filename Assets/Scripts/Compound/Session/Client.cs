@@ -6,7 +6,7 @@ namespace Compound.Session
 {
     public class Client : ClientBase
     {
-        public Client(IGameObjectLinker linker, IPEndPoint ipEndPoint)
+        public Client(ISessionGameObjectLinker linker, IPEndPoint ipEndPoint)
             : base(linker, ipEndPoint, StandardComponents.StandardSessionElements, StandardComponents.StandardPlayerElements, StandardComponents.StandardPlayerCommandsElements)
         {
         }

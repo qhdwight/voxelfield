@@ -9,11 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d36ce76b97d4cfeb023ad2e6e02e004, type: 3}
+  m_Script: {fileID: 11500000, guid: 56c5ce62ff0840049c639dcb98616a96, type: 3}
   m_Name: Session Linker
   m_EditorClassIdentifier: 
-  PlayerModifierPrefab: {fileID: 3621098284609304107, guid: 71ac0441fdf298943a3d88cc15dabbdb,
+  m_PlayerModifierPrefab: {fileID: 3621098284609304107, guid: 71ac0441fdf298943a3d88cc15dabbdb,
     type: 3}
-  PlayerVisualsPrefab: {fileID: 4224837671832740950, guid: fafdfda233569534ab011266eae78b95,
+  m_PlayerVisualsPrefab: {fileID: 4224837671832740950, guid: fafdfda233569534ab011266eae78b95,
     type: 3}
-  PlayerHud: {fileID: 0}

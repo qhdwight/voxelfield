@@ -30,9 +30,8 @@ namespace Swihoni.Sessions.Modes
 
         internal override void KillPlayer(Container player)
         {
-            var health = player.Require<HealthProperty>();
-
-            health.Value = 0;
+            base.KillPlayer(player);
+            
             if (player.Has(out RespawnTimerProperty respawnTimer))
                 respawnTimer.Value = 2.0f;
         }

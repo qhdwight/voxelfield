@@ -40,7 +40,7 @@ namespace Swihoni.Sessions
 
         public IPEndPoint IpEndPoint { get; }
 
-        protected ClientBase(IGameObjectLinker linker, IPEndPoint ipEndPoint, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
+        protected ClientBase(ISessionGameObjectLinker linker, IPEndPoint ipEndPoint, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
                              IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
@@ -272,7 +272,7 @@ namespace Swihoni.Sessions
             return false;
         }
 
-        public override Ray GetRayForPlayer(int holdingPlayer) { return new Ray(); }
+        public override Ray GetRayForPlayerId(int playerId) { return new Ray(); }
 
         public override void AboutToRaycast(int playerId) { }
 

@@ -8,7 +8,7 @@ namespace Swihoni.Sessions.Player.Visualization
 {
     public abstract class PlayerVisualsBehaviorBase : MonoBehaviour, IDisposable
     {
-        internal virtual void Setup() { }
+        internal virtual void Setup(SessionBase session) { }
 
         public virtual void Dispose() { }
 
@@ -24,15 +24,17 @@ namespace Swihoni.Sessions.Player.Visualization
 
         private PlayerVisualsBehaviorBase[] m_Visuals;
         private Rigidbody[] m_RagdollRigidbodies;
+        private Collider[] m_RagdollColliders;
         private (Vector3 position, Quaternion rotation)[] m_RagdollInitialTransforms;
 
-        public void Setup()
+        public void Setup(SessionBase session)
         {
             m_Visuals = GetComponents<PlayerVisualsBehaviorBase>();
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup();
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup(session);
             m_Camera = GetComponentInChildren<Camera>();
             m_AudioListener = GetComponentInChildren<AudioListener>();
             m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
+            m_RagdollColliders = GetComponentsInChildren<Collider>();
             m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();
             SetVisible(false, false);
         }
@@ -49,6 +51,10 @@ namespace Swihoni.Sessions.Player.Visualization
                 partTransform.localRotation = m_RagdollInitialTransforms[i].rotation;
                 part.velocity = Vector3.zero;
                 part.angularVelocity = Vector3.zero;
+            }
+            foreach (Collider partCollider in m_RagdollColliders)
+            {
+                partCollider.enabled = isActive;
             }
         }
 
@@ -84,8 +90,7 @@ namespace Swihoni.Sessions.Player.Visualization
             if (m_Visuals != null)
                 foreach (PlayerVisualsBehaviorBase visual in m_Visuals)
                     visual.Dispose();
-            if (this)
-                Destroy(gameObject);
+            Destroy(gameObject);
         }
     }
 }

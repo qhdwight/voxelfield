@@ -14,7 +14,7 @@ namespace Swihoni.Sessions
         protected readonly ClientCommandsContainer m_EmptyClientCommands;
         protected readonly ServerSessionContainer m_EmptyServerSession;
 
-        protected NetworkedSessionBase(IGameObjectLinker linker,
+        protected NetworkedSessionBase(ISessionGameObjectLinker linker,
                                        IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker)
         {
@@ -47,6 +47,11 @@ namespace Swihoni.Sessions
 
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public override ModeBase GetMode(Container session = null) { return ModeManager.GetMode(GetSettings(session).modeId); }
+
+        public override Container GetPlayerFromId(int playerId)
+        {
+            return m_SessionHistory.Peek().GetPlayer(playerId);
+        }
 
         public virtual void Disconnect() { Dispose(); }
     }

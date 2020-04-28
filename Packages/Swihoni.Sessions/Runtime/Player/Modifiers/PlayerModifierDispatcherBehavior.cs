@@ -9,12 +9,12 @@ namespace Swihoni.Sessions.Player.Modifiers
         private PlayerModifierBehaviorBase[] m_Modifiers;
         private PlayerHitboxManager m_HitboxManager;
 
-        internal void Setup()
+        internal void Setup(SessionBase session)
         {
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
             m_HitboxManager = GetComponent<PlayerHitboxManager>();
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
-            if (m_HitboxManager) m_HitboxManager.Setup();
+            if (m_HitboxManager) m_HitboxManager.Setup(session);
         }
 
         public void ModifyChecked(SessionBase session, int playerId, Container containerToModify, Container commands, float duration)

@@ -14,7 +14,7 @@ namespace Swihoni.Sessions
 
         private readonly Container m_HostCommands, m_RenderSession;
 
-        protected HostBase(IGameObjectLinker linker,
+        protected HostBase(ISessionGameObjectLinker linker,
                            IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
@@ -75,31 +75,21 @@ namespace Swihoni.Sessions
 
         protected override void PreTick(Container tickSession)
         {
-            Container hostPlayer = tickSession.Require<PlayerContainerArrayProperty>()[HostPlayerId];
+            Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
             // Inject our current player component before normal update cycle
             hostPlayer.MergeSet(m_HostCommands);
             // Set up new player component data
             if (tickSession.Require<ServerStampComponent>().tick == 0u) SetupNewPlayer(tickSession, hostPlayer);
         }
 
-        protected override void PostTick(Container tickSession)
+        public override Container GetPlayerFromId(int playerId)
         {
-            // Merge host component updates that happen on normal server update cycle
-            m_HostCommands.MergeSet(tickSession.Require<PlayerContainerArrayProperty>()[HostPlayerId]);
+            return playerId == HostPlayerId ? m_HostCommands : base.GetPlayerFromId(playerId);
         }
 
-        public override Ray GetRayForPlayer(int holdingPlayer)
+        public override Ray GetRayForPlayerId(int playerId)
         {
-            if (holdingPlayer == HostPlayerId)
-            {
-                var camera = m_HostCommands.Require<CameraComponent>();
-                float yaw = camera.yaw * Mathf.Deg2Rad, pitch = camera.pitch * Mathf.Deg2Rad;
-                var direction = new Vector3(Mathf.Sin(yaw), -Mathf.Sin(pitch), Mathf.Cos(yaw));
-                Vector3 position = m_HostCommands.Require<MoveComponent>().position + new Vector3 {y = 1.8f};
-                var ray = new Ray(position, direction);
-                return ray;
-            }
-            return base.GetRayForPlayer(holdingPlayer);
+            return playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
         }
     }
 }

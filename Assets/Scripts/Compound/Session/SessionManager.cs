@@ -7,12 +7,10 @@ using UnityEngine;
 
 namespace Compound.Session
 {
-    public class SessionManager : SingletonBehavior<SessionManager>, IGameObjectLinker
+    public class SessionManager : SingletonBehavior<SessionManager>
     {
         private NetworkedSessionBase m_Host, m_Client;
         
-        [SerializeField] public GameObject m_PlayerModifierPrefab = default, m_PlayerVisualsPrefab = default;
-
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
@@ -35,7 +33,7 @@ namespace Compound.Session
 
         public Host StartHost()
         {
-            var host = new Host(this);
+            var host = new Host(SessionGameObjectLinker.Singleton);
             try
             {
                 host.Start();
@@ -52,7 +50,7 @@ namespace Compound.Session
 
         public Client StartClient(IPEndPoint ipEndPoint)
         {
-            var client = new Client(this, ipEndPoint);
+            var client = new Client(SessionGameObjectLinker.Singleton, ipEndPoint);
             try
             {
                 client.Start();
@@ -117,10 +115,6 @@ namespace Compound.Session
             }
         }
 
-        private void OnDestroy() { DisconnectAll(); }
-
-        public GameObject GetPlayerModifierPrefab() { return m_PlayerModifierPrefab; }
-
-        public GameObject GetPlayerVisualsPrefab() { return m_PlayerVisualsPrefab; }
+        private void OnApplicationQuit() { DisconnectAll(); }
     }
 }
