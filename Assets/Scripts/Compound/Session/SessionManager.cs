@@ -10,6 +10,8 @@ namespace Compound.Session
     public class SessionManager : SingletonBehavior<SessionManager>
     {
         private NetworkedSessionBase m_Host, m_Client;
+
+        [SerializeField] private SessionGameObjectLinker m_Linker = default;
         
         private void Start()
         {
@@ -33,7 +35,7 @@ namespace Compound.Session
 
         public Host StartHost()
         {
-            var host = new Host(SessionGameObjectLinker.Singleton);
+            var host = new Host(m_Linker);
             try
             {
                 host.Start();
@@ -50,7 +52,7 @@ namespace Compound.Session
 
         public Client StartClient(IPEndPoint ipEndPoint)
         {
-            var client = new Client(SessionGameObjectLinker.Singleton, ipEndPoint);
+            var client = new Client(m_Linker, ipEndPoint);
             try
             {
                 client.Start();

@@ -23,9 +23,6 @@ namespace Swihoni.Sessions.Player.Visualization
         private Camera m_Camera;
 
         private PlayerVisualsBehaviorBase[] m_Visuals;
-        private Rigidbody[] m_RagdollRigidbodies;
-        private Collider[] m_RagdollColliders;
-        private (Vector3 position, Quaternion rotation)[] m_RagdollInitialTransforms;
 
         public void Setup(SessionBase session)
         {
@@ -33,29 +30,7 @@ namespace Swihoni.Sessions.Player.Visualization
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup(session);
             m_Camera = GetComponentInChildren<Camera>();
             m_AudioListener = GetComponentInChildren<AudioListener>();
-            m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
-            m_RagdollColliders = GetComponentsInChildren<Collider>();
-            m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();
             SetVisible(false, false);
-        }
-
-        private void SetRagdollEnabled(bool isActive)
-        {
-            for (var i = 0; i < m_RagdollRigidbodies.Length; i++)
-            {
-                Rigidbody part = m_RagdollRigidbodies[i];
-                part.isKinematic = !isActive;
-                if (isActive) continue;
-                Transform partTransform = part.transform;
-                partTransform.localPosition = m_RagdollInitialTransforms[i].position;
-                partTransform.localRotation = m_RagdollInitialTransforms[i].rotation;
-                part.velocity = Vector3.zero;
-                part.angularVelocity = Vector3.zero;
-            }
-            foreach (Collider partCollider in m_RagdollColliders)
-            {
-                partCollider.enabled = isActive;
-            }
         }
 
         public void Render(int playerId, Container player, bool isLocalPlayer)
@@ -64,13 +39,14 @@ namespace Swihoni.Sessions.Player.Visualization
                  isVisible = !usesHealth || health.HasValue;
             if (isVisible)
             {
-                SetRagdollEnabled(health.IsDead);
-                
-                if (player.Has(out CameraComponent cameraComponent))
-                    m_Camera.transform.localRotation = Quaternion.AngleAxis(cameraComponent.pitch, Vector3.right);
+                if (player.Has(out CameraComponent playerCamera))
+                {
+                    m_Camera.transform.localRotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up)
+                                                     * Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
+                }
+                if (player.Has(out MoveComponent move))
+                    m_Camera.transform.position = move.position + new Vector3 {y = 1.8f};
             }
-            else
-                SetRagdollEnabled(false);
 
             SetVisible(isVisible, isLocalPlayer);
 

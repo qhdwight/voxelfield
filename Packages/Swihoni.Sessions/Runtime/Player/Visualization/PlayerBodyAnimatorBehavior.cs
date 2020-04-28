@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
@@ -16,7 +17,7 @@ namespace Swihoni.Sessions.Player.Visualization
     {
         public AnimationClip clip;
     }
-    
+
     public class PlayerBodyAnimatorBehavior : PlayerVisualsBehaviorBase
     {
         [SerializeField] private Transform m_Head = default;
@@ -26,6 +27,9 @@ namespace Swihoni.Sessions.Player.Visualization
         [SerializeField] private AudioClip[] m_BrushClips = default;
         [SerializeField] private Animator m_Animator = default;
         private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
+        private Rigidbody[] m_RagdollRigidbodies;
+        private Collider[] m_RagdollColliders;
+        private (Vector3 position, Quaternion rotation)[] m_RagdollInitialTransforms;
         private PlayableGraph m_Graph;
         private AnimationClipPlayable[] m_Animations;
         private AnimationMixerPlayable m_Mixer;
@@ -36,11 +40,11 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             base.Setup(session);
             if (m_Graph.IsValid()) return;
-            
+
             m_PlayerMovement = session.PlayerModifierPrefab.GetComponent<PlayerMovement>();
             m_Graph = PlayableGraph.Create("Body Animator");
             m_Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
-            
+
             m_Mixer = AnimationMixerPlayable.Create(m_Graph, m_StatusVisualProperties.Length);
             m_Animations = new AnimationClipPlayable[m_StatusVisualProperties.Length];
             for (var visualStateIndex = 0; visualStateIndex < m_StatusVisualProperties.Length; visualStateIndex++)
@@ -48,16 +52,20 @@ namespace Swihoni.Sessions.Player.Visualization
                 m_Animations[visualStateIndex] = AnimationClipPlayable.Create(m_Graph, m_StatusVisualProperties[visualStateIndex].clip);
                 m_Graph.Connect(m_Animations[visualStateIndex], 0, m_Mixer, visualStateIndex);
             }
-            
+
             var output = AnimationPlayableOutput.Create(m_Graph, "Body Output", m_Animator);
             output.SetSourcePlayable(m_Mixer);
+            /* Ragdoll */
+            m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
+            m_RagdollColliders = GetComponentsInChildren<Collider>();
+            m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();
         }
 
         public override void Render(Container player, bool isLocalPlayer)
         {
             bool usesHealth = player.Has(out HealthProperty health),
                  isVisible = !usesHealth || health.HasValue;
-            
+
             bool isInFpv = isLocalPlayer && (!usesHealth || health.HasValue && health.IsAlive);
 
             foreach (Renderer render in m_FpvRenders)
@@ -66,18 +74,47 @@ namespace Swihoni.Sessions.Player.Visualization
                 render.shadowCastingMode = isInFpv ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             }
 
+            bool isAnimatorEnabled;
             if (isVisible)
             {
+                isAnimatorEnabled = health.IsAlive;
                 if (player.Has(out MoveComponent move))
                 {
-                    transform.position = move.position;
+                    m_Animator.transform.position = move.position;
+                    SetRagdollEnabled(health.IsDead);
                     AnimateBody(move);
                 }
                 if (player.Has(out CameraComponent playerCamera))
                 {
-                    transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
+                    m_Animator.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
                     m_Head.localRotation = Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
                 }
+            }
+            else
+            {
+                SetRagdollEnabled(false);
+                isAnimatorEnabled = true;
+            }
+
+            m_Animator.enabled = isAnimatorEnabled;
+        }
+
+        private void SetRagdollEnabled(bool isActive)
+        {
+            for (var i = 0; i < m_RagdollRigidbodies.Length; i++)
+            {
+                Rigidbody part = m_RagdollRigidbodies[i];
+                part.isKinematic = !isActive;
+                if (isActive) continue;
+                Transform partTransform = part.transform;
+                partTransform.localPosition = m_RagdollInitialTransforms[i].position;
+                partTransform.localRotation = m_RagdollInitialTransforms[i].rotation;
+                part.velocity = Vector3.zero;
+                part.angularVelocity = Vector3.zero;
+            }
+            foreach (Collider partCollider in m_RagdollColliders)
+            {
+                partCollider.enabled = isActive;
             }
         }
 
@@ -162,7 +199,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public override void Dispose()
         {
-            base.Dispose(); 
+            base.Dispose();
             if (m_Graph.IsValid()) m_Graph.Destroy();
         }
     }

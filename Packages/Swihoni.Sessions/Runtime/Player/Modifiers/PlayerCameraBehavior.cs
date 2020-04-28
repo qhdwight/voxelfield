@@ -12,25 +12,25 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration)
         {
-            if (player.Without(out CameraComponent cameraComponent)
-             || commands.Without(out MouseComponent mouseComponent)
-             || player.Present(out HealthProperty healthProperty) && healthProperty.IsDead) return;
+            if (player.Without(out CameraComponent playerCamera)
+             || commands.Without(out MouseComponent mouse)
+             || player.Present(out HealthProperty health) && health.IsDead) return;
             base.ModifyTrusted(session, playerId, player, commands, duration);
-            cameraComponent.yaw.Value = Mathf.Repeat(cameraComponent.yaw + mouseComponent.mouseDeltaX * m_Sensitivity, 360.0f);
-            cameraComponent.pitch.Value = Mathf.Clamp(cameraComponent.pitch - mouseComponent.mouseDeltaY * m_Sensitivity, -90.0f, 90.0f);
+            playerCamera.yaw.Value = Mathf.Repeat(playerCamera.yaw + mouse.mouseDeltaX * m_Sensitivity, 360.0f);
+            playerCamera.pitch.Value = Mathf.Clamp(playerCamera.pitch - mouse.mouseDeltaY * m_Sensitivity, -90.0f, 90.0f);
         }
 
         public override void ModifyCommands(SessionBase session, Container commands)
         {
-            if (commands.Without(out MouseComponent mouseComponent)) return;
-            mouseComponent.mouseDeltaX.Value = InputProvider.GetMouseInput(MouseMovement.X);
-            mouseComponent.mouseDeltaY.Value = InputProvider.GetMouseInput(MouseMovement.Y);
+            if (commands.Without(out MouseComponent mouse)) return;
+            mouse.mouseDeltaX.Value = InputProvider.GetMouseInput(MouseMovement.X);
+            mouse.mouseDeltaY.Value = InputProvider.GetMouseInput(MouseMovement.Y);
         }
 
         protected override void SynchronizeBehavior(Container player)
         {
-            if (player.Without(out CameraComponent cameraComponent)) return;
-            if (cameraComponent.yaw.HasValue) m_MoveTransform.rotation = Quaternion.AngleAxis(cameraComponent.yaw, Vector3.up);
+            if (player.Without(out CameraComponent playerCamera)) return;
+            if (playerCamera.yaw.HasValue) m_MoveTransform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
         }
     }
 }

@@ -30,6 +30,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             itemModifier.ModifyChecked(session, playerId, equippedItemComponent, inventoryComponent, inputProperty, duration);
         }
 
+        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) { }
+
         private static void ModifyEquipStatus(SessionBase session, int playerId, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex, float duration)
         {
             byte wantedIndex = wantedItemIndex;
@@ -106,25 +108,23 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        protected override void SynchronizeBehavior(Container player) { }
-
         public override void ModifyCommands(SessionBase session, Container commands)
         {
-            if (!commands.Has(out InputFlagProperty inputProperty)) return;
-            InputProvider input = InputProvider.Singleton;
-            inputProperty.SetInput(PlayerInput.UseOne, input.GetInput(InputType.UseOne));
-            inputProperty.SetInput(PlayerInput.UseTwo, input.GetInput(InputType.UseTwo));
-            inputProperty.SetInput(PlayerInput.Reload, input.GetInput(InputType.Reload));
-            inputProperty.SetInput(PlayerInput.Ads, input.GetInput(InputType.Ads));
-            if (!commands.Has(out WantedItemIndexProperty itemIndexProperty)) return;
-            if (input.GetInput(InputType.ItemOne))
-                itemIndexProperty.Value = 1;
-            else if (input.GetInput(InputType.ItemTwo))
-                itemIndexProperty.Value = 2;
-            else if (input.GetInput(InputType.ItemThree))
-                itemIndexProperty.Value = 3;
-            else
-                itemIndexProperty.Value = 0;
+            if (commands.Without(out InputFlagProperty inputs)) return;
+            InputProvider inputProvider = InputProvider.Singleton;
+            inputs.SetInput(PlayerInput.UseOne, inputProvider.GetInput(InputType.UseOne));
+            inputs.SetInput(PlayerInput.UseTwo, inputProvider.GetInput(InputType.UseTwo));
+            inputs.SetInput(PlayerInput.Reload, inputProvider.GetInput(InputType.Reload));
+            inputs.SetInput(PlayerInput.Ads, inputProvider.GetInput(InputType.Ads));
+            if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
+            if (inputProvider.GetInput(InputType.ItemOne))
+                itemIndex.Value = 1;
+            else if (inputProvider.GetInput(InputType.ItemTwo))
+                itemIndex.Value = 2;
+            else if (inputProvider.GetInput(InputType.ItemThree))
+                itemIndex.Value = 3;
+            else if (!itemIndex.HasValue)
+                itemIndex.Value = 0;
         }
 
         private static bool FindReplacement(InventoryComponent inventory, out byte replacementIndex)

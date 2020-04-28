@@ -51,13 +51,15 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (player.Without(out MoveComponent move)
              || player.Present(out HealthProperty health) && health.IsDead
              || commands.Without(out InputFlagProperty inputs)) return;
-            
+
             base.ModifyChecked(session, playerId, player, commands, duration);
-            
+
             FullMove(move, inputs, duration);
-            
+
             ModifyStatus(move, duration);
         }
+
+        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) { }
 
         private void ModifyStatus(MoveComponent move, float duration)
         {
@@ -102,7 +104,8 @@ namespace Swihoni.Sessions.Player.Modifiers
         protected override void SynchronizeBehavior(Container player)
         {
             var move = player.Require<MoveComponent>();
-            if (move.position.HasValue) m_MoveTransform.position = move.position;
+            m_MoveTransform.position = move.position;
+            m_MoveTransform.transform.rotation = Quaternion.AngleAxis(player.Require<CameraComponent>().yaw, Vector3.up);
             m_Controller.enabled = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
         }
 

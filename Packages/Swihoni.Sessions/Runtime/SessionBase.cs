@@ -86,42 +86,34 @@ namespace Swihoni.Sessions
         // {
         //     InterpolateHistoryInto(componentToInterpolate, i => componentHistory.Get(i), componentHistory.Size, getDuration, rollback, timeSinceLastUpdate);
         // }
-
-        protected static void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, Func<int, TComponent> getInHistory, int maxRollback,
-                                                                 Func<int, float> getDuration, float rollback, float timeSinceLastUpdate)
-            where TComponent : ComponentBase
-        {
-            int fromIndex = 0, toIndex = 0;
-            var durationCount = 0.0f;
-            for (var historyIndex = 0; historyIndex < maxRollback; historyIndex++)
-            {
-                fromIndex = -historyIndex - 1;
-                toIndex = -historyIndex;
-                durationCount += getDuration(-historyIndex);
-                if (durationCount >= rollback - timeSinceLastUpdate) break;
-                if (historyIndex != maxRollback - 1) continue;
-                // We do not have enough history. Copy the most recent instead
-                componentToInterpolate.MergeSet(getInHistory(0));
-                return;
-            }
-            float interpolation;
-            if (getDuration(toIndex) > 0.0f)
-            {
-                float elapsed = durationCount - rollback + timeSinceLastUpdate;
-                interpolation = elapsed / getDuration(toIndex);
-            }
-            else
-                interpolation = 0.0f;
-            Interpolator.InterpolateInto(getInHistory(fromIndex), getInHistory(toIndex), componentToInterpolate, interpolation);
-        }
-
-        public virtual void Dispose()
-        {
-            foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier)
-                modifier.Dispose();
-            foreach (IPlayerContainerRenderer visual in m_Visuals)
-                visual.Dispose();
-        }
+        //
+        // protected static void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, Func<int, TComponent> getInHistory, int maxRollback,
+        //                                                          Func<int, float> getDuration, float rollback, float timeSinceLastUpdate)
+        //     where TComponent : ComponentBase
+        // {
+        //     int fromIndex = 0, toIndex = 0;
+        //     var durationCount = 0.0f;
+        //     for (var historyIndex = 0; historyIndex < maxRollback; historyIndex++)
+        //     {
+        //         fromIndex = -historyIndex - 1;
+        //         toIndex = -historyIndex;
+        //         durationCount += getDuration(-historyIndex);
+        //         if (durationCount >= rollback - timeSinceLastUpdate) break;
+        //         if (historyIndex != maxRollback - 1) continue;
+        //         // We do not have enough history. Copy the most recent instead
+        //         componentToInterpolate.MergeSet(getInHistory(0));
+        //         return;
+        //     }
+        //     float interpolation;
+        //     if (getDuration(toIndex) > 0.0f)
+        //     {
+        //         float elapsed = durationCount - rollback + timeSinceLastUpdate;
+        //         interpolation = elapsed / getDuration(toIndex);
+        //     }
+        //     else
+        //         interpolation = 0.0f;
+        //     Interpolator.InterpolateInto(getInHistory(fromIndex), getInHistory(toIndex), componentToInterpolate, interpolation);
+        // }
 
         protected static void RenderInterpolatedPlayer<TStampComponent>(float renderTime, Container renderPlayerContainer, int maxRollback, Func<int, Container> getInHistory)
             where TStampComponent : StampComponent
@@ -158,9 +150,18 @@ namespace Swihoni.Sessions
             var direction = new Vector3(Mathf.Sin(yaw), -Mathf.Sin(pitch), Mathf.Cos(yaw));
             Vector3 position = player.Require<MoveComponent>().position + new Vector3 {y = 1.8f};
             var ray = new Ray(position, direction);
+            Debug.DrawLine(position, position + direction * 10.0f, Color.blue, 5.0f);
             return ray;
         }
-
+        
         public virtual Container GetPlayerFromId(int playerId) { throw new NotImplementedException(); }
+
+        public virtual void Dispose()
+        {
+            foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier)
+                modifier.Dispose();
+            foreach (IPlayerContainerRenderer visual in m_Visuals)
+                visual.Dispose();
+        }
     }
 }
