@@ -36,10 +36,10 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             ArmIk = GetComponent<ArmIk>();
             m_Animator = GetComponent<Animator>();
-            m_Graph = PlayableGraph.Create($"{m_GraphName} Item Animator");
+            m_Graph = PlayableGraph.Create($"{transform.root.name} {m_GraphName} Item Animator");
             m_Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
             if (m_FpvCamera) m_FieldOfView = m_FpvCamera.fieldOfView;
-            AnimationPlayableOutput.Create(m_Graph, $"{m_GraphName} Output", m_Animator);
+            AnimationPlayableOutput.Create(m_Graph, $"{transform.root.name} {m_GraphName} Output", m_Animator);
         }
 
         public void Render(Container player, bool isLocalPlayer)
@@ -75,10 +75,9 @@ namespace Swihoni.Sessions.Player.Visualization
                             m_ItemVisual.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
                     }
                     else
-                    {
                         m_ItemVisual.SetRenderingMode(false);
-                    }
 
+                    m_Animator.Rebind();
                     SampleItemAnimation(equippedItem, equipStatus, interpolation);
 
                     if (m_IsFpv) AnimateAim(inventory);
@@ -102,6 +101,9 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             m_Animator.enabled = isVisible;
             ArmIk.enabled = isVisible;
+            
+            if (UnityEngine.Input.GetKeyDown(KeyCode.I))
+                m_Animator.Rebind();
         }
 
         /// <summary>
@@ -123,6 +125,7 @@ namespace Swihoni.Sessions.Player.Visualization
             if (inventory.HasNoItemEquipped)
             {
                 if (m_ItemVisual) ItemManager.ReturnVisuals(m_ItemVisual);
+                m_ItemVisual = null;
                 return null;
             }
             byte itemId = inventory.EquippedItemComponent.id;
@@ -139,7 +142,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         private void SampleItemAnimation(ItemComponent item, ByteStatusComponent equipStatus, float statusInterpolation)
         {
-            m_ItemVisual.SampleEvents(item, equipStatus);
+            if (m_RenderItems) m_ItemVisual.SampleEvents(item, equipStatus);
             m_ItemVisual.SampleAnimation(item, equipStatus, statusInterpolation);
         }
 

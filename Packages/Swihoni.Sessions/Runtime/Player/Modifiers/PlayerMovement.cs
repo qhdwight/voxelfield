@@ -10,7 +10,7 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         private const float DefaultDownSpeed = -1.0f, RaycastOffset = 0.05f;
 
-        public const byte Idle = 0, Moving = 1, InAir = 2;
+        public const byte Upright = 0, Crouched = 1;
 
         private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
 
@@ -33,58 +33,60 @@ namespace Swihoni.Sessions.Player.Modifiers
         [SerializeField] private float m_WalkStateDuration = 1.0f;
         [SerializeField] private LayerMask m_GroundMask = default;
 
-        private CharacterController m_Controller;
-
+        private CharacterController m_Controller, m_PrefabController;
+        
         public LayerMask GroundMask => m_GroundMask;
         public float MaxSpeed => m_MaxSpeed;
         public float WalkStateDuration => m_WalkStateDuration;
 
-        internal override void Setup()
+        internal override void Setup(SessionBase session)
         {
-            base.Setup();
+            base.Setup(session);
             m_Controller = m_MoveTransform.GetComponent<CharacterController>();
             m_Controller.enabled = false;
+            m_PrefabController = session.PlayerModifierPrefab.GetComponentInChildren<CharacterController>();
+        }
+
+        protected override void SynchronizeBehavior(Container player)
+        {
+            var move = player.Require<MoveComponent>();
+            m_MoveTransform.position = move.position;
+            if (player.Has(out CameraComponent playerCamera))
+                m_MoveTransform.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
+            m_Controller.enabled = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
+            float uprightHeight = m_PrefabController.height;
+            Vector3 uprightCenter = m_PrefabController.center;
+            m_Controller.height = move.stateId == Upright ? uprightHeight : uprightHeight * 0.7f;
+            m_Controller.center = move.stateId == Upright ? uprightCenter : uprightCenter * 0.7f;
         }
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration)
         {
             if (player.Without(out MoveComponent move)
-             || player.Present(out HealthProperty health) && health.IsDead
+             || player.Has(out HealthProperty health) && health.IsDead
              || commands.Without(out InputFlagProperty inputs)) return;
 
             base.ModifyChecked(session, playerId, player, commands, duration);
-
             FullMove(move, inputs, duration);
-
-            ModifyStatus(move, duration);
+            ModifyStatus(move, inputs, duration);
         }
 
         public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) { }
 
-        private void ModifyStatus(MoveComponent move, float duration)
+        private void ModifyStatus(MoveComponent move, InputFlagProperty inputs, float duration)
         {
-            ByteStatusComponent status = move.status;
-            if (move.groundTick >= 1)
+            move.stateId.Value = inputs.GetInput(PlayerInput.Crouch) ? Crouched : Upright;
+            if (VectorMath.LateralMagnitude(move.velocity) < 1e-2f)
             {
-                if (VectorMath.LateralMagnitude(move.velocity) < 1e-2f)
-                {
-                    status.id.Value = Idle;
-                    status.elapsed.Value = 0.0f;
-                }
-                else
-                {
-                    status.id.Value = Moving;
-                    status.elapsed.Value += duration;
-                    while (status.elapsed > m_WalkStateDuration)
-                    {
-                        status.elapsed.Value -= m_WalkStateDuration;
-                    }
-                }
+                move.moveElapsed.Value = 0.0f;
             }
             else
             {
-                status.id.Value = InAir;
-                status.elapsed.Value = 0.0f;
+                move.moveElapsed.Value += duration;
+                while (move.moveElapsed > m_WalkStateDuration)
+                {
+                    move.moveElapsed.Value -= m_WalkStateDuration;
+                }
             }
         }
 
@@ -98,15 +100,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             inputProperty.SetInput(PlayerInput.Right, input.GetInput(InputType.Right));
             inputProperty.SetInput(PlayerInput.Left, input.GetInput(InputType.Left));
             inputProperty.SetInput(PlayerInput.Jump, input.GetInput(InputType.Jump));
+            inputProperty.SetInput(PlayerInput.Crouch, input.GetInput(InputType.Crouch));
             inputProperty.SetInput(PlayerInput.Suicide, input.GetInput(InputType.Suicide));
-        }
-
-        protected override void SynchronizeBehavior(Container player)
-        {
-            var move = player.Require<MoveComponent>();
-            m_MoveTransform.position = move.position;
-            m_MoveTransform.transform.rotation = Quaternion.AngleAxis(player.Require<CameraComponent>().yaw, Vector3.up);
-            m_Controller.enabled = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
         }
 
         private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)

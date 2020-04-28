@@ -13,7 +13,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
             m_HitboxManager = GetComponent<PlayerHitboxManager>();
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup(session);
             if (m_HitboxManager) m_HitboxManager.Setup(session);
         }
 
@@ -53,7 +53,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
     public abstract class PlayerModifierBehaviorBase : MonoBehaviour
     {
-        internal virtual void Setup() { }
+        internal virtual void Setup(SessionBase session) { }
 
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate

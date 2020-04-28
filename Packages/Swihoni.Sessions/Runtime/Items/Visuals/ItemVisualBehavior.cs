@@ -17,8 +17,8 @@ namespace Swihoni.Sessions.Items.Visuals
         [Serializable]
         public class AnimationEvent
         {
-            public uint time;
-            public AudioSource audioSource;
+            public float time;
+            public AudioClip audioSource;
             public ParticleSystem particleSystem;
             public GameObject tracer;
         }
@@ -36,7 +36,8 @@ namespace Swihoni.Sessions.Items.Visuals
                                                               m_EquipStatusVisualProperties = default;
         [SerializeField] private Transform m_IkL = default, m_IkR = default;
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;
-
+        
+        private AudioSource m_AudioSource;
         private AnimationClipPlayable[] m_Animations;
         private PlayableGraph m_PlayerGraph;
         private AnimationMixerPlayable m_Mixer;
@@ -54,6 +55,7 @@ namespace Swihoni.Sessions.Items.Visuals
             m_PlayerItemAnimator = playerItemAnimator;
             m_PlayerGraph = playerGraph;
             m_Renders = GetComponentsInChildren<Renderer>();
+            m_AudioSource = GetComponentInChildren<AudioSource>();
             ModiferProperties = ItemManager.GetModifier(m_Id);
             playerItemAnimator.ArmIk.SetTargets(m_IkL, m_IkR);
             ItemStatusVisualProperties[] visualProperties = m_StatusVisualProperties.Concat(m_EquipStatusVisualProperties).ToArray();
@@ -104,7 +106,7 @@ namespace Swihoni.Sessions.Items.Visuals
                 bool shouldDoEvent = (!lastStatusElapsed.HasValue || lastStatusElapsed.Value < animationEvent.time)
                                   && item.status.elapsed >= animationEvent.time;
                 if (!shouldDoEvent) continue;
-                if (animationEvent.audioSource) animationEvent.audioSource.PlayOneShot(animationEvent.audioSource.clip);
+                if (animationEvent.audioSource) m_AudioSource.PlayOneShot(animationEvent.audioSource);
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
             }
             if (lastItemComponent == null) m_PlayerItemAnimator.LastRenderedItem = item.Clone();

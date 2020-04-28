@@ -52,6 +52,14 @@ namespace Swihoni.Components
             return Mathf.Abs(other.Value - Value) < tolerance;
         }
 
+        public void CyclicInterpolateFrom(float f1, float f2, float min, float max, float interpolation)
+        {
+            float range = max - min;
+            while (f1 > f2)
+                f2 += range;
+            Value = min + Mathf.Repeat(Mathf.Lerp(f1, f2, interpolation), range);
+        }
+
         public override void ValueInterpolateFrom(PropertyBase<float> p1, PropertyBase<float> p2, float interpolation)
         {
             float f1 = p1, f2 = p2;
@@ -65,10 +73,7 @@ namespace Swihoni.Components
                 if (Field.IsDefined(typeof(Cyclic)))
                 {
                     var cyclicAttribute = Field.GetCustomAttribute<Cyclic>();
-                    float range = cyclicAttribute.maximum - cyclicAttribute.minimum;
-                    while (f1 > f2)
-                        f2 += range;
-                    Value = cyclicAttribute.minimum + Mathf.Repeat(Mathf.Lerp(f1, f2, interpolation), range);
+                    CyclicInterpolateFrom(f1, f2, cyclicAttribute.minimum, cyclicAttribute.maximum, interpolation);
                     return;
                 }
             }

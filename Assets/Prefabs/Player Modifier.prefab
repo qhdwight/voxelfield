@@ -212,9 +212,13 @@ MonoBehaviour:
   - clip: {fileID: 7400000, guid: d758aa32307fd8147a7680f5f51e8464, type: 2}
   - clip: {fileID: 7400000, guid: 533156bd8f27a1b43a8c9f830bbca24c, type: 2}
   - clip: {fileID: 7400000, guid: 0805d64d7ae43f84488c274b94b13fba, type: 2}
+  - clip: {fileID: 7400000, guid: 73bb62ca6ef593949bbe2a06fde42875, type: 2}
+  - clip: {fileID: 7400000, guid: 5738b143c9af5854584d965920979aa7, type: 2}
+  - clip: {fileID: 7400000, guid: f7350c27255b37b4c91d1a9f40b85f87, type: 2}
   m_FootstepSource: {fileID: 0}
   m_BrushClips: []
   m_Animator: {fileID: 280938906928462}
+  m_IsHitbox: 1
 --- !u!136 &3095306032246126162
 CapsuleCollider:
   m_ObjectHideFlags: 0

@@ -18,16 +18,15 @@ namespace Swihoni.Sessions.Player.Components
     public class MoveComponent : ComponentBase
     {
         [Tolerance(0.1f)] public VectorProperty position, velocity;
-        public ByteProperty groundTick;
-        public ByteStatusComponent status;
+        public ByteProperty groundTick, stateId;
+        [CustomInterpolation] public FloatProperty moveElapsed;
 
         public override void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
         {
             var m1 = (MoveComponent) c1;
             var m2 = (MoveComponent) c2;
-            status.InterpolateFrom(m1.status, m2.status, interpolation, statusId => statusId == PlayerMovement.Moving
-                                       ? SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab().GetComponent<PlayerMovement>().WalkStateDuration
-                                       : 0.0f);
+            float walkStateDuration = SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab().GetComponent<PlayerMovement>().WalkStateDuration;
+            moveElapsed.CyclicInterpolateFrom(m1.moveElapsed, m2.moveElapsed, 0.0f, walkStateDuration, interpolation);
         }
 
         public override string ToString() { return $"Position: {position}, Velocity: {velocity}"; }

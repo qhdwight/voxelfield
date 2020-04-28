@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Visualization
@@ -45,7 +46,11 @@ namespace Swihoni.Sessions.Player.Visualization
                                                      * Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
                 }
                 if (player.Has(out MoveComponent move))
-                    m_Camera.transform.position = move.position + new Vector3 {y = 1.8f};
+                {
+                    var offset = 1.8f;
+                    if (move.stateId == PlayerMovement.Crouched) offset *= 0.7f;
+                    m_Camera.transform.position = move.position + new Vector3 {y = offset};
+                }
             }
 
             SetVisible(isVisible, isLocalPlayer);

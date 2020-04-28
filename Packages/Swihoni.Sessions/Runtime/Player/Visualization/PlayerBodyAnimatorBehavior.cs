@@ -26,6 +26,7 @@ namespace Swihoni.Sessions.Player.Visualization
         [SerializeField] private AudioSource m_FootstepSource = default;
         [SerializeField] private AudioClip[] m_BrushClips = default;
         [SerializeField] private Animator m_Animator = default;
+        [SerializeField] private bool m_IsHitbox = default;
         private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
         private Rigidbody[] m_RagdollRigidbodies;
         private Collider[] m_RagdollColliders;
@@ -56,6 +57,7 @@ namespace Swihoni.Sessions.Player.Visualization
             var output = AnimationPlayableOutput.Create(m_Graph, "Body Output", m_Animator);
             output.SetSourcePlayable(m_Mixer);
             /* Ragdoll */
+            if (m_IsHitbox) return;
             m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
             m_RagdollColliders = GetComponentsInChildren<Collider>();
             m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();
@@ -81,8 +83,8 @@ namespace Swihoni.Sessions.Player.Visualization
                 if (player.Has(out MoveComponent move))
                 {
                     m_Animator.transform.position = move.position;
-                    SetRagdollEnabled(health.IsDead);
-                    AnimateBody(move);
+                    if (m_RagdollRigidbodies != null) SetRagdollEnabled(health.IsDead);
+                    RenderMove(move);
                 }
                 if (player.Has(out CameraComponent playerCamera))
                 {
@@ -92,7 +94,7 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             else
             {
-                SetRagdollEnabled(false);
+                if (m_RagdollRigidbodies != null) SetRagdollEnabled(false);
                 isAnimatorEnabled = true;
             }
 
@@ -118,82 +120,54 @@ namespace Swihoni.Sessions.Player.Visualization
             }
         }
 
-        private void AnimateBody(MoveComponent move)
+        private void RenderMove(MoveComponent move)
         {
-            byte moveId = move.status.id;
-            if (moveId == PlayerMovement.Moving)
+            bool isStationary = VectorMath.LateralMagnitude(move.velocity) < 1e-2f,
+                 isGrounded = move.groundTick >= 1;
+
+            byte animationBaseIndex = 0;
+            if (move.stateId == PlayerMovement.Crouched) animationBaseIndex += 3;
+
+            const int moveOffset = 1, inAirOffset = 2;
+
+            if (isStationary)
             {
-                float normalizedStateTime = Mathf.Clamp01(move.status.elapsed / m_PlayerMovement.WalkStateDuration);
-                RenderStatus(moveId, GetNormalizedSpeed(move.velocity), normalizedStateTime);
+                for (var i = 0; i < m_Animations.Length; i++)
+                    m_Mixer.SetInputWeight(i, i == animationBaseIndex ? 1.0f : 0.0f);
             }
             else
-                RenderStatus(moveId, 0.0f, 0.0f);
-        }
-
-        private float GetNormalizedSpeed(Vector3 velocity) { return Mathf.Clamp01(VectorMath.LateralMagnitude(velocity) / m_PlayerMovement.MaxSpeed); }
-
-        private void RenderStatus(byte state, float normalizedSpeed, float normalizedStateTime)
-        {
-            AnimationClip animationClip = m_StatusVisualProperties[state].clip;
-            switch (state)
             {
-                case PlayerMovement.Idle:
-                    m_Mixer.SetInputWeight(PlayerMovement.Idle, 1.0f);
-                    m_Mixer.SetInputWeight(PlayerMovement.Moving, 0.0f);
-                    m_Mixer.SetInputWeight(PlayerMovement.InAir, 0.0f);
-                    break;
-                case PlayerMovement.Moving:
+                if (isGrounded)
                 {
-                    m_Mixer.SetInputWeight(PlayerMovement.Idle, 1.0f - normalizedSpeed);
-                    m_Mixer.SetInputWeight(PlayerMovement.Moving, normalizedSpeed);
-                    m_Mixer.SetInputWeight(PlayerMovement.InAir, 0.0f);
-                    float clipTimeSeconds = normalizedStateTime * animationClip.length;
-                    m_Animations[PlayerMovement.Moving].SetTime(clipTimeSeconds);
-                    if (normalizedStateTime > 0.25f && m_LastNormalizedTime <= 0.25f || normalizedStateTime > 0.75f && m_LastNormalizedTime <= 0.75f)
+                    // TODO:refactor
+                    float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PlayerMovement.MaxSpeed),
+                          normalizedState = Mathf.Clamp01(move.moveElapsed / m_PlayerMovement.WalkStateDuration);
+                    for (var i = 0; i < m_Animations.Length; i++)
+                    {
+                        m_Mixer.SetInputWeight(i, i == animationBaseIndex
+                                                   ? 1.0f - normalizedSpeed
+                                                   : i == animationBaseIndex + moveOffset ? normalizedSpeed : 0.0f);
+                    }
+                    float clipTimeSeconds = normalizedState * m_StatusVisualProperties[animationBaseIndex + moveOffset].clip.length;
+                    m_Animations[animationBaseIndex + moveOffset].SetTime(clipTimeSeconds);
+                    if (normalizedState > 0.25f && m_LastNormalizedTime <= 0.25f || normalizedState > 0.75f && m_LastNormalizedTime <= 0.75f)
                     {
                         if (m_FootstepSource)
                         {
                             int count = Physics.RaycastNonAlloc(transform.position + new Vector3 {y = 0.5f}, Vector3.down, m_CachedHits,
                                                                 1.0f, m_PlayerMovement.GroundMask);
                             if (count >= 1)
-                            {
-                                // RaycastHit hit = m_CachedHits[0];
-                                // var chunk = hit.collider.GetComponent<Chunk>();
-                                // if (chunk)
-                                // {
-                                //     Voxel.Voxel? voxel = ChunkManager.Singleton.GetVoxel((Position3Int) (hit.point - new Vector3 {y = 0.5f}));
-                                //     if (voxel.HasValue)
-                                //     {
-                                //         AudioClip[] clips;
-                                //         switch (voxel.Value.texture)
-                                //         {
-                                //             case VoxelTexture.GRASS:
-                                //                 clips = m_BrushClips;
-                                //                 break;
-                                //             case VoxelTexture.DIRT:
-                                //                 clips = m_DirtClips;
-                                //                 break;
-                                //             default:
-                                //                 clips = m_StoneClips;
-                                //                 break;
-                                //         }
-                                //         AudioClip clip = clips[Random.Range(0, clips.Length)];
-                                //         m_FootstepSource.PlayOneShot(clip);
-                                //     }
-                                // }
                                 m_FootstepSource.PlayOneShot(m_BrushClips[Random.Range(0, m_BrushClips.Length)]);
-                            }
                         }
                     }
-                    break;
+                    m_LastNormalizedTime = normalizedState;
                 }
-                case PlayerMovement.InAir:
-                    m_Mixer.SetInputWeight(PlayerMovement.Idle, 0.0f);
-                    m_Mixer.SetInputWeight(PlayerMovement.Moving, 0.0f);
-                    m_Mixer.SetInputWeight(PlayerMovement.InAir, 1.0f);
-                    break;
+                else
+                {
+                    for (var i = 0; i < m_Animations.Length; i++)
+                        m_Mixer.SetInputWeight(i, i == animationBaseIndex + inAirOffset ? 1.0f : 0.0f);
+                }
             }
-            m_LastNormalizedTime = normalizedStateTime;
             m_Graph.Evaluate();
         }
 

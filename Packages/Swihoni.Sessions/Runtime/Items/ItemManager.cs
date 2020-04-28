@@ -11,7 +11,7 @@ namespace Swihoni.Sessions.Items
     public static class ItemManager
     {
         private static ItemModifierBase[] _itemModifiers;
-        private static Pool<ItemVisualBehavior>[] _itemVisualPool;
+        private static Pool<ItemVisualBehavior>[] _itemVisualPools;
 
         [RuntimeInitializeOnLoadMethod]
         private static void Setup()
@@ -22,7 +22,7 @@ namespace Swihoni.Sessions.Items
                                                               .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
                                                               .Where(visuals => visuals != null)
                                                               .OrderBy(visuals => visuals.Id).ToArray();
-            _itemVisualPool = Enumerable.Range(1, ItemId.Last)
+            _itemVisualPools = Enumerable.Range(1, ItemId.Last)
                                         .Select(id => new Pool<ItemVisualBehavior>(0, () =>
                                          {
                                              ItemVisualBehavior visualsPrefab = itemVisualPrefabs[id - 1],
@@ -34,7 +34,7 @@ namespace Swihoni.Sessions.Items
 
         public static ItemVisualBehavior ObtainVisuals(byte itemId, PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {
-            Pool<ItemVisualBehavior> pool = _itemVisualPool[itemId - 1];
+            Pool<ItemVisualBehavior> pool = _itemVisualPools[itemId - 1];
             ItemVisualBehavior visual = pool.Obtain();
             visual.SetupForPlayerAnimation(playerItemAnimator, playerGraph);
             return visual;
@@ -42,7 +42,7 @@ namespace Swihoni.Sessions.Items
 
         public static void ReturnVisuals(ItemVisualBehavior visual)
         {
-            Pool<ItemVisualBehavior> pool = _itemVisualPool[visual.Id - 1];
+            Pool<ItemVisualBehavior> pool = _itemVisualPools[visual.Id - 1];
             visual.Cleanup();
             visual.SetRenderingMode(false);
             pool.Return(visual);
