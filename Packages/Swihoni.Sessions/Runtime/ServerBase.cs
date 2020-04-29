@@ -6,6 +6,7 @@ using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Modes;
+using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
@@ -171,6 +172,9 @@ namespace Swihoni.Sessions
         protected void SetupNewPlayer(Container session, Container player)
         {
             GetMode(session).ResetPlayer(player);
+            // TODO:refactor zeroing
+            if (player.Has(out StatsComponent stats))
+                stats.Zero();
             player.Require<ClientStampComponent>().Reset();
             player.Require<ServerStampComponent>().Reset();
         }

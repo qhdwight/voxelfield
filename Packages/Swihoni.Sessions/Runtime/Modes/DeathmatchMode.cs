@@ -34,6 +34,8 @@ namespace Swihoni.Sessions.Modes
             
             if (player.Has(out RespawnTimerProperty respawnTimer))
                 respawnTimer.Value = 2.0f;
+            if (player.Has(out StatsComponent stats))
+                stats.deaths.Value++;
         }
 
         internal override void Modify(Container playerToModify, Container commands, float duration)
@@ -42,7 +44,7 @@ namespace Swihoni.Sessions.Modes
              || playerToModify.Without<ServerTag>()
              || playerToModify.Without(out HealthProperty health)) return;
 
-            if (inputs.GetInput(PlayerInput.Suicide))
+            if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive)
             {
                 KillPlayer(playerToModify);
             }

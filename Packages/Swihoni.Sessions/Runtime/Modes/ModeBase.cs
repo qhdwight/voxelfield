@@ -28,17 +28,15 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void PlayerHit(Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, GunModifierBase gun, float distance)
         {
-            if (hitPlayer.Present(out HealthProperty health))
+            if (hitPlayer.Present(out HealthProperty health) && health.IsAlive)
             {
                 checked
                 {
                     if (gun.Damage >= health)
                     {
                        KillPlayer(hitPlayer);
-                       if (inflictingPlayer.Has(out StatsComponent inflictingStats))
-                           inflictingStats.kills.Value++;
-                       if (hitPlayer.Has(out StatsComponent hitStats))
-                           hitStats.deaths.Value++;
+                       if (inflictingPlayer.Has(out StatsComponent stats))
+                           stats.kills.Value++;
                     }
                     else
                     {
