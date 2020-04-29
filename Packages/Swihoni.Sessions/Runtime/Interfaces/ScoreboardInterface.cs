@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.Linq;
 using Input;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Interfaces
@@ -24,6 +26,23 @@ namespace Swihoni.Sessions.Interfaces
             InputProvider inputs = InputProvider.Singleton;
             SetInterfaceActive(inputs.GetInput(InputType.OpenScoreboard));
         }
+        
+        public void SortEntries(PlayerContainerArrayProperty players)
+        {
+            var max = 0;
+            for (var i = 0; i < players.Length; i++)
+            {
+                Container player = players[i];
+                if (player.Has(out StatsComponent stats) && stats.kills.HasValue)
+                {
+                    if (stats.kills > max)
+                    {
+                        m_Entries[i].transform.SetAsFirstSibling();
+                        max = stats.kills;
+                    }
+                }
+            }
+        }
 
         public override void Render(Container session)
         {
@@ -43,6 +62,8 @@ namespace Swihoni.Sessions.Interfaces
                 ScoreboardEntryInterface entry = m_Entries[i];
                 entry.Render(player);
             }
+
+            SortEntries(players);
         }
     }
 }
