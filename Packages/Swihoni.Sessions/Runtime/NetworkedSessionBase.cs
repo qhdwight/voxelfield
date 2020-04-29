@@ -4,6 +4,7 @@ using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 
 namespace Swihoni.Sessions
@@ -51,6 +52,14 @@ namespace Swihoni.Sessions
         public override Container GetPlayerFromId(int playerId)
         {
             return m_SessionHistory.Peek().GetPlayer(playerId);
+        }
+
+        protected override void Render(float renderTime)
+        {
+            foreach (SessionInterfaceBehavior @interface in m_Interfaces)
+            {
+                @interface.Render(m_SessionHistory.Peek());
+            }
         }
 
         public virtual void Disconnect() { Dispose(); }

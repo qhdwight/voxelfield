@@ -84,6 +84,7 @@ namespace Swihoni.Sessions
 
         protected override void Render(float renderTime)
         {
+            base.Render(renderTime);
             if (!m_RenderSession.Has(out PlayerContainerArrayProperty renderPlayers) || !GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
                 return;
 

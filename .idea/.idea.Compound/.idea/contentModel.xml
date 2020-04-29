@@ -89,7 +89,9 @@
             <e p="HostBase.cs" t="Include" />
             <e p="Interfaces" t="Include">
               <e p="BufferedTextGui.cs" t="Include" />
-              <e p="PlayerHUDBase.cs" t="Include" />
+              <e p="DefaultPlayerHud.cs" t="Include" />
+              <e p="ScoreboardInterface.cs" t="Include" />
+              <e p="SessionInterfaceBehavior.cs" t="Include" />
             </e>
             <e p="Items" t="Include">
               <e p="ItemManager.cs" t="Include" />

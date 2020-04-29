@@ -2,7 +2,7 @@ using Swihoni.Sessions.Interfaces;
 
 namespace Compound.Session
 {
-    public class PlayerHud : PlayerHudBase
+    public class PlayerHud : DefaultPlayerHud
     {
         
     }

@@ -12,11 +12,11 @@ namespace Swihoni.Components
 
         public UIntProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) { writer.Write(Value); }
+        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
 
-        public override void DeserializeValue(BinaryReader reader) { Value = reader.ReadUInt32(); }
+        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadUInt32();
 
-        public override bool ValueEquals(PropertyBase<uint> other) { return other.Value == Value; }
+        public override bool ValueEquals(PropertyBase<uint> other) => other.Value == Value;
     }
 
     [Serializable]
@@ -26,11 +26,11 @@ namespace Swihoni.Components
 
         public UShortProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) { writer.Write(Value); }
+        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
 
-        public override void DeserializeValue(BinaryReader reader) { Value = reader.ReadUInt16(); }
+        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadUInt16();
 
-        public override bool ValueEquals(PropertyBase<ushort> other) { return other.Value == Value; }
+        public override bool ValueEquals(PropertyBase<ushort> other) => other.Value == Value;
     }
 
     [Serializable]
@@ -40,9 +40,9 @@ namespace Swihoni.Components
 
         public FloatProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) { writer.Write(Value); }
+        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
 
-        public override void DeserializeValue(BinaryReader reader) { Value = reader.ReadSingle(); }
+        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadSingle();
 
         public override bool ValueEquals(PropertyBase<float> other)
         {
@@ -88,11 +88,11 @@ namespace Swihoni.Components
 
         public ByteProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) { writer.Write(Value); }
+        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
 
-        public override void DeserializeValue(BinaryReader reader) { Value = reader.ReadByte(); }
+        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadByte();
 
-        public override bool ValueEquals(PropertyBase<byte> other) { return other.Value == Value; }
+        public override bool ValueEquals(PropertyBase<byte> other) => other.Value == Value;
     }
 
     [Serializable]
@@ -111,7 +111,7 @@ namespace Swihoni.Components
             writer.Write(Value.z);
         }
 
-        public override void DeserializeValue(BinaryReader reader) { Value = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()); }
+        public override void DeserializeValue(BinaryReader reader) => Value = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
         public override bool ValueEquals(PropertyBase<Vector3> other)
         {
@@ -123,6 +123,6 @@ namespace Swihoni.Components
                 && Mathf.Abs(Value.z - other.Value.z) < tolerance;
         }
 
-        public override void ValueInterpolateFrom(PropertyBase<Vector3> p1, PropertyBase<Vector3> p2, float interpolation) { Value = Vector3.Lerp(p1, p2, interpolation); }
+        public override void ValueInterpolateFrom(PropertyBase<Vector3> p1, PropertyBase<Vector3> p2, float interpolation) => Value = Vector3.Lerp(p1, p2, interpolation);
     }
 }

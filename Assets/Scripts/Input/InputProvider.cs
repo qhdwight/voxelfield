@@ -22,6 +22,7 @@ namespace Input
         ItemThree,
         Ads,
         ToggleConsole,
+        OpenScoreboard,
         AutocompleteConsole,
         PreviousConsoleCommand,
         NextConsoleCommand
@@ -60,6 +61,7 @@ namespace Input
                     [InputType.ItemThree] = KeyCode.Alpha3,
                     [InputType.Ads] = KeyCode.Mouse1,
                     [InputType.ToggleConsole] = KeyCode.BackQuote,
+                    [InputType.OpenScoreboard] = KeyCode.Tab,
                     [InputType.AutocompleteConsole] = KeyCode.Tab,
                     [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
                     [InputType.NextConsoleCommand] = KeyCode.DownArrow,

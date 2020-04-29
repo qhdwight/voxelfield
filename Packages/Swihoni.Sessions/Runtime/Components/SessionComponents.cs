@@ -14,7 +14,8 @@ namespace Swihoni.Sessions.Components
 
         public static readonly IReadOnlyCollection<Type> StandardPlayerElements = new List<Type>
         {
-            typeof(HealthProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent), typeof(RespawnTimerProperty), typeof(TeamProperty)
+            typeof(HealthProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent), typeof(RespawnTimerProperty),
+            typeof(TeamProperty), typeof(StatsComponent)
         };
 
         public static readonly IReadOnlyCollection<Type> StandardPlayerCommandsElements = new List<Type>

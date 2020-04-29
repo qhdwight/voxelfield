@@ -1,4 +1,5 @@
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Interfaces
 {
-    public abstract class PlayerHudBase : SingletonInterfaceBehavior<PlayerHudBase>
+    public abstract class DefaultPlayerHud : InterfaceBehaviorBase
     {
         [SerializeField] private BufferedTextGui m_HealthText = default, m_AmmoText = default;
 
@@ -16,10 +17,9 @@ namespace Swihoni.Sessions.Interfaces
         //     return container.Has(out component) && (m_Previous == null || !Equals(component, m_Previous.Require<TElement>()));
         // }
 
-        public virtual void Render(Container localPlayer)
+        public void Render(Container localPlayer)
         {
             bool isVisible = localPlayer.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
-
             if (isVisible)
             {
                 if (localPlayer.Has<HealthProperty>())

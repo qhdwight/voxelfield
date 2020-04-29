@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -19,13 +20,20 @@ namespace Swihoni.Sessions
         void Render(int playerId, Container player, bool isLocalPlayer);
     }
 
+    [Serializable]
+    public class FeedComponent : ComponentBase
+    {
+        public StringProperty feed;
+    }
+
     public abstract class SessionBase : IDisposable
     {
         internal const int MaxPlayers = 3;
 
         private readonly GameObject m_PlayerVisualsPrefab;
-        
-        protected readonly PlayerHudBase m_PlayerHud;
+
+        protected readonly DefaultPlayerHud m_PlayerHud;
+        protected readonly SessionInterfaceBehavior[] m_Interfaces;
         private float m_FixedUpdateTime, m_RenderTime;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
         protected IPlayerContainerRenderer[] m_Visuals;
@@ -38,7 +46,8 @@ namespace Swihoni.Sessions
         {
             PlayerModifierPrefab = linker.GetPlayerModifierPrefab();
             m_PlayerVisualsPrefab = linker.GetPlayerVisualsPrefab();
-            m_PlayerHud = PlayerHudBase.Singleton;
+            m_PlayerHud = UnityObject.FindObjectOfType<DefaultPlayerHud>();
+            m_Interfaces = UnityObject.FindObjectsOfType<SessionInterfaceBehavior>();
         }
 
         private T[] Instantiate<T>(GameObject prefab, int length, Action<T> setup)

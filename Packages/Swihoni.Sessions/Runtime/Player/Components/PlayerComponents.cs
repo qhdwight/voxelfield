@@ -40,6 +40,13 @@ namespace Swihoni.Sessions.Player.Components
     }
 
     [Serializable]
+    public class StatsComponent : ComponentBase
+    {
+        public ByteProperty kills, deaths, assists;
+        public UShortProperty ping;
+    }
+
+    [Serializable]
     public class RespawnTimerProperty : FloatProperty
     {
     }

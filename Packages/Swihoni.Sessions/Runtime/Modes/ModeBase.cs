@@ -35,6 +35,10 @@ namespace Swihoni.Sessions.Modes
                     if (gun.Damage >= health)
                     {
                        KillPlayer(hitPlayer);
+                       if (inflictingPlayer.Has(out StatsComponent inflictingStats))
+                           inflictingStats.kills.Value++;
+                       if (hitPlayer.Has(out StatsComponent hitStats))
+                           hitStats.deaths.Value++;
                     }
                     else
                     {

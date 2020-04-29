@@ -46,6 +46,7 @@ namespace Swihoni.Sessions
 
         protected override void Render(float renderTime)
         {
+            base.Render(renderTime);
             if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers)
              || m_RenderSession.Without(out LocalPlayerProperty localPlayer)) return;
 
