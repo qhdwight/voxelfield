@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using TMPro;
 
-namespace Swihoni.Sessions.Interfaces
+namespace Swihoni.Util.Interface
 {
     public class BufferedTextGui : TextMeshProUGUI
     {

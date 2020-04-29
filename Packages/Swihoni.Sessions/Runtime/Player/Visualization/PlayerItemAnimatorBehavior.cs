@@ -130,6 +130,7 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             byte itemId = inventory.EquippedItemComponent.id;
             if (m_ItemVisual && itemId == m_ItemVisual.ModiferProperties.id) return m_ItemVisual;
+            
             if (m_ItemVisual) ItemManager.ReturnVisuals(m_ItemVisual); // We have existing visuals but they are the wrong item id
             ItemVisualBehavior newVisuals = ItemManager.ObtainVisuals(itemId, this, m_Graph);
             newVisuals.transform.SetParent(transform, false);
@@ -150,14 +151,19 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             if (!(m_ItemVisual is GunVisualBehavior gunVisuals) || !(m_ItemVisual.ModiferProperties is GunWithMagazineModifier gunModifier)) return;
             float adsInterpolation = GetAimInterpolationValue(inventory);
-            Vector3 adsPosition = -transform.InverseTransformPoint(gunVisuals.AdsTarget.position);
+            
+            Quaternion targetRotation = Quaternion.Inverse(Quaternion.Inverse(transform.rotation) * gunVisuals.AdsTarget.rotation);
+            transform.localRotation = Quaternion.Slerp(Quaternion.identity, targetRotation, adsInterpolation);
+            
+            Vector3 adsPosition = targetRotation * -transform.InverseTransformPoint(gunVisuals.AdsTarget.position);
             transform.localPosition = Vector3.Slerp(m_ItemVisual.FpvOffset, adsPosition, adsInterpolation);
+            
             m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView / 2, adsInterpolation);
         }
 
         private static float GetAimInterpolationValue(InventoryComponent inventory)
         {
-            var aimInterpolationValue = 0.0f;
+            var aimInterpolation = 0.0f;
             ByteStatusComponent adsStatus = inventory.adsStatus;
             switch (adsStatus.id)
             {
@@ -165,14 +171,14 @@ namespace Swihoni.Sessions.Player.Visualization
                 case AdsStatusId.EnteringAds:
                     var gunModifier = (GunModifierBase) ItemManager.GetModifier(inventory.EquippedItemComponent.id);
                     float duration = gunModifier.GetAdsStatusModifierProperties(adsStatus.id).duration;
-                    aimInterpolationValue = adsStatus.elapsed / duration;
+                    aimInterpolation = adsStatus.elapsed / duration;
                     break;
                 case AdsStatusId.Ads:
-                    aimInterpolationValue = 1.0f;
+                    aimInterpolation = 1.0f;
                     break;
             }
-            if (adsStatus.id == AdsStatusId.ExitingAds) aimInterpolationValue = 1.0f - aimInterpolationValue;
-            return aimInterpolationValue;
+            if (adsStatus.id == AdsStatusId.ExitingAds) aimInterpolation = 1.0f - aimInterpolation;
+            return aimInterpolation;
         }
 
         public void Dispose() { m_Graph.Destroy(); }

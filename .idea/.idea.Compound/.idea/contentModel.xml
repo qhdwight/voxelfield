@@ -86,7 +86,6 @@
             <e p="DebugBehavior.cs" t="Include" />
             <e p="HostBase.cs" t="Include" />
             <e p="Interfaces" t="Include">
-              <e p="BufferedTextGui.cs" t="Include" />
               <e p="DefaultPlayerHud.cs" t="Include" />
               <e p="ScoreboardEntryInterface.cs" t="Include" />
               <e p="ScoreboardInterface.cs" t="Include" />
@@ -151,9 +150,12 @@
               <e p="ArmIk.cs" t="Include" />
             </e>
             <e p="Interface" t="Include">
+              <e p="BufferedTextGui.cs" t="Include" />
+              <e p="FpsInterface.cs" t="Include" />
               <e p="InterfaceBehaviorBase.cs" t="Include" />
               <e p="SingletonInterfaceBehaviorBase.cs" t="Include" />
             </e>
+            <e p="IntervalAction.cs" t="Include" />
             <e p="SingletonBehavior.cs" t="Include" />
             <e p="Swihoni.Util.asmdef" t="Include" />
             <e p="VectorMath.cs" t="Include" />
