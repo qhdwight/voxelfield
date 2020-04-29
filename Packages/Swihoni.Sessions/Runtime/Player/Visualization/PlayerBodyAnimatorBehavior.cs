@@ -34,7 +34,7 @@ namespace Swihoni.Sessions.Player.Visualization
         private PlayableGraph m_Graph;
         private AnimationClipPlayable[] m_Animations;
         private AnimationMixerPlayable m_Mixer;
-        private PlayerMovement m_PlayerMovement;
+        private PlayerMovement m_PrefabPlayerMovement;
         private float m_LastNormalizedTime;
 
         internal override void Setup(SessionBase session)
@@ -42,7 +42,7 @@ namespace Swihoni.Sessions.Player.Visualization
             base.Setup(session);
             if (m_Graph.IsValid()) return;
 
-            m_PlayerMovement = session.PlayerModifierPrefab.GetComponent<PlayerMovement>();
+            m_PrefabPlayerMovement = session.PlayerModifierPrefab.GetComponent<PlayerMovement>();
             m_Graph = PlayableGraph.Create("Body Animator");
             m_Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
 
@@ -120,55 +120,66 @@ namespace Swihoni.Sessions.Player.Visualization
             }
         }
 
-        private void RenderMove(MoveComponent move)
+        private void RenderState(int baseIndex, MoveComponent move, float weight)
         {
             bool isStationary = VectorMath.LateralMagnitude(move.velocity) < 1e-2f,
                  isGrounded = move.groundTick >= 1;
 
-            byte animationBaseIndex = 0;
-            if (move.stateId == PlayerMovement.Crouched) animationBaseIndex += 3;
-
-            const int moveOffset = 1, inAirOffset = 2;
+            const int idleOffset = 0, moveOffset = 1, inAirOffset = 2;
 
             if (isStationary)
             {
-                for (var i = 0; i < m_Animations.Length; i++)
-                    m_Mixer.SetInputWeight(i, i == animationBaseIndex ? 1.0f : 0.0f);
+                for (var i = 0; i < 3; i++)
+                    m_Mixer.SetInputWeight(baseIndex + i, i == idleOffset ? weight : 0.0f);
             }
             else
             {
                 if (isGrounded)
                 {
-                    // TODO:refactor
-                    float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PlayerMovement.MaxSpeed),
-                          normalizedState = Mathf.Clamp01(move.moveElapsed / m_PlayerMovement.WalkStateDuration);
-                    for (var i = 0; i < m_Animations.Length; i++)
+                    float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed),
+                          normalizedMove = Mathf.Clamp01(move.moveElapsed / m_PrefabPlayerMovement.WalkStateDuration);
+                    for (var i = 0; i < 3; i++)
                     {
-                        m_Mixer.SetInputWeight(i, i == animationBaseIndex
-                                                   ? 1.0f - normalizedSpeed
-                                                   : i == animationBaseIndex + moveOffset ? normalizedSpeed : 0.0f);
+                        // TODO:refactor
+                        m_Mixer.SetInputWeight(baseIndex + i, i == idleOffset
+                                                   ? (1.0f - normalizedSpeed) * weight
+                                                   : i == moveOffset
+                                                       ? normalizedSpeed * weight
+                                                       : 0.0f);
                     }
-                    float clipTimeSeconds = normalizedState * m_StatusVisualProperties[animationBaseIndex + moveOffset].clip.length;
-                    m_Animations[animationBaseIndex + moveOffset].SetTime(clipTimeSeconds);
-                    if (normalizedState > 0.25f && m_LastNormalizedTime <= 0.25f || normalizedState > 0.75f && m_LastNormalizedTime <= 0.75f)
-                    {
-                        if (m_FootstepSource)
-                        {
-                            int count = Physics.RaycastNonAlloc(transform.position + new Vector3 {y = 0.5f}, Vector3.down, m_CachedHits,
-                                                                1.0f, m_PlayerMovement.GroundMask);
-                            if (count >= 1)
-                                m_FootstepSource.PlayOneShot(m_BrushClips[Random.Range(0, m_BrushClips.Length)]);
-                        }
-                    }
-                    m_LastNormalizedTime = normalizedState;
+                    float clipTimeSeconds = normalizedMove * m_StatusVisualProperties[baseIndex + moveOffset].clip.length;
+                    m_Animations[baseIndex + moveOffset].SetTime(clipTimeSeconds);
                 }
                 else
                 {
-                    for (var i = 0; i < m_Animations.Length; i++)
-                        m_Mixer.SetInputWeight(i, i == animationBaseIndex + inAirOffset ? 1.0f : 0.0f);
+                    for (var i = 0; i < 3; i++)
+                        m_Mixer.SetInputWeight(baseIndex + i, i == inAirOffset ? weight : 0.0f);
                 }
             }
+        }
+
+        private void RenderMove(MoveComponent move)
+        {
+            RenderState(0, move, 1.0f - move.normalizedCrouch);
+            RenderState(3, move, move.normalizedCrouch);
+            if (m_FootstepSource) Footsteps(move);
+
             m_Graph.Evaluate();
+        }
+
+        private void Footsteps(MoveComponent move)
+        {
+            float normalizedMove = Mathf.Clamp01(move.moveElapsed / m_PrefabPlayerMovement.WalkStateDuration);
+
+            // TODO:refactor magic numbers
+            if (normalizedMove > 0.25f && m_LastNormalizedTime <= 0.25f || normalizedMove > 0.75f && m_LastNormalizedTime <= 0.75f)
+            {
+                int count = Physics.RaycastNonAlloc(m_FootstepSource.transform.position + new Vector3 {y = 0.5f}, Vector3.down, m_CachedHits,
+                                                    1.0f, m_PrefabPlayerMovement.GroundMask);
+                if (count >= 1)
+                    m_FootstepSource.PlayOneShot(m_BrushClips[Random.Range(0, m_BrushClips.Length)]);
+            }
+            m_LastNormalizedTime = normalizedMove;
         }
 
         public override void Dispose()

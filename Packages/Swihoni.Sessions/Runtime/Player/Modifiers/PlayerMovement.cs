@@ -30,14 +30,15 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_SideSpeed = 30.0f,
             m_GravityFactor = 23.0f,
             m_MaxStickDistance = 0.25f;
-        [SerializeField] private float m_WalkStateDuration = 1.0f;
+        [SerializeField] private float m_WalkStateDuration = 1.0f, m_CrouchDuration = 0.3f;
         [SerializeField] private LayerMask m_GroundMask = default;
 
         private CharacterController m_Controller, m_PrefabController;
-        
+
         public LayerMask GroundMask => m_GroundMask;
         public float MaxSpeed => m_MaxSpeed;
         public float WalkStateDuration => m_WalkStateDuration;
+        public float CrouchDuration => m_CrouchDuration;
 
         internal override void Setup(SessionBase session)
         {
@@ -54,10 +55,9 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (player.Has(out CameraComponent playerCamera))
                 m_MoveTransform.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
             m_Controller.enabled = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
-            float uprightHeight = m_PrefabController.height;
-            Vector3 uprightCenter = m_PrefabController.center;
-            m_Controller.height = move.stateId == Upright ? uprightHeight : uprightHeight * 0.7f;
-            m_Controller.center = move.stateId == Upright ? uprightCenter : uprightCenter * 0.7f;
+            float weight = Mathf.Lerp(0.7f, 1.0f, 1.0f - move.normalizedCrouch);
+            m_Controller.height = m_PrefabController.height * weight;
+            m_Controller.center = m_PrefabController.center * weight;
         }
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration)
@@ -75,18 +75,26 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         private void ModifyStatus(MoveComponent move, InputFlagProperty inputs, float duration)
         {
-            move.stateId.Value = inputs.GetInput(PlayerInput.Crouch) ? Crouched : Upright;
-            if (VectorMath.LateralMagnitude(move.velocity) < 1e-2f)
+            if (inputs.GetInput(PlayerInput.Crouch))
             {
-                move.moveElapsed.Value = 0.0f;
+                move.normalizedCrouch.Value += duration / m_CrouchDuration;
+                if (move.normalizedCrouch > 1.0f)
+                    move.normalizedCrouch.Value = 1.0f;
             }
+            else
+            {
+                move.normalizedCrouch.Value -= duration / m_CrouchDuration;
+                if (move.normalizedCrouch < 0.0f)
+                    move.normalizedCrouch.Value = 0.0f;
+            }
+
+            if (VectorMath.LateralMagnitude(move.velocity) < 1e-2f)
+                move.moveElapsed.Value = 0.0f;
             else
             {
                 move.moveElapsed.Value += duration;
                 while (move.moveElapsed > m_WalkStateDuration)
-                {
                     move.moveElapsed.Value -= m_WalkStateDuration;
-                }
             }
         }
 

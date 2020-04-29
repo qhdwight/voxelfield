@@ -167,6 +167,7 @@ MonoBehaviour:
   m_GravityFactor: 23
   m_MaxStickDistance: 0.25
   m_WalkStateDuration: 0.5
+  m_CrouchDuration: 0.1
   m_GroundMask:
     serializedVersion: 2
     m_Bits: 1

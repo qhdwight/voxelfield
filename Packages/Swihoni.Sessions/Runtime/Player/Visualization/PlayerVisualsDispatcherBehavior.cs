@@ -20,9 +20,7 @@ namespace Swihoni.Sessions.Player.Visualization
     public class PlayerVisualsDispatcherBehavior : MonoBehaviour, IPlayerContainerRenderer
     {
         private AudioListener m_AudioListener;
-
         private Camera m_Camera;
-
         private PlayerVisualsBehaviorBase[] m_Visuals;
 
         public void Setup(SessionBase session)
@@ -47,9 +45,8 @@ namespace Swihoni.Sessions.Player.Visualization
                 }
                 if (player.Has(out MoveComponent move))
                 {
-                    var offset = 1.8f;
-                    if (move.stateId == PlayerMovement.Crouched) offset *= 0.7f;
-                    m_Camera.transform.position = move.position + new Vector3 {y = offset};
+                    // TODO:refactor magic numbers
+                    m_Camera.transform.position = move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
                 }
             }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Input;
@@ -14,10 +15,11 @@ namespace Swihoni.Sessions.Interfaces
         [SerializeField] private Transform m_EntryHolder = default;
 
         private ScoreboardEntryInterface[] m_Entries;
-        
+
         protected override void Awake()
         {
             base.Awake();
+            m_Entries = null;
         }
 
         private void Update()
@@ -26,7 +28,7 @@ namespace Swihoni.Sessions.Interfaces
             InputProvider inputs = InputProvider.Singleton;
             SetInterfaceActive(inputs.GetInput(InputType.OpenScoreboard));
         }
-        
+
         public void SortEntries(PlayerContainerArrayProperty players)
         {
             var max = 0;
@@ -43,7 +45,7 @@ namespace Swihoni.Sessions.Interfaces
                 }
             }
         }
-
+        
         public override void Render(Container session)
         {
             if (session.Without(out PlayerContainerArrayProperty players)) return;
