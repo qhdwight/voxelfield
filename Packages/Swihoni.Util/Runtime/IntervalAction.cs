@@ -7,7 +7,7 @@ namespace Swihoni.Util
         private float m_TimeSinceLastInterval;
         private readonly float m_Interval;
         private readonly Action m_Action;
-        
+
         public IntervalAction(float interval, Action action)
         {
             m_Interval = interval;

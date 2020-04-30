@@ -16,14 +16,14 @@ namespace Swihoni.Sessions.Player.Components
 
     [Serializable]
     public class MoveComponent : ComponentBase
-    {   
+    {
         private static PlayerMovement _prefabMovement = SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab().GetComponent<PlayerMovement>();
-        
+
         [Tolerance(0.1f)] public VectorProperty position, velocity;
         public ByteProperty groundTick;
         [CustomInterpolation] public FloatProperty moveElapsed;
         public FloatProperty normalizedCrouch;
-        
+
         public override void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
         {
             var m1 = (MoveComponent) c1;

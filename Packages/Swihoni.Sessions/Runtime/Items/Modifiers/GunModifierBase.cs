@@ -74,10 +74,10 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected virtual void Fire(int playerId, SessionBase session, ItemComponent item)
         {
             item.gunStatus.ammoInMag.Value--;
-            
+
             Ray ray = session.GetRayForPlayerId(playerId);
             session.AboutToRaycast(playerId);
-            
+
             ModeBase mode = session.GetMode();
             int hitCount = Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_PlayerMask);
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)

@@ -42,15 +42,13 @@ namespace Swihoni.Sessions
                 action(player);
         }
 
-        protected SessionSettingsComponent GetSettings(Container session = null)
-        {
-            return session == null ? m_SessionHistory.Peek().Require<SessionSettingsComponent>() : session.Require<SessionSettingsComponent>();
-        }
+        protected SessionSettingsComponent GetSettings(Container session = null) =>
+            session == null ? m_SessionHistory.Peek().Require<SessionSettingsComponent>() : session.Require<SessionSettingsComponent>();
 
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
-        public override ModeBase GetMode(Container session = null) { return ModeManager.GetMode(GetSettings(session).modeId); }
+        public override ModeBase GetMode(Container session = null) => ModeManager.GetMode(GetSettings(session).modeId);
 
-        public override Container GetPlayerFromId(int playerId) { return m_SessionHistory.Peek().GetPlayer(playerId); }
+        public override Container GetPlayerFromId(int playerId) => m_SessionHistory.Peek().GetPlayer(playerId);
 
         protected override void Render(float renderTime)
         {
@@ -61,7 +59,10 @@ namespace Swihoni.Sessions
             }
         }
 
-        public virtual void Disconnect() { Dispose(); }
+        public virtual void Disconnect()
+        {
+            if (!IsDisposed) Dispose();
+        }
     }
 
     internal static class NetworkSessionExtensions

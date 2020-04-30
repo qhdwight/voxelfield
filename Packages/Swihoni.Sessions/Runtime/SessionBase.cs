@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -40,6 +39,7 @@ namespace Swihoni.Sessions
         protected IPlayerContainerRenderer[] m_Visuals;
         private uint m_Tick;
 
+        protected bool IsDisposed { get; private set; }
         public bool ShouldRender { get; set; } = true;
         public GameObject PlayerModifierPrefab { get; }
 
@@ -65,12 +65,21 @@ namespace Swihoni.Sessions
 
         public virtual void Start()
         {
+            CheckDisposed();
+
             m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup(this));
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, modifier => modifier.Setup(this));
         }
 
+        private void CheckDisposed()
+        {
+            if (IsDisposed) throw new ObjectDisposedException("Session disposed");
+        }
+
         public void Update(float time)
         {
+            CheckDisposed();
+            
             HandleCursorLockState();
             float delta = time - m_RenderTime;
             Input(time, delta);
@@ -104,6 +113,8 @@ namespace Swihoni.Sessions
 
         public void FixedUpdate(float time)
         {
+            if (IsDisposed) throw new ObjectDisposedException("Session disposed");
+            
             float duration = time - m_FixedUpdateTime;
             m_FixedUpdateTime = time;
             Tick(m_Tick++, time, duration);
@@ -187,6 +198,7 @@ namespace Swihoni.Sessions
 
         public virtual void Dispose()
         {
+            IsDisposed = true;
             foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier)
                 modifier.Dispose();
             foreach (IPlayerContainerRenderer visual in m_Visuals)

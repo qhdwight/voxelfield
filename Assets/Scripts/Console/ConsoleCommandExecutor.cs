@@ -19,10 +19,7 @@ namespace Console
             // Conform with https://docs.unity3d.com/Manual/DomainReloading.html
             _commands = new Dictionary<string, Action<string[]>>
             {
-                ["clear"] = args =>
-                {
-                    ConsoleInterface.Singleton.ClearConsole();
-                },
+                ["clear"] = args => { ConsoleInterface.Singleton.ClearConsole(); },
                 ["sensitivity"] = args =>
                 {
                     if (float.TryParse(args[1], out float sensitivity))

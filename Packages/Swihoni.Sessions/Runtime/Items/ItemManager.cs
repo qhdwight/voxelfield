@@ -23,13 +23,13 @@ namespace Swihoni.Sessions.Items
                                                               .Where(visuals => visuals != null)
                                                               .OrderBy(visuals => visuals.Id).ToArray();
             _itemVisualPools = Enumerable.Range(1, ItemId.Last)
-                                        .Select(id => new Pool<ItemVisualBehavior>(0, () =>
-                                         {
-                                             ItemVisualBehavior visualsPrefab = itemVisualPrefabs[id - 1],
-                                                                visualsInstance = Object.Instantiate(visualsPrefab);
-                                             visualsInstance.name = visualsPrefab.name;
-                                             return visualsInstance.GetComponent<ItemVisualBehavior>();
-                                         })).ToArray();
+                                         .Select(id => new Pool<ItemVisualBehavior>(0, () =>
+                                          {
+                                              ItemVisualBehavior visualsPrefab = itemVisualPrefabs[id - 1],
+                                                                 visualsInstance = Object.Instantiate(visualsPrefab);
+                                              visualsInstance.name = visualsPrefab.name;
+                                              return visualsInstance.GetComponent<ItemVisualBehavior>();
+                                          })).ToArray();
         }
 
         public static ItemVisualBehavior ObtainVisuals(byte itemId, PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)

@@ -55,10 +55,7 @@ namespace Console.Interface
 //            m_ConsoleInput.onValidateInput += OnValidateInput;
         }
 
-        private void Start()
-        {
-            Application.logMessageReceived += Log;
-        }
+        private void Start() { Application.logMessageReceived += Log; }
 
         //        private static char OnValidateInput(string text, int charIndex, char addedChar)
 //        {

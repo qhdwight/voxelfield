@@ -179,10 +179,7 @@ namespace Swihoni.Sessions
             player.Require<ServerStampComponent>().Reset();
         }
 
-        public override Ray GetRayForPlayerId(int playerId)
-        {
-            return GetRayForPlayer(m_SessionHistory.Peek().GetPlayer(playerId));
-        }
+        public override Ray GetRayForPlayerId(int playerId) { return GetRayForPlayer(m_SessionHistory.Peek().GetPlayer(playerId)); }
 
         public override void AboutToRaycast(int playerId)
         {

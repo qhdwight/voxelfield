@@ -37,6 +37,7 @@ namespace Swihoni.Sessions
         private readonly CyclicArray<ClientCommandsContainer> m_CommandHistory;
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
+        private float? m_ReceiveTime;
 
         public IPEndPoint IpEndPoint { get; }
 
@@ -71,7 +72,7 @@ namespace Swihoni.Sessions
             m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
         }
 
-        private void UpdateInputs(int localPlayerId) { m_Modifier[localPlayerId].ModifyCommands(this, m_CommandHistory.Peek()); }
+        private void UpdateInputs(int localPlayerId) => m_Modifier[localPlayerId].ModifyCommands(this, m_CommandHistory.Peek());
 
         protected override void Input(float time, float delta)
         {
@@ -124,6 +125,16 @@ namespace Swihoni.Sessions
             }
             Send();
             Receive(time);
+
+            HandleTimeouts(time);
+        }
+
+        private void HandleTimeouts(float time)
+        {
+            if (!m_ReceiveTime.HasValue || Mathf.Abs(m_ReceiveTime.Value - time) < 2.0f) return;
+
+            Debug.LogWarning($"[{GetType().Name}] Disconnected due to stale connection!");
+            Dispose();
         }
 
         private void Predict(uint tick, float time, int localPlayerId)
@@ -214,6 +225,7 @@ namespace Swihoni.Sessions
         {
             m_Socket.PollReceived((ipEndPoint, message) =>
             {
+                m_ReceiveTime = time;
                 switch (message)
                 {
                     case ServerSessionContainer receivedServerSession:

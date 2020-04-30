@@ -8,7 +8,7 @@ namespace Swihoni.Sessions
 
         GameObject GetPlayerVisualsPrefab();
     }
-    
+
     [CreateAssetMenu(fileName = "Session Linker", menuName = "Session/Linker")]
     public class SessionGameObjectLinker : ScriptableObject, ISessionGameObjectLinker
     {
@@ -17,7 +17,7 @@ namespace Swihoni.Sessions
         [SerializeField] private GameObject m_PlayerModifierPrefab = default, m_PlayerVisualsPrefab = default;
 
         private void OnEnable() { Singleton = this; }
-        
+
         public GameObject GetPlayerModifierPrefab() { return m_PlayerModifierPrefab; }
 
         public GameObject GetPlayerVisualsPrefab() { return m_PlayerVisualsPrefab; }

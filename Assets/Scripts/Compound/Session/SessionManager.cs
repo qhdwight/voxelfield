@@ -12,24 +12,18 @@ namespace Compound.Session
         private NetworkedSessionBase m_Host, m_Client;
 
         [SerializeField] private SessionGameObjectLinker m_Linker = default;
-        
+
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
             AudioListener.volume = 0.5f;
-            ConsoleCommandExecutor.RegisterCommand("host", args =>
-            {
-                StartHost();
-            });
+            ConsoleCommandExecutor.RegisterCommand("host", args => StartHost());
             ConsoleCommandExecutor.RegisterCommand("connect", args =>
             {
                 Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
                 Debug.Log($"Started client at {client.IpEndPoint}");
             });
-            ConsoleCommandExecutor.RegisterCommand("disconnect", args =>
-            {
-                DisconnectAll();
-            });
+            ConsoleCommandExecutor.RegisterCommand("disconnect", args => DisconnectAll());
         }
 
         public Host StartHost()
@@ -44,7 +38,7 @@ namespace Compound.Session
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                host.Dispose();
+                host.Disconnect();
                 return null;
             }
         }
@@ -61,7 +55,7 @@ namespace Compound.Session
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                client.Dispose();
+                client.Disconnect();
                 return null;
             }
         }
@@ -116,6 +110,6 @@ namespace Compound.Session
             }
         }
 
-        private void OnApplicationQuit() { DisconnectAll(); }
+        private void OnApplicationQuit() => DisconnectAll();
     }
 }

@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Modes
         internal override void KillPlayer(Container player)
         {
             base.KillPlayer(player);
-            
+
             if (player.Has(out RespawnTimerProperty respawnTimer))
                 respawnTimer.Value = 2.0f;
             if (player.Has(out StatsComponent stats))

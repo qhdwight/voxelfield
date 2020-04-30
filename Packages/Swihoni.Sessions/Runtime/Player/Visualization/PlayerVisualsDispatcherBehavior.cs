@@ -1,8 +1,6 @@
 using System;
-using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Visualization

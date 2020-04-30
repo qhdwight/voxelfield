@@ -101,7 +101,7 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             m_Animator.enabled = isVisible;
             ArmIk.enabled = isVisible;
-            
+
             if (UnityEngine.Input.GetKeyDown(KeyCode.I))
                 m_Animator.Rebind();
         }
@@ -130,7 +130,7 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             byte itemId = inventory.EquippedItemComponent.id;
             if (m_ItemVisual && itemId == m_ItemVisual.ModiferProperties.id) return m_ItemVisual;
-            
+
             if (m_ItemVisual) ItemManager.ReturnVisuals(m_ItemVisual); // We have existing visuals but they are the wrong item id
             ItemVisualBehavior newVisuals = ItemManager.ObtainVisuals(itemId, this, m_Graph);
             newVisuals.transform.SetParent(transform, false);
@@ -151,13 +151,13 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             if (!(m_ItemVisual is GunVisualBehavior gunVisuals) || !(m_ItemVisual.ModiferProperties is GunWithMagazineModifier gunModifier)) return;
             float adsInterpolation = GetAimInterpolationValue(inventory);
-            
+
             Quaternion targetRotation = Quaternion.Inverse(Quaternion.Inverse(transform.rotation) * gunVisuals.AdsTarget.rotation);
             transform.localRotation = Quaternion.Slerp(Quaternion.identity, targetRotation, adsInterpolation);
-            
+
             Vector3 adsPosition = targetRotation * -transform.InverseTransformPoint(gunVisuals.AdsTarget.position);
             transform.localPosition = Vector3.Slerp(m_ItemVisual.FpvOffset, adsPosition, adsInterpolation);
-            
+
             m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView / 2, adsInterpolation);
         }
 

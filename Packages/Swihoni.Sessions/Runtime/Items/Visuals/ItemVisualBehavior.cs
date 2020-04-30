@@ -36,7 +36,7 @@ namespace Swihoni.Sessions.Items.Visuals
                                                               m_EquipStatusVisualProperties = default;
         [SerializeField] private Transform m_IkL = default, m_IkR = default;
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;
-        
+
         private AudioSource m_AudioSource;
         private AnimationClipPlayable[] m_Animations;
         private PlayableGraph m_PlayerGraph;
@@ -118,7 +118,7 @@ namespace Swihoni.Sessions.Items.Visuals
             (ItemStatusVisualProperties statusVisualProperties, int animationIndex) = GetVisualProperties(item, equipStatus);
             AnimationClip animationClip = statusVisualProperties.animationClip;
             if (!animationClip) return;
-            
+
             if (statusVisualProperties.isReverseAnimation)
                 interpolation = 1.0f - interpolation;
             for (var i = 0; i < m_Animations.Length; i++)

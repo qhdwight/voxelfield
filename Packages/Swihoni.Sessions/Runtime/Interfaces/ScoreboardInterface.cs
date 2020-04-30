@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Input;
 using Swihoni.Components;
@@ -45,7 +43,7 @@ namespace Swihoni.Sessions.Interfaces
                 }
             }
         }
-        
+
         public override void Render(Container session)
         {
             if (session.Without(out PlayerContainerArrayProperty players)) return;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions
@@ -28,7 +27,7 @@ namespace Swihoni.Sessions
                 players.SetAll(() => new Container(playerElements));
         }
 
-        private void ReadLocalInputs(SessionBase session, Container commandsToFill) { m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill); }
+        private void ReadLocalInputs(SessionBase session, Container commandsToFill) => m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill);
 
         protected override void Input(float time, float delta)
         {
@@ -83,14 +82,8 @@ namespace Swihoni.Sessions
             if (tickSession.Require<ServerStampComponent>().tick == 0u) SetupNewPlayer(tickSession, hostPlayer);
         }
 
-        public override Container GetPlayerFromId(int playerId)
-        {
-            return playerId == HostPlayerId ? m_HostCommands : base.GetPlayerFromId(playerId);
-        }
+        public override Container GetPlayerFromId(int playerId) => playerId == HostPlayerId ? m_HostCommands : base.GetPlayerFromId(playerId);
 
-        public override Ray GetRayForPlayerId(int playerId)
-        {
-            return playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
-        }
+        public override Ray GetRayForPlayerId(int playerId) => playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
     }
 }
