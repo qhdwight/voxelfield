@@ -12,23 +12,6 @@ using UnityEngine;
 
 namespace Swihoni.Sessions
 {
-    [Serializable]
-    public class ServerSessionContainer : Container
-    {
-        public ServerSessionContainer() { }
-        public ServerSessionContainer(IEnumerable<Type> types) : base(types) { }
-    }
-
-    [Serializable]
-    public class ServerStampComponent : StampComponent
-    {
-    }
-
-    [Serializable]
-    public class ServerTag : ComponentBase
-    {
-    }
-
     public abstract class ServerBase : NetworkedSessionBase
     {
         private ComponentServerSocket m_Socket;
@@ -187,6 +170,7 @@ namespace Swihoni.Sessions
             {
                 PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
                 modifier.EvaluateHitboxes(i, m_SessionHistory.Peek().GetPlayer(i));
+                
             }
         }
 

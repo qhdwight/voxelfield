@@ -8,7 +8,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 {
     public class PlayerMovement : PlayerModifierBehaviorBase
     {
-        private const float DefaultDownSpeed = -1.0f, RaycastOffset = 0.05f;
+        private const float DefaultDownSpeed = -1.0f, RaycastOffset = 0.1f;
 
         public const byte Upright = 0, Crouched = 1;
 
@@ -20,7 +20,10 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_Acceleration = 10.0f,
             m_AirAcceleration = 20.0f,
             m_AirSpeedCap = 2.0f,
-            m_MaxSpeed = 6.0f,
+            m_RunSpeed = 6.0f,
+            m_CrouchSpeed = 6.0f,
+            m_SprintMultiplier = 1.3f,
+            m_WalkMultiplier = 0.3f,
             m_MaxAirSpeed = 8.0f,
             m_Friction = 10.0f,
             m_FrictionCutoff = 0.1f,
@@ -36,7 +39,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         private CharacterController m_Controller, m_PrefabController;
 
         public LayerMask GroundMask => m_GroundMask;
-        public float MaxSpeed => m_MaxSpeed;
+        public float MaxSpeed => m_RunSpeed * m_SprintMultiplier;
         public float WalkStateDuration => m_WalkStateDuration;
         public float CrouchDuration => m_CrouchDuration;
 
@@ -109,7 +112,10 @@ namespace Swihoni.Sessions.Player.Modifiers
             inputProperty.SetInput(PlayerInput.Left, input.GetInput(InputType.Left));
             inputProperty.SetInput(PlayerInput.Jump, input.GetInput(InputType.Jump));
             inputProperty.SetInput(PlayerInput.Crouch, input.GetInput(InputType.Crouch));
+            inputProperty.SetInput(PlayerInput.Sprint, input.GetInput(InputType.Sprint));
+            inputProperty.SetInput(PlayerInput.Walk, input.GetInput(InputType.Walk));
             inputProperty.SetInput(PlayerInput.Suicide, input.GetInput(InputType.Suicide));
+            inputProperty.SetInput(PlayerInput.Interact, input.GetInput(InputType.Interact));
         }
 
         private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)
@@ -123,14 +129,19 @@ namespace Swihoni.Sessions.Player.Modifiers
             {
                 float distance = m_CachedGroundHits[0].distance;
                 endingVelocity.y = DefaultDownSpeed;
-                // if (!inputProperty.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
+                if (!inputs.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
             }
             Vector3 wishDirection =
                 inputs.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * m_MoveTransform.forward +
                 inputs.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * m_MoveTransform.right;
             float wishSpeed = wishDirection.magnitude;
             wishDirection.Normalize();
-            if (wishSpeed > m_MaxSpeed) wishSpeed = m_MaxSpeed;
+
+            float maxSpeed = inputs.GetInput(PlayerInput.Crouch) ? m_CrouchSpeed : m_RunSpeed;
+            if (inputs.GetInput(PlayerInput.Walk)) maxSpeed *= m_WalkMultiplier;
+            if (inputs.GetInput(PlayerInput.Sprint)) maxSpeed *= m_SprintMultiplier;
+            
+            if (wishSpeed > maxSpeed) wishSpeed = maxSpeed;
             if (isGrounded && withinAngleLimit)
             {
                 if (move.groundTick >= 1)

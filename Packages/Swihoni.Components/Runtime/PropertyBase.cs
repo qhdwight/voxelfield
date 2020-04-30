@@ -46,7 +46,7 @@ namespace Swihoni.Components
     {
         [CopyField, SerializeField] private T m_Value;
 
-        protected const float DefaultFloatTolerance = 0.1f;
+        protected const float DefaultFloatTolerance = 1e-5f;
 
         public T Value
         {

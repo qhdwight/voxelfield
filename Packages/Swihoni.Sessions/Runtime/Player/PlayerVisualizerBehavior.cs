@@ -15,6 +15,7 @@ namespace Swihoni.Sessions.Player
             {
                 GameObject instance = Instantiate(SessionGameObjectLinker.Singleton.GetPlayerVisualsPrefab());
                 var visualizer = instance.GetComponent<PlayerVisualizerBehavior>();
+                instance.SetActive(false);
                 return visualizer;
             });
         }
@@ -22,6 +23,7 @@ namespace Swihoni.Sessions.Player
         public static void Render(SessionBase session, int playerId, Container player)
         {
             PlayerVisualizerBehavior visualizer = _pool.Obtain();
+            visualizer.gameObject.SetActive(true);
             visualizer.Setup(session);
             visualizer.Evaluate(playerId, player);
         }

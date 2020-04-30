@@ -38,7 +38,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         {
             bool reloadInput = inputProperty.GetInput(PlayerInput.Reload);
             if ((reloadInput || item.gunStatus.ammoInMag == 0) && CanReload(item, inventory))
-                StartStatus(session, playerId, item, GunStatusId.Reloading);
+                StartStatus(session, playerId, item, GunStatusId.Reloading, duration);
             base.ModifyChecked(session, playerId, item, inventory, inputProperty, duration);
         }
 
@@ -67,17 +67,17 @@ namespace Swihoni.Sessions.Items.Modifiers
             return item.gunStatus.ammoInMag > 0 && base.CanUse(item, inventory, justFinishedUse);
         }
 
-        protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item) { Fire(playerId, session, item); }
+        protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, float duration) { Fire(playerId, session, item, duration); }
 
         private readonly HashSet<PlayerHitboxManager> m_HitPlayers = new HashSet<PlayerHitboxManager>();
 
-        protected virtual void Fire(int playerId, SessionBase session, ItemComponent item)
+        protected virtual void Fire(int playerId, SessionBase session, ItemComponent item, float duration)
         {
             item.gunStatus.ammoInMag.Value--;
 
             Ray ray = session.GetRayForPlayerId(playerId);
             session.AboutToRaycast(playerId);
-
+            
             ModeBase mode = session.GetMode();
             int hitCount = Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_PlayerMask);
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)
@@ -87,15 +87,15 @@ namespace Swihoni.Sessions.Items.Modifiers
                 if (!hitbox || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
                 m_HitPlayers.Add(hitbox.Manager);
                 Debug.Log($"Player: {playerId} hit player: {hitbox.Manager.PlayerId}");
-                mode.PlayerHit(session.GetPlayerFromId(hitbox.Manager.PlayerId), session.GetPlayerFromId(playerId), hitbox, this, hit.distance);
+                mode.PlayerHit(session, playerId, hitbox, this, hit, duration);
             }
             m_HitPlayers.Clear();
         }
 
-        internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent)
+        internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, float duration)
         {
             if (itemComponent.status.id == GunStatusId.Reloading)
-                StartStatus(session, playerId, itemComponent, ItemStatusId.Idle);
+                StartStatus(session, playerId, itemComponent, ItemStatusId.Idle, duration);
         }
 
         public void RefillAmmoAndReserve(ItemComponent itemComponents)

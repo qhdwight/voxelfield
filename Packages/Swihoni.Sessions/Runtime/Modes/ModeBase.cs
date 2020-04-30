@@ -18,7 +18,12 @@ namespace Swihoni.Sessions.Modes
             if (player.Has(out HealthProperty health)) health.Value = 0;
         }
 
-        internal abstract void Modify(Container playerToModify, Container commands, float duration);
+        internal virtual void Modify(Container playerToModify, Container commands, float duration)
+        {
+            if (playerToModify.Without(out HitMarkerComponent hitMarker)) return;
+
+            if (hitMarker.elapsed.Value > 0.0f) hitMarker.elapsed.Value -= duration;
+        }
 
         public void ModifyChecked(ModeBase mode, Container containerToModify, Container commands, float duration) { }
 
@@ -26,21 +31,31 @@ namespace Swihoni.Sessions.Modes
 
         public void ModifyCommands(ModeBase mode, Container commandsToModify) { throw new NotImplementedException(); }
 
-        public virtual void PlayerHit(Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, GunModifierBase gun, float distance)
+        public virtual void PlayerHit(SessionBase session, int inflictingPlayerId, PlayerHitbox hitbox, GunModifierBase gun, in RaycastHit hit, float duration)
         {
+            Container hitPlayer = session.GetPlayerFromId(hitbox.Manager.PlayerId),
+                      inflictingPlayer = session.GetPlayerFromId(inflictingPlayerId);
             if (hitPlayer.Present(out HealthProperty health) && health.IsAlive)
             {
-                checked
+                if (hitPlayer.Has<ServerTag>())
                 {
-                    if (gun.Damage >= health)
+                    bool usesHitMarker = inflictingPlayer.Has(out HitMarkerComponent hitMarker);
+                    if (usesHitMarker) hitMarker.elapsed.Value = 1.0f;
+                    checked
                     {
-                        KillPlayer(hitPlayer);
-                        if (inflictingPlayer.Has(out StatsComponent stats))
-                            stats.kills.Value++;
-                    }
-                    else
-                    {
-                        health.Value -= gun.Damage;
+                        var damage = (byte) (gun.Damage * hitbox.DamageMultiplier);
+                        if (damage >= health)
+                        {
+                            KillPlayer(hitPlayer);
+                            if (inflictingPlayer.Has(out StatsComponent stats))
+                                stats.kills.Value++;
+                            if (usesHitMarker) hitMarker.isKill.Value = true;
+                        }
+                        else
+                        {
+                            health.Value -= damage;
+                            if (usesHitMarker) hitMarker.isKill.Value = false;
+                        }
                     }
                 }
             }

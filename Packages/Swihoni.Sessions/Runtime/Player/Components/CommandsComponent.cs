@@ -11,11 +11,14 @@ namespace Swihoni.Sessions.Player.Components
                           Left = 3,
                           Jump = 4,
                           Crouch = 5,
-                          Suicide = 6,
-                          UseOne = 7,
-                          UseTwo = 8,
-                          Ads = 9,
-                          Reload = 10,
+                          Sprint = 6,
+                          Walk = 7,
+                          Interact = 8,
+                          Suicide = 9,
+                          UseOne = 10,
+                          UseTwo = 11,
+                          Ads = 12,
+                          Reload = 13,
                           Last = Reload;
     }
 

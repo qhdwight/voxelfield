@@ -43,6 +43,7 @@ namespace Swihoni.Sessions
         protected bool IsDisposed { get; private set; }
         public bool ShouldRender { get; set; } = true;
         public GameObject PlayerModifierPrefab { get; }
+        public DefaultPlayerHud PlayerHud => m_PlayerHud;
 
         protected SessionBase(ISessionGameObjectLinker linker)
         {
@@ -74,7 +75,7 @@ namespace Swihoni.Sessions
 
         private void CheckDisposed()
         {
-            if (IsDisposed) throw new ObjectDisposedException("Session disposed");
+            if (IsDisposed) throw new ObjectDisposedException("Session was disposed");
         }
 
         public void Update(float time)

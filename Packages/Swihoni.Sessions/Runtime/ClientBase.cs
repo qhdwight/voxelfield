@@ -11,33 +11,13 @@ using UnityEngine;
 
 namespace Swihoni.Sessions
 {
-    [Serializable]
-    public class ClientCommandsContainer : Container
-    {
-        public ClientCommandsContainer() { }
-        public ClientCommandsContainer(IEnumerable<Type> types) : base(types) { }
-    }
-
-    [Serializable]
-    public class ClientStampComponent : StampComponent
-    {
-    }
-
-    /// <summary>
-    /// Use to put server time of updates into client time.
-    /// </summary>
-    [Serializable]
-    public class LocalizedClientStampComponent : StampComponent
-    {
-    }
-
     public abstract class ClientBase : NetworkedSessionBase
     {
         private readonly Container m_RenderSession;
         private readonly CyclicArray<ClientCommandsContainer> m_CommandHistory;
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
-        private float? m_ReceiveTime;
+        private float? m_ServerReceiveTime;
 
         public IPEndPoint IpEndPoint { get; }
 
@@ -131,7 +111,7 @@ namespace Swihoni.Sessions
 
         private void HandleTimeouts(float time)
         {
-            if (!m_ReceiveTime.HasValue || Mathf.Abs(m_ReceiveTime.Value - time) < 2.0f) return;
+            if (!m_ServerReceiveTime.HasValue || Mathf.Abs(m_ServerReceiveTime.Value - time) < 2.0f) return;
 
             Debug.LogWarning($"[{GetType().Name}] Disconnected due to stale connection!");
             Dispose();
@@ -225,7 +205,7 @@ namespace Swihoni.Sessions
         {
             m_Socket.PollReceived((ipEndPoint, message) =>
             {
-                m_ReceiveTime = time;
+                m_ServerReceiveTime = time;
                 switch (message)
                 {
                     case ServerSessionContainer receivedServerSession:
@@ -288,7 +268,7 @@ namespace Swihoni.Sessions
             return false;
         }
 
-        public override Ray GetRayForPlayerId(int playerId) { return new Ray(); }
+        public override Ray GetRayForPlayerId(int playerId) => GetRayForPlayer(m_PlayerPredictionHistory.Peek());
 
         public override void AboutToRaycast(int playerId) { }
 

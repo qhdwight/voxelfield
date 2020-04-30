@@ -52,7 +52,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
         }
 
-        public void EvaluateHitboxes(int playerId, Container player) { m_HitboxManager.Evaluate(playerId, player); }
+        public void EvaluateHitboxes(int playerId, Container player) => m_HitboxManager.Evaluate(playerId, player);
 
         public void Dispose()
         {
@@ -64,20 +64,17 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         protected SessionBase m_Session;
 
-        internal virtual void Setup(SessionBase session)
-        {
-            m_Session = session;
-        }
+        internal virtual void Setup(SessionBase session) => m_Session = session;
 
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
-        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration) { SynchronizeBehavior(player); }
+        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration) => SynchronizeBehavior(player);
 
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>
-        public virtual void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) { SynchronizeBehavior(player); }
+        public virtual void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) => SynchronizeBehavior(player);
 
         public virtual void ModifyCommands(SessionBase session, Container commands) { }
 

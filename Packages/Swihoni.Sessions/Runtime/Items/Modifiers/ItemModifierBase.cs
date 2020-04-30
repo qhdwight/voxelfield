@@ -49,9 +49,9 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (CanUse(item, inventory))
             {
                 if (inputProperty.GetInput(PlayerInput.UseOne))
-                    StartStatus(session, playerId, item, GetUseStatus(inputProperty));
+                    StartStatus(session, playerId, item, GetUseStatus(inputProperty), duration);
                 else if (HasSecondaryUse() && inputProperty.GetInput(PlayerInput.UseTwo))
-                    StartStatus(session, playerId, item, ItemStatusId.SecondaryUsing);
+                    StartStatus(session, playerId, item, ItemStatusId.SecondaryUsing, duration);
             }
             ModifyStatus(session, playerId, item, inventory, inputProperty, duration);
         }
@@ -65,18 +65,18 @@ namespace Swihoni.Sessions.Items.Modifiers
             {
                 float statusElapsed = status.elapsed;
                 byte? nextStatus = FinishStatus(item, inventory, inputProperty);
-                StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, statusElapsed - modifierProperties.duration);
+                StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, duration, statusElapsed - modifierProperties.duration);
             }
         }
 
-        protected void StartStatus(SessionBase session, int playerId, ItemComponent itemComponent, byte statusId, float elapsed = 0.0f)
+        protected void StartStatus(SessionBase session, int playerId, ItemComponent itemComponent, byte statusId, float duration, float elapsed = 0.0f)
         {
             itemComponent.status.id.Value = statusId;
             itemComponent.status.elapsed.Value = elapsed;
             switch (statusId)
             {
                 case ItemStatusId.PrimaryUsing:
-                    PrimaryUse(session, playerId, itemComponent);
+                    PrimaryUse(session, playerId, itemComponent, duration);
                     break;
                 case ItemStatusId.SecondaryUsing:
                     SecondaryUse();
@@ -108,12 +108,12 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual void SecondaryUse() { }
 
-        protected virtual void PrimaryUse(SessionBase session, int playerId, ItemComponent item) { }
+        protected virtual void PrimaryUse(SessionBase session, int playerId, ItemComponent item, float duration) { }
 
         public void ModifyCommands(SessionBase session, InputFlagProperty commandsToModify) { }
 
         protected virtual bool HasSecondaryUse() { return false; }
 
-        internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent) { }
+        internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, float duration) { }
     }
 }

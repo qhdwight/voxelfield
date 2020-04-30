@@ -20,7 +20,8 @@ namespace Swihoni.Sessions
                                        IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker)
         {
-            IReadOnlyCollection<Type> serverPlayerElements = playerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent)).ToArray(),
+            IReadOnlyCollection<Type> serverPlayerElements = playerElements.Append(typeof(ServerStampComponent))
+                                                                           .Append(typeof(ClientStampComponent)).ToArray(),
                                       clientCommandElements = playerElements.Concat(commandElements).Append(typeof(ClientStampComponent)).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor()
             {

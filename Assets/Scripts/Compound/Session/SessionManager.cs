@@ -16,6 +16,7 @@ namespace Compound.Session
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 200;
             AudioListener.volume = 0.5f;
             ConsoleCommandExecutor.RegisterCommand("host", args => StartHost());
             ConsoleCommandExecutor.RegisterCommand("connect", args =>

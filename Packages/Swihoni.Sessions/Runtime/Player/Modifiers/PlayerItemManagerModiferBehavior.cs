@@ -64,7 +64,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (equipStatus.id != ItemEquipStatusId.Unequipped) return;
             // We have just unequipped the current index
             ItemComponent equippedItemComponent = inventory.EquippedItemComponent;
-            modifier.OnUnequip(session, playerId, equippedItemComponent);
+            modifier.OnUnequip(session, playerId, equippedItemComponent, duration);
             if (hasValidWantedIndex)
                 inventory.equippedIndex.Value = wantedIndex;
             else if (FindReplacement(inventory, out byte replacementIndex))

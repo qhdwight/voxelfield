@@ -34,6 +34,16 @@ namespace Swihoni.Components
     }
 
     [Serializable]
+    public class BoolProperty : PropertyBase<bool>
+    {
+        public override bool ValueEquals(PropertyBase<bool> other) => other.Value == Value;
+
+        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
+
+        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadBoolean();
+    }
+
+    [Serializable]
     public class FloatProperty : PropertyBase<float>
     {
         public FloatProperty(float value) : base(value) { }
