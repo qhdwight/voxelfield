@@ -802,7 +802,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1571494958}
   m_HandleRect: {fileID: 1571494957}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -4121,8 +4121,8 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
-  m_Pivot: {x: 0, y: 1}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &388534041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4156,10 +4156,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: Console output
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 256919338f688f00fb950f0606a0b3a4, type: 2}
+  m_sharedMaterial: {fileID: -5242082869675537677, guid: 256919338f688f00fb950f0606a0b3a4,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4184,14 +4185,14 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 12
+  m_fontSizeBase: 12
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_textAlignment: 65535
+  m_textAlignment: 257
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -4222,16 +4223,16 @@ MonoBehaviour:
   m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 10, y: 10, z: 10, w: 10}
+  m_margin: {x: 5, y: 5, z: 25, w: 0}
   m_textInfo:
     textComponent: {fileID: 388534042}
-    characterCount: 0
+    characterCount: 14
     spriteCount: 0
-    spaceCount: 0
-    wordCount: 0
+    spaceCount: 1
+    wordCount: 2
     linkCount: 0
-    lineCount: 0
-    pageCount: 0
+    lineCount: 1
+    pageCount: 1
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
@@ -10476,7 +10477,7 @@ MonoBehaviour:
   m_HorizontalScrollbarVisibility: 2
   m_VerticalScrollbarVisibility: 2
   m_HorizontalScrollbarSpacing: -3
-  m_VerticalScrollbarSpacing: 10
+  m_VerticalScrollbarSpacing: -20
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -12692,6 +12693,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a673a8338fc04c23b6fb5656a8348ff4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_NeedsCursor: 1
   m_EntryPrefab: {fileID: 2854537126906588115, guid: 8b56527bd8750c7a29a4b921f116c721,
     type: 3}
   m_EntryHolder: {fileID: 193720739}
@@ -15754,6 +15756,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac7c28df54944101ae0077c57f2c99f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_NeedsCursor: 0
   m_HealthText: {fileID: 1454660425}
   m_AmmoText: {fileID: 680702180}
 --- !u!225 &1145067614
@@ -16219,6 +16222,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32d6829c3b1d79c43aa6089bb17266a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_NeedsCursor: 1
   m_MaxMessages: 100
   m_ConsoleText: {fileID: 388534042}
   m_ConsoleInput: {fileID: 1133061150}
@@ -19557,6 +19561,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de48b8f16d7243e2b4bd32a9553c412f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_NeedsCursor: 0
   m_UpdateRate: 0.2
 --- !u!225 &1508616501
 CanvasGroup:

@@ -117,8 +117,8 @@ namespace Swihoni.Sessions.Items.Visuals
         {
             (ItemStatusVisualProperties statusVisualProperties, int animationIndex) = GetVisualProperties(item, equipStatus);
             AnimationClip animationClip = statusVisualProperties.animationClip;
-            if (!animationClip)
-                return;
+            if (!animationClip) return;
+            
             if (statusVisualProperties.isReverseAnimation)
                 interpolation = 1.0f - interpolation;
             for (var i = 0; i < m_Animations.Length; i++)

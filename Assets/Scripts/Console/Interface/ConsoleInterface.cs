@@ -50,13 +50,17 @@ namespace Console.Interface
         {
             base.Awake();
             m_AutocompleteColorHex = $"#{ColorUtility.ToHtmlStringRGBA(m_AutocompleteColor)}";
-            Application.logMessageReceived += Log;
             m_ConsoleInput.onSubmit.AddListener(ConsoleInput);
             m_ConsoleInput.onValueChanged.AddListener(ConsoleInputChange);
 //            m_ConsoleInput.onValidateInput += OnValidateInput;
         }
 
-//        private static char OnValidateInput(string text, int charIndex, char addedChar)
+        private void Start()
+        {
+            Application.logMessageReceived += Log;
+        }
+
+        //        private static char OnValidateInput(string text, int charIndex, char addedChar)
 //        {
 //            return Regex.IsMatch(addedChar.ToString(), @"^\w+$") ? addedChar : '\0';
 ////            return addedChar == '`' ? '\0' : addedChar;

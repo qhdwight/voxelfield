@@ -6,6 +6,7 @@ using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
+using Swihoni.Util.Interface;
 
 namespace Swihoni.Sessions
 {
@@ -49,16 +50,14 @@ namespace Swihoni.Sessions
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public override ModeBase GetMode(Container session = null) { return ModeManager.GetMode(GetSettings(session).modeId); }
 
-        public override Container GetPlayerFromId(int playerId)
-        {
-            return m_SessionHistory.Peek().GetPlayer(playerId);
-        }
+        public override Container GetPlayerFromId(int playerId) { return m_SessionHistory.Peek().GetPlayer(playerId); }
 
         protected override void Render(float renderTime)
         {
-            foreach (SessionInterfaceBehavior @interface in m_Interfaces)
+            foreach (InterfaceBehaviorBase @interface in m_Interfaces)
             {
-                @interface.Render(m_SessionHistory.Peek());
+                if (@interface is SessionInterfaceBehavior sessionInterface)
+                    sessionInterface.Render(m_SessionHistory.Peek());
             }
         }
 

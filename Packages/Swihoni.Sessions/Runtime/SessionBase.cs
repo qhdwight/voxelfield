@@ -7,6 +7,7 @@ using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
+using Swihoni.Util.Interface;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
@@ -33,7 +34,7 @@ namespace Swihoni.Sessions
         private readonly GameObject m_PlayerVisualsPrefab;
 
         protected readonly DefaultPlayerHud m_PlayerHud;
-        protected readonly SessionInterfaceBehavior[] m_Interfaces;
+        protected readonly InterfaceBehaviorBase[] m_Interfaces;
         private float m_FixedUpdateTime, m_RenderTime;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
         protected IPlayerContainerRenderer[] m_Visuals;
@@ -47,7 +48,7 @@ namespace Swihoni.Sessions
             PlayerModifierPrefab = linker.GetPlayerModifierPrefab();
             m_PlayerVisualsPrefab = linker.GetPlayerVisualsPrefab();
             m_PlayerHud = UnityObject.FindObjectOfType<DefaultPlayerHud>();
-            m_Interfaces = UnityObject.FindObjectsOfType<SessionInterfaceBehavior>();
+            m_Interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
         }
 
         private T[] Instantiate<T>(GameObject prefab, int length, Action<T> setup)
@@ -70,10 +71,29 @@ namespace Swihoni.Sessions
 
         public void Update(float time)
         {
+            HandleCursorLockState();
             float delta = time - m_RenderTime;
             Input(time, delta);
             if (ShouldRender) Render(time);
             m_RenderTime = time;
+        }
+
+        private void HandleCursorLockState()
+        {
+            var desiredLockState = CursorLockMode.Locked;
+            foreach (InterfaceBehaviorBase @interface in m_Interfaces)
+            {
+                if (@interface.NeedsCursor)
+                {
+                    desiredLockState = CursorLockMode.Confined;
+                    break;
+                }
+            }
+            bool desiredVisibility = desiredLockState != CursorLockMode.Locked;
+            if (Cursor.lockState == desiredLockState && Cursor.visible == desiredVisibility) return;
+
+            Cursor.lockState = desiredLockState;
+            Cursor.visible = desiredVisibility;
         }
 
         protected virtual void Render(float renderTime) { }
@@ -162,7 +182,7 @@ namespace Swihoni.Sessions
             Debug.DrawLine(position, position + direction * 10.0f, Color.blue, 5.0f);
             return ray;
         }
-        
+
         public virtual Container GetPlayerFromId(int playerId) { throw new NotImplementedException(); }
 
         public virtual void Dispose()

@@ -7,9 +7,12 @@ namespace Swihoni.Util.Interface
     {
         private const float InvisibleAlpha = 0.0f, OpaqueAlpha = 1.0f;
 
+        [SerializeField] private bool m_NeedsCursor = true;
+
         private CanvasGroup m_CanvasGroup;
 
         public bool IsActive { get; private set; }
+        public bool NeedsCursor => IsActive && m_NeedsCursor;
 
         protected virtual void Awake()
         {
