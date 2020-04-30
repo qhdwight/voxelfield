@@ -30,7 +30,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public ArmIk ArmIk { get; private set; }
 
-        public ItemComponent LastRenderedItem { internal get; set; }
+        public InventoryComponent LastRenderedInventory { internal get; set; }
 
         internal void Setup()
         {
@@ -77,8 +77,9 @@ namespace Swihoni.Sessions.Player.Visualization
                     else
                         m_ItemVisual.SetRenderingMode(false);
 
-                    m_Animator.Rebind();
-                    SampleItemAnimation(equippedItem, equipStatus, interpolation);
+                    if (m_RenderItems && m_IsFpv == isLocalPlayer)
+                        m_ItemVisual.SampleEvents(equippedItem, inventory);
+                    m_ItemVisual.SampleAnimation(equippedItem, equipStatus, interpolation);
 
                     if (m_IsFpv) AnimateAim(inventory);
 
@@ -140,13 +141,7 @@ namespace Swihoni.Sessions.Player.Visualization
             m_WasNewItemVisualThisRenderFrame = true;
             return newVisuals;
         }
-
-        private void SampleItemAnimation(ItemComponent item, ByteStatusComponent equipStatus, float statusInterpolation)
-        {
-            if (m_RenderItems) m_ItemVisual.SampleEvents(item, equipStatus);
-            m_ItemVisual.SampleAnimation(item, equipStatus, statusInterpolation);
-        }
-
+        
         public void AnimateAim(InventoryComponent inventory)
         {
             if (!(m_ItemVisual is GunVisualBehavior gunVisuals) || !(m_ItemVisual.ModiferProperties is GunWithMagazineModifier gunModifier)) return;

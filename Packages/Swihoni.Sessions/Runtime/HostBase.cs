@@ -27,14 +27,14 @@ namespace Swihoni.Sessions
                 players.SetAll(() => new Container(playerElements));
         }
 
-        private void ReadLocalInputs(SessionBase session, Container commandsToFill) => m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill);
+        private void ReadLocalInputs(Container commandsToFill) => m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill);
 
         protected override void Input(float time, float delta)
         {
             if (!m_SessionHistory.Peek().Has(out ServerStampComponent serverStamp) || !serverStamp.tick.HasValue)
                 return;
 
-            ReadLocalInputs(this, m_HostCommands);
+            ReadLocalInputs(m_HostCommands);
             m_Modifier[HostPlayerId].ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
             m_Modifier[HostPlayerId].ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
             GetMode().Modify(m_HostCommands, m_HostCommands, delta);

@@ -138,7 +138,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350a4a3ec78f49bab367bc43f58bd4a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Sensitivity: 2
   m_MoveTransform: {fileID: 4499919466913355348}
 --- !u!114 &3621098284609304118
 MonoBehaviour:
@@ -170,7 +169,7 @@ MonoBehaviour:
   m_CrouchDuration: 0.1
   m_GroundMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 513
 --- !u!114 &-7077651449580160097
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -72,7 +72,6 @@ namespace Swihoni.Sessions.Items.Visuals
             }
             m_PlayerGraph.GetOutput(PlayerItemAnimatorBehavior.OutputIndex).SetSourcePlayable(m_Mixer);
         }
-
         internal void Cleanup()
         {
             if (m_PlayerGraph.IsValid()) m_PlayerGraph.DestroySubgraph(m_Mixer);
@@ -88,29 +87,34 @@ namespace Swihoni.Sessions.Items.Visuals
             return (statusVisualProperties, animationIndex);
         }
 
-        public void SampleEvents(ItemComponent item, ByteStatusComponent equipStatus)
+        public void SampleEvents(ItemComponent item, InventoryComponent inventory)
         {
-            ItemComponent lastItemComponent = m_PlayerItemAnimator.LastRenderedItem;
+            InventoryComponent lastRenderedInventory = m_PlayerItemAnimator.LastRenderedInventory;
             float? lastStatusElapsed = null;
-            if (lastItemComponent != null)
+            ByteStatusComponent GetExpressedStatus(InventoryComponent inv)
             {
-                bool isSameAnimation = lastItemComponent.id == item.id && lastItemComponent.status.id == item.status.id,
-                     isAfter = item.status.elapsed > lastItemComponent.status.elapsed;
-                if (isSameAnimation && isAfter)
-                    lastStatusElapsed = lastItemComponent.status.elapsed;
+                return inv.equipStatus.id == ItemEquipStatusId.Equipped ? inv.EquippedItemComponent.status : inv.equipStatus;
             }
-            (ItemStatusVisualProperties statusVisualProperties, int _) = GetVisualProperties(item, equipStatus);
+            ByteStatusComponent expressedStatus = GetExpressedStatus(inventory);
+            if (lastRenderedInventory != null)
+            {
+                bool isSameAnimation = lastRenderedInventory.HasItemEquipped && expressedStatus.id == GetExpressedStatus(lastRenderedInventory).id,
+                     isAfter = lastRenderedInventory.HasItemEquipped && expressedStatus.elapsed > GetExpressedStatus(lastRenderedInventory).elapsed;
+                if (isSameAnimation && isAfter)
+                    lastStatusElapsed = lastRenderedInventory.EquippedItemComponent.status.elapsed;
+            }
+            (ItemStatusVisualProperties statusVisualProperties, int _) = GetVisualProperties(item, inventory.equipStatus);
             ItemStatusVisualProperties.AnimationEvent[] animationEvents = statusVisualProperties.animationEvents;
             foreach (ItemStatusVisualProperties.AnimationEvent animationEvent in animationEvents)
             {
                 bool shouldDoEvent = (!lastStatusElapsed.HasValue || lastStatusElapsed.Value < animationEvent.time)
-                                  && item.status.elapsed >= animationEvent.time;
+                                  && expressedStatus.elapsed >= animationEvent.time;
                 if (!shouldDoEvent) continue;
                 if (animationEvent.audioSource) m_AudioSource.PlayOneShot(animationEvent.audioSource);
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
             }
-            if (lastItemComponent == null) m_PlayerItemAnimator.LastRenderedItem = item.Clone();
-            else lastItemComponent.CopyFrom(item);
+            if (lastRenderedInventory == null) m_PlayerItemAnimator.LastRenderedInventory = inventory.Clone();
+            else lastRenderedInventory.CopyFrom(inventory);
         }
 
         public void SampleAnimation(ItemComponent item, ByteStatusComponent equipStatus, float interpolation)

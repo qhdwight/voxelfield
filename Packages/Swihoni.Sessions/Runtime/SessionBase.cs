@@ -38,6 +38,7 @@ namespace Swihoni.Sessions
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
         protected IPlayerContainerRenderer[] m_Visuals;
         private uint m_Tick;
+        public bool ShouldInterruptCommands { get; private set; }
 
         protected bool IsDisposed { get; private set; }
         public bool ShouldRender { get; set; } = true;
@@ -90,13 +91,13 @@ namespace Swihoni.Sessions
         private void HandleCursorLockState()
         {
             var desiredLockState = CursorLockMode.Locked;
+            ShouldInterruptCommands = false;
             foreach (InterfaceBehaviorBase @interface in m_Interfaces)
             {
                 if (@interface.NeedsCursor)
-                {
                     desiredLockState = CursorLockMode.Confined;
-                    break;
-                }
+                if (@interface.InterruptsCommands)
+                    ShouldInterruptCommands = true;
             }
             bool desiredVisibility = desiredLockState != CursorLockMode.Locked;
             if (Cursor.lockState == desiredLockState && Cursor.visible == desiredVisibility) return;

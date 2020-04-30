@@ -8,9 +8,11 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         private PlayerModifierBehaviorBase[] m_Modifiers;
         private PlayerHitboxManager m_HitboxManager;
+        private SessionBase m_Session;
 
         internal void Setup(SessionBase session)
         {
+            m_Session = session;
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
             m_HitboxManager = GetComponent<PlayerHitboxManager>();
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup(session);
@@ -40,6 +42,8 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public void ModifyCommands(SessionBase session, Container commandsToModify)
         {
+            if (m_Session.ShouldInterruptCommands) return;
+            
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
         }
 
@@ -53,7 +57,12 @@ namespace Swihoni.Sessions.Player.Modifiers
 
     public abstract class PlayerModifierBehaviorBase : MonoBehaviour
     {
-        internal virtual void Setup(SessionBase session) { }
+        protected SessionBase m_Session;
+
+        internal virtual void Setup(SessionBase session)
+        {
+            m_Session = session;
+        }
 
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate
