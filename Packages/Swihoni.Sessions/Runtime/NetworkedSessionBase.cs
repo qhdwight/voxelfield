@@ -67,6 +67,6 @@ namespace Swihoni.Sessions
 
     internal static class NetworkSessionExtensions
     {
-        internal static Container GetPlayer(this Container session, int index) { return session.Require<PlayerContainerArrayProperty>()[index]; }
+        internal static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayProperty>()[index];
     }
 }

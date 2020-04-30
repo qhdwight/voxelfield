@@ -6,7 +6,7 @@ namespace Swihoni.Collections
     public class Pool<T> where T : class
     {
         private readonly Stack<T> m_Pool;
-        private readonly LinkedList<T> m_InUse;
+        protected readonly LinkedList<T> m_InUse;
         private readonly Func<T> m_Constructor;
         private readonly Action<T, bool> m_UsageChanged;
 

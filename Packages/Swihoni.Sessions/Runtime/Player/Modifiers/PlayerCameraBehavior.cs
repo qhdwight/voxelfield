@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             mouse.mouseDeltaY.Value = InputProvider.GetMouseInput(MouseMovement.Y);
         }
 
-        protected override void SynchronizeBehavior(Container player)
+        internal override void SynchronizeBehavior(Container player)
         {
             if (player.Without(out CameraComponent playerCamera)) return;
             if (playerCamera.yaw.HasValue) m_MoveTransform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);

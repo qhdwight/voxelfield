@@ -241,14 +241,14 @@ namespace Swihoni.Sessions
                             Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
                             break;
                         }
-
+                        
                         var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
                         for (var playerId = 0; playerId < serverPlayers.Length; playerId++)
                         {
                             Container serverPlayer = serverPlayers[playerId];
                             var healthProperty = serverPlayer.Require<HealthProperty>();
                             if (!healthProperty.HasValue || healthProperty.IsDead) continue;
-
+                            
                             FloatProperty serverTime = serverPlayer.Require<ServerStampComponent>().time,
                                           localizedServerTime = serverPlayer.Require<LocalizedClientStampComponent>().time;
 
@@ -256,6 +256,9 @@ namespace Swihoni.Sessions
                                 localizedServerTime.Value += serverTime - previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().time;
                             else
                                 localizedServerTime.Value = time;
+                            
+                            GetLocalPlayerId(serverSession, out int localPlayerId);
+                            if (playerId != localPlayerId) m_Modifier[playerId].Synchronize(serverPlayer);
 
                             if (Mathf.Abs(localizedServerTime.Value - time) > GetSettings(serverSession).TickInterval * 3)
                             {

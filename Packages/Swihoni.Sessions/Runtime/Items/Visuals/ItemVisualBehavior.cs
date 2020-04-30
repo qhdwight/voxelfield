@@ -91,10 +91,7 @@ namespace Swihoni.Sessions.Items.Visuals
         {
             InventoryComponent lastRenderedInventory = m_PlayerItemAnimator.LastRenderedInventory;
             float? lastStatusElapsed = null;
-            ByteStatusComponent GetExpressedStatus(InventoryComponent inv)
-            {
-                return inv.equipStatus.id == ItemEquipStatusId.Equipped ? inv.EquippedItemComponent.status : inv.equipStatus;
-            }
+            ByteStatusComponent GetExpressedStatus(InventoryComponent inv) => inv.equipStatus.id == ItemEquipStatusId.Equipped ? inv.EquippedItemComponent.status : inv.equipStatus;
             ByteStatusComponent expressedStatus = GetExpressedStatus(inventory);
             if (lastRenderedInventory != null)
             {

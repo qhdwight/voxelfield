@@ -204,6 +204,8 @@ namespace Swihoni.Sessions
                 modifier.Dispose();
             foreach (IPlayerContainerRenderer visual in m_Visuals)
                 visual.Dispose();
+            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.visible = true;
         }
     }
 }

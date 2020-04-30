@@ -103,7 +103,7 @@ MonoBehaviour:
     isReverseAnimation: 1
   - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
     animationEvents:
-    - time: 0
+    - time: 1
       audioSource: {fileID: 8300000, guid: 165e311a11f6fe44b972f3f3b4abf908, type: 3}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}

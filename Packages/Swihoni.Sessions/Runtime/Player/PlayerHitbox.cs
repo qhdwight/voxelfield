@@ -10,6 +10,6 @@ namespace Swihoni.Sessions.Player
 
         public PlayerHitboxManager Manager { get; private set; }
 
-        public void Setup(PlayerHitboxManager manager) { Manager = manager; }
+        public void Setup(PlayerHitboxManager manager) => Manager = manager;
     }
 }

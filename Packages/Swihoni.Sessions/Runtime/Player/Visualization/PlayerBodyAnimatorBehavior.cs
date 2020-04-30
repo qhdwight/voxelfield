@@ -39,8 +39,9 @@ namespace Swihoni.Sessions.Player.Visualization
 
         internal override void Setup(SessionBase session)
         {
-            base.Setup(session);
             if (m_Graph.IsValid()) return;
+            
+            base.Setup(session);
 
             m_PrefabPlayerMovement = session.PlayerModifierPrefab.GetComponent<PlayerMovement>();
             m_Graph = PlayableGraph.Create("Body Animator");

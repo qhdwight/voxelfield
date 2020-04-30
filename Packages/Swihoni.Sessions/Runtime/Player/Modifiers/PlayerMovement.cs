@@ -48,7 +48,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_PrefabController = session.PlayerModifierPrefab.GetComponentInChildren<CharacterController>();
         }
 
-        protected override void SynchronizeBehavior(Container player)
+        internal override void SynchronizeBehavior(Container player)
         {
             var move = player.Require<MoveComponent>();
             m_MoveTransform.position = move.position;

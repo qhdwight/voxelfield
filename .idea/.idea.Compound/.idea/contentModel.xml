@@ -43,6 +43,7 @@
             <e p="CyclicArray.cs" t="Include" />
             <e p="DualDictionary.cs" t="Include" />
             <e p="Pool.cs" t="Include" />
+            <e p="StrictPool.cs" t="Include" />
             <e p="Swihoni.Collections.asmdef" t="Include" />
           </e>
         </e>
@@ -124,6 +125,8 @@
               </e>
               <e p="PlayerHitbox.cs" t="Include" />
               <e p="PlayerHitboxManager.cs" t="Include" />
+              <e p="PlayerVisualizerBehavior.cs" t="Include" />
+              <e p="PlayerVisualizerBehaviorBase.cs" t="Include" />
               <e p="Visualization" t="Include">
                 <e p="PlayerBodyAnimatorBehavior.cs" t="Include" />
                 <e p="PlayerItemAnimatorBehavior.cs" t="Include" />
