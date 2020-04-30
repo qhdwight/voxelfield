@@ -2,33 +2,38 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Console.Interface;
+using Input;
 using UnityEngine;
 
 namespace Console
 {
-    public delegate string Command(string[] args);
-
     public static class ConsoleCommandExecutor
     {
         private static readonly string[] CommandSeparator = {"&&"};
 
-        private static Dictionary<string, Command> _commands;
+        private static Dictionary<string, Action<string[]>> _commands;
 
         [RuntimeInitializeOnLoadMethod]
         private static void RunOnStart()
         {
             // Conform with https://docs.unity3d.com/Manual/DomainReloading.html
-            _commands = new Dictionary<string, Command>
+            _commands = new Dictionary<string, Action<string[]>>
             {
                 ["clear"] = args =>
                 {
                     ConsoleInterface.Singleton.ClearConsole();
-                    return null;
+                },
+                ["sensitivity"] = args =>
+                {
+                    if (float.TryParse(args[1], out float sensitivity))
+                        InputProvider.Singleton.Sensitivity = sensitivity;
+                    else
+                        Debug.LogWarning($"Could not parse {args[1]} as float");
                 }
             };
         }
 
-        public static void RegisterCommand(string commandName, Command command) { _commands.Add(commandName, command); }
+        public static void RegisterCommand(string commandName, Action<string[]> command) { _commands.Add(commandName, command); }
 
         public static string GetAutocomplete(string stub) { return _commands.Keys.FirstOrDefault(command => command.StartsWith(stub)); }
 
@@ -41,9 +46,7 @@ namespace Console
                 string commandName = args.First();
                 if (_commands.ContainsKey(commandName))
                 {
-                    string result = _commands[commandName](args);
-                    if (!string.IsNullOrEmpty(result))
-                        Debug.Log(result);
+                    _commands[commandName](args);
                 }
                 else
                     Debug.LogWarning($"Command \"{commandName}\" not found!");

@@ -7,7 +7,6 @@ namespace Swihoni.Sessions.Player.Modifiers
 {
     public class PlayerCameraBehavior : PlayerModifierBehaviorBase
     {
-        [SerializeField] private float m_Sensitivity = 10.0f;
         [SerializeField] private Transform m_MoveTransform = default;
 
         public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration)
@@ -16,8 +15,8 @@ namespace Swihoni.Sessions.Player.Modifiers
              || commands.Without(out MouseComponent mouse)
              || player.Present(out HealthProperty health) && health.IsDead) return;
             base.ModifyTrusted(session, playerId, player, commands, duration);
-            playerCamera.yaw.Value = Mathf.Repeat(playerCamera.yaw + mouse.mouseDeltaX * m_Sensitivity, 360.0f);
-            playerCamera.pitch.Value = Mathf.Clamp(playerCamera.pitch - mouse.mouseDeltaY * m_Sensitivity, -90.0f, 90.0f);
+            playerCamera.yaw.Value = Mathf.Repeat(playerCamera.yaw + mouse.mouseDeltaX * InputProvider.Singleton.Sensitivity, 360.0f);
+            playerCamera.pitch.Value = Mathf.Clamp(playerCamera.pitch - mouse.mouseDeltaY * InputProvider.Singleton.Sensitivity, -90.0f, 90.0f);
         }
 
         public override void ModifyCommands(SessionBase session, Container commands)

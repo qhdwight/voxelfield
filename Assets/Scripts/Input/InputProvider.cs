@@ -74,6 +74,8 @@ namespace Input
     {
         private InputSettings m_Settings = InputSettings.Defaults();
 
+        public float Sensitivity { get; set; } = 2.0f;
+
         public bool GetInput(InputType type) { return UnityEngine.Input.GetKey(m_Settings.Get(type)); }
 
         /// <summary>

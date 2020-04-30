@@ -20,17 +20,15 @@ namespace Compound.Session
             ConsoleCommandExecutor.RegisterCommand("host", args =>
             {
                 StartHost();
-                return string.Empty;
             });
             ConsoleCommandExecutor.RegisterCommand("connect", args =>
             {
                 Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
-                return $"Started client at {client.IpEndPoint}";
+                Debug.Log($"Started client at {client.IpEndPoint}");
             });
             ConsoleCommandExecutor.RegisterCommand("disconnect", args =>
             {
                 DisconnectAll();
-                return string.Empty;
             });
         }
 
