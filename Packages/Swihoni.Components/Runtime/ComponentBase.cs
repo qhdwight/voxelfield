@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -20,18 +21,37 @@ namespace Swihoni.Components
 
     public abstract class ComponentBase : ElementBase
     {
+        private List<ElementBase> m_Elements;
+
+        public IReadOnlyList<ElementBase> Elements
+        {
+            get
+            {
+                if (m_Elements == null)
+                {
+                    m_Elements = new List<ElementBase>();
+                    FieldInfo[] fieldInfos = Cache.GetFieldInfo(GetType());
+                    foreach (FieldInfo field in fieldInfos)
+                    {
+                        object fieldValue = field.GetValue(this);
+                        if (fieldValue is ElementBase element) m_Elements.Add(element);
+                    }
+                }
+                return m_Elements;
+            }
+        }
+
         protected ComponentBase()
         {
-            FieldInfo[] fieldInfos = Cache.GetFieldInfo(GetType());
-            foreach (FieldInfo field in fieldInfos)
+            foreach (FieldInfo field in Cache.GetFieldInfo(GetType()))
             {
                 Type fieldType = field.FieldType;
-                if (!fieldType.IsAbstract && field.GetValue(this) == null && fieldType.IsElement())
-                {
-                    object instance = Activator.CreateInstance(fieldType);
-                    if (instance is PropertyBase propertyInstance) propertyInstance.Field = field;
-                    field.SetValue(this, instance);
-                }
+                bool isElement = fieldType.IsElement();
+                if (!isElement || fieldType.IsAbstract || field.GetValue(this) != null) continue;
+
+                object instance = Activator.CreateInstance(fieldType);
+                if (instance is PropertyBase propertyInstance) propertyInstance.Field = field;
+                field.SetValue(this, instance);
             }
         }
 

@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Modifiers;
@@ -12,6 +14,8 @@ namespace Swihoni.Sessions.Player.Components
     {
         [Angle] public FloatProperty yaw;
         public FloatProperty pitch;
+
+        public override string ToString() => $"Yaw: {yaw}, Pitch: {pitch}";
     }
 
     [Serializable]
@@ -19,7 +23,7 @@ namespace Swihoni.Sessions.Player.Components
     {
         private static PlayerMovement _prefabMovement = SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab().GetComponent<PlayerMovement>();
 
-        [Tolerance(0.1f)] public VectorProperty position, velocity;
+        [Tolerance(0.01f)] public VectorProperty position, velocity;
         public ByteProperty groundTick;
         [CustomInterpolation] public FloatProperty moveElapsed;
         public FloatProperty normalizedCrouch;
@@ -31,32 +35,39 @@ namespace Swihoni.Sessions.Player.Components
             moveElapsed.CyclicInterpolateFrom(m1.moveElapsed, m2.moveElapsed, 0.0f, _prefabMovement.WalkStateDuration, interpolation);
         }
 
-        public override string ToString() { return $"Position: {position}, Velocity: {velocity}"; }
+        public override string ToString() => $"Position: {position}, Velocity: {velocity}";
     }
 
-    [Serializable]
+    [Serializable, OnlyServerTrusted]
     public class HealthProperty : ByteProperty
     {
         public bool IsAlive => !IsDead;
         public bool IsDead => Value == 0;
     }
 
-    [Serializable]
+    [Serializable, OnlyServerTrusted]
     public class StatsComponent : ComponentBase
     {
         public ByteProperty kills, deaths, damage;
         public UShortProperty ping;
     }
 
-    [Serializable]
+    [Serializable, OnlyServerTrusted]
     public class RespawnTimerProperty : FloatProperty
     {
     }
 
-    [Serializable]
-    public class TeamProperty : ByteProperty
+    [Serializable, OnlyServerTrusted]
+    public class TeamProperty : PropertyBase<TeamProperty.Id>
     {
-        public const byte None = 0;
+        public enum Id : byte
+        {
+            None
+        }
+
+        public override bool ValueEquals(PropertyBase<Id> other) => other.Value == Value;
+        public override void SerializeValue(BinaryWriter writer) => writer.Write((byte) Value);
+        public override void DeserializeValue(BinaryReader reader) => Value = (Id) reader.ReadByte();
     }
 
     [Serializable]
@@ -94,7 +105,7 @@ namespace Swihoni.Sessions.Player.Components
             elapsed.Value = interpolatedElapsed;
         }
 
-        public override string ToString() { return $"ID: {id}, Elapsed: {elapsed}"; }
+        public override string ToString() => $"ID: {id}, Elapsed: {elapsed}";
     }
 
     [Serializable]

@@ -102,23 +102,12 @@ namespace Swihoni.Components
                     exitAll = true;
                 if (exitAll || navigation == Navigation.Skip)
                     return;
-                Type type = _zip[0].GetType();
-                FieldInfo[] fields = Cache.GetFieldInfo(type);
                 switch (_zip[0])
                 {
-                    // Polymorphism get the top shared base by examining number of fields
-                    // for (var i = 0; i < size; i++)
-                    // {
-                    //     Type zipType = _zip[i].GetType();
-                    //     FieldInfo[] zipFields = Cache.GetFieldInfo(zipType);
-                    //     int count = zipFields.Length;
-                    //     if (fields != null && count >= fields.Length) continue;
-                    //     fields = zipFields;
-                    //     type = zipType;
-                    // }
                     case Container _:
                     {
                         var zippedContainers = new TriArray<Container>();
+                        // Truncate iteration to smallest
                         var elementSize = int.MaxValue;
                         for (var i = 0; i < size; i++)
                         {
@@ -126,58 +115,50 @@ namespace Swihoni.Components
                             int count = zippedContainers[i].Elements.Count;
                             if (count < elementSize) elementSize = count;
                         }
+                        // Truncate iteration if elements become different types
                         var foundDifferentType = false;
                         for (var j = 0; j < elementSize && !foundDifferentType; j++)
                         {
                             Type firstType = zippedContainers[0].Elements[j].GetType();
                             for (var i = 1; i < size && !foundDifferentType; i++)
                             {
-                                if (zippedContainers[i].Elements[j].GetType() != firstType)
-                                {
-                                    elementSize = j;
-                                    foundDifferentType = true;
-                                }
+                                if (zippedContainers[i].Elements[j].GetType() == firstType) continue;
+                                elementSize = j;
+                                foundDifferentType = true;
                             }
                         }
 
                         for (var j = 0; j < elementSize; j++)
                         {
                             var zippedChildren = new TriArray<ElementBase>();
-                            for (var i = 0; i < size; i++)
-                            {
-                                zippedChildren[i] = zippedContainers[i].Elements[j];
-                            }
+                            for (var i = 0; i < size; i++) zippedChildren[i] = zippedContainers[i].Elements[j];
                             NavigateRecursively(zippedChildren);
                         }
-
                         break;
                     }
-                    case ArrayPropertyBase _:
+                    case ArrayPropertyBase a1:
                     {
-                        var zippedArrays = new TriArray<ArrayPropertyBase>();
-                        for (var i = 0; i < size; i++) zippedArrays[i] = (ArrayPropertyBase) _zip[i];
-                        for (var j = 0; j < zippedArrays[0].Length; j++)
+                        for (var j = 0; j < a1.Length; j++)
                         {
                             var zippedElements = new TriArray<ElementBase>();
-                            for (var i = 0; i < size; i++) zippedElements[i] = (ElementBase) zippedArrays[i].GetValue(j);
+                            for (var i = 0; i < size; i++) zippedElements[i] = (ElementBase) ((ArrayPropertyBase) _zip[i]).GetValue(j);
                             NavigateRecursively(zippedElements);
                         }
                         break;
                     }
-                    case ComponentBase _:
+                    case ComponentBase c1:
                     {
-                        foreach (FieldInfo field in fields)
+                        for (var j = 0; j < c1.Elements.Count; j++)
                         {
                             var zippedChildren = new TriArray<ElementBase>();
-                            for (var i = 0; i < size; i++) zippedChildren[i] = _zip[i] == null ? null : (ElementBase) field.GetValue(_zip[i]);
+                            for (var i = 0; i < size; i++) zippedChildren[i] = ((ComponentBase) _zip[i]).Elements[j];
                             NavigateRecursively(zippedChildren);
                         }
                         break;
                     }
                     default:
                     {
-                        if (!(_zip[0] is PropertyBase))
-                            throw new Exception("Expected component or array");
+                        if (!(_zip[0] is PropertyBase)) throw new Exception("Expected component or array");
                         break;
                     }
                 }

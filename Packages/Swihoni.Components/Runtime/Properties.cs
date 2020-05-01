@@ -5,17 +5,16 @@ using UnityEngine;
 
 namespace Swihoni.Components
 {
+    // Thank you lack of compile time C# meta-programming for all this manual code!
+    
     [Serializable]
     public class UIntProperty : PropertyBase<uint>
     {
         public UIntProperty(uint value) : base(value) { }
-
         public UIntProperty() { }
 
         public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-
         public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadUInt32();
-
         public override bool ValueEquals(PropertyBase<uint> other) => other.Value == Value;
     }
 
@@ -23,13 +22,10 @@ namespace Swihoni.Components
     public class UShortProperty : PropertyBase<ushort>
     {
         public UShortProperty(ushort value) : base(value) { }
-
         public UShortProperty() { }
 
         public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-
         public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadUInt16();
-
         public override bool ValueEquals(PropertyBase<ushort> other) => other.Value == Value;
     }
 
@@ -37,9 +33,7 @@ namespace Swihoni.Components
     public class BoolProperty : PropertyBase<bool>
     {
         public override bool ValueEquals(PropertyBase<bool> other) => other.Value == Value;
-
         public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-
         public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadBoolean();
     }
 
@@ -47,11 +41,9 @@ namespace Swihoni.Components
     public class FloatProperty : PropertyBase<float>
     {
         public FloatProperty(float value) : base(value) { }
-
         public FloatProperty() { }
 
         public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-
         public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadSingle();
 
         public override bool ValueEquals(PropertyBase<float> other)
@@ -95,13 +87,10 @@ namespace Swihoni.Components
     public class ByteProperty : PropertyBase<byte>
     {
         public ByteProperty(byte value) : base(value) { }
-
         public ByteProperty() { }
 
         public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-
         public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadByte();
-
         public override bool ValueEquals(PropertyBase<byte> other) => other.Value == Value;
     }
 
@@ -109,9 +98,7 @@ namespace Swihoni.Components
     public class VectorProperty : PropertyBase<Vector3>
     {
         public VectorProperty(Vector3 value) : base(value) { }
-
         public VectorProperty(float x, float y, float z) : base(new Vector3(x, y, z)) { }
-
         public VectorProperty() { }
 
         public override void SerializeValue(BinaryWriter writer)

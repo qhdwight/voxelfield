@@ -24,6 +24,11 @@ namespace Swihoni.Sessions.Components
         };
     }
 
+    public class OnlyServerTrusted : Attribute
+    {
+        
+    }
+
     /* Server */
 
     [Serializable]
@@ -67,7 +72,7 @@ namespace Swihoni.Sessions.Components
 
     /* Shared */
 
-    [Serializable]
+    [Serializable, OnlyServerTrusted]
     public class HitMarkerComponent : ComponentBase
     {
         public FloatProperty elapsed;
