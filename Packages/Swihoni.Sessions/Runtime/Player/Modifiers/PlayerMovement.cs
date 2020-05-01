@@ -92,12 +92,16 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
 
             if (VectorMath.LateralMagnitude(move.velocity) < 1e-2f)
-                move.moveElapsed.Value = 0.0f;
+                move.normalizedMove.Value = 0.0f;
             else
             {
-                move.moveElapsed.Value += duration;
-                while (move.moveElapsed > m_WalkStateDuration)
-                    move.moveElapsed.Value -= m_WalkStateDuration;
+                float stateDuration = m_WalkStateDuration;
+                if (inputs.GetInput(PlayerInput.Crouch)) stateDuration /= m_CrouchSpeed / m_RunSpeed;
+                if (inputs.GetInput(PlayerInput.Walk)) stateDuration /= m_WalkMultiplier;
+                if (inputs.GetInput(PlayerInput.Sprint)) stateDuration /= m_SprintMultiplier;
+                move.normalizedMove.Value += duration / stateDuration;
+                while (move.normalizedMove > 1.0f)
+                    move.normalizedMove.Value -= 1.0f;
             }
         }
 

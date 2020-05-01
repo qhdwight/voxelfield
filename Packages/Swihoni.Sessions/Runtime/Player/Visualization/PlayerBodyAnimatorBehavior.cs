@@ -137,8 +137,7 @@ namespace Swihoni.Sessions.Player.Visualization
             {
                 if (isGrounded)
                 {
-                    float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed),
-                          normalizedMove = Mathf.Clamp01(move.moveElapsed / m_PrefabPlayerMovement.WalkStateDuration);
+                    float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed);
                     for (var i = 0; i < 3; i++)
                     {
                         // TODO:refactor
@@ -148,7 +147,7 @@ namespace Swihoni.Sessions.Player.Visualization
                                                        ? normalizedSpeed * weight
                                                        : 0.0f);
                     }
-                    float clipTimeSeconds = normalizedMove * m_StatusVisualProperties[baseIndex + moveOffset].clip.length;
+                    float clipTimeSeconds = move.normalizedMove * m_StatusVisualProperties[baseIndex + moveOffset].clip.length;
                     m_Animations[baseIndex + moveOffset].SetTime(clipTimeSeconds);
                 }
                 else
@@ -170,18 +169,20 @@ namespace Swihoni.Sessions.Player.Visualization
 
         private void Footsteps(MoveComponent move)
         {
-            float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed),
-                  normalizedMove = Mathf.Clamp01(move.moveElapsed / m_PrefabPlayerMovement.WalkStateDuration);
+            float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed);
 
-            // TODO:refactor magic numbers
-            if (normalizedMove > 0.25f && m_LastNormalizedTime <= 0.25f || normalizedMove > 0.75f && m_LastNormalizedTime <= 0.75f)
+            if (normalizedSpeed > 0.5f)
             {
-                int count = Physics.RaycastNonAlloc(m_FootstepSource.transform.position + new Vector3 {y = 0.5f}, Vector3.down, m_CachedHits,
-                                                    1.0f, m_PrefabPlayerMovement.GroundMask);
-                if (count >= 1)
-                    m_FootstepSource.PlayOneShot(m_BrushClips[Random.Range(0, m_BrushClips.Length)], normalizedSpeed);
+                // TODO:refactor magic numbers
+                if (move.normalizedMove > 0.25f && m_LastNormalizedTime <= 0.25f || move.normalizedMove > 0.75f && m_LastNormalizedTime <= 0.75f)
+                {
+                    int count = Physics.RaycastNonAlloc(m_FootstepSource.transform.position + new Vector3 {y = 0.5f}, Vector3.down, m_CachedHits,
+                                                        1.0f, m_PrefabPlayerMovement.GroundMask);
+                    if (count >= 1)
+                        m_FootstepSource.PlayOneShot(m_BrushClips[Random.Range(0, m_BrushClips.Length)], normalizedSpeed);
+                }   
             }
-            m_LastNormalizedTime = normalizedMove;
+            m_LastNormalizedTime = move.normalizedMove;
         }
 
         public override void Dispose()

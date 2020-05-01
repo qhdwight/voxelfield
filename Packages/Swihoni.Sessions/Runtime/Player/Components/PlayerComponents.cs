@@ -25,16 +25,9 @@ namespace Swihoni.Sessions.Player.Components
 
         [Tolerance(0.01f)] public VectorProperty position, velocity;
         public ByteProperty groundTick;
-        [CustomInterpolation] public FloatProperty moveElapsed;
         public FloatProperty normalizedCrouch;
-
-        public override void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
-        {
-            var m1 = (MoveComponent) c1;
-            var m2 = (MoveComponent) c2;
-            moveElapsed.CyclicInterpolateFrom(m1.moveElapsed, m2.moveElapsed, 0.0f, _prefabMovement.WalkStateDuration, interpolation);
-        }
-
+        [Cyclic(0.0f, 1.0f)] public FloatProperty normalizedMove;
+        
         public override string ToString() => $"Position: {position}, Velocity: {velocity}";
     }
 
