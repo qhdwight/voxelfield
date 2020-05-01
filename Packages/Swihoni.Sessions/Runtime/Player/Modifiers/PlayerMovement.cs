@@ -140,7 +140,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             float maxSpeed = inputs.GetInput(PlayerInput.Crouch) ? m_CrouchSpeed : m_RunSpeed;
             if (inputs.GetInput(PlayerInput.Walk)) maxSpeed *= m_WalkMultiplier;
             if (inputs.GetInput(PlayerInput.Sprint)) maxSpeed *= m_SprintMultiplier;
-            
+
             if (wishSpeed > maxSpeed) wishSpeed = maxSpeed;
             if (isGrounded && withinAngleLimit)
             {

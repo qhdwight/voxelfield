@@ -6,6 +6,7 @@ using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using UnityEngine;
 
 namespace Swihoni.Sessions.Tests
 {
@@ -32,8 +33,16 @@ namespace Swihoni.Sessions.Tests
                 p.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Concat(StandardComponents.StandardPlayerCommandsElements)
                                                                .Append(typeof(StampComponent))));
             s1.Zero();
+
             ServerSessionContainer s2 = s1.Clone();
             Assert.IsTrue(s1.EqualTo(s2));
+
+            s1.Add(typeof(ServerTag));
+            s2.Add(typeof(LocalizedClientStampComponent));
+
+            float start = Time.realtimeSinceStartup;
+            s1.FastCopyFrom(s2);
+            Debug.Log(1e3f * (Time.realtimeSinceStartup - start));
         }
 
         // [Test]

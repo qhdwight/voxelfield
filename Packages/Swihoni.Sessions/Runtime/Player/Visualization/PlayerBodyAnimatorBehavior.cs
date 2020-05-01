@@ -40,7 +40,7 @@ namespace Swihoni.Sessions.Player.Visualization
         internal override void Setup(SessionBase session)
         {
             if (m_Graph.IsValid()) return;
-            
+
             base.Setup(session);
 
             m_PrefabPlayerMovement = session.PlayerModifierPrefab.GetComponent<PlayerMovement>();
@@ -172,7 +172,7 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed),
                   normalizedMove = Mathf.Clamp01(move.moveElapsed / m_PrefabPlayerMovement.WalkStateDuration);
-            
+
             // TODO:refactor magic numbers
             if (normalizedMove > 0.25f && m_LastNormalizedTime <= 0.25f || normalizedMove > 0.75f && m_LastNormalizedTime <= 0.75f)
             {

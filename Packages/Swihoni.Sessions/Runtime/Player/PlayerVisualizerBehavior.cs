@@ -9,7 +9,7 @@ namespace Swihoni.Sessions.Player
         private static StrictPool<PlayerVisualizerBehavior> _pool;
 
         [RuntimeInitializeOnLoadMethod]
-        private static void Load()
+        private static void Initialize()
         {
             _pool = new StrictPool<PlayerVisualizerBehavior>(8, () =>
             {

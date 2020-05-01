@@ -72,6 +72,7 @@ namespace Swihoni.Sessions.Items.Visuals
             }
             m_PlayerGraph.GetOutput(PlayerItemAnimatorBehavior.OutputIndex).SetSourcePlayable(m_Mixer);
         }
+
         internal void Cleanup()
         {
             if (m_PlayerGraph.IsValid()) m_PlayerGraph.DestroySubgraph(m_Mixer);
@@ -111,7 +112,7 @@ namespace Swihoni.Sessions.Items.Visuals
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
             }
             if (lastRenderedInventory == null) m_PlayerItemAnimator.LastRenderedInventory = inventory.Clone();
-            else lastRenderedInventory.CopyFrom(inventory);
+            else lastRenderedInventory.FastCopyFrom(inventory);
         }
 
         public void SampleAnimation(ItemComponent item, ByteStatusComponent equipStatus, float interpolation)

@@ -1,4 +1,5 @@
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
@@ -43,7 +44,7 @@ namespace Swihoni.Sessions.Modes
         internal override void Modify(Container playerToModify, Container commands, float duration)
         {
             base.Modify(playerToModify, commands, duration);
-            
+
             if (commands.Without(out InputFlagProperty inputs)
              || playerToModify.Without<ServerTag>()
              || playerToModify.Without(out HealthProperty health)) return;

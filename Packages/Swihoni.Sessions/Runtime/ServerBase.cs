@@ -9,6 +9,7 @@ using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Swihoni.Sessions
 {
@@ -38,25 +39,28 @@ namespace Swihoni.Sessions
 
         protected sealed override void Tick(uint tick, float time, float duration)
         {
+            Profiler.BeginSample("Server Setup");
             base.Tick(tick, time, duration);
             Container previousServerSession = m_SessionHistory.Peek(),
                       serverSession = m_SessionHistory.ClaimNext();
-            serverSession.CopyFrom(previousServerSession);
+            serverSession.FastCopyFrom(previousServerSession);
 
             SessionSettingsComponent settings = GetSettings(serverSession);
-            settings.CopyFrom(DebugBehavior.Singleton.Settings);
+            settings.FastCopyFrom(DebugBehavior.Singleton.Settings);
             Time.fixedDeltaTime = 1.0f / settings.tickRate;
 
             var serverStamp = serverSession.Require<ServerStampComponent>();
             serverStamp.tick.Value = tick;
             serverStamp.time.Value = time;
             serverStamp.duration.Value = duration;
+            Profiler.EndSample();
 
+            Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
             Tick(serverSession);
             PostTick(serverSession);
-
             HandleTimeouts(time, serverSession);
+            Profiler.EndSample();
         }
 
         private void HandleTimeouts(float time, Container serverSession)
@@ -91,7 +95,7 @@ namespace Swihoni.Sessions
                         {
                             if (!serverPlayerClientStamp.tick.HasValue)
                                 // Take one tick to set initial server player client stamp
-                                serverPlayerClientStamp.MergeSet(clientStamp);
+                                serverPlayerClientStamp.FastMergeSet(clientStamp);
                             else
                             {
                                 // Make sure this is the newest tick
@@ -106,7 +110,7 @@ namespace Swihoni.Sessions
                                     }
 
                                     ModeBase mode = GetMode(serverSession);
-                                    serverPlayer.MergeSet(clientCommands); // Merge in trusted
+                                    serverPlayer.FastMergeSet(clientCommands); // Merge in trusted
                                     m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, clientCommands, clientStamp.duration);
                                     mode.Modify(serverPlayer, clientCommands, clientStamp.duration);
                                 }
@@ -170,8 +174,8 @@ namespace Swihoni.Sessions
             {
                 PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
                 modifier.EvaluateHitboxes(i, m_SessionHistory.Peek().GetPlayer(i));
-                
             }
+            base.AboutToRaycast(playerId);
         }
 
         public override void Dispose()

@@ -48,7 +48,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public void ModifyCommands(SessionBase session, Container commandsToModify)
         {
             if (m_Session.ShouldInterruptCommands) return;
-            
+
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
         }
 

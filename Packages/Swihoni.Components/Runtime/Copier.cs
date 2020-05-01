@@ -13,7 +13,7 @@ namespace Swihoni.Components
         /// Set properties on destination that are present on source.
         /// If none exist on source, keep destination values instead of clearing.
         /// </summary>
-        public static void MergeSet<T>(this T destination, T source) where T : ElementBase
+        public static void FastMergeSet<T>(this T destination, T source) where T : ElementBase
         {
             ElementExtensions.NavigateZipped((_destination, _source) =>
             {
@@ -26,7 +26,7 @@ namespace Swihoni.Components
         /// <summary>
         /// Clears all properties on destination. Then sets properties present on source.
         /// </summary>
-        public static void CopyFrom<T>(this T destination, T source) where T : ElementBase
+        public static void FastCopyFrom<T>(this T destination, T source) where T : ElementBase
         {
             ElementExtensions.NavigateZipped((_destination, _source) =>
             {

@@ -14,7 +14,7 @@ namespace Swihoni.Sessions.Items
         private static Pool<ItemVisualBehavior>[] _itemVisualPools;
 
         [RuntimeInitializeOnLoadMethod]
-        private static void Setup()
+        private static void Initialize()
         {
             _itemModifiers = Resources.LoadAll<ItemModifierBase>("Modifiers")
                                       .OrderBy(modifier => modifier.id).ToArray();

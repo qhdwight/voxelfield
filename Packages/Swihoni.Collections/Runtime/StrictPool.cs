@@ -1,6 +1,6 @@
 using System;
 
-namespace Swihoni.Collections    
+namespace Swihoni.Collections
 {
     public class StrictPool<T> : Pool<T> where T : class
     {

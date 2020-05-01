@@ -9,17 +9,17 @@ namespace Swihoni.Components
     public class Container : ComponentBase
     {
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        private IDictionary<Type, ElementBase> m_Children;
+        private List<ElementBase> m_Elements;
 
         private Dictionary<Type, int> m_TypeToId = new Dictionary<Type, int>();
 
-        public IEnumerable<Type> ElementTypes => m_Children.Keys;
+        public IEnumerable<Type> ElementTypes => m_TypeToId.Keys;
 
-        public Container()
-        {
-            Comparer<Type> comparer = Comparer<Type>.Create((t1, t2) => m_TypeToId[t1].CompareTo(m_TypeToId[t2]));
-            m_Children = new SortedDictionary<Type, ElementBase>(comparer);
-        }
+        public IReadOnlyList<ElementBase> Elements => m_Elements;
+
+        public Container() : this(0) { }
+
+        public Container(int capacity) { m_Elements = new List<ElementBase>(capacity); }
 
         public Container(IEnumerable<Type> types) : this(types.ToArray()) { }
 
@@ -27,9 +27,9 @@ namespace Swihoni.Components
         /// Order of types determines serialization, so server and client must have the same order.
         /// </summary>
         /// <param name="types"></param>
-        public Container(params Type[] types) : this() { Add(types); }
+        public Container(params Type[] types) : this(types.Length) { Add(types); }
 
-        public ElementBase TryGet(Type type) { return m_TypeToId.ContainsKey(type) ? m_Children[type] : null; }
+        public ElementBase TryGet(Type type) { return m_TypeToId.TryGetValue(type, out int index) ? m_Elements[index] : null; }
 
         public void Add(IEnumerable<Type> types)
         {
@@ -40,7 +40,7 @@ namespace Swihoni.Components
                     if (m_TypeToId.ContainsKey(type))
                         throw new ArgumentException("Containers can only have one of each type! Make a subclass if necessary");
                     m_TypeToId[type] = m_TypeToId.Count;
-                    m_Children[type] = (ElementBase) Activator.CreateInstance(type);
+                    m_Elements.Add((ElementBase) Activator.CreateInstance(type));
                 }
                 else
                     throw new ArgumentException("Type must be containable (Property or Component)");
@@ -52,7 +52,7 @@ namespace Swihoni.Components
         public void Set(IEnumerable<Type> types)
         {
             m_TypeToId.Clear();
-            m_Children.Clear();
+            m_Elements.Clear();
             Add(types);
         }
 
@@ -64,10 +64,10 @@ namespace Swihoni.Components
 
         public bool Has<TElement>(out TElement component) where TElement : ElementBase
         {
-            bool hasComponent = m_TypeToId.ContainsKey(typeof(TElement));
+            bool hasComponent = m_TypeToId.TryGetValue(typeof(TElement), out int index);
             if (hasComponent)
             {
-                component = (TElement) m_Children[typeof(TElement)];
+                component = (TElement) m_Elements[index];
                 return true;
             }
             component = null;
@@ -80,7 +80,7 @@ namespace Swihoni.Components
         {
             try
             {
-                object child = m_Children[typeof(TElement)];
+                object child = m_Elements[m_TypeToId[typeof(TElement)]];
                 return (TElement) child;
             }
             catch (Exception exception)

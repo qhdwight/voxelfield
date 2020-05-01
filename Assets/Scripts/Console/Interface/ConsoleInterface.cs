@@ -40,7 +40,7 @@ namespace Console.Interface
         private string m_CurrentAutocomplete;
 
         [RuntimeInitializeOnLoadMethod]
-        private static void RunOnStart()
+        private static void Initialize()
         {
             // Conform with https://docs.unity3d.com/Manual/DomainReloading.html
             Application.logMessageReceived -= Singleton.Log;

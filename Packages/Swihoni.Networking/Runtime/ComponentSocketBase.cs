@@ -47,7 +47,7 @@ namespace Swihoni.Networking
         public void RegisterMessage(Type elementType, Container container = null)
         {
             m_Codes.Add(elementType, (byte) m_Codes.Length);
-            m_MessagePools[elementType] = new Pool<ElementBase>(1, () => elementType.IsContainer()
+            m_MessagePools[elementType] = new Pool<ElementBase>(1, () => typeof(Container).IsAssignableFrom(elementType)
                                                                     ? container.Clone()
                                                                     : (ElementBase) Activator.CreateInstance(elementType));
         }
@@ -82,6 +82,7 @@ namespace Swihoni.Networking
                 catch (Exception exception)
                 {
                     Debug.LogError(exception);
+                    throw;
                 }
             }
         }

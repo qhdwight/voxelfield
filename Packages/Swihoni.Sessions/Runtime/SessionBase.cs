@@ -81,7 +81,7 @@ namespace Swihoni.Sessions
         public void Update(float time)
         {
             CheckDisposed();
-            
+
             HandleCursorLockState();
             float delta = time - m_RenderTime;
             Input(time, delta);
@@ -116,7 +116,7 @@ namespace Swihoni.Sessions
         public void FixedUpdate(float time)
         {
             if (IsDisposed) throw new ObjectDisposedException("Session disposed");
-            
+
             float duration = time - m_FixedUpdateTime;
             m_FixedUpdateTime = time;
             Tick(m_Tick++, time, duration);
@@ -176,12 +176,18 @@ namespace Swihoni.Sessions
                 }
             }
             // Take last if we do not have enough history
-            renderPlayerContainer.CopyFrom(getInHistory(0));
+            renderPlayerContainer.FastCopyFrom(getInHistory(0));
         }
 
         public abstract Ray GetRayForPlayerId(int playerId);
 
-        public abstract void AboutToRaycast(int playerId);
+        public virtual void AboutToRaycast(int playerId)
+        {
+            // Usually transform sync happens after FixedUpdate() is called. However, our raycast is in fixed update.
+            // So, we need to preemptively force the colliders in the hitbox to update.
+            // Otherwise, there is always a one tick lag.
+            Physics.SyncTransforms();
+        }
 
         public abstract ModeBase GetMode(Container session = null);
 

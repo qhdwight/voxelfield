@@ -17,7 +17,7 @@ namespace Swihoni.Util.Interface
             m_UpdateFramerateAction = new IntervalAction(m_UpdateRate, UpdateFramerate);
         }
 
-        private void Update() { m_UpdateFramerateAction.Update(Time.deltaTime); }
+        private void Update() { m_UpdateFramerateAction.Update(Time.smoothDeltaTime); }
 
         private void UpdateFramerate()
         {

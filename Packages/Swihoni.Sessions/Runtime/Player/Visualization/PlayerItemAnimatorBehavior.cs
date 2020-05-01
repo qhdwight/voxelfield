@@ -35,7 +35,7 @@ namespace Swihoni.Sessions.Player.Visualization
         internal void Setup()
         {
             if (m_Graph.IsValid()) return;
-            
+
             ArmIk = GetComponent<ArmIk>();
             m_Animator = GetComponent<Animator>();
             m_Graph = PlayableGraph.Create($"{transform.root.name} {m_GraphName} Item Animator");
@@ -143,7 +143,7 @@ namespace Swihoni.Sessions.Player.Visualization
             m_WasNewItemVisualThisRenderFrame = true;
             return newVisuals;
         }
-        
+
         public void AnimateAim(InventoryComponent inventory)
         {
             if (!(m_ItemVisual is GunVisualBehavior gunVisuals) || !(m_ItemVisual.ModiferProperties is GunWithMagazineModifier gunModifier)) return;

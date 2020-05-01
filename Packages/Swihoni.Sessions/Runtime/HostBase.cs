@@ -18,9 +18,11 @@ namespace Swihoni.Sessions
             : base(linker, sessionElements, playerElements, commandElements)
         {
             // TODO:refactor zeroing
-            m_HostCommands = new Container(commandElements.Concat(playerElements)
-                                                          .Append(typeof(ServerStampComponent))
-                                                          .Append(typeof(ServerTag)));
+            m_HostCommands = new Container(playerElements
+                                          .Append(typeof(ClientStampComponent))
+                                          .Append(typeof(ServerStampComponent))
+                                          .Concat(commandElements)
+                                          .Append(typeof(ServerTag)));
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Reset();
 
@@ -57,7 +59,7 @@ namespace Swihoni.Sessions
                 if (playerId == localPlayer)
                 {
                     // Inject host player component
-                    renderPlayers[playerId].CopyFrom(m_HostCommands);
+                    renderPlayers[playerId].FastCopyFrom(m_HostCommands);
                 }
                 else
                 {
@@ -79,7 +81,7 @@ namespace Swihoni.Sessions
         {
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
             // Inject our current player component before normal update cycle
-            hostPlayer.MergeSet(m_HostCommands);
+            hostPlayer.FastMergeSet(m_HostCommands);
             // Set up new player component data
             if (tickSession.Require<ServerStampComponent>().tick == 0u) SetupNewPlayer(tickSession, hostPlayer);
         }

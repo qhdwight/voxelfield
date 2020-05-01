@@ -138,7 +138,6 @@
             <e p="SceneCamera.cs" t="Include" />
             <e p="ServerBase.cs" t="Include" />
             <e p="SessionBase.cs" t="Include" />
-            <e p="SessionComponents.cs" t="Include" />
             <e p="SessionGameObjectLinker.cs" t="Include" />
             <e p="Swihoni.Session.asmdef" t="Include" />
           </e>

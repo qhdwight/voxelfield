@@ -157,8 +157,8 @@ MonoBehaviour:
   m_AirSpeedCap: 2
   m_RunSpeed: 8
   m_CrouchSpeed: 4
-  m_SprintSpeed: 11
-  m_WalkSpeed: 3
+  m_SprintMultiplier: 1.3
+  m_WalkMultiplier: 0.3
   m_MaxAirSpeed: 11
   m_Friction: 10
   m_FrictionCutoff: 0.1
@@ -709,7 +709,7 @@ PrefabInstance:
     - target: {fileID: 4381454792350094727, guid: 5b3f5c557898b324ba1ea53d0fae4c85,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4465750284982864829, guid: 5b3f5c557898b324ba1ea53d0fae4c85,
         type: 3}

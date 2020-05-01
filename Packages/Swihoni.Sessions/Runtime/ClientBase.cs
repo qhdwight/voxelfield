@@ -8,6 +8,7 @@ using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Swihoni.Sessions
 {
@@ -79,7 +80,7 @@ namespace Swihoni.Sessions
                     Container GetInHistory(int historyIndex) => m_PlayerPredictionHistory.Get(-historyIndex);
                     float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(settings.TickInterval);
                     RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
-                    renderPlayer.MergeSet(m_CommandHistory.Peek());
+                    renderPlayer.FastMergeSet(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                 }
                 else
@@ -98,15 +99,22 @@ namespace Swihoni.Sessions
         protected override void Tick(uint tick, float time, float duration)
         {
             base.Tick(tick, time, duration);
+            Profiler.BeginSample("Client Predict");
             if (GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
             {
                 UpdateInputs(localPlayerId);
                 Predict(tick, time, localPlayerId);
             }
-            Send();
-            Receive(time);
+            Profiler.EndSample();
 
+            Profiler.BeginSample("Client Send");
+            Send();
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Client Receive");
+            Receive(time);
             HandleTimeouts(time);
+            Profiler.EndSample();
         }
 
         private void HandleTimeouts(float time)
@@ -126,8 +134,8 @@ namespace Swihoni.Sessions
                                     commands = m_CommandHistory.ClaimNext();
             if (predictedPlayer.Has(out ClientStampComponent predictedStamp))
             {
-                predictedPlayer.CopyFrom(previousPredictedPlayer);
-                commands.CopyFrom(previousCommand);
+                predictedPlayer.FastCopyFrom(previousPredictedPlayer);
+                commands.FastCopyFrom(previousCommand);
 
                 predictedStamp.tick.Value = tick;
                 predictedStamp.time.Value = time;
@@ -141,8 +149,8 @@ namespace Swihoni.Sessions
 
                 // Inject trusted component
                 ClientCommandsContainer predictedCommands = m_CommandHistory.Peek();
-                predictedCommands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
-                predictedPlayer.MergeSet(predictedCommands);
+                predictedCommands.Require<ClientStampComponent>().FastCopyFrom(predictedStamp);
+                predictedPlayer.FastMergeSet(predictedCommands);
                 if (predictedStamp.duration.HasValue)
                     m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, predictedCommands, predictedStamp.duration);
 
@@ -172,7 +180,7 @@ namespace Swihoni.Sessions
                     {
                         switch (e1)
                         {
-                            // TODO: refactor use attribute instead
+                            // TODO:refactor use attribute instead
                             case CameraComponent _:
                                 return Navigation.Skip;
                             case PropertyBase p1 when e2 is PropertyBase p2 && !p1.Equals(p2):
@@ -186,15 +194,15 @@ namespace Swihoni.Sessions
                 }
                 /* Was not predicted properly */
                 // Place base from verified server
-                m_PlayerPredictionHistory.Get(-playerHistoryIndex).CopyFrom(serverPlayer);
+                m_PlayerPredictionHistory.Get(-playerHistoryIndex).FastCopyFrom(serverPlayer);
                 // Replay old commands up until most recent to get back on track
                 for (int commandHistoryIndex = playerHistoryIndex - 1; commandHistoryIndex >= 0; commandHistoryIndex--)
                 {
                     ClientCommandsContainer commands = m_CommandHistory.Get(-commandHistoryIndex);
                     Container predictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
                     ClientStampComponent stamp = predictedPlayer.Require<ClientStampComponent>().Clone(); // TODO: performance remove clone
-                    predictedPlayer.CopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
-                    predictedPlayer.Require<ClientStampComponent>().CopyFrom(stamp);
+                    predictedPlayer.FastCopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
+                    predictedPlayer.Require<ClientStampComponent>().FastCopyFrom(stamp);
                     m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, commands.Require<ClientStampComponent>().duration);
                 }
                 break;
@@ -210,10 +218,12 @@ namespace Swihoni.Sessions
                 {
                     case ServerSessionContainer receivedServerSession:
                     {
+                        Profiler.BeginSample("Client Receive Setup");
                         ServerSessionContainer previousServerSession = m_SessionHistory.Peek(),
                                                serverSession = m_SessionHistory.ClaimNext();
-                        serverSession.CopyFrom(previousServerSession);
-                        serverSession.MergeSet(receivedServerSession);
+                        serverSession.FastCopyFrom(previousServerSession);
+                        serverSession.FastMergeSet(receivedServerSession);
+                        Profiler.EndSample();
 
                         UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
                         if (previousServerTick.HasValue && serverSession.Require<ServerStampComponent>().tick <= previousServerTick)
@@ -221,14 +231,16 @@ namespace Swihoni.Sessions
                             Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
                             break;
                         }
-                        
+
+                        Profiler.BeginSample("Client Update Players");
                         var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
                         for (var playerId = 0; playerId < serverPlayers.Length; playerId++)
                         {
                             Container serverPlayer = serverPlayers[playerId];
                             var healthProperty = serverPlayer.Require<HealthProperty>();
                             if (!healthProperty.HasValue || healthProperty.IsDead) continue;
-                            
+                            /* We have been acknowledged by the server */
+
                             FloatProperty serverTime = serverPlayer.Require<ServerStampComponent>().time,
                                           localizedServerTime = serverPlayer.Require<LocalizedClientStampComponent>().time;
 
@@ -236,7 +248,7 @@ namespace Swihoni.Sessions
                                 localizedServerTime.Value += serverTime - previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().time;
                             else
                                 localizedServerTime.Value = time;
-                            
+
                             GetLocalPlayerId(serverSession, out int localPlayerId);
                             if (playerId != localPlayerId) m_Modifier[playerId].Synchronize(serverPlayer);
 
@@ -246,10 +258,13 @@ namespace Swihoni.Sessions
                                 localizedServerTime.Value = time;
                             }
                         }
+                        Profiler.EndSample();
 
                         // Debug.Log($"{receivedServerSession.Require<ServerStampComponent>().time} {trackedTime.Value}");
 
+                        Profiler.BeginSample("Client Check Prediction");
                         CheckPrediction(serverSession);
+                        Profiler.EndSample();
 
                         break;
                     }

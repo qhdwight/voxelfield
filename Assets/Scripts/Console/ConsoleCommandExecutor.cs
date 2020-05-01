@@ -14,7 +14,7 @@ namespace Console
         private static Dictionary<string, Action<string[]>> _commands;
 
         [RuntimeInitializeOnLoadMethod]
-        private static void RunOnStart()
+        private static void Initialize()
         {
             // Conform with https://docs.unity3d.com/Manual/DomainReloading.html
             _commands = new Dictionary<string, Action<string[]>>

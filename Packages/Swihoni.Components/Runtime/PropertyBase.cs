@@ -6,24 +6,39 @@ using UnityEngine;
 
 namespace Swihoni.Components
 {
+    [Flags]
+    public enum ElementFlags : byte
+    {
+        None,
+        HasValue,
+        DontSerialize
+    }
+
     [Serializable]
     public abstract class PropertyBase : ElementBase
     {
-        [SerializeField] private bool m_HasValue;
-        private bool m_DoSerialize = true;
+        [SerializeField] private ElementFlags m_Flags = ElementFlags.None;
 
         public FieldInfo Field { get; set; }
 
         public bool HasValue
         {
-            get => m_HasValue;
-            protected set => m_HasValue = value;
+            get => (m_Flags & ElementFlags.HasValue) != 0;
+            protected set
+            {
+                if (value) m_Flags |= ElementFlags.HasValue;
+                else m_Flags &= ~ElementFlags.HasValue;
+            }
         }
 
-        public bool DoSerialization
+        public bool DontSerialize
         {
-            get => m_DoSerialize;
-            set => m_DoSerialize = value;
+            get => (m_Flags & ElementFlags.DontSerialize) != 0;
+            protected set
+            {
+                if (value) m_Flags |= ElementFlags.DontSerialize;
+                else m_Flags &= ~ElementFlags.DontSerialize;
+            }
         }
 
         public abstract void Serialize(BinaryWriter writer);
@@ -145,7 +160,7 @@ namespace Swihoni.Components
 
         public sealed override void Serialize(BinaryWriter writer)
         {
-            if (!DoSerialization || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            if (DontSerialize || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
             writer.Write(HasValue);
             if (!HasValue) return;
             SerializeValue(writer);
@@ -153,7 +168,7 @@ namespace Swihoni.Components
 
         public sealed override void Deserialize(BinaryReader reader)
         {
-            if (!DoSerialization || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            if (DontSerialize || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
             HasValue = reader.ReadBoolean();
             if (!HasValue) return;
             DeserializeValue(reader);
