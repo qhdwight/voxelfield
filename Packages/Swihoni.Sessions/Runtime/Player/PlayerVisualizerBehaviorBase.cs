@@ -20,7 +20,7 @@ namespace Swihoni.Sessions.Player
             m_ItemAnimator.Setup();
         }
 
-        public void Evaluate(int playerId, Container player)
+        public virtual void Evaluate(int playerId, Container player)
         {
             PlayerId = playerId;
             if (m_BodyAnimator) m_BodyAnimator.Render(player, false);

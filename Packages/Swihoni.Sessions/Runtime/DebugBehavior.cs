@@ -8,6 +8,8 @@ namespace Swihoni.Sessions
     {
         public FloatProperty RollbackOverride;
 
+        public FloatProperty HitboxRollbackOverride;
+
         public Container Predicted;
 
         public SessionSettingsComponent Settings;

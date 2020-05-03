@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions
@@ -26,9 +27,7 @@ namespace Swihoni.Sessions
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Reset();
 
-            m_RenderSession = new Container(sessionElements);
-            if (m_RenderSession.Has(out PlayerContainerArrayProperty players))
-                players.SetAll(() => new Container(playerElements));
+            m_RenderSession = MakeSession<Container>(sessionElements, playerElements);
         }
 
         private void ReadLocalInputs(Container commandsToFill) => m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill);
@@ -39,6 +38,7 @@ namespace Swihoni.Sessions
                 return;
 
             ReadLocalInputs(m_HostCommands);
+            // m_HostCommands.Require<InventoryComponent>().Zero();
             m_Modifier[HostPlayerId].ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
             m_Modifier[HostPlayerId].ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
             GetMode().Modify(m_HostCommands, m_HostCommands, delta);
@@ -67,6 +67,7 @@ namespace Swihoni.Sessions
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
                     SessionSettingsComponent settings = GetSettings();
+                    if (!settings.tickRate.HasValue) break;
                     float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(settings.TickInterval) * 3;
 
                     RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, renderPlayers[playerId],
@@ -86,6 +87,18 @@ namespace Swihoni.Sessions
             if (tickSession.Require<ServerStampComponent>().tick == 0u) SetupNewPlayer(tickSession, hostPlayer);
         }
 
+        protected override void RollbackHitboxes(int playerId)
+        {
+            if (playerId == HostPlayerId)
+            {
+                for (var i = 0; i < m_Modifier.Length; i++)
+                    m_Modifier[i].EvaluateHitboxes(i, m_SessionHistory.Peek().GetPlayer(i));
+            }
+            else
+                base.RollbackHitboxes(playerId);
+        }
+
+        // TODO:refactor bad
         public override Container GetPlayerFromId(int playerId) => playerId == HostPlayerId ? m_HostCommands : base.GetPlayerFromId(playerId);
 
         public override Ray GetRayForPlayerId(int playerId) => playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);

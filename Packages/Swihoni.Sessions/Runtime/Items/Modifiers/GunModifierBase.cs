@@ -86,7 +86,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 var hitbox = hit.collider.GetComponent<PlayerHitbox>();
                 if (!hitbox || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
                 m_HitPlayers.Add(hitbox.Manager);
-                Debug.Log($"Player: {playerId} hit player: {hitbox.Manager.PlayerId}");
+                // Debug.Log($"Player: {playerId} hit player: {hitbox.Manager.PlayerId}");
                 mode.PlayerHit(session, playerId, hitbox, this, hit, duration);
             }
             m_HitPlayers.Clear();
@@ -96,12 +96,6 @@ namespace Swihoni.Sessions.Items.Modifiers
         {
             if (itemComponent.status.id == GunStatusId.Reloading)
                 StartStatus(session, playerId, itemComponent, ItemStatusId.Idle, duration);
-        }
-
-        public void RefillAmmoAndReserve(ItemComponent itemComponents)
-        {
-            itemComponents.gunStatus.ammoInMag.Value = m_MagSize;
-            itemComponents.gunStatus.ammoInReserve.Value = m_StartingAmmoInReserve;
         }
 
         protected abstract void ReloadAmmo(ItemComponent itemComponents);

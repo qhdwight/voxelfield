@@ -46,10 +46,10 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void Render(Container player, bool isLocalPlayer)
         {
-            if (!player.Has(out InventoryComponent inventory)) return;
+            if (player.Without(out InventoryComponent inventory)) return;
 
-            bool isVisible = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
-
+            bool isVisible = (player.Without(out HealthProperty health) || health.HasValue && health.IsAlive) && inventory.HasItemEquipped;
+            
             if (isVisible)
             {
                 m_ItemVisual = SetupVisualItem(inventory);
@@ -99,14 +99,10 @@ namespace Swihoni.Sessions.Player.Visualization
                     ItemManager.ReturnVisuals(m_ItemVisual);
                     m_ItemVisual = null;
                 }
-                if (m_FpvArmsRenderer)
-                    m_FpvArmsRenderer.enabled = false;
+                if (m_FpvArmsRenderer) m_FpvArmsRenderer.enabled = false;
             }
             m_Animator.enabled = isVisible;
             ArmIk.enabled = isVisible;
-
-            if (UnityEngine.Input.GetKeyDown(KeyCode.I))
-                m_Animator.Rebind();
         }
 
         /// <summary>

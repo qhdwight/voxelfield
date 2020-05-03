@@ -8,7 +8,7 @@ namespace Swihoni.Components
     public enum Navigation
     {
         Continue,
-        Skip, // Skip all children of current node
+        SkipDescendends, // Skip all children of current node
         Exit  // Exit entire tree immediately
     }
 
@@ -100,7 +100,7 @@ namespace Swihoni.Components
                 Navigation navigation = visit(_zip);
                 if (navigation == Navigation.Exit)
                     exitAll = true;
-                if (exitAll || navigation == Navigation.Skip)
+                if (exitAll || navigation == Navigation.SkipDescendends)
                     return;
                 switch (_zip[0])
                 {

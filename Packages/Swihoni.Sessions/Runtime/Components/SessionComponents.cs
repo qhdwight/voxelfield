@@ -26,7 +26,14 @@ namespace Swihoni.Sessions.Components
 
     public class OnlyServerTrusted : Attribute
     {
-        
+    }
+
+    public class ClientTrusted : Attribute
+    {
+    }
+
+    public class ClientChecked : Attribute
+    {
     }
 
     /* Server */
@@ -111,5 +118,12 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class LocalPlayerProperty : ByteProperty
     {
+    }
+
+    [Serializable]
+    public class DebugClientView : Container
+    {
+        public DebugClientView() { }
+        public DebugClientView(IEnumerable<Type> types) : base(types) { }
     }
 }

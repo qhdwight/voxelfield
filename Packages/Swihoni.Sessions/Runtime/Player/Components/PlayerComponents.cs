@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Components
 {
-    [Serializable]
+    [Serializable, ClientTrusted]
     public class CameraComponent : ComponentBase
     {
         [Angle] public FloatProperty yaw;
@@ -18,7 +18,7 @@ namespace Swihoni.Sessions.Player.Components
         public override string ToString() => $"Yaw: {yaw}, Pitch: {pitch}";
     }
 
-    [Serializable]
+    [Serializable, ClientChecked]
     public class MoveComponent : ComponentBase
     {
         private static PlayerMovement _prefabMovement = SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab().GetComponent<PlayerMovement>();
@@ -48,6 +48,7 @@ namespace Swihoni.Sessions.Player.Components
     [Serializable, OnlyServerTrusted]
     public class RespawnTimerProperty : FloatProperty
     {
+        public override string ToString() => $"Respawn timer: {base.ToString()}";
     }
 
     [Serializable, OnlyServerTrusted]
@@ -116,7 +117,7 @@ namespace Swihoni.Sessions.Player.Components
         }
     }
 
-    [Serializable]
+    [Serializable, ClientChecked]
     public class InventoryComponent : ComponentBase
     {
         public ByteProperty equippedIndex;
@@ -141,7 +142,7 @@ namespace Swihoni.Sessions.Player.Components
                 adsStatus.InterpolateFrom(i1.adsStatus, i2.adsStatus, interpolation, aimStatusId => gunModifier.GetAdsStatusModifierProperties(aimStatusId).duration);
             equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation, equipStatusId => modifier.GetEquipStatusModifierProperties(equipStatusId).duration);
             equippedIndex = i1.equippedIndex;
-            // TODO: handle when id of equipped weapon changes
+            // TODO:bug handle when id of equipped weapon changes
             EquippedItemComponent.InterpolateFrom(i1.EquippedItemComponent, i2.EquippedItemComponent, interpolation);
         }
     }

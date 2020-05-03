@@ -6,8 +6,8 @@ using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Modes;
+using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -31,6 +31,7 @@ namespace Swihoni.Sessions
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Loopback, 7777));
             m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_EmptyClientCommands);
             m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
+            m_Socket.RegisterMessage(typeof(DebugClientView), m_EmptyDebugClientView);
         }
 
         protected virtual void PreTick(Container tickSession) { }
@@ -105,7 +106,7 @@ namespace Swihoni.Sessions
 
                                     if (Mathf.Abs(serverPlayerTime.Value - serverTime) > GetSettings(serverSession).TickInterval * 3)
                                     {
-                                        Debug.LogWarning($"[{GetType().Name}] Reset time for client: {clientId}");
+                                        // Debug.LogWarning($"[{GetType().Name}] Reset time for client: {clientId}");
                                         serverPlayerTime.Value = serverTime;
                                     }
 
@@ -120,6 +121,11 @@ namespace Swihoni.Sessions
                         }
                         else
                             serverPlayerTime.Value = serverTime;
+                        break;
+                    }
+                    case DebugClientView receivedDebugClientView:
+                    {
+                        PlayerVisualizerBehavior.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
                         break;
                     }
                 }
@@ -166,16 +172,30 @@ namespace Swihoni.Sessions
             player.Require<ServerStampComponent>().Reset();
         }
 
-        public override Ray GetRayForPlayerId(int playerId) { return GetRayForPlayer(m_SessionHistory.Peek().GetPlayer(playerId)); }
+        public override Ray GetRayForPlayerId(int playerId)
+        {
+            return GetRayForPlayer(m_SessionHistory.Peek().GetPlayer(playerId));
+        }
 
-        public override void AboutToRaycast(int playerId)
+        protected override void RollbackHitboxes(int playerId)
         {
             for (var i = 0; i < m_Modifier.Length; i++)
             {
-                PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
-                modifier.EvaluateHitboxes(i, m_SessionHistory.Peek().GetPlayer(i));
+                int j = i;
+                Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(j);
+
+                Container rollbackPlayer = m_RollbackSession.GetPlayer(i);
+
+                FloatProperty time = GetPlayerInHistory(0).Require<ServerStampComponent>().time;
+                if (!time.HasValue) continue;
+                
+                float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetSettings().TickInterval) * DebugBehavior.Singleton.HitboxRollbackOverride;
+                RenderInterpolatedPlayer<ServerStampComponent>(time - rollback, rollbackPlayer,
+                                                               m_SessionHistory.Size, GetPlayerInHistory);
+
+                m_Modifier[i].EvaluateHitboxes(i, rollbackPlayer);
+                if (i == 0) PlayerVisualizerBehavior.Render(this, i, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
-            base.AboutToRaycast(playerId);
         }
 
         public override void Dispose()

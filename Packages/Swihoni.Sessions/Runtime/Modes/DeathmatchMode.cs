@@ -14,7 +14,10 @@ namespace Swihoni.Sessions.Modes
         {
             // TODO:refactor zeroing
             if (player.Has(out MoveComponent move))
+            {
                 move.Zero();
+                move.position.Value = new Vector3 {x = 20.0f};
+            }
             if (player.Has(out CameraComponent camera))
                 camera.Zero();
             if (player.Has(out HealthProperty health))
@@ -37,8 +40,6 @@ namespace Swihoni.Sessions.Modes
 
             if (player.Has(out RespawnTimerProperty respawnTimer))
                 respawnTimer.Value = 2.0f;
-            if (player.Has(out StatsComponent stats))
-                stats.deaths.Value++;
         }
 
         internal override void Modify(Container playerToModify, Container commands, float duration)

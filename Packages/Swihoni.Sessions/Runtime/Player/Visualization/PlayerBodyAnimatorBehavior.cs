@@ -140,7 +140,7 @@ namespace Swihoni.Sessions.Player.Visualization
                     float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed);
                     for (var i = 0; i < 3; i++)
                     {
-                        // TODO:refactor
+                        // TODO:refactor confusing
                         m_Mixer.SetInputWeight(baseIndex + i, i == idleOffset
                                                    ? (1.0f - normalizedSpeed) * weight
                                                    : i == moveOffset
@@ -167,13 +167,13 @@ namespace Swihoni.Sessions.Player.Visualization
             m_Graph.Evaluate();
         }
 
+        // TODO:refactor magic numbers
         private void Footsteps(MoveComponent move)
         {
             float normalizedSpeed = Mathf.Clamp01(VectorMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed);
 
             if (normalizedSpeed > 0.5f)
             {
-                // TODO:refactor magic numbers
                 if (move.normalizedMove > 0.25f && m_LastNormalizedTime <= 0.25f || move.normalizedMove > 0.75f && m_LastNormalizedTime <= 0.75f)
                 {
                     int count = Physics.RaycastNonAlloc(m_FootstepSource.transform.position + new Vector3 {y = 0.5f}, Vector3.down, m_CachedHits,

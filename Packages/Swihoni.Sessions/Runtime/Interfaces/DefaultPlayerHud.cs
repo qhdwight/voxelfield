@@ -35,6 +35,7 @@ namespace Swihoni.Sessions.Interfaces
                 if (localPlayer.Has<HealthProperty>())
                     m_HealthText.Set(builder => builder.Append("Health: ").Append(health.Value));
                 if (localPlayer.Has(out InventoryComponent inventory) && inventory.HasItemEquipped)
+                {
                     m_AmmoText.Set(builder =>
                     {
                         ItemComponent equippedItem = inventory.EquippedItemComponent;
@@ -48,6 +49,10 @@ namespace Swihoni.Sessions.Interfaces
                                .Append(" x")
                                .Append(equippedItem.gunStatus.ammoInReserve);
                     });
+                    Color crosshairColor = m_Crosshair.color;
+                    crosshairColor.a = inventory.adsStatus.id == AdsStatusId.Ads ? 0.0f : 1.0f;
+                    m_Crosshair.color = crosshairColor;
+                }
                 if (localPlayer.Has(out HitMarkerComponent hitMarker))
                 {
                     bool isHitMarkerVisible = hitMarker.elapsed > 0.0f;

@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -27,21 +29,15 @@ namespace Swihoni.Sessions
             : base(linker, sessionElements, playerElements, commandElements)
         {
             IpEndPoint = ipEndPoint;
-            m_RenderSession = new Container(sessionElements);
-            if (m_RenderSession.Has(out PlayerContainerArrayProperty players))
-                players.SetAll(() => new Container(playerElements));
+            m_RenderSession = MakeSession<Container>(sessionElements, playerElements);
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
             // TODO:refactor zeroing
-            m_CommandHistory.Peek().Require<CameraComponent>().Zero();
-            m_PlayerPredictionHistory = new CyclicArray<Container>(250, () =>
-            {
-                IEnumerable<Type> predictedElements = playerElements.Append(typeof(ClientStampComponent));
-                return new Container(predictedElements);
-            });
-            // TODO:refactor zeroing
+            ZeroCommand(m_CommandHistory.Peek());
+            m_PlayerPredictionHistory = new CyclicArray<Container>(250, () => new Container(playerElements.Append(typeof(ClientStampComponent))));
             m_PlayerPredictionHistory.Peek().Zero();
             m_PlayerPredictionHistory.Peek().Require<ClientStampComponent>().Reset();
+
             ForEachPlayer(player => player.Add(typeof(LocalizedClientStampComponent)));
         }
 
@@ -51,6 +47,7 @@ namespace Swihoni.Sessions
             m_Socket = new ComponentClientSocket(IpEndPoint);
             m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_EmptyClientCommands);
             m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
+            m_Socket.RegisterMessage(typeof(DebugClientView), m_EmptyDebugClientView);
         }
 
         private void UpdateInputs(int localPlayerId) => m_Modifier[localPlayerId].ModifyCommands(this, m_CommandHistory.Peek());
@@ -98,7 +95,10 @@ namespace Swihoni.Sessions
 
         protected override void Tick(uint tick, float time, float duration)
         {
+            GetSettings().tickRate.IfPresent(tickRate => Time.fixedDeltaTime = 1.0f / tickRate);
+
             base.Tick(tick, time, duration);
+
             Profiler.BeginSample("Client Predict");
             if (GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
             {
@@ -127,7 +127,6 @@ namespace Swihoni.Sessions
 
         private void Predict(uint tick, float time, int localPlayerId)
         {
-            // TODO: refactor into common logic of claiming and resetting
             Container previousPredictedPlayer = m_PlayerPredictionHistory.Peek(),
                       predictedPlayer = m_PlayerPredictionHistory.ClaimNext();
             ClientCommandsContainer previousCommand = m_CommandHistory.Peek(),
@@ -153,8 +152,6 @@ namespace Swihoni.Sessions
                 predictedPlayer.FastMergeSet(predictedCommands);
                 if (predictedStamp.duration.HasValue)
                     m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, predictedCommands, predictedStamp.duration);
-
-                DebugBehavior.Singleton.Predicted = predictedPlayer;
             }
         }
 
@@ -172,38 +169,43 @@ namespace Swihoni.Sessions
                 return;
             for (var playerHistoryIndex = 0; playerHistoryIndex < m_PlayerPredictionHistory.Size; playerHistoryIndex++)
             {
+                Container predictedPlayer = m_PlayerPredictionHistory.Get(-playerHistoryIndex);
+                if (predictedPlayer.Require<ClientStampComponent>().tick != targetTick) continue;
+                /* We are checking predicted */
+                var areEqual = true;
+                Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
+                ElementExtensions.NavigateZipped((predictedElement, latestPredictedElement, serverElement) =>
                 {
-                    Container predictedPlayer = m_PlayerPredictionHistory.Get(-playerHistoryIndex);
-                    if (predictedPlayer.Require<ClientStampComponent>().tick != targetTick) continue;
-                    var areEqual = true;
-                    ElementExtensions.NavigateZipped((e1, e2) =>
+                    Type type = predictedElement.GetType();
+                    if (type.IsDefined(typeof(OnlyServerTrusted)))
                     {
-                        switch (e1)
-                        {
-                            // TODO:refactor use attribute instead
-                            case CameraComponent _:
-                                return Navigation.Skip;
-                            case PropertyBase p1 when e2 is PropertyBase p2 && !p1.Equals(p2):
-                                areEqual = false;
-                                Debug.LogWarning($"Prediction error with {p1.GetType().Name} with predicted: {p1} and verified: {p2}");
-                                return Navigation.Exit;
-                        }
-                        return Navigation.Continue;
-                    }, predictedPlayer, serverPlayer);
-                    if (areEqual) continue;
-                }
-                /* Was not predicted properly */
+                        latestPredictedElement.FastMergeSet(serverElement);
+                        return Navigation.SkipDescendends;
+                    }
+                    if (type.IsDefined(typeof(ClientTrusted)))
+                        return Navigation.SkipDescendends;
+                    switch (predictedElement)
+                    {
+                        case PropertyBase p1 when serverElement is PropertyBase p2 && !p1.Equals(p2):
+                            areEqual = false;
+                            Debug.LogWarning($"Prediction error with {p1.GetType().Name} with predicted: {p1} and verified: {p2}");
+                            return Navigation.Exit;
+                    }
+                    return Navigation.Continue;
+                }, predictedPlayer, latestPredictedPlayer, serverPlayer);
+                if (areEqual) break;
+                /* We did not predict properly */
                 // Place base from verified server
-                m_PlayerPredictionHistory.Get(-playerHistoryIndex).FastCopyFrom(serverPlayer);
+                predictedPlayer.FastCopyFrom(serverPlayer);
                 // Replay old commands up until most recent to get back on track
                 for (int commandHistoryIndex = playerHistoryIndex - 1; commandHistoryIndex >= 0; commandHistoryIndex--)
                 {
                     ClientCommandsContainer commands = m_CommandHistory.Get(-commandHistoryIndex);
-                    Container predictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
-                    ClientStampComponent stamp = predictedPlayer.Require<ClientStampComponent>().Clone(); // TODO: performance remove clone
-                    predictedPlayer.FastCopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
-                    predictedPlayer.Require<ClientStampComponent>().FastCopyFrom(stamp);
-                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, commands.Require<ClientStampComponent>().duration);
+                    Container pastPredictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
+                    ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
+                    pastPredictedPlayer.FastCopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
+                    pastPredictedPlayer.Require<ClientStampComponent>().FastCopyFrom(stamp);
+                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().duration);
                 }
                 break;
             }
@@ -254,7 +256,7 @@ namespace Swihoni.Sessions
 
                             if (Mathf.Abs(localizedServerTime.Value - time) > GetSettings(serverSession).TickInterval * 3)
                             {
-                                Debug.LogWarning($"[{GetType().Name}] Client reset");
+                                // Debug.LogWarning($"[{GetType().Name}] Client reset");
                                 localizedServerTime.Value = time;
                             }
                         }
@@ -285,7 +287,32 @@ namespace Swihoni.Sessions
 
         public override Ray GetRayForPlayerId(int playerId) => GetRayForPlayer(m_PlayerPredictionHistory.Peek());
 
-        public override void AboutToRaycast(int playerId) { }
+        protected override void RollbackHitboxes(int playerId)
+        {
+            for (var i = 0; i < m_Modifier.Length; i++)
+            {
+                // int copiedPlayerId = i;
+                // Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(copiedPlayerId);
+                //
+                // Container render = m_RenderSession.GetPlayer(i).Clone();
+                //
+                // float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetSettings().TickInterval) * 3;
+                // RenderInterpolatedPlayer<LocalizedClientStampComponent>(Time.realtimeSinceStartup - rollback, render, m_SessionHistory.Size, GetInHistory);
+                //
+                // PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
+                // modifier.EvaluateHitboxes(i, render);
+
+                if (i == 0 && m_Visuals[i] is PlayerVisualsDispatcherBehavior visuals && visuals.DebugRecentRender != null)
+                    SendDebug(visuals.DebugRecentRender);
+            }
+        }
+
+        public void SendDebug(Container player)
+        {
+            var debug = new DebugClientView(player.ElementTypes);
+            debug.FastCopyFrom(player);
+            m_Socket.SendToServer(debug);
+        }
 
         public override void Dispose()
         {

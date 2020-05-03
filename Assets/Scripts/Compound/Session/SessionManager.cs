@@ -19,6 +19,7 @@ namespace Compound.Session
             Application.targetFrameRate = 200;
             AudioListener.volume = 0.5f;
             ConsoleCommandExecutor.RegisterCommand("host", args => StartHost());
+            ConsoleCommandExecutor.RegisterCommand("serve", args => StartServer());
             ConsoleCommandExecutor.RegisterCommand("connect", args =>
             {
                 Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
@@ -30,6 +31,23 @@ namespace Compound.Session
         public Host StartHost()
         {
             var host = new Host(m_Linker);
+            try
+            {
+                host.Start();
+                m_Host = host;
+                return host;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception);
+                host.Disconnect();
+                return null;
+            }
+        }
+        
+        public Server StartServer()
+        {
+            var host = new Server(m_Linker);
             try
             {
                 host.Start();
@@ -81,19 +99,19 @@ namespace Compound.Session
                 Debug.LogError(exception);
                 DisconnectAll();
             }
-
-            if (Input.GetKeyDown(KeyCode.H))
-                StartHost();
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
-                if (Application.isEditor) client.ShouldRender = false;
-            }
-            if (Input.GetKeyDown(KeyCode.K))
-            {
-                m_Client?.Disconnect();
-                m_Client = null;
-            }
+            
+            // if (Input.GetKeyDown(KeyCode.H))
+            //     StartHost();
+            // if (Input.GetKeyDown(KeyCode.J))
+            // {
+            //     Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
+            //     if (Application.isEditor) client.ShouldRender = false;
+            // }
+            // if (Input.GetKeyDown(KeyCode.K))
+            // {
+            //     m_Client?.Disconnect();
+            //     m_Client = null;
+            // }
         }
 
         private void FixedUpdate()

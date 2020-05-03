@@ -1,8 +1,11 @@
+using Swihoni.Components;
+
 namespace Swihoni.Sessions.Player
 {
     public class PlayerHitboxManager : PlayerVisualizerBase
     {
         private PlayerHitbox[] m_PlayerHitboxes;
+        public Container CurrentPlayer { get; private set; }
 
         internal override void Setup(SessionBase session)
         {
@@ -10,6 +13,12 @@ namespace Swihoni.Sessions.Player
             m_PlayerHitboxes = GetComponentsInChildren<PlayerHitbox>();
             foreach (PlayerHitbox hitbox in m_PlayerHitboxes)
                 hitbox.Setup(this);
+        }
+
+        public override void Evaluate(int playerId, Container player)
+        {
+            CurrentPlayer = player;
+            base.Evaluate(playerId, player);
         }
     }
 }

@@ -17,13 +17,19 @@ namespace Swihoni.Sessions.Modes
         internal virtual void KillPlayer(Container player)
         {
             if (player.Has(out HealthProperty health)) health.Value = 0;
+            if (player.Has(out StatsComponent stats)) stats.deaths.Value++;
         }
 
         internal virtual void Modify(Container playerToModify, Container commands, float duration)
         {
-            if (playerToModify.Without(out HitMarkerComponent hitMarker)) return;
-
-            if (hitMarker.elapsed.Value > 0.0f) hitMarker.elapsed.Value -= duration;
+            if (playerToModify.Has(out HitMarkerComponent hitMarker))
+            {
+                if (hitMarker.elapsed.Value > 0.0f) hitMarker.elapsed.Value -= duration;
+            }
+            if (playerToModify.Has(out HealthProperty health) && health.IsAlive && playerToModify.Has(out MoveComponent move) && move.position.Value.y < -5.0f)
+            {
+                KillPlayer(playerToModify);
+            }
         }
 
         public void ModifyChecked(ModeBase mode, Container containerToModify, Container commands, float duration) { }
