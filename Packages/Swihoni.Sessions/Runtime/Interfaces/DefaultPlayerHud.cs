@@ -12,7 +12,7 @@ namespace Swihoni.Sessions.Interfaces
     public abstract class DefaultPlayerHud : InterfaceBehaviorBase
     {
         [SerializeField] private BufferedTextGui m_HealthText = default, m_AmmoText = default;
-        [SerializeField] private Image m_Crosshair, m_HitMarker;
+        [SerializeField] private Image m_Crosshair = default, m_HitMarker = default;
         [SerializeField] private Color m_KillHitMarkerColor = Color.red;
         private Color m_DefaultHitMarkerColor;
 

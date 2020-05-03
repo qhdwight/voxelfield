@@ -21,7 +21,7 @@ namespace Swihoni.Components
 
     public abstract class ComponentBase : ElementBase
     {
-        private List<ElementBase> m_Elements;
+        protected List<ElementBase> m_Elements;
 
         public IReadOnlyList<ElementBase> Elements
         {

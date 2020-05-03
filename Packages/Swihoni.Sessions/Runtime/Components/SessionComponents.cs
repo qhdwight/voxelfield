@@ -5,6 +5,8 @@ using Swihoni.Sessions.Player.Components;
 
 namespace Swihoni.Sessions.Components
 {
+    using ServerOnly = NoSerialization;
+
     public static class StandardComponents
     {
         public static readonly IReadOnlyCollection<Type> StandardSessionElements = new List<Type>
@@ -50,9 +52,18 @@ namespace Swihoni.Sessions.Components
     {
     }
 
-    [Serializable]
+    [Serializable, ServerOnly]
     public class ServerTag : ComponentBase
     {
+    }
+
+    [Serializable, ServerOnly]
+    public class ServerPingComponent : ComponentBase
+    {
+        public UIntProperty tick;
+        public FloatProperty rtt, // Last measured round trip time in seconds
+                             checkElapsed, // Time elapsed since initiating check
+                             initiateTime; // Time when check was last sent to client
     }
 
     /* Client */

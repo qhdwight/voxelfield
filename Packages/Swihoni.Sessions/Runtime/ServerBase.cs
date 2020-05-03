@@ -16,22 +16,20 @@ namespace Swihoni.Sessions
     public abstract class ServerBase : NetworkedSessionBase
     {
         private ComponentServerSocket m_Socket;
-        protected readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
+        private readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
 
         protected ServerBase(ISessionGameObjectLinker linker,
                              IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
             : base(linker, sessionElements, playerElements, commandElements)
         {
-            ForEachPlayer(player => player.Add(typeof(ServerTag)));
+            ForEachPlayer(player => player.Add(typeof(ServerTag), typeof(ServerPingComponent)));
         }
 
         public override void Start()
         {
             base.Start();
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Loopback, 7777));
-            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_EmptyClientCommands);
-            m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
-            m_Socket.RegisterMessage(typeof(DebugClientView), m_EmptyDebugClientView);
+            RegisterMessages(m_Socket);
         }
 
         protected virtual void PreTick(Container tickSession) { }
@@ -58,43 +56,67 @@ namespace Swihoni.Sessions
 
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
-            Tick(serverSession);
+            Tick(serverSession, time);
             PostTick(serverSession);
-            HandleTimeouts(time, serverSession);
+            IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
         }
 
-        private void HandleTimeouts(float time, Container serverSession)
+        private void IterateClients(uint tick, float time, float duration, Container serverSession)
         {
             var players = serverSession.Require<PlayerContainerArrayProperty>();
-            for (byte playerId = 1; playerId < players.Length; playerId++)
+            foreach ((IPEndPoint _, byte playerId) in m_PlayerIds)
             {
                 Container player = players[playerId];
-                FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
-                if (!serverPlayerTime.HasValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) continue;
-                Debug.LogWarning($"Dropping player with id: {playerId}");
-                m_PlayerIds.Remove(playerId);
-                player.Reset();
+                HandleTimeout(time, playerId, player);
+                CheckClientPing(player, tick, time, playerId, duration);
             }
         }
 
-        private void Tick(Container serverSession)
+        private void CheckClientPing(Container player, uint tick, float time, byte playerId, float duration)
+        {
+            const float checkTime = 1.0f;
+
+            var ping = player.Require<ServerPingComponent>();
+            if (ping.initiateTime.WithoutValue) return;
+
+            ping.tick.Value = tick;
+            ping.initiateTime.Value = time;
+            ping.checkElapsed.Value += duration;
+            while (ping.checkElapsed > checkTime)
+            {
+                var check = new PingCheckComponent {tick = new UIntProperty(tick)};
+                m_Socket.Send(check, m_PlayerIds.GetReverse(playerId));
+                ping.checkElapsed.Value -= checkTime;
+            }
+        }
+
+        private void HandleTimeout(float time, byte playerId, Container player)
+        {
+            FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
+            if (serverPlayerTime.WithoutValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) return;
+            Debug.LogWarning($"Dropping player with id: {playerId}");
+            m_PlayerIds.Remove(playerId);
+            player.Reset();
+        }
+
+        private void Tick(Container serverSession, float time)
         {
             m_Socket.PollReceived((ipEndPoint, message) =>
             {
                 (byte clientId, Container serverPlayer) = GetPlayerForEndpoint(serverSession, ipEndPoint);
                 switch (message)
                 {
-                    case ClientCommandsContainer clientCommands:
+                    case ClientCommandsContainer receivedClientCommands:
                     {
                         FloatProperty serverPlayerTime = serverPlayer.Require<ServerStampComponent>().time;
-                        var clientStamp = clientCommands.Require<ClientStampComponent>();
+                        var clientStamp = receivedClientCommands.Require<ClientStampComponent>();
                         float serverTime = serverSession.Require<ServerStampComponent>().time;
                         var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
                         // Clients start to tag with ticks once they receive their first server player state
                         if (clientStamp.tick.HasValue)
                         {
-                            if (!serverPlayerClientStamp.tick.HasValue)
+                            if (serverPlayerClientStamp.tick.WithoutValue)
                                 // Take one tick to set initial server player client stamp
                                 serverPlayerClientStamp.FastMergeSet(clientStamp);
                             else
@@ -111,9 +133,9 @@ namespace Swihoni.Sessions
                                     }
 
                                     ModeBase mode = GetMode(serverSession);
-                                    serverPlayer.FastMergeSet(clientCommands); // Merge in trusted
-                                    m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, clientCommands, clientStamp.duration);
-                                    mode.Modify(serverPlayer, clientCommands, clientStamp.duration);
+                                    serverPlayer.FastMergeSet(receivedClientCommands); // Merge in trusted
+                                    m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.duration);
+                                    mode.Modify(serverPlayer, receivedClientCommands, clientStamp.duration);
                                 }
                                 else
                                     Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
@@ -121,6 +143,18 @@ namespace Swihoni.Sessions
                         }
                         else
                             serverPlayerTime.Value = serverTime;
+                        break;
+                    }
+                    case PingCheckComponent receivedPingCheck:
+                    {
+                        var ping = serverPlayer.Require<ServerPingComponent>();
+                        if (receivedPingCheck.tick.HasValue && ping.tick == receivedPingCheck.tick)
+                        {
+                            float roundTripElapsed = time - ping.initiateTime;
+                            ping.rtt.Value = roundTripElapsed;
+                            if (serverPlayer.Has(out StatsComponent stats))
+                                stats.ping.Value = (ushort) Mathf.Round(roundTripElapsed / 2.0f * 1000.0f);
+                        }
                         break;
                     }
                     case DebugClientView receivedDebugClientView:
@@ -166,19 +200,17 @@ namespace Swihoni.Sessions
         {
             GetMode(session).ResetPlayer(player);
             // TODO:refactor zeroing
-            if (player.Has(out StatsComponent stats))
-                stats.Zero();
+            if (player.Has(out StatsComponent stats)) stats.Zero();
+            player.Require<ServerPingComponent>().Zero();
             player.Require<ClientStampComponent>().Reset();
             player.Require<ServerStampComponent>().Reset();
         }
 
-        public override Ray GetRayForPlayerId(int playerId)
-        {
-            return GetRayForPlayer(m_SessionHistory.Peek().GetPlayer(playerId));
-        }
+        public override Ray GetRayForPlayerId(int playerId) { return GetRayForPlayer(m_SessionHistory.Peek().GetPlayer(playerId)); }
 
         protected override void RollbackHitboxes(int playerId)
         {
+            float rtt = GetPlayerFromId(playerId).Require<ServerPingComponent>().rtt;
             for (var i = 0; i < m_Modifier.Length; i++)
             {
                 int j = i;
@@ -187,9 +219,10 @@ namespace Swihoni.Sessions
                 Container rollbackPlayer = m_RollbackSession.GetPlayer(i);
 
                 FloatProperty time = GetPlayerInHistory(0).Require<ServerStampComponent>().time;
-                if (!time.HasValue) continue;
-                
-                float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetSettings().TickInterval) * DebugBehavior.Singleton.HitboxRollbackOverride;
+                if (time.WithoutValue) continue;
+
+                /* See: https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking */
+                float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetSettings().TickInterval) * 3.6f + rtt;
                 RenderInterpolatedPlayer<ServerStampComponent>(time - rollback, rollbackPlayer,
                                                                m_SessionHistory.Size, GetPlayerInHistory);
 

@@ -146,8 +146,12 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (itemId == ItemId.None) return;
             itemComponent.status.id.Value = ItemStatusId.Idle;
             itemComponent.status.elapsed.Value = 0.0f;
-            itemComponent.gunStatus.ammoInMag.Value = 30;
-            itemComponent.gunStatus.ammoInReserve.Value = 240;
+            ItemModifierBase itemModifier = ItemManager.GetModifier(itemId);
+            if (itemModifier is GunModifierBase gunModifier)
+            {
+                itemComponent.gunStatus.ammoInMag.Value = gunModifier.MagSize;
+                itemComponent.gunStatus.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
+            }
             inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
             inventory.equipStatus.elapsed.Value = 0.0f;
             if (inventory.HasItemEquipped && inventory.equippedIndex != index) return;

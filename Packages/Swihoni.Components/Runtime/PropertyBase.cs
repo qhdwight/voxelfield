@@ -31,6 +31,8 @@ namespace Swihoni.Components
             }
         }
 
+        public bool WithoutValue => !HasValue;
+
         public bool DontSerialize
         {
             get => (m_Flags & ElementFlags.DontSerialize) != 0;

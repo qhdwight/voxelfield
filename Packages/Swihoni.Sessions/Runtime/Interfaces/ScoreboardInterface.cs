@@ -29,7 +29,7 @@ namespace Swihoni.Sessions.Interfaces
 
         public void SortEntries(PlayerContainerArrayProperty players)
         {
-            var max = 0;
+            var max = int.MinValue;
             for (var i = 0; i < players.Length; i++)
             {
                 Container player = players[i];

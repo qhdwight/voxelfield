@@ -20,8 +20,10 @@ namespace Swihoni.Sessions.Player.Visualization
         private AudioListener m_AudioListener;
         private Camera m_Camera;
         private PlayerVisualsBehaviorBase[] m_Visuals;
-        
-        public Container DebugRecentRender { get; private set; }
+
+        private Container m_RecentRender;
+
+        public Container GetRecentPlayer() => m_RecentRender;
 
         public void Setup(SessionBase session)
         {
@@ -54,7 +56,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(player, isLocalPlayer);
 
-            DebugRecentRender = player;
+            m_RecentRender = player;
         }
 
         private void SetVisible(bool isVisible, bool isCameraEnabled)

@@ -63,21 +63,21 @@ namespace Swihoni.Sessions.Tests
         [Test]
         public void TestSessionNetworking()
         {
-            var sessionContainer = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
-            if (sessionContainer.Has(out PlayerContainerArrayProperty playersProperty))
-                playersProperty.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))));
+            var session = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
+            if (session.Has(out PlayerContainerArrayProperty players))
+                players.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))));
             const float time = 0.241f;
-            sessionContainer.Require<ServerStampComponent>().time.Value = time;
+            session.Require<ServerStampComponent>().time.Value = time;
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
             using (var server = new ComponentServerSocket(localHost))
             using (var client = new ComponentClientSocket(localHost))
             {
-                server.RegisterMessage(typeof(ServerSessionContainer), sessionContainer);
-                client.RegisterMessage(typeof(ServerSessionContainer), sessionContainer);
+                server.RegisterMessage(typeof(ServerSessionContainer), session);
+                client.RegisterMessage(typeof(ServerSessionContainer), session);
 
-                client.SendToServer(sessionContainer);
+                client.SendToServer(session);
 
                 var received = 0;
 

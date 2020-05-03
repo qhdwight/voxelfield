@@ -1,10 +1,12 @@
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
+using Microsoft.Win32.SafeHandles;
 
 namespace Swihoni.Components
 {
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
     public class NoSerialization : Attribute
     {
     }
@@ -26,13 +28,18 @@ namespace Swihoni.Components
                 Stream.Position = 0;
                 component.Navigate(element =>
                 {
-                    if (element is PropertyBase property)
-                        property.Serialize(Writer);
+                    switch (element)
+                    {
+                        case ComponentBase _ when element.GetType().IsDefined(typeof(NoSerialization)):
+                            return Navigation.SkipDescendends;
+                        case PropertyBase property:
+                            property.Serialize(Writer);
+                            break;
+                    }
                     return Navigation.Continue;
                 });
                 var count = (int) Stream.Position;
-                if (stream.Capacity < count)
-                    stream.Capacity = count;
+                if (stream.Capacity < count) stream.Capacity = count;
                 Buffer.BlockCopy(Stream.GetBuffer(), 0, stream.GetBuffer(), (int) stream.Position, count);
                 stream.Position = count;
             }
@@ -52,10 +59,14 @@ namespace Swihoni.Components
                 Stream.Position = 0;
                 component.Navigate(element =>
                 {
-                    if (element is PropertyBase property)
+                    switch (element)
                     {
-                        property.Clear();
-                        property.Deserialize(Reader);
+                        case ComponentBase _ when element.GetType().IsDefined(typeof(NoSerialization)):
+                            return Navigation.SkipDescendends;
+                        case PropertyBase property:
+                            property.Clear();
+                            property.Deserialize(Reader);
+                            break;
                     }
                     return Navigation.Continue;
                 });

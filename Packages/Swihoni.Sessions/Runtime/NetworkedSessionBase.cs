@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
+using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
@@ -44,6 +45,22 @@ namespace Swihoni.Sessions
                 action(player);
         }
 
+        protected void RegisterMessages(ComponentSocketBase socket)
+        {
+            socket.RegisterMessage(typeof(ClientCommandsContainer), m_EmptyClientCommands);
+            socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
+            socket.RegisterMessage(typeof(DebugClientView), m_EmptyDebugClientView);
+            socket.RegisterMessage(typeof(PingCheckComponent));
+        }
+
+        protected static void ZeroCommand(Container command)
+        {
+            command.Require<MouseComponent>().Zero();
+            command.Require<CameraComponent>().Zero();
+            command.Require<InputFlagProperty>().Zero();
+            command.Require<WantedItemIndexProperty>().Zero();
+        }
+
         protected SessionSettingsComponent GetSettings(Container session = null) => (session ?? m_SessionHistory.Peek()).Require<SessionSettingsComponent>();
 
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
@@ -59,21 +76,9 @@ namespace Swihoni.Sessions
                     sessionInterface.Render(m_SessionHistory.Peek());
             }
         }
-        
-        protected static void ZeroCommand(Container command)
-        {
-            command.Require<MouseComponent>().Zero();
-            command.Require<CameraComponent>().Zero();
-            command.Require<InputFlagProperty>().Zero();
-            command.Require<WantedItemIndexProperty>().Zero();
-        }
 
-        protected virtual void RollbackHitboxes(int playerId)
-        {
-            for (var i = 0; i < m_Modifier.Length; i++)
-                m_Modifier[i].EvaluateHitboxes(i, m_SessionHistory.Peek().GetPlayer(i));
-        }
-        
+        protected abstract void RollbackHitboxes(int playerId);
+
         public sealed override void AboutToRaycast(int playerId)
         {
             RollbackHitboxes(playerId);

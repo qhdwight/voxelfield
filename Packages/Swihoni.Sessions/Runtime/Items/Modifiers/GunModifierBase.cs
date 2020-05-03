@@ -29,6 +29,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         [SerializeField] private ItemStatusModiferProperties[] m_AdsModifierProperties = default;
 
         public ushort MagSize => m_MagSize;
+        public ushort StartingAmmoInReserve => m_StartingAmmoInReserve;
         public byte Damage => m_Damage;
         public ItemStatusModiferProperties GetAdsStatusModifierProperties(byte statusId) => m_AdsModifierProperties[statusId];
 

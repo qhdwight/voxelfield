@@ -92,7 +92,7 @@ namespace Swihoni.Sessions
             if (playerId == HostPlayerId)
             {
                 for (var i = 0; i < m_Modifier.Length; i++)
-                    m_Modifier[i].EvaluateHitboxes(i, m_SessionHistory.Peek().GetPlayer(i));
+                    m_Modifier[i].EvaluateHitboxes(i, m_Visuals[i].GetRecentPlayer());
             }
             else
                 base.RollbackHitboxes(playerId);

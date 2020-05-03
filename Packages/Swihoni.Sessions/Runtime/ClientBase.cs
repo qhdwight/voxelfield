@@ -45,9 +45,7 @@ namespace Swihoni.Sessions
         {
             base.Start();
             m_Socket = new ComponentClientSocket(IpEndPoint);
-            m_Socket.RegisterMessage(typeof(ClientCommandsContainer), m_EmptyClientCommands);
-            m_Socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
-            m_Socket.RegisterMessage(typeof(DebugClientView), m_EmptyDebugClientView);
+            RegisterMessages(m_Socket);
         }
 
         private void UpdateInputs(int localPlayerId) => m_Modifier[localPlayerId].ModifyCommands(this, m_CommandHistory.Peek());
@@ -155,7 +153,7 @@ namespace Swihoni.Sessions
             }
         }
 
-        private void Send() { m_Socket.SendToServer(m_CommandHistory.Peek()); }
+        private void Send() => m_Socket.SendToServer(m_CommandHistory.Peek());
 
         private void CheckPrediction(Container serverSession)
         {
@@ -240,7 +238,7 @@ namespace Swihoni.Sessions
                         {
                             Container serverPlayer = serverPlayers[playerId];
                             var healthProperty = serverPlayer.Require<HealthProperty>();
-                            if (!healthProperty.HasValue || healthProperty.IsDead) continue;
+                            if (healthProperty.WithoutValue || healthProperty.IsDead) continue;
                             /* We have been acknowledged by the server */
 
                             FloatProperty serverTime = serverPlayer.Require<ServerStampComponent>().time,
@@ -270,11 +268,16 @@ namespace Swihoni.Sessions
 
                         break;
                     }
+                    case PingCheckComponent receivedPingCheck:
+                    {
+                        m_Socket.SendToServer(receivedPingCheck);
+                        break;
+                    }
                 }
             });
         }
 
-        protected static bool GetLocalPlayerId(Container session, out int localPlayerId)
+        private static bool GetLocalPlayerId(Container session, out int localPlayerId)
         {
             if (session.Has(out LocalPlayerProperty localPlayerProperty) && localPlayerProperty.HasValue)
             {
@@ -302,8 +305,9 @@ namespace Swihoni.Sessions
                 // PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
                 // modifier.EvaluateHitboxes(i, render);
 
-                if (i == 0 && m_Visuals[i] is PlayerVisualsDispatcherBehavior visuals && visuals.DebugRecentRender != null)
-                    SendDebug(visuals.DebugRecentRender);
+                Container recentPlayer = m_Visuals[i].GetRecentPlayer();
+                if (i == 0 && recentPlayer != null)
+                    SendDebug(recentPlayer);
             }
         }
 

@@ -22,10 +22,10 @@ namespace Swihoni.Sessions.Player.Components
                           Last = Reload;
     }
 
-    [Serializable]
+    [Serializable, NoSerialization]
     public class MouseComponent : ComponentBase
     {
-        [NoSerialization] public FloatProperty mouseDeltaX, mouseDeltaY;
+        public FloatProperty mouseDeltaX, mouseDeltaY;
     }
 
     [Serializable]

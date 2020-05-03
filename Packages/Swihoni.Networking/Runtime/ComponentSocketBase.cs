@@ -98,6 +98,10 @@ namespace Swihoni.Networking
                 int sent = m_RawSocket.SendTo(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position + 1, SocketFlags.None, endPoint);
                 return true;
             }
+            catch (KeyNotFoundException keyNotFoundException)
+            {
+                throw new Exception("Type has not been registered to send across socket!", keyNotFoundException);
+            }
             catch (Exception exception)
             {
                 Debug.LogError(exception);

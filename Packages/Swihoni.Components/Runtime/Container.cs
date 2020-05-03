@@ -8,14 +8,11 @@ namespace Swihoni.Components
     [Serializable]
     public class Container : ComponentBase
     {
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        private List<ElementBase> m_Elements;
-
         private Dictionary<Type, int> m_TypeToId = new Dictionary<Type, int>();
 
         public IEnumerable<Type> ElementTypes => m_TypeToId.Keys;
 
-        public IReadOnlyList<ElementBase> Elements => m_Elements;
+        public new IReadOnlyList<ElementBase> Elements => m_Elements;
 
         public Container() : this(0) { }
 
@@ -61,7 +58,7 @@ namespace Swihoni.Components
         public bool Without<TElement>(out TElement component) where TElement : ElementBase { return !Has(out component); }
 
         public bool Present<TElement>(out TElement component) where TElement : PropertyBase { return Has(out component) && component.HasValue; }
-
+        
         public bool Has<TElement>(out TElement component) where TElement : ElementBase
         {
             bool hasComponent = m_TypeToId.TryGetValue(typeof(TElement), out int index);

@@ -18,6 +18,8 @@ namespace Swihoni.Sessions
 
         // TODO: refactor is local player should use If construct
         void Render(int playerId, Container player, bool isLocalPlayer);
+
+        Container GetRecentPlayer();
     }
 
     [Serializable]
@@ -196,7 +198,10 @@ namespace Swihoni.Sessions
             var camera = player.Require<CameraComponent>();
             float yaw = camera.yaw * Mathf.Deg2Rad, pitch = camera.pitch * Mathf.Deg2Rad;
             var direction = new Vector3(Mathf.Sin(yaw), -Mathf.Sin(pitch), Mathf.Cos(yaw));
-            Vector3 position = player.Require<MoveComponent>().position + new Vector3 {y = 1.8f};
+            var move = player.Require<MoveComponent>();
+            // TODO:refactor magic numbers
+            Vector3 position = move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
+
             var ray = new Ray(position, direction);
             Debug.DrawLine(position, position + direction * 10.0f, Color.blue, 5.0f);
             return ray;
