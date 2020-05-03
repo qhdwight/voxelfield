@@ -5,11 +5,11 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Interfaces
 {
-    public class ScoreboardEntryInterface : InterfaceBehaviorBase
+    public class ScoreboardEntryInterface : ElementInterfaceBase<Container>
     {
         [SerializeField] private BufferedTextGui m_UsernameText = default, m_KillsText = default, m_DamageText = default, m_DeathsText = default, m_PingText = default;
 
-        public void Render(Container player)
+        public override void Render(Container player)
         {
             bool isVisible = player.Without(out HealthProperty health) || health.HasValue;
             if (isVisible && player.Has(out StatsComponent stats))

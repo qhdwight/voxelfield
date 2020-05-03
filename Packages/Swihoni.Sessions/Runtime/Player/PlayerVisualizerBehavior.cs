@@ -10,10 +10,7 @@ namespace Swihoni.Sessions.Player
         private SkinnedMeshRenderer m_Renderer;
 
         [RuntimeInitializeOnLoadMethod]
-        private static void Initialize()
-        {
-            _pool = null;
-        }
+        private static void Initialize() { _pool = null; }
 
         public static void Render(SessionBase session, int playerId, Container player, Color color)
         {

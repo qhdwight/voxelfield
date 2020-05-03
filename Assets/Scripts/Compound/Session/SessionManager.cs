@@ -100,18 +100,18 @@ namespace Compound.Session
                 DisconnectAll();
             }
             
-            // if (Input.GetKeyDown(KeyCode.H))
-            //     StartHost();
-            // if (Input.GetKeyDown(KeyCode.J))
-            // {
-            //     Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
-            //     if (Application.isEditor) client.ShouldRender = false;
-            // }
-            // if (Input.GetKeyDown(KeyCode.K))
-            // {
-            //     m_Client?.Disconnect();
-            //     m_Client = null;
-            // }
+            if (Input.GetKeyDown(KeyCode.H))
+                StartHost();
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
+                if (Application.isEditor) client.ShouldRender = false;
+            }
+            if (Input.GetKeyDown(KeyCode.K))
+            {
+                m_Client?.Disconnect();
+                m_Client = null;
+            }
         }
 
         private void FixedUpdate()

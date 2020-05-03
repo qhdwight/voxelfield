@@ -1,7 +1,4 @@
 using System;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
 
 namespace Swihoni.Components
 {
@@ -9,7 +6,7 @@ namespace Swihoni.Components
     {
         Continue,
         SkipDescendends, // Skip all children of current node
-        Exit  // Exit entire tree immediately
+        Exit             // Exit entire tree immediately
     }
 
     public static class ElementExtensions

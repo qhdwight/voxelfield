@@ -27,7 +27,7 @@ namespace Swihoni.Sessions.Player.Components
         public ByteProperty groundTick;
         public FloatProperty normalizedCrouch;
         [Cyclic(0.0f, 1.0f)] public FloatProperty normalizedMove;
-        
+
         public override string ToString() => $"Position: {position}, Velocity: {velocity}";
     }
 

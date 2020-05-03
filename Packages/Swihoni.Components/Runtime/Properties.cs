@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Swihoni.Components
 {
     // Thank you lack of compile time C# meta-programming for all this manual code!
-    
+
     [Serializable]
     public class UIntProperty : PropertyBase<uint>
     {

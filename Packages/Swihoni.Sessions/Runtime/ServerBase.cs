@@ -135,7 +135,7 @@ namespace Swihoni.Sessions
                                     ModeBase mode = GetMode(serverSession);
                                     serverPlayer.FastMergeSet(receivedClientCommands); // Merge in trusted
                                     m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.duration);
-                                    mode.Modify(serverPlayer, receivedClientCommands, clientStamp.duration);
+                                    mode.Modify(serverSession, serverPlayer, receivedClientCommands, clientStamp.duration);
                                 }
                                 else
                                     Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
@@ -206,7 +206,7 @@ namespace Swihoni.Sessions
             player.Require<ServerStampComponent>().Reset();
         }
 
-        public override Ray GetRayForPlayerId(int playerId) { return GetRayForPlayer(m_SessionHistory.Peek().GetPlayer(playerId)); }
+        public override Ray GetRayForPlayerId(int playerId) { return GetRayForPlayer(GetLatestSession().GetPlayer(playerId)); }
 
         protected override void RollbackHitboxes(int playerId)
         {

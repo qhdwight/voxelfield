@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions
@@ -34,14 +33,15 @@ namespace Swihoni.Sessions
 
         protected override void Input(float time, float delta)
         {
-            if (!m_SessionHistory.Peek().Has(out ServerStampComponent serverStamp) || !serverStamp.tick.HasValue)
+            Container session = GetLatestSession();
+            if (session.Without(out ServerStampComponent serverStamp) || serverStamp.tick.WithoutValue)
                 return;
 
             ReadLocalInputs(m_HostCommands);
             // m_HostCommands.Require<InventoryComponent>().Zero();
             m_Modifier[HostPlayerId].ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
             m_Modifier[HostPlayerId].ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
-            GetMode().Modify(m_HostCommands, m_HostCommands, delta);
+            GetMode(session).Modify(session, m_HostCommands, m_HostCommands, delta);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.time.Value = time;
             stamp.tick.Value = serverStamp.tick;

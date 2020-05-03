@@ -28,11 +28,12 @@ namespace Swihoni.Sessions
                                                                            .Append(typeof(ServerStampComponent)).ToArray(),
                                       clientCommandElements = playerElements.Append(typeof(ClientStampComponent))
                                                                             .Concat(commandElements).ToArray();
-            ServerSessionContainer ServerSessionContainerConstructor() => MakeSession<ServerSessionContainer>(sessionElements.Append(typeof(ServerStampComponent)), serverPlayerElements);
+            ServerSessionContainer ServerSessionContainerConstructor() =>
+                MakeSession<ServerSessionContainer>(sessionElements.Append(typeof(ServerStampComponent)), serverPlayerElements);
             m_SessionHistory = new CyclicArray<ServerSessionContainer>(250, ServerSessionContainerConstructor);
 
             m_RollbackSession = MakeSession<Container>(sessionElements, playerElements);
-            
+
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);
             m_EmptyServerSession = ServerSessionContainerConstructor();
             m_EmptyDebugClientView = new DebugClientView(serverPlayerElements);
@@ -61,19 +62,21 @@ namespace Swihoni.Sessions
             command.Require<WantedItemIndexProperty>().Zero();
         }
 
-        protected SessionSettingsComponent GetSettings(Container session = null) => (session ?? m_SessionHistory.Peek()).Require<SessionSettingsComponent>();
+        protected SessionSettingsComponent GetSettings(Container session = null) => (session ?? GetLatestSession()).Require<SessionSettingsComponent>();
 
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public override ModeBase GetMode(Container session = null) => ModeManager.GetMode(GetSettings(session).modeId);
 
-        public override Container GetPlayerFromId(int playerId) => m_SessionHistory.Peek().GetPlayer(playerId);
+        public override Container GetPlayerFromId(int playerId) => GetLatestSession().GetPlayer(playerId);
+
+        public override Container GetLatestSession() => m_SessionHistory.Peek();
 
         protected override void Render(float renderTime)
         {
             foreach (InterfaceBehaviorBase @interface in m_Interfaces)
             {
                 if (@interface is SessionInterfaceBehavior sessionInterface)
-                    sessionInterface.Render(m_SessionHistory.Peek());
+                    sessionInterface.Render(GetLatestSession());
             }
         }
 
@@ -96,6 +99,7 @@ namespace Swihoni.Sessions
             session.Add(sessionElements);
             if (session.Has(out PlayerContainerArrayProperty players))
                 players.SetAll(() => new Container(playerElements));
+            session.ZeroIfHas<KillFeedProperty>();
             return session;
         }
     }

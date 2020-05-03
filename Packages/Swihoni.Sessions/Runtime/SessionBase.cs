@@ -182,7 +182,7 @@ namespace Swihoni.Sessions
         }
 
         public abstract Ray GetRayForPlayerId(int playerId);
-        
+
         public virtual void AboutToRaycast(int playerId)
         {
             // Usually transform sync happens after FixedUpdate() is called. However, our raycast is in fixed update.
@@ -192,6 +192,8 @@ namespace Swihoni.Sessions
         }
 
         public abstract ModeBase GetMode(Container session = null);
+
+        public abstract Container GetLatestSession();
 
         protected static Ray GetRayForPlayer(Container player)
         {

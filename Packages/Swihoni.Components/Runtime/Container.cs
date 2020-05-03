@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Swihoni.Components
@@ -58,7 +57,7 @@ namespace Swihoni.Components
         public bool Without<TElement>(out TElement component) where TElement : ElementBase { return !Has(out component); }
 
         public bool Present<TElement>(out TElement component) where TElement : PropertyBase { return Has(out component) && component.HasValue; }
-        
+
         public bool Has<TElement>(out TElement component) where TElement : ElementBase
         {
             bool hasComponent = m_TypeToId.TryGetValue(typeof(TElement), out int index);
@@ -69,6 +68,11 @@ namespace Swihoni.Components
             }
             component = null;
             return false;
+        }
+
+        public void ZeroIfHas<TElement>() where TElement : ElementBase
+        {
+            if (Has(out TElement element)) element.Zero();
         }
 
         public bool Has<TElement>() { return m_TypeToId.ContainsKey(typeof(TElement)); }

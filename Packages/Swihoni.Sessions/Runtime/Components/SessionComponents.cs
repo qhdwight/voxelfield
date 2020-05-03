@@ -11,7 +11,7 @@ namespace Swihoni.Sessions.Components
     {
         public static readonly IReadOnlyCollection<Type> StandardSessionElements = new List<Type>
         {
-            typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(StampComponent), typeof(SessionSettingsComponent)
+            typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(StampComponent), typeof(SessionSettingsComponent), typeof(KillFeedProperty)
         };
 
         public static readonly IReadOnlyCollection<Type> StandardPlayerElements = new List<Type>
@@ -61,7 +61,7 @@ namespace Swihoni.Sessions.Components
     public class ServerPingComponent : ComponentBase
     {
         public UIntProperty tick;
-        public FloatProperty rtt, // Last measured round trip time in seconds
+        public FloatProperty rtt,          // Last measured round trip time in seconds
                              checkElapsed, // Time elapsed since initiating check
                              initiateTime; // Time when check was last sent to client
     }
@@ -101,6 +101,19 @@ namespace Swihoni.Sessions.Components
     public class PlayerContainerArrayProperty : ArrayProperty<Container>
     {
         public PlayerContainerArrayProperty() : base(SessionBase.MaxPlayers) { }
+    }
+
+    [Serializable]
+    public class KillFeedComponent : ComponentBase
+    {
+        public ByteProperty killingPlayerId, killedPlayerId;
+        public FloatProperty elapsed;
+    }
+
+    [Serializable]
+    public class KillFeedProperty : ArrayProperty<KillFeedComponent>
+    {
+        public KillFeedProperty() : base(5) { }
     }
 
     [Serializable]

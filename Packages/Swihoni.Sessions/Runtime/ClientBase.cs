@@ -8,7 +8,6 @@ using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -52,7 +51,7 @@ namespace Swihoni.Sessions
 
         protected override void Input(float time, float delta)
         {
-            if (!GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
+            if (!GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
                 return;
 
             UpdateInputs(localPlayerId);
@@ -62,7 +61,7 @@ namespace Swihoni.Sessions
         protected override void Render(float renderTime)
         {
             base.Render(renderTime);
-            if (!m_RenderSession.Has(out PlayerContainerArrayProperty renderPlayers) || !GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
+            if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers) || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
                 return;
 
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
@@ -98,7 +97,7 @@ namespace Swihoni.Sessions
             base.Tick(tick, time, duration);
 
             Profiler.BeginSample("Client Predict");
-            if (GetLocalPlayerId(m_SessionHistory.Peek(), out int localPlayerId))
+            if (GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
             {
                 UpdateInputs(localPlayerId);
                 Predict(tick, time, localPlayerId);

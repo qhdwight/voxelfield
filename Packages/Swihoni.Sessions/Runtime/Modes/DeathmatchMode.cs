@@ -42,9 +42,9 @@ namespace Swihoni.Sessions.Modes
                 respawnTimer.Value = 2.0f;
         }
 
-        internal override void Modify(Container playerToModify, Container commands, float duration)
+        internal override void Modify(Container session, Container playerToModify, Container commands, float duration)
         {
-            base.Modify(playerToModify, commands, duration);
+            base.Modify(session, playerToModify, commands, duration);
 
             if (commands.Without(out InputFlagProperty inputs)
              || playerToModify.Without<ServerTag>()

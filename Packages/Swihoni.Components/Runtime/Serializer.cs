@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using Microsoft.Win32.SafeHandles;
 
 namespace Swihoni.Components
 {

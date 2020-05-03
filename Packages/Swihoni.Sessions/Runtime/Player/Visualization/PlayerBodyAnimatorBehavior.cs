@@ -180,7 +180,7 @@ namespace Swihoni.Sessions.Player.Visualization
                                                         1.0f, m_PrefabPlayerMovement.GroundMask);
                     if (count >= 1)
                         m_FootstepSource.PlayOneShot(m_BrushClips[Random.Range(0, m_BrushClips.Length)], normalizedSpeed);
-                }   
+                }
             }
             m_LastNormalizedTime = move.normalizedMove;
         }
