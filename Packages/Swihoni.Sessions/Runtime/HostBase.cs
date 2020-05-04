@@ -26,7 +26,7 @@ namespace Swihoni.Sessions
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Reset();
 
-            m_RenderSession = MakeSession<Container>(sessionElements, playerElements);
+            m_RenderSession = NewSession<Container>(sessionElements, playerElements);
         }
 
         private void ReadLocalInputs(Container commandsToFill) => m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill);

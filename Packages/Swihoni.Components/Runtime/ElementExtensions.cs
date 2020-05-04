@@ -28,13 +28,14 @@ namespace Swihoni.Components
         /// <summary>
         /// Reset all properties to default values with has value flag set.
         /// </summary>
-        public static void Zero(this ElementBase component)
+        public static T Zero<T>(this T component) where T : ElementBase
         {
             component.Navigate(property =>
             {
                 (property as PropertyBase)?.Zero();
                 return Navigation.Continue;
             });
+            return component;
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace Swihoni.Components
             NavigateZipped((e1, e2) =>
             {
                 if (e1 is Container p1 && e2 is Container p2)
-                    p2.Set(p1.ElementTypes);
+                    p2.TakeElementTypes(p1);
                 return Navigation.Continue;
             }, component, clone);
             clone.FastMergeSet(component);

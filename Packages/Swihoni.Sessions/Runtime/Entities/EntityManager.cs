@@ -57,10 +57,9 @@ namespace Swihoni.Sessions.Entities
             var entities = session.Require<EntityArrayProperty>();
             foreach (EntityContainer entity in entities)
             {
-                var id = entity.Require<EntityId>();
-                if (id == EntityId.None)
+                if (entity.id == EntityId.None)
                 {
-                    id.Value = entityId;
+                    entity.id.Value = entityId;
                     break;
                 }
             }
@@ -79,10 +78,9 @@ namespace Swihoni.Sessions.Entities
             var entities = session.Require<EntityArrayProperty>();
             foreach (EntityContainer entity in entities)
             {
-                var id = entity.Require<EntityId>();
-                if (id != EntityId.None)
+                if (entity.id != EntityId.None)
                 {
-                    m_Modifiers[id - 1].Modify(entity);
+                    m_Modifiers[entity.id - 1].Modify(entity);
                     break;
                 }
             }

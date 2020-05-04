@@ -1,10 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
 using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -15,6 +18,7 @@ namespace Swihoni.Sessions.Tests
         [Test]
         public void TestItemInterpolation()
         {
+            ItemAssetLink.Initialize();
             var i1 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(0), elapsed = new FloatProperty(1.870f)}};
             var i2 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(1), elapsed = new FloatProperty(0.038f)}};
             var id = new ItemComponent();
@@ -29,9 +33,10 @@ namespace Swihoni.Sessions.Tests
         public void TestSessionClone()
         {
             var s1 = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
-            if (s1.Has(out PlayerContainerArrayProperty p))
-                p.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Concat(StandardComponents.StandardPlayerCommandsElements)
-                                                               .Append(typeof(StampComponent))));
+            IEnumerable<Type> playerElements = StandardComponents.StandardPlayerElements
+                                                                 .Concat(StandardComponents.StandardPlayerCommandsElements)
+                                                                 .Append(typeof(StampComponent));
+            s1.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(playerElements));
             s1.Zero();
 
             ServerSessionContainer s2 = s1.Clone();
@@ -64,8 +69,9 @@ namespace Swihoni.Sessions.Tests
         public void TestSessionNetworking()
         {
             var session = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
-            if (session.Has(out PlayerContainerArrayProperty players))
-                players.SetAll(() => new Container(StandardComponents.StandardPlayerElements.Append(typeof(ServerStampComponent)).Append(typeof(ClientStampComponent))));
+            session.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(StandardComponents.StandardPlayerElements
+                                                                                                         .Append(typeof(ServerStampComponent))
+                                                                                                         .Append(typeof(ClientStampComponent))));
             const float time = 0.241f;
             session.Require<ServerStampComponent>().time.Value = time;
 

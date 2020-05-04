@@ -13,7 +13,7 @@ namespace Swihoni.Sessions.Components
         public static readonly IReadOnlyCollection<Type> StandardSessionElements = new List<Type>
         {
             typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(EntityArrayProperty),
-            typeof(StampComponent), typeof(SessionSettingsComponent),typeof(KillFeedProperty)
+            typeof(StampComponent), typeof(SessionSettingsComponent), typeof(KillFeedProperty)
         };
 
         public static readonly IReadOnlyCollection<Type> StandardPlayerElements = new List<Type>

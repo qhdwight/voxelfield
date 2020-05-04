@@ -8,12 +8,11 @@ namespace Swihoni.Sessions.Entities
     {
         public EntityArrayProperty() : base(10) { }
     }
-    
+
     [Serializable]
     public class EntityContainer : Container
     {
-        public EntityContainer() : base(typeof(EntityId)) {
-        }
+        public EntityId id;
     }
 
     [Serializable]

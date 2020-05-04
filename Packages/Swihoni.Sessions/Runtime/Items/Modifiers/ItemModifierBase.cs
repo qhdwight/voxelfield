@@ -8,7 +8,8 @@ namespace Swihoni.Sessions.Items.Modifiers
     {
         public const byte Idle = 0,
                           PrimaryUsing = Idle + 1,
-                          SecondaryUsing = PrimaryUsing + 1, Last = SecondaryUsing;
+                          SecondaryUsing = PrimaryUsing + 1,
+                          Last = SecondaryUsing;
     }
 
     public static class ItemEquipStatusId
@@ -23,7 +24,8 @@ namespace Swihoni.Sessions.Items.Modifiers
     {
         public const byte None = 0,
                           TestingRifle = 1,
-                          Grenade = TestingRifle + 1, Last = Grenade;
+                          Grenade = TestingRifle + 1,
+                          Last = Grenade;
     }
 
     [Serializable]
@@ -72,7 +74,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             }
         }
 
-        protected virtual void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, float duration) {  }
+        protected virtual void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, float duration) { }
 
         protected void StartStatus(SessionBase session, int playerId, ItemComponent itemComponent, byte statusId, float duration, float elapsed = 0.0f)
         {

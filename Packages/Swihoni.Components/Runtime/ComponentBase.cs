@@ -21,27 +21,35 @@ namespace Swihoni.Components
 
     public abstract class ComponentBase : ElementBase
     {
-        protected List<ElementBase> m_Elements;
+        private List<ElementBase> m_Elements;
 
         public IReadOnlyList<ElementBase> Elements
         {
             get
             {
-                if (m_Elements == null)
-                {
-                    m_Elements = new List<ElementBase>();
-                    FieldInfo[] fieldInfos = Cache.GetFieldInfo(GetType());
-                    foreach (FieldInfo field in fieldInfos)
-                    {
-                        object fieldValue = field.GetValue(this);
-                        if (fieldValue is ElementBase element) m_Elements.Add(element);
-                    }
-                }
+                VerifyFieldsRegistered();
                 return m_Elements;
             }
         }
 
-        protected ComponentBase()
+        protected void VerifyFieldsRegistered()
+        {
+            if (m_Elements != null) return;
+
+            m_Elements = new List<ElementBase>();
+            FieldInfo[] fieldInfos = Cache.GetFieldInfo(GetType());
+            foreach (FieldInfo field in fieldInfos)
+            {
+                object fieldValue = field.GetValue(this);
+                if (fieldValue is ElementBase element) Register(element);
+            }
+        }
+
+        protected void ClearRegistered() { m_Elements = new List<ElementBase>(); }
+
+        protected ComponentBase() => FillFieldElements();
+
+        private void FillFieldElements()
         {
             foreach (FieldInfo field in Cache.GetFieldInfo(GetType()))
             {
@@ -53,6 +61,12 @@ namespace Swihoni.Components
                 if (instance is PropertyBase propertyInstance) propertyInstance.Field = field;
                 field.SetValue(this, instance);
             }
+        }
+
+        protected virtual void Register(ElementBase instance)
+        {
+            VerifyFieldsRegistered();
+            m_Elements.Add(instance);
         }
 
         public virtual void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation) { }

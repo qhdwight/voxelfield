@@ -57,7 +57,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 {
                     if (m_IsFpv) transform.localPosition = m_ItemVisual.FpvOffset;
                     else m_ItemVisual.transform.localPosition = m_ItemVisual.TpvOffset;
-                    
+
                     if (m_FpvArmsRenderer)
                     {
                         m_FpvArmsRenderer.enabled = isLocalPlayer;
@@ -72,7 +72,7 @@ namespace Swihoni.Sessions.Player.Visualization
                     }
                     else
                         m_ItemVisual.SetRenderingMode(false);
-                    
+
                     ItemComponent equippedItem = inventory.EquippedItemComponent;
                     ByteStatusComponent equipStatus = inventory.equipStatus;
                     bool isEquipped = equipStatus.id == ItemEquipStatusId.Equipped;

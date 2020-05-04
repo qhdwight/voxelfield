@@ -5,6 +5,7 @@ using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
@@ -29,10 +30,10 @@ namespace Swihoni.Sessions
                                       clientCommandElements = playerElements.Append(typeof(ClientStampComponent))
                                                                             .Concat(commandElements).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor() =>
-                MakeSession<ServerSessionContainer>(sessionElements.Append(typeof(ServerStampComponent)), serverPlayerElements);
+                NewSession<ServerSessionContainer>(sessionElements.Append(typeof(ServerStampComponent)), serverPlayerElements);
             m_SessionHistory = new CyclicArray<ServerSessionContainer>(250, ServerSessionContainerConstructor);
 
-            m_RollbackSession = MakeSession<Container>(sessionElements, playerElements);
+            m_RollbackSession = NewSession<Container>(sessionElements, playerElements);
 
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);
             m_EmptyServerSession = ServerSessionContainerConstructor();
@@ -93,12 +94,12 @@ namespace Swihoni.Sessions
             if (!IsDisposed) Dispose();
         }
 
-        protected static T MakeSession<T>(IEnumerable<Type> sessionElements, IEnumerable<Type> playerElements) where T : Container, new()
+        protected static T NewSession<T>(IEnumerable<Type> sessionElements, IEnumerable<Type> playerElements) where T : Container, new()
         {
             var session = new T();
             session.Add(sessionElements);
-            if (session.Has(out PlayerContainerArrayProperty players))
-                players.SetAll(() => new Container(playerElements));
+            session.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(playerElements));
+            session.Require<EntityArrayProperty>().SetAll(() => new EntityContainer().Zero());
             session.ZeroIfHas<KillFeedProperty>();
             return session;
         }

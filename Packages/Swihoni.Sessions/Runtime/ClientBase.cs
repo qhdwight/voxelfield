@@ -28,7 +28,7 @@ namespace Swihoni.Sessions
             : base(linker, sessionElements, playerElements, commandElements)
         {
             IpEndPoint = ipEndPoint;
-            m_RenderSession = MakeSession<Container>(sessionElements, playerElements);
+            m_RenderSession = NewSession<Container>(sessionElements, playerElements);
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
             // TODO:refactor zeroing

@@ -7,6 +7,6 @@ namespace Swihoni.Networking
     {
         public ComponentClientSocket(IPEndPoint ip) : base(ip) { }
 
-        public bool SendToServer(ComponentBase message) { return Send(message, m_Ip); }
+        public bool SendToServer(ComponentBase message) => Send(message, m_Ip);
     }
 }

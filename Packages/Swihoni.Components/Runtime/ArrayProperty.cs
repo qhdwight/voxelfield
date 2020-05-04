@@ -87,7 +87,7 @@ namespace Swihoni.Components
                     m_Values[i].Value = m_Builder[i];
                 else
                 {
-                    m_Values[i].Value= '\0';
+                    m_Values[i].Value = '\0';
                     break;
                 }
             }

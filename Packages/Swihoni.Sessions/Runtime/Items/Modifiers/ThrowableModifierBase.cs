@@ -39,8 +39,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             base.CanUse(item, inventory, justFinishedUse) && item.status.id != ThrowableStatusId.Cooking;
 
         protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, float duration) { }
-        
-        
+
         protected virtual void Release(SessionBase session, int playerId)
         {
             Container player = session.GetPlayerFromId(playerId);

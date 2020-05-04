@@ -18,14 +18,11 @@ namespace Swihoni.Sessions.Modes
                 move.Zero();
                 move.position.Value = new Vector3 {x = 20.0f};
             }
-            if (player.Has(out CameraComponent camera))
-                camera.Zero();
+            player.ZeroIfHas<CameraComponent>();
             if (player.Has(out HealthProperty health))
                 health.Value = 100;
-            if (player.Has(out RespawnTimerProperty respawn))
-                respawn.Value = 0.0f;
-            if (player.Has(out HitMarkerComponent hitMarker))
-                hitMarker.Zero();
+            player.ZeroIfHas<RespawnTimerProperty>();
+            player.ZeroIfHas<HitMarkerComponent>();
             if (player.Has(out InventoryComponent inventory))
             {
                 inventory.Zero();
