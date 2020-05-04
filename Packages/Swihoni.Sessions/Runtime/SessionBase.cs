@@ -195,7 +195,7 @@ namespace Swihoni.Sessions
 
         public abstract Container GetLatestSession();
 
-        protected static Ray GetRayForPlayer(Container player)
+        public static Ray GetRayForPlayer(Container player)
         {
             var camera = player.Require<CameraComponent>();
             float yaw = camera.yaw * Mathf.Deg2Rad, pitch = camera.pitch * Mathf.Deg2Rad;

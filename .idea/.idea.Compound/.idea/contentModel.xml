@@ -87,6 +87,11 @@
               <e p="SessionComponents.cs" t="Include" />
             </e>
             <e p="DebugBehavior.cs" t="Include" />
+            <e p="Entities" t="Include">
+              <e p="EntityComponents.cs" t="Include" />
+              <e p="EntityManager.cs" t="Include" />
+              <e p="ThrowablesGameObjects.cs" t="Include" />
+            </e>
             <e p="HostBase.cs" t="Include" />
             <e p="Interfaces" t="Include">
               <e p="ArrayViewerInterfaceBase.cs" t="Include" />
@@ -100,14 +105,19 @@
             <e p="Items" t="Include">
               <e p="ItemManager.cs" t="Include" />
               <e p="Modifiers" t="Include">
+                <e p="GrenadeModifierBase.cs" t="Include" />
                 <e p="GunModifierBase.cs" t="Include" />
                 <e p="GunWithMagazineModifier.cs" t="Include" />
                 <e p="ItemModifierBase.cs" t="Include" />
+                <e p="ThrowableModifierBase.cs" t="Include" />
               </e>
               <e p="Visuals" t="Include">
                 <e p="GunVisualBehavior.cs" t="Include" />
                 <e p="ItemVisualBehavior.cs" t="Include" />
               </e>
+            </e>
+            <e p="Mapper" t="Include">
+              <e p="UnityObjectMapperModifier.cs" t="Include" />
             </e>
             <e p="Modes" t="Include">
               <e p="DeathmatchMode.cs" t="Include" />

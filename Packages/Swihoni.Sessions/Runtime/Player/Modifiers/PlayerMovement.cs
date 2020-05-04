@@ -76,6 +76,23 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) { }
 
+        public override void ModifyCommands(SessionBase session, Container commands)
+        {
+            if (commands.Without(out InputFlagProperty inputProperty)) return;
+
+            InputProvider input = InputProvider.Singleton;
+            inputProperty.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
+            inputProperty.SetInput(PlayerInput.Backward, input.GetInput(InputType.Backward));
+            inputProperty.SetInput(PlayerInput.Right, input.GetInput(InputType.Right));
+            inputProperty.SetInput(PlayerInput.Left, input.GetInput(InputType.Left));
+            inputProperty.SetInput(PlayerInput.Jump, input.GetInput(InputType.Jump));
+            inputProperty.SetInput(PlayerInput.Crouch, input.GetInput(InputType.Crouch));
+            inputProperty.SetInput(PlayerInput.Sprint, input.GetInput(InputType.Sprint));
+            inputProperty.SetInput(PlayerInput.Walk, input.GetInput(InputType.Walk));
+            inputProperty.SetInput(PlayerInput.Suicide, input.GetInput(InputType.Suicide));
+            inputProperty.SetInput(PlayerInput.Interact, input.GetInput(InputType.Interact));
+        }
+
         private void ModifyStatus(MoveComponent move, InputFlagProperty inputs, float duration)
         {
             if (inputs.GetInput(PlayerInput.Crouch))
@@ -103,23 +120,6 @@ namespace Swihoni.Sessions.Player.Modifiers
                 while (move.normalizedMove > 1.0f)
                     move.normalizedMove.Value -= 1.0f;
             }
-        }
-
-        public override void ModifyCommands(SessionBase session, Container commands)
-        {
-            if (commands.Without(out InputFlagProperty inputProperty)) return;
-
-            InputProvider input = InputProvider.Singleton;
-            inputProperty.SetInput(PlayerInput.Forward, input.GetInput(InputType.Forward));
-            inputProperty.SetInput(PlayerInput.Backward, input.GetInput(InputType.Backward));
-            inputProperty.SetInput(PlayerInput.Right, input.GetInput(InputType.Right));
-            inputProperty.SetInput(PlayerInput.Left, input.GetInput(InputType.Left));
-            inputProperty.SetInput(PlayerInput.Jump, input.GetInput(InputType.Jump));
-            inputProperty.SetInput(PlayerInput.Crouch, input.GetInput(InputType.Crouch));
-            inputProperty.SetInput(PlayerInput.Sprint, input.GetInput(InputType.Sprint));
-            inputProperty.SetInput(PlayerInput.Walk, input.GetInput(InputType.Walk));
-            inputProperty.SetInput(PlayerInput.Suicide, input.GetInput(InputType.Suicide));
-            inputProperty.SetInput(PlayerInput.Interact, input.GetInput(InputType.Interact));
         }
 
         private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)

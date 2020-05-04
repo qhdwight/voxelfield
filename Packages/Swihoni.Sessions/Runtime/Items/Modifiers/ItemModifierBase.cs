@@ -7,21 +7,23 @@ namespace Swihoni.Sessions.Items.Modifiers
     public static class ItemStatusId
     {
         public const byte Idle = 0,
-                          PrimaryUsing = 1,
-                          SecondaryUsing = 2,
-                          Last = SecondaryUsing;
+                          PrimaryUsing = Idle + 1,
+                          SecondaryUsing = PrimaryUsing + 1, Last = SecondaryUsing;
     }
 
     public static class ItemEquipStatusId
     {
-        public const byte Unequipping = 0, Equipping = 1, Equipped = 2, Unequipped = 3;
+        public const byte Unequipping = 0,
+                          Equipping = Unequipping + 1,
+                          Equipped = Equipping + 1,
+                          Unequipped = Equipped + 1;
     }
 
     public static class ItemId
     {
         public const byte None = 0,
                           TestingRifle = 1,
-                          Last = TestingRifle;
+                          Grenade = TestingRifle + 1, Last = Grenade;
     }
 
     [Serializable]
@@ -56,18 +58,21 @@ namespace Swihoni.Sessions.Items.Modifiers
             ModifyStatus(session, playerId, item, inventory, inputProperty, duration);
         }
 
-        private void ModifyStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputProperty, float duration)
+        private void ModifyStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, float duration)
         {
             ByteStatusComponent status = item.status;
             status.elapsed.Value += duration;
             ItemStatusModiferProperties modifierProperties;
+            StatusTick(session, playerId, item, inputs, duration);
             while (status.elapsed > (modifierProperties = m_StatusModiferProperties[status.id]).duration)
             {
                 float statusElapsed = status.elapsed;
-                byte? nextStatus = FinishStatus(item, inventory, inputProperty);
+                byte? nextStatus = FinishStatus(session, playerId, item, inventory, inputs);
                 StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, duration, statusElapsed - modifierProperties.duration);
             }
         }
+
+        protected virtual void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, float duration) {  }
 
         protected void StartStatus(SessionBase session, int playerId, ItemComponent itemComponent, byte statusId, float duration, float elapsed = 0.0f)
         {
@@ -85,7 +90,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         }
 
         /// <returns>State to switch to</returns>
-        protected virtual byte? FinishStatus(ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected virtual byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             switch (item.status.id)
             {

@@ -38,6 +38,29 @@ namespace Swihoni.Components
     }
 
     [Serializable]
+    public class QuaternionProperty : PropertyBase<Quaternion>
+    {
+        public override bool ValueEquals(PropertyBase<Quaternion> other) => other.Value == Value;
+
+        public override void SerializeValue(BinaryWriter writer)
+        {
+            writer.Write(Value.x);
+            writer.Write(Value.y);
+            writer.Write(Value.z);
+            writer.Write(Value.w);
+        }
+
+        public override void Zero() { Value = Quaternion.identity; }
+
+        public override void DeserializeValue(BinaryReader reader) => Value = new Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+
+        public override void ValueInterpolateFrom(PropertyBase<Quaternion> p1, PropertyBase<Quaternion> p2, float interpolation)
+        {
+            Value = Quaternion.Lerp(p1.Value, p2.Value, interpolation);
+        }
+    }
+
+    [Serializable]
     public class FloatProperty : PropertyBase<float>
     {
         public FloatProperty(float value) : base(value) { }

@@ -55,15 +55,9 @@ namespace Swihoni.Sessions.Player.Visualization
                 m_ItemVisual = SetupVisualItem(inventory);
                 if (m_ItemVisual)
                 {
-                    ItemComponent equippedItem = inventory.EquippedItemComponent;
-                    ByteStatusComponent equipStatus = inventory.equipStatus;
-                    bool isEquipped = equipStatus.id == ItemEquipStatusId.Equipped;
-                    ByteStatusComponent expressedStatus = isEquipped ? equippedItem.status : equipStatus;
-                    float duration = (isEquipped
-                              ? m_ItemVisual.ModiferProperties.GetStatusModifierProperties(expressedStatus.id)
-                              : m_ItemVisual.ModiferProperties.GetEquipStatusModifierProperties(expressedStatus.id)).duration,
-                          interpolation = expressedStatus.elapsed / duration;
-                    // TODO:refactor generalize logic for viewable
+                    if (m_IsFpv) transform.localPosition = m_ItemVisual.FpvOffset;
+                    else m_ItemVisual.transform.localPosition = m_ItemVisual.TpvOffset;
+                    
                     if (m_FpvArmsRenderer)
                     {
                         m_FpvArmsRenderer.enabled = isLocalPlayer;
@@ -78,6 +72,15 @@ namespace Swihoni.Sessions.Player.Visualization
                     }
                     else
                         m_ItemVisual.SetRenderingMode(false);
+                    
+                    ItemComponent equippedItem = inventory.EquippedItemComponent;
+                    ByteStatusComponent equipStatus = inventory.equipStatus;
+                    bool isEquipped = equipStatus.id == ItemEquipStatusId.Equipped;
+                    ByteStatusComponent expressedStatus = isEquipped ? equippedItem.status : equipStatus;
+                    float duration = (isEquipped
+                              ? m_ItemVisual.ModiferProperties.GetStatusModifierProperties(expressedStatus.id)
+                              : m_ItemVisual.ModiferProperties.GetEquipStatusModifierProperties(expressedStatus.id)).duration,
+                          interpolation = expressedStatus.elapsed / duration;
 
                     if (m_RenderItems && m_IsFpv == isLocalPlayer)
                         m_ItemVisual.SampleEvents(equippedItem, inventory);
@@ -134,8 +137,6 @@ namespace Swihoni.Sessions.Player.Visualization
             ItemVisualBehavior newVisuals = ItemManager.ObtainVisuals(itemId, this, m_Graph);
             newVisuals.transform.SetParent(transform, false);
             m_ItemVisual = newVisuals;
-            if (m_IsFpv) transform.localPosition = newVisuals.FpvOffset;
-            else newVisuals.transform.localPosition = newVisuals.TpvOffset;
             m_WasNewItemVisualThisRenderFrame = true;
             return newVisuals;
         }
@@ -174,6 +175,6 @@ namespace Swihoni.Sessions.Player.Visualization
             return aimInterpolation;
         }
 
-        public void Dispose() { m_Graph.Destroy(); }
+        public void Dispose() => m_Graph.Destroy();
     }
 }

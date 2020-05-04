@@ -43,7 +43,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             base.ModifyChecked(session, playerId, item, inventory, inputProperty, duration);
         }
 
-        protected override byte? FinishStatus(ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             switch (item.status.id)
             {
@@ -53,7 +53,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 case ItemStatusId.PrimaryUsing when item.gunStatus.ammoInMag == 0 && CanReload(item, inventory):
                     return GunStatusId.Reloading;
             }
-            return base.FinishStatus(item, inventory, inputs);
+            return base.FinishStatus(session, playerId, item, inventory, inputs);
         }
 
         protected virtual bool CanReload(ItemComponent item, InventoryComponent inventory)

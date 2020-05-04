@@ -34,17 +34,6 @@ namespace Swihoni.Sessions.Player.Modifiers
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.SynchronizeBehavior(player);
         }
 
-        // public List<TComponent> GetInterfaces<TComponent>() where TComponent : class
-        // {
-        //     var components = new List<TComponent>();
-        //     foreach (Component component in GetComponents<Component>())
-        //     {
-        //         if (component is TComponent subComponent)
-        //             components.Add(subComponent);
-        //     }
-        //     return components;
-        // }
-
         public void ModifyCommands(SessionBase session, Container commandsToModify)
         {
             if (m_Session.ShouldInterruptCommands) return;
