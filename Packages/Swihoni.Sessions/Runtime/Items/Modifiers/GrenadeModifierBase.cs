@@ -1,4 +1,3 @@
-using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Items.Modifiers

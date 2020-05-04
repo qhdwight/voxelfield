@@ -99,7 +99,7 @@ namespace Swihoni.Sessions.Player.Visualization
             {
                 if (m_ItemVisual)
                 {
-                    ItemManager.ReturnVisuals(m_ItemVisual);
+                    ItemAssetLink.ReturnVisuals(m_ItemVisual);
                     m_ItemVisual = null;
                 }
                 if (m_FpvArmsRenderer) m_FpvArmsRenderer.enabled = false;
@@ -126,15 +126,15 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             if (inventory.HasNoItemEquipped)
             {
-                if (m_ItemVisual) ItemManager.ReturnVisuals(m_ItemVisual);
+                if (m_ItemVisual) ItemAssetLink.ReturnVisuals(m_ItemVisual);
                 m_ItemVisual = null;
                 return null;
             }
             byte itemId = inventory.EquippedItemComponent.id;
             if (m_ItemVisual && itemId == m_ItemVisual.ModiferProperties.id) return m_ItemVisual;
 
-            if (m_ItemVisual) ItemManager.ReturnVisuals(m_ItemVisual); // We have existing visuals but they are the wrong item id
-            ItemVisualBehavior newVisuals = ItemManager.ObtainVisuals(itemId, this, m_Graph);
+            if (m_ItemVisual) ItemAssetLink.ReturnVisuals(m_ItemVisual); // We have existing visuals but they are the wrong item id
+            ItemVisualBehavior newVisuals = ItemAssetLink.ObtainVisuals(itemId, this, m_Graph);
             newVisuals.transform.SetParent(transform, false);
             m_ItemVisual = newVisuals;
             m_WasNewItemVisualThisRenderFrame = true;
@@ -163,7 +163,7 @@ namespace Swihoni.Sessions.Player.Visualization
             {
                 case AdsStatusId.ExitingAds:
                 case AdsStatusId.EnteringAds:
-                    var gunModifier = (GunModifierBase) ItemManager.GetModifier(inventory.EquippedItemComponent.id);
+                    var gunModifier = (GunModifierBase) ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
                     float duration = gunModifier.GetAdsStatusModifierProperties(adsStatus.id).duration;
                     aimInterpolation = adsStatus.elapsed / duration;
                     break;

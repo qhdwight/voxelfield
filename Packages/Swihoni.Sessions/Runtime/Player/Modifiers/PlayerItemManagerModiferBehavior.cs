@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             // Modify equipped item component
             ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
-            ItemModifierBase itemModifier = ItemManager.GetModifier(equippedItemComponent.id);
+            ItemModifierBase itemModifier = ItemAssetLink.GetModifier(equippedItemComponent.id);
             itemModifier.ModifyChecked(session, playerId, equippedItemComponent, inventoryComponent, inputProperty, duration);
         }
 
@@ -50,7 +50,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (inventory.HasNoItemEquipped) return;
             // We have a current equipped item
             equipStatus.elapsed.Value += duration;
-            ItemModifierBase modifier = ItemManager.GetModifier(inventory.EquippedItemComponent.id);
+            ItemModifierBase modifier = ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
 
             // Handle finishing equip status
             ItemStatusModiferProperties modifierProperties;
@@ -76,7 +76,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         private static void ModifyAdsStatus(InventoryComponent inventory, InputFlagProperty inputs, float duration)
         {
-            ItemModifierBase modifier = ItemManager.GetModifier(inventory.EquippedItemComponent.id);
+            ItemModifierBase modifier = ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
             if (!(modifier is GunModifierBase gunModifier)) return;
 
             if (inputs.GetInput(PlayerInput.Ads))
@@ -146,7 +146,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (itemId == ItemId.None) return;
             itemComponent.status.id.Value = ItemStatusId.Idle;
             itemComponent.status.elapsed.Value = 0.0f;
-            ItemModifierBase itemModifier = ItemManager.GetModifier(itemId);
+            ItemModifierBase itemModifier = ItemAssetLink.GetModifier(itemId);
             if (itemModifier is GunModifierBase gunModifier)
             {
                 itemComponent.gunStatus.ammoInMag.Value = gunModifier.MagSize;

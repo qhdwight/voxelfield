@@ -1,5 +1,6 @@
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -14,11 +15,11 @@ namespace Swihoni.Sessions.Items.Modifiers
     {
         [Header("Throwable"), SerializeField] private ushort m_ThrowForce = default;
         [SerializeField] protected byte m_AmmoCount = default;
-        [SerializeField] protected GameObject m_ThrowablePrefab = default;
+        [SerializeField] protected ThrowableModifierBehavior m_ThrowablePrefab = default;
 
         public byte AmmoCount => m_AmmoCount;
         public ushort ThrowForce => m_ThrowForce;
-        public GameObject ThrowablePrefab => m_ThrowablePrefab;
+        public ThrowableModifierBehavior ThrowablePrefab => m_ThrowablePrefab;
 
         protected override void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, float duration)
         {
@@ -28,15 +29,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
-            switch (item.status.id)
-            {
-                case ThrowableStatusId.Cooking:
-                    Release(session, playerId);
-                    return ItemStatusId.Idle;
-                case ItemStatusId.PrimaryUsing:
-                    Release(session, playerId);
-                    break;
-            }
+            if (item.status.id == ItemStatusId.PrimaryUsing) Release(session, playerId);
             return base.FinishStatus(session, playerId, item, inventory, inputs);
         }
 
@@ -54,10 +47,14 @@ namespace Swihoni.Sessions.Items.Modifiers
             Ray ray = SessionBase.GetRayForPlayer(player);
             if (player.Has<ServerTag>())
             {
-                // var projectile = ProjectileManager.Singleton.InstantiateProjectile<ThrowableProjectile>(m_Properties.ThrowablePrefab);
-                // projectile.transform.SetPositionAndRotation(ray.origin + ray.direction, Quaternion.identity);
-                // projectile.RigidBody.AddForce(ray.direction * m_ThrowForce, ForceMode.Impulse);
-                // projectile.RigidBody.AddRelativeTorque(new Vector3 {y = 2.0f}, ForceMode.Impulse);
+                Debug.Log("Release");
+                EntityModifierBehavior modifier = EntityAssetLink.ObtainModifier(m_ThrowablePrefab.id);
+                if (modifier is ThrowableModifierBehavior throwableModifier)
+                {
+                    modifier.transform.SetPositionAndRotation(ray.origin + ray.direction, Quaternion.identity);
+                    throwableModifier.Rigidbody.AddForce(ray.direction * m_ThrowForce, ForceMode.Impulse);
+                    throwableModifier.Rigidbody.AddRelativeTorque(new Vector3 {y = 2.0f}, ForceMode.Impulse);
+                }
             }
         }
     }

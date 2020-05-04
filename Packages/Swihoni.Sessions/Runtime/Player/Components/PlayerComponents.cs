@@ -112,7 +112,7 @@ namespace Swihoni.Sessions.Player.Components
         // Embedded item components are only explicitly interpolated, since usually it only needs to be done on equipped item
         public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
         {
-            ItemModifierBase modifier = ItemManager.GetModifier(i1.id);
+            ItemModifierBase modifier = ItemAssetLink.GetModifier(i1.id);
             status.InterpolateFrom(i1.status, i2.status, interpolation, statusId => modifier.GetStatusModifierProperties(statusId).duration);
         }
     }
@@ -137,7 +137,7 @@ namespace Swihoni.Sessions.Player.Components
                 equippedIndex.Value = PlayerItemManagerModiferBehavior.NoneIndex;
                 return;
             }
-            ItemModifierBase modifier = ItemManager.GetModifier(i1.EquippedItemComponent.id);
+            ItemModifierBase modifier = ItemAssetLink.GetModifier(i1.EquippedItemComponent.id);
             if (modifier is GunModifierBase gunModifier)
                 adsStatus.InterpolateFrom(i1.adsStatus, i2.adsStatus, interpolation, aimStatusId => gunModifier.GetAdsStatusModifierProperties(aimStatusId).duration);
             equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation, equipStatusId => modifier.GetEquipStatusModifierProperties(equipStatusId).duration);

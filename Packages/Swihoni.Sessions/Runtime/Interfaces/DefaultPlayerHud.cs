@@ -39,7 +39,7 @@ namespace Swihoni.Sessions.Interfaces
                     m_AmmoText.Set(builder =>
                     {
                         ItemComponent equippedItem = inventory.EquippedItemComponent;
-                        ItemModifierBase modifier = ItemManager.GetModifier(equippedItem.id);
+                        ItemModifierBase modifier = ItemAssetLink.GetModifier(equippedItem.id);
                         if (modifier is GunModifierBase gunModifier)
                             builder
                                .Append("Ammo ")

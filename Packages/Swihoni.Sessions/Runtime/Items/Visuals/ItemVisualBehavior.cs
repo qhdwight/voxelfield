@@ -56,7 +56,7 @@ namespace Swihoni.Sessions.Items.Visuals
             m_PlayerGraph = playerGraph;
             m_Renders = GetComponentsInChildren<Renderer>();
             m_AudioSource = GetComponentInChildren<AudioSource>();
-            ModiferProperties = ItemManager.GetModifier(m_Id);
+            ModiferProperties = ItemAssetLink.GetModifier(m_Id);
             playerItemAnimator.ArmIk.SetTargets(m_IkL, m_IkR);
             ItemStatusVisualProperties[] visualProperties = m_StatusVisualProperties.Concat(m_EquipStatusVisualProperties).ToArray();
             m_Mixer = AnimationMixerPlayable.Create(playerGraph, visualProperties.Length);
