@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
-    <e p="$USER_HOME$/.cache/JetBrains/Rider2020.1/extResources" t="IncludeRecursive" />
-    <e p="$USER_HOME$/.cache/JetBrains/Rider2020.1/resharper-host/local/Transient/ReSharperHost/v201/SolutionCaches/_Compound.656494323.00" t="ExcludeRecursive" />
+    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2020.1/extResources" t="IncludeRecursive" />
+    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2020.1/resharper-host/local/Transient/ReSharperHost/v201/SolutionCaches/_Compound.-1205327708.00" t="ExcludeRecursive" />
     <e p="$PROJECT_DIR$" t="IncludeRecursive">
       <e p="Assets" t="Include">
         <e p="Scripts" t="Include">
@@ -34,7 +34,8 @@
       <e p="Compound.sln" t="IncludeFlat" />
       <e p="Console.csproj" t="IncludeRecursive" />
       <e p="Input.csproj" t="IncludeRecursive" />
-      <e p="Packages" t="Include">
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="Packages" t="ExcludeRecursive">
         <e p="Swihoni.Collections" t="Include">
           <e p="Runtime" t="Include">
             <e p="ArrayFactory.cs" t="Include" />
@@ -86,8 +87,8 @@
             </e>
             <e p="DebugBehavior.cs" t="Include" />
             <e p="Entities" t="Include">
-              <e p="EntityAssetLink.cs" t="Include" />
               <e p="EntityComponents.cs" t="Include" />
+              <e p="EntityManager.cs" t="Include" />
               <e p="EntityModifierBehavior.cs" t="Include" />
               <e p="EntityVisualBehavior.cs" t="Include" />
               <e p="Experimental" t="Include">
@@ -185,15 +186,13 @@
         </e>
       </e>
       <e p="Swihoni.Collections.csproj" t="IncludeRecursive" />
-      <e p="Swihoni.Components.Tests.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Components.csproj" t="IncludeRecursive" />
+      <e p="Swihoni.Components.Tests.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Networking.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Session.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Sessions.Tests.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Util.csproj" t="IncludeRecursive" />
       <e p="Temp/Bin" t="ExcludeRecursive" />
-      <e p="obj" t="ExcludeRecursive" />
-      <e p="packages" t="ExcludeRecursive" />
     </e>
   </component>
 </project>

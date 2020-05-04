@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
@@ -39,6 +40,7 @@ namespace Swihoni.Sessions
         private float m_FixedUpdateTime, m_RenderTime;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
         protected IPlayerContainerRenderer[] m_Visuals;
+        internal EntityManager EntityManager { get; } = new EntityManager();
         private uint m_Tick;
         public bool ShouldInterruptCommands { get; private set; }
 
@@ -73,6 +75,8 @@ namespace Swihoni.Sessions
 
             m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup(this));
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, modifier => modifier.Setup(this));
+            
+            EntityManager.Setup();
         }
 
         private void CheckDisposed()

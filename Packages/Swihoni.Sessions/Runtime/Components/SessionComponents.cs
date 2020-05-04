@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Swihoni.Components;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
 
 namespace Swihoni.Sessions.Components
@@ -11,7 +12,8 @@ namespace Swihoni.Sessions.Components
     {
         public static readonly IReadOnlyCollection<Type> StandardSessionElements = new List<Type>
         {
-            typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(StampComponent), typeof(SessionSettingsComponent), typeof(KillFeedProperty)
+            typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(EntityArrayProperty),
+            typeof(StampComponent), typeof(SessionSettingsComponent),typeof(KillFeedProperty)
         };
 
         public static readonly IReadOnlyCollection<Type> StandardPlayerElements = new List<Type>

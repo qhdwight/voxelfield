@@ -13,5 +13,16 @@ namespace Swihoni.Sessions.Entities
         {
             m_Rigidbody = GetComponent<Rigidbody>();
         }
+
+        public override void Modify(EntityContainer entity)
+        {
+            base.Modify(entity);
+            
+            if (entity.Without(out ThrowableComponent throwable)) return;
+
+            Transform t = transform;
+            throwable.position.Value = t.position;
+            throwable.rotation.Value = t.rotation;
+        }
     }
 }

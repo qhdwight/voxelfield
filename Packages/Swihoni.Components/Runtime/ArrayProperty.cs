@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEngine;
 
 namespace Swihoni.Components
@@ -18,7 +19,7 @@ namespace Swihoni.Components
     [Serializable]
     public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T> where T : ElementBase, new()
     {
-        [CopyField, SerializeField] private T[] m_Values;
+        [CopyField, SerializeField] protected T[] m_Values;
 
         public ArrayProperty(params T[] values) => m_Values = (T[]) values.Clone();
 
@@ -34,11 +35,7 @@ namespace Swihoni.Components
                 m_Values[i] = constructor();
         }
 
-        public T this[int index]
-        {
-            get => m_Values[index];
-            set => m_Values[index] = value;
-        }
+        public T this[int index] { get => m_Values[index]; set => m_Values[index] = value; }
 
         public override int Length => m_Values.Length;
 
@@ -64,5 +61,36 @@ namespace Swihoni.Components
     [Serializable]
     public class StringProperty : ArrayProperty<CharProperty>
     {
+        private StringBuilder m_Builder;
+
+        public StringProperty(int size) : base(size) => m_Builder = new StringBuilder(size);
+
+        public StringBuilder GetString()
+        {
+            m_Builder.Clear();
+            foreach (char character in m_Values)
+            {
+                if (character == '\0')
+                    break;
+                m_Builder.Append(character);
+            }
+            return m_Builder;
+        }
+
+        public void SetString(Action<StringBuilder> action)
+        {
+            m_Builder.Clear();
+            action(m_Builder);
+            for (var i = 0; i < m_Builder.Capacity; i++)
+            {
+                if (i < m_Builder.Length)
+                    m_Values[i].Value = m_Builder[i];
+                else
+                {
+                    m_Values[i].Value= '\0';
+                    break;
+                }
+            }
+        }
     }
 }

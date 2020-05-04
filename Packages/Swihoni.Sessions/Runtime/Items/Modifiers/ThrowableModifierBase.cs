@@ -48,7 +48,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (player.Has<ServerTag>())
             {
                 Debug.Log("Release");
-                EntityModifierBehavior modifier = EntityAssetLink.ObtainModifier(m_ThrowablePrefab.id);
+                EntityModifierBehavior modifier = session.EntityManager.ObtainModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
                 if (modifier is ThrowableModifierBehavior throwableModifier)
                 {
                     modifier.transform.SetPositionAndRotation(ray.origin + ray.direction, Quaternion.identity);
