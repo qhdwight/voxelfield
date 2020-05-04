@@ -5,11 +5,16 @@ namespace Swihoni.Sessions.Entities
     [RequireComponent(typeof(Rigidbody))]
     public class ThrowableModifierBehavior : EntityModifierBehavior
     {
-        private Rigidbody m_Rigidbody;
+        public Rigidbody Rigidbody { get; private set; }
 
-        public Rigidbody Rigidbody => m_Rigidbody;
+        private void Awake() => Rigidbody = GetComponent<Rigidbody>();
 
-        private void Awake() { m_Rigidbody = GetComponent<Rigidbody>(); }
+        public override void SetActive(bool isEnabled)
+        {
+            base.SetActive(isEnabled);
+            Rigidbody.velocity = Vector3.zero;
+            Rigidbody.angularVelocity = Vector3.zero;
+        }
 
         public override void Modify(EntityContainer entity)
         {

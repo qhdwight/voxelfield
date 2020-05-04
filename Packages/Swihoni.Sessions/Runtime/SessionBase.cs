@@ -163,26 +163,34 @@ namespace Swihoni.Sessions
         //     Interpolator.InterpolateInto(getInHistory(fromIndex), getInHistory(toIndex), componentToInterpolate, interpolation);
         // }
 
-        protected static void RenderInterpolatedPlayer<TStampComponent>(float renderTime, Container renderPlayerContainer, int maxRollback, Func<int, Container> getInHistory)
-            where TStampComponent : StampComponent
+        protected static void RenderInterpolated
+            (float renderTime, Container renderContainer, int maxRollback, Func<int, StampComponent> getTimeInHistory, Func<int, Container> getInHistory)
         {
             // Interpolate all remote players
             for (var historyIndex = 0; historyIndex < maxRollback; historyIndex++)
             {
                 Container fromComponent = getInHistory(historyIndex + 1),
                           toComponent = getInHistory(historyIndex);
-                FloatProperty toTime = toComponent.Require<TStampComponent>().time,
-                              fromTime = fromComponent.Require<TStampComponent>().time;
-                if (!fromTime.HasValue || !toTime.HasValue) break;
+                FloatProperty toTime = getTimeInHistory(historyIndex).time,
+                              fromTime = getTimeInHistory(historyIndex + 1).time;
+                if (!toTime.HasValue || !fromTime.HasValue) break;
                 if (renderTime > fromTime && renderTime < toTime)
                 {
                     float interpolation = (renderTime - fromTime) / (toTime - fromTime);
-                    Interpolator.InterpolateInto(fromComponent, toComponent, renderPlayerContainer, interpolation);
+                    Interpolator.InterpolateInto(fromComponent, toComponent, renderContainer, interpolation);
                     return;
                 }
             }
             // Take last if we do not have enough history
-            renderPlayerContainer.FastCopyFrom(getInHistory(0));
+            renderContainer.FastCopyFrom(getInHistory(0));
+        }
+
+        protected static void RenderInterpolatedPlayer<TStampComponent>
+            (float renderTime, Container renderContainer, int maxRollback, Func<int, Container> getInHistory)
+            where TStampComponent : StampComponent
+        {
+            RenderInterpolated(renderTime, renderContainer, maxRollback,
+                               historyIndex => getInHistory(historyIndex).Require<TStampComponent>(), getInHistory);
         }
 
         public abstract Ray GetRayForPlayerId(int playerId);

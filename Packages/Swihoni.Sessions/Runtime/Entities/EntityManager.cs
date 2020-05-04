@@ -10,7 +10,8 @@ namespace Swihoni.Sessions.Entities
         private Pool<EntityModifierBehavior>[] m_EntityModifiersPool;
         private Pool<EntityVisualBehavior>[] m_EntityVisualsPool;
 
-        private EntityModifierBehavior[] m_Modifiers = new EntityModifierBehavior[10];
+        private readonly EntityModifierBehavior[] m_Modifiers = new EntityModifierBehavior[10];
+        private readonly EntityVisualBehavior[] m_Visuals = new EntityVisualBehavior[10];
 
         public void Setup()
         {
@@ -32,7 +33,7 @@ namespace Swihoni.Sessions.Entities
                                             })).ToArray();
         }
 
-        public EntityVisualBehavior ObtainVisual(int entityId)
+        private EntityVisualBehavior ObtainVisual(int entityId)
         {
             Pool<EntityVisualBehavior> pool = m_EntityVisualsPool[entityId - 1];
             EntityVisualBehavior visual = pool.Obtain();
@@ -41,7 +42,7 @@ namespace Swihoni.Sessions.Entities
             return visual;
         }
 
-        public void ReturnVisual(EntityVisualBehavior visual)
+        private void ReturnVisual(EntityVisualBehavior visual)
         {
             Pool<EntityVisualBehavior> pool = m_EntityVisualsPool[visual.id - 1];
             visual.SetVisible(false);
@@ -55,18 +56,24 @@ namespace Swihoni.Sessions.Entities
             EntityModifierBehavior modifier = pool.Obtain();
             modifier.SetActive(true);
             var entities = session.Require<EntityArrayProperty>();
-            foreach (EntityContainer entity in entities)
+            for (var index = 0; index < entities.Length; index++)
             {
-                if (entity.id == EntityId.None)
-                {
-                    entity.id.Value = entityId;
-                    break;
-                }
+                EntityContainer entity = entities[index];
+                if (entity.id != EntityId.None) continue;
+                /* Found empty slot */
+                entity.id.Value = entityId;
+                m_Modifiers[index] = modifier;
+                return modifier;
             }
+            /* Circle back to first. We ran out of entities */
+            // TODO:refactor better way?
+            ReturnModifier(m_Modifiers[0]);
+            entities[0].id.Value = entityId;
+            m_Modifiers[0] = modifier;
             return modifier;
         }
 
-        public void ReturnModifier(EntityModifierBehavior modifier)
+        private void ReturnModifier(EntityModifierBehavior modifier)
         {
             Pool<EntityModifierBehavior> pool = m_EntityModifiersPool[modifier.id - 1];
             modifier.SetActive(false);
@@ -76,13 +83,31 @@ namespace Swihoni.Sessions.Entities
         public void Modify(Container session)
         {
             var entities = session.Require<EntityArrayProperty>();
-            foreach (EntityContainer entity in entities)
+            for (var index = 0; index < entities.Length; index++)
             {
-                if (entity.id != EntityId.None)
+                EntityContainer entity = entities[index];
+                if (entity.id == EntityId.None)
                 {
-                    m_Modifiers[entity.id - 1].Modify(entity);
-                    break;
+                    if (m_Modifiers[index] != null)
+                        ReturnModifier(m_Modifiers[index]);
+                    continue;
                 }
+                m_Modifiers[index].Modify(entity);
+            }
+        }
+
+        public void Render(EntityArrayProperty entities)
+        {
+            for (var index = 0; index < entities.Length; index++)
+            {
+                EntityContainer entity = entities[index];
+                if (entity.id == EntityId.None)
+                {
+                    if (m_Visuals[index] != null) ReturnVisual(m_Visuals[index]);
+                    continue;
+                }
+                if (m_Visuals[index] == null) m_Visuals[index] = ObtainVisual(entity.id);
+                m_Visuals[index].Render(entity);
             }
         }
     }

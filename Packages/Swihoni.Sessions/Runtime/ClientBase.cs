@@ -15,7 +15,6 @@ namespace Swihoni.Sessions
 {
     public abstract class ClientBase : NetworkedSessionBase
     {
-        private readonly Container m_RenderSession;
         private readonly CyclicArray<ClientCommandsContainer> m_CommandHistory;
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
@@ -28,7 +27,6 @@ namespace Swihoni.Sessions
             : base(linker, sessionElements, playerElements, commandElements)
         {
             IpEndPoint = ipEndPoint;
-            m_RenderSession = NewSession<Container>(sessionElements, playerElements);
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
             // TODO:refactor zeroing
@@ -60,9 +58,10 @@ namespace Swihoni.Sessions
 
         protected override void Render(float renderTime)
         {
-            base.Render(renderTime);
             if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers) || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
                 return;
+            
+            base.Render(renderTime);
 
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {

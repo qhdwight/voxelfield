@@ -11,7 +11,7 @@ namespace Swihoni.Sessions
     {
         private const int HostPlayerId = 0;
 
-        private readonly Container m_HostCommands, m_RenderSession;
+        private readonly Container m_HostCommands;
 
         protected HostBase(ISessionGameObjectLinker linker,
                            IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
@@ -25,8 +25,6 @@ namespace Swihoni.Sessions
                                           .Append(typeof(ServerTag)));
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Reset();
-
-            m_RenderSession = NewSession<Container>(sessionElements, playerElements);
         }
 
         private void ReadLocalInputs(Container commandsToFill) => m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill);

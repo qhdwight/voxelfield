@@ -12,6 +12,9 @@ namespace Swihoni.Sessions.Entities
     [Serializable]
     public class EntityContainer : Container
     {
+        public EntityContainer() { }
+        public EntityContainer(params Type[] types) : base(types) { }
+
         public EntityId id;
     }
 

@@ -20,6 +20,7 @@ namespace Swihoni.Sessions
         protected readonly ServerSessionContainer m_EmptyServerSession;
         protected readonly DebugClientView m_EmptyDebugClientView;
         protected readonly Container m_RollbackSession;
+        protected readonly Container m_RenderSession;
 
         protected NetworkedSessionBase(ISessionGameObjectLinker linker,
                                        IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
@@ -34,6 +35,8 @@ namespace Swihoni.Sessions
             m_SessionHistory = new CyclicArray<ServerSessionContainer>(250, ServerSessionContainerConstructor);
 
             m_RollbackSession = NewSession<Container>(sessionElements, playerElements);
+
+            m_RenderSession = NewSession<Container>(sessionElements, playerElements);
 
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);
             m_EmptyServerSession = ServerSessionContainerConstructor();
@@ -79,6 +82,16 @@ namespace Swihoni.Sessions
                 if (@interface is SessionInterfaceBehavior sessionInterface)
                     sessionInterface.Render(GetLatestSession());
             }
+            float rollback = GetSettings().TickInterval;
+            var renderEntities = m_RenderSession.Require<EntityArrayProperty>();
+            for (var i = 0; i < renderEntities.Length; i++)
+            {
+                int index = i;
+                RenderInterpolated(renderTime - rollback, renderEntities[index], m_SessionHistory.Size,
+                                   h => m_SessionHistory.Get(-h).Require<ServerStampComponent>(),
+                                   h => m_SessionHistory.Get(-h).Require<EntityArrayProperty>()[index]);
+            }
+            EntityManager.Render(renderEntities);
         }
 
         protected abstract void RollbackHitboxes(int playerId);
@@ -99,7 +112,8 @@ namespace Swihoni.Sessions
             var session = new T();
             session.Add(sessionElements);
             session.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(playerElements));
-            session.Require<EntityArrayProperty>().SetAll(() => new EntityContainer().Zero());
+            // TODO:refactor standard entity components
+            session.Require<EntityArrayProperty>().SetAll(() => new EntityContainer(typeof(ThrowableComponent)).Zero());
             session.ZeroIfHas<KillFeedProperty>();
             return session;
         }

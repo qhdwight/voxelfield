@@ -6,7 +6,7 @@ namespace Swihoni.Sessions.Entities
     {
         public byte id;
 
-        public void SetActive(bool isEnabled) => gameObject.SetActive(isEnabled);
+        public virtual void SetActive(bool isEnabled) => gameObject.SetActive(isEnabled);
 
         public virtual void Modify(EntityContainer entity) { }
     }

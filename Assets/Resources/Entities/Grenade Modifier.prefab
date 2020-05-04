@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1174286524}
   - component: {fileID: 1174286527}
   - component: {fileID: 1174286526}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -58,7 +58,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2aaa1ed9586f0284a884be9211ae131a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -91,7 +91,7 @@ GameObject:
   - component: {fileID: 7530670241173920219}
   - component: {fileID: 862131334066719177}
   - component: {fileID: 7530670241173920196}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Grenade Modifier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -121,9 +121,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7530670241173920217}
   serializedVersion: 2
-  m_Mass: 1
+  m_Mass: 0.4
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0.2
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -136,7 +136,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7530670241173920217}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: d14e6128d32561a4abc0d9b541cb491f, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2

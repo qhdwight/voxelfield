@@ -34,8 +34,7 @@ namespace Swihoni.Components
 
         public void Add(IEnumerable<Type> types)
         {
-            foreach (Type type in types)
-                Add(type);
+            foreach (Type type in types) Add(type);
         }
 
         private void Add(Type type)
@@ -47,6 +46,10 @@ namespace Swihoni.Components
 
         public void Add(params Type[] types) => Add((IEnumerable<Type>) types);
 
+        /// <summary>
+        /// Clears all elements and sets types to match given container.
+        /// Note: Use carefully as this unregisters field elements.
+        /// </summary>
         public void TakeElementTypes(Container other)
         {
             m_TypeToId.Clear();
@@ -87,7 +90,7 @@ namespace Swihoni.Components
                 object child = Elements[m_TypeToId[typeof(TElement)]];
                 return (TElement) child;
             }
-            catch (Exception exception)
+            catch (KeyNotFoundException exception)
             {
                 throw new ArgumentException($"Container does not have {typeof(TElement).Name}", exception);
             }

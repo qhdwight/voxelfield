@@ -30,6 +30,8 @@ namespace Swihoni.Sessions
             base.Start();
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Loopback, 7777));
             RegisterMessages(m_Socket);
+            
+            Physics.autoSimulation = false;
         }
 
         protected virtual void PreTick(Container tickSession) { }
@@ -56,7 +58,7 @@ namespace Swihoni.Sessions
 
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
-            Tick(serverSession, time);
+            Tick(serverSession, time, duration);
             PostTick(serverSession);
             IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
@@ -100,7 +102,7 @@ namespace Swihoni.Sessions
             player.Reset();
         }
 
-        private void Tick(Container serverSession, float time)
+        private void Tick(Container serverSession, float time, float duration)
         {
             m_Socket.PollReceived((ipEndPoint, message) =>
             {
@@ -109,40 +111,7 @@ namespace Swihoni.Sessions
                 {
                     case ClientCommandsContainer receivedClientCommands:
                     {
-                        FloatProperty serverPlayerTime = serverPlayer.Require<ServerStampComponent>().time;
-                        var clientStamp = receivedClientCommands.Require<ClientStampComponent>();
-                        float serverTime = serverSession.Require<ServerStampComponent>().time;
-                        var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
-                        // Clients start to tag with ticks once they receive their first server player state
-                        if (clientStamp.tick.HasValue)
-                        {
-                            if (serverPlayerClientStamp.tick.WithoutValue)
-                                // Take one tick to set initial server player client stamp
-                                serverPlayerClientStamp.FastMergeSet(clientStamp);
-                            else
-                            {
-                                // Make sure this is the newest tick
-                                if (clientStamp.tick > serverPlayerClientStamp.tick)
-                                {
-                                    serverPlayerTime.Value += clientStamp.time - serverPlayerClientStamp.time;
-
-                                    if (Mathf.Abs(serverPlayerTime.Value - serverTime) > GetSettings(serverSession).TickInterval * 3)
-                                    {
-                                        // Debug.LogWarning($"[{GetType().Name}] Reset time for client: {clientId}");
-                                        serverPlayerTime.Value = serverTime;
-                                    }
-
-                                    ModeBase mode = GetMode(serverSession);
-                                    serverPlayer.FastMergeSet(receivedClientCommands); // Merge in trusted
-                                    m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.duration);
-                                    mode.Modify(serverSession, serverPlayer, receivedClientCommands, clientStamp.duration);
-                                }
-                                else
-                                    Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
-                            }
-                        }
-                        else
-                            serverPlayerTime.Value = serverTime;
+                        HandleClientCommand(clientId, receivedClientCommands, serverSession, serverPlayer);
                         break;
                     }
                     case PingCheckComponent receivedPingCheck:
@@ -164,12 +133,57 @@ namespace Swihoni.Sessions
                     }
                 }
             });
+            Physics.Simulate(duration);
+            EntityManager.Modify(serverSession);
+            SendServerSession(serverSession);
+        }
+
+        private void SendServerSession(Container serverSession)
+        {
             var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
             foreach ((IPEndPoint ipEndPoint, byte id) in m_PlayerIds)
             {
                 localPlayerProperty.Value = id;
                 m_Socket.Send(serverSession, ipEndPoint);
             }
+        }
+
+        private void HandleClientCommand(byte clientId, Container receivedClientCommands, Container serverSession, Container serverPlayer)
+        {
+            FloatProperty serverPlayerTime = serverPlayer.Require<ServerStampComponent>().time;
+            var clientStamp = receivedClientCommands.Require<ClientStampComponent>();
+            float serverTime = serverSession.Require<ServerStampComponent>().time;
+            var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
+            // Clients start to tag with ticks once they receive their first server player state
+            if (clientStamp.tick.HasValue)
+            {
+                if (serverPlayerClientStamp.tick.WithoutValue)
+                    // Take one tick to set initial server player client stamp
+                    serverPlayerClientStamp.FastMergeSet(clientStamp);
+                else
+                {
+                    // Make sure this is the newest tick
+                    if (clientStamp.tick > serverPlayerClientStamp.tick)
+                    {
+                        serverPlayerTime.Value += clientStamp.time - serverPlayerClientStamp.time;
+
+                        if (Mathf.Abs(serverPlayerTime.Value - serverTime) > GetSettings(serverSession).TickInterval * 3)
+                        {
+                            // Debug.LogWarning($"[{GetType().Name}] Reset time for client: {clientId}");
+                            serverPlayerTime.Value = serverTime;
+                        }
+
+                        ModeBase mode = GetMode(serverSession);
+                        serverPlayer.FastMergeSet(receivedClientCommands); // Merge in trusted
+                        m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.duration);
+                        mode.Modify(serverSession, serverPlayer, receivedClientCommands, clientStamp.duration);
+                    }
+                    else
+                        Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
+                }
+            }
+            else
+                serverPlayerTime.Value = serverTime;
         }
 
         /// <summary>
@@ -206,7 +220,7 @@ namespace Swihoni.Sessions
             player.Require<ServerStampComponent>().Reset();
         }
 
-        public override Ray GetRayForPlayerId(int playerId) { return GetRayForPlayer(GetLatestSession().GetPlayer(playerId)); }
+        public override Ray GetRayForPlayerId(int playerId) => GetRayForPlayer(GetLatestSession().GetPlayer(playerId));
 
         protected override void RollbackHitboxes(int playerId)
         {
