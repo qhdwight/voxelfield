@@ -1,3 +1,4 @@
+using Swihoni.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Entities
@@ -5,6 +6,8 @@ namespace Swihoni.Sessions.Entities
     [RequireComponent(typeof(Rigidbody))]
     public class ThrowableModifierBehavior : EntityModifierBehavior
     {
+        [SerializeField] private float m_ExplodeTime, m_Lifetime;
+
         public Rigidbody Rigidbody { get; private set; }
 
         private void Awake() => Rigidbody = GetComponent<Rigidbody>();
@@ -16,15 +19,19 @@ namespace Swihoni.Sessions.Entities
             Rigidbody.angularVelocity = Vector3.zero;
         }
 
-        public override void Modify(EntityContainer entity)
+        public override void Modify(EntityContainer entity, float duration)
         {
-            base.Modify(entity);
+            base.Modify(entity, duration);
 
             if (entity.Without(out ThrowableComponent throwable)) return;
 
             Transform t = transform;
             throwable.position.Value = t.position;
             throwable.rotation.Value = t.rotation;
+
+            throwable.elapsed.Value += duration;
+            if (throwable.elapsed > m_Lifetime)
+                entity.Zero();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Swihoni.Sessions.Entities
         public void Render(EntityContainer entity)
         {
             if (entity.Without(out ThrowableComponent throwable)) return;
-            
+
             Transform t = transform;
             t.SetPositionAndRotation(throwable.position, throwable.rotation);
         }

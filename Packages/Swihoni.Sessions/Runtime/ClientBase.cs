@@ -60,7 +60,7 @@ namespace Swihoni.Sessions
         {
             if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers) || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
                 return;
-            
+
             base.Render(renderTime);
 
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)

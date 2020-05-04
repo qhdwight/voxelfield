@@ -30,7 +30,7 @@ namespace Swihoni.Sessions
             base.Start();
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Loopback, 7777));
             RegisterMessages(m_Socket);
-            
+
             Physics.autoSimulation = false;
         }
 
@@ -134,7 +134,7 @@ namespace Swihoni.Sessions
                 }
             });
             Physics.Simulate(duration);
-            EntityManager.Modify(serverSession);
+            EntityManager.Modify(serverSession, duration);
             SendServerSession(serverSession);
         }
 
