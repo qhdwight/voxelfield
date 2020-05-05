@@ -185,6 +185,11 @@
           </e>
         </e>
         <e p="Swihoni.Util" t="Include">
+          <e p="Editor" t="Include">
+            <e p="Layer.cs" t="Include" />
+            <e p="LayerMaskDrawer.cs" t="Include" />
+            <e p="Swihoni.Util.Editor.asmdef" t="Include" />
+          </e>
           <e p="Runtime" t="Include">
             <e p="AnalysisLogger.cs" t="Include" />
             <e p="Animation" t="Include">
@@ -216,6 +221,7 @@
       <e p="Swihoni.Session.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Sessions.Tests.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Util.csproj" t="IncludeRecursive" />
+      <e p="Swihoni.Util.Editor.csproj" t="IncludeRecursive" />
       <e p="Temp\Bin" t="ExcludeRecursive" />
       <e p="Voxel.csproj" t="IncludeRecursive" />
     </e>

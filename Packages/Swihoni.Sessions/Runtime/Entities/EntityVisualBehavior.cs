@@ -22,7 +22,7 @@ namespace Swihoni.Sessions.Entities
             if (entity.Without(out ThrowableComponent throwable)) return;
 
             SetVisible(IsVisible(entity));
-            
+
             Transform t = transform;
             t.SetPositionAndRotation(throwable.position, throwable.rotation);
         }

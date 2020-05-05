@@ -44,7 +44,7 @@ namespace Compound.Session
                 return null;
             }
         }
-        
+
         public Server StartServer()
         {
             var host = new Server(m_Linker);
@@ -99,7 +99,7 @@ namespace Compound.Session
                 Debug.LogError(exception);
                 DisconnectAll();
             }
-            
+
             if (Input.GetKeyDown(KeyCode.H))
                 StartHost();
             if (Input.GetKeyDown(KeyCode.J))

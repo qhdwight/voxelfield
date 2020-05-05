@@ -1,4 +1,5 @@
 using Swihoni.Components;
+using Swihoni.Sessions.Player;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Entities
@@ -32,7 +33,7 @@ namespace Swihoni.Sessions.Entities
 
             var throwable = entity.Require<ThrowableComponent>();
             throwable.elapsed.Value += duration;
-            
+
             bool hasPopped = throwable.elapsed > m_PopTime;
             Rigidbody.constraints = hasPopped ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
             Transform t = transform;
@@ -41,14 +42,19 @@ namespace Swihoni.Sessions.Entities
                 t.rotation = Quaternion.identity;
                 if (m_LastElapsed < m_PopTime)
                 {
-                    Physics.OverlapSphereNonAlloc(t.position, m_Radius, m_OverlappingColliders, m_Mask.value);
+                    int count = Physics.OverlapSphereNonAlloc(t.position, m_Radius, m_OverlappingColliders, m_Mask.value);
+                    for (var i = 0; i < count; i++)
+                    {
+                        Collider hitCollider = m_OverlappingColliders[i];
+                        var hitbox = hitCollider.GetComponent<PlayerHitbox>();
+                    }
                 }
             }
             m_LastElapsed = throwable.elapsed;
-            
+
             throwable.position.Value = t.position;
             throwable.rotation.Value = t.rotation;
-            
+
             if (throwable.elapsed > m_Lifetime)
                 entity.Zero();
         }
