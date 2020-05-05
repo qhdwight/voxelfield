@@ -4,26 +4,26 @@ namespace Voxel
 {
     public static class VoxelTexture
     {
-        public const byte NONE = 0, DIRT = 1, GRASS = 2, STONE = 3;
+        public const byte None = 0, Dirt = 1, Grass = 2, Stone = 3;
     }
 
     public static class VoxelRenderType
     {
-        public const byte NONE = 0, BLOCK = 1, SMOOTH = 2;
+        public const byte None = 0, Block = 1, Smooth = 2;
     }
 
     public static class Orientation
     {
-        public const byte NONE = 0, NORTH = 1, EAST = 2, SOUTH = 3, WEST = 4, UP = 5, DOWN = 6;
+        public const byte None = 0, North = 1, East = 2, South = 3, West = 4, Up = 5, Down = 6;
     }
 
     public struct Voxel
     {
         public const float
-            TILE_SIZE = 34.0f,
-            IMAGE_SIZE = 136.0f,
-            TILE_RATIO = TILE_SIZE / IMAGE_SIZE,
-            PIXEL_RATIO = 1.0f / IMAGE_SIZE;
+            TileSize = 34.0f,
+            ImageSize = 136.0f,
+            TileRatio = TileSize / ImageSize,
+            PixelRatio = 1.0f / ImageSize;
 
         public byte texture, renderType, density, orientation;
         public bool breakable, natural;
@@ -44,13 +44,13 @@ namespace Voxel
             switch (texture)
             {
                 default:
-                case VoxelTexture.STONE:
+                case VoxelTexture.Stone:
                     tile = new Vector2Int(0, 0);
                     break;
-                case VoxelTexture.DIRT:
+                case VoxelTexture.Dirt:
                     tile = new Vector2Int(3, 0);
                     break;
-                case VoxelTexture.GRASS:
+                case VoxelTexture.Grass:
                     tile = new Vector2Int(1, 0);
                     break;
             }
@@ -62,46 +62,36 @@ namespace Voxel
             Vector2Int tilePos = TexturePosition();
             switch (renderType)
             {
-                case VoxelRenderType.BLOCK:
+                case VoxelRenderType.Block:
                 {
-                    float x = TILE_RATIO * tilePos.x, y = TILE_RATIO * tilePos.y;
-                    uvs[0] = new Vector2(
-                                         x + TILE_RATIO - PIXEL_RATIO,
-                                         y + PIXEL_RATIO);
-                    uvs[1] = new Vector2(
-                                         x + TILE_RATIO - PIXEL_RATIO,
-                                         y + TILE_RATIO - PIXEL_RATIO);
-                    uvs[2] = new Vector2(
-                                         x + PIXEL_RATIO,
-                                         y + TILE_RATIO - PIXEL_RATIO);
-                    uvs[3] = new Vector2(
-                                         x + PIXEL_RATIO,
-                                         y + PIXEL_RATIO);
+                    float x = TileRatio * tilePos.x, y = TileRatio * tilePos.y;
+                    uvs[0] = new Vector2(x + TileRatio - PixelRatio,
+                                         y + PixelRatio);
+                    uvs[1] = new Vector2(x + TileRatio - PixelRatio,
+                                         y + TileRatio - PixelRatio);
+                    uvs[2] = new Vector2(x + PixelRatio,
+                                         y + TileRatio - PixelRatio);
+                    uvs[3] = new Vector2(x + PixelRatio,
+                                         y + PixelRatio);
                     return 4;
                 }
-                case VoxelRenderType.SMOOTH:
+                case VoxelRenderType.Smooth:
                 {
-                    float x = TILE_RATIO * tilePos.x, y = TILE_RATIO * tilePos.y;
-                    uvs[0] = new Vector2(
-                                         x + PIXEL_RATIO,
-                                         y + PIXEL_RATIO
-                                        );
-                    uvs[2] = new Vector2(
-                                         x + TILE_RATIO - PIXEL_RATIO,
-                                         y + PIXEL_RATIO
-                                        );
-                    uvs[1] = new Vector2(
-                                         x + PIXEL_RATIO,
-                                         y + TILE_RATIO - PIXEL_RATIO
-                                        );
+                    float x = TileRatio * tilePos.x, y = TileRatio * tilePos.y;
+                    uvs[0] = new Vector2(x + PixelRatio,
+                                         y + PixelRatio);
+                    uvs[2] = new Vector2(x + TileRatio - PixelRatio,
+                                         y + PixelRatio);
+                    uvs[1] = new Vector2(x + PixelRatio,
+                                         y + TileRatio - PixelRatio);
                     return 3;
                 }
             }
             return 0;
         }
 
-        public override string ToString() { return $"Texture: {texture}, Render Type: {renderType}, Density: {density}, Breakable: {breakable}, Orientation: {orientation}"; }
+        public override string ToString() => $"Texture: {texture}, Render Type: {renderType}, Density: {density}, Breakable: {breakable}, Orientation: {orientation}";
 
-        public bool ShouldRender(byte direction) { return renderType == VoxelRenderType.SMOOTH || renderType == VoxelRenderType.NONE; }
+        public bool ShouldRender(byte direction) => renderType == VoxelRenderType.Smooth || renderType == VoxelRenderType.None;
     }
 }

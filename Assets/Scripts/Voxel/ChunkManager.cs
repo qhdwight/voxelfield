@@ -65,8 +65,8 @@ namespace Voxel
 
         private static readonly VoxelChangeTransaction Transaction = new VoxelChangeTransaction();
 
-        [SerializeField] private GameObject m_ChunkPrefab;
-        [SerializeField] private int m_ChunkSize;
+        [SerializeField] private GameObject m_ChunkPrefab = default;
+        [SerializeField] private int m_ChunkSize = default;
         private MapSave m_Map;
         private readonly Stack<Chunk> m_ChunkPool = new Stack<Chunk>();
         private int m_PoolSize;
@@ -315,7 +315,7 @@ namespace Voxel
                              currentDensity = voxel.Value.density;
                         if (newDensity >= currentDensity) continue;
                         var changeData = new VoxelChangeData {density = newDensity};
-                        if (replaceGrassWithDirt && voxel.Value.texture == VoxelTexture.GRASS) changeData.texture = VoxelTexture.DIRT;
+                        if (replaceGrassWithDirt && voxel.Value.texture == VoxelTexture.Grass) changeData.texture = VoxelTexture.Dirt;
                         changedVoxels?.Set(voxelWorldPosition, changeData);
                         if (!Transaction.HasChangeAt(voxelWorldPosition)) Transaction.AddChange(voxelWorldPosition, changeData);
                     }

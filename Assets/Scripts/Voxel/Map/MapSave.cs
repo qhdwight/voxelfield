@@ -93,9 +93,8 @@ namespace Voxel.Map
             Dimension dimension = Dimension.Deserialize(message);
             bool dynamic = message.ReadBoolean();
             // Noise data
-            NoiseData? data;
             bool hasTerrainGenerationData = message.ReadBoolean();
-            data = hasTerrainGenerationData ? (NoiseData?) NoiseData.Deserialize(message) : null;
+            NoiseData? data = hasTerrainGenerationData ? (NoiseData?) NoiseData.Deserialize(message) : null;
             // Brush strokes
             int brushStrokeCount = message.ReadInt32();
             var strokes = new Dictionary<Position3Int, BrushStroke>(brushStrokeCount);

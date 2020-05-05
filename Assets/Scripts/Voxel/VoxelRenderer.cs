@@ -31,12 +31,12 @@ namespace Voxel
 
         private static readonly Dictionary<byte, Position3Int> Adjacents = new Dictionary<byte, Position3Int>
         {
-            {Orientation.EAST, new Position3Int(1, 0, 0)},
-            {Orientation.WEST, new Position3Int(-1, 0, 0)},
-            {Orientation.UP, new Position3Int(0, 1, 0)},
-            {Orientation.DOWN, new Position3Int(0, -1, 0)},
-            {Orientation.NORTH, new Position3Int(0, 0, 1)},
-            {Orientation.SOUTH, new Position3Int(0, 0, -1)}
+            {Orientation.East, new Position3Int(1, 0, 0)},
+            {Orientation.West, new Position3Int(-1, 0, 0)},
+            {Orientation.Up, new Position3Int(0, 1, 0)},
+            {Orientation.Down, new Position3Int(0, -1, 0)},
+            {Orientation.North, new Position3Int(0, 0, 1)},
+            {Orientation.South, new Position3Int(0, 0, -1)}
         };
 
         private static readonly int[] VertIdx1 = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3};
@@ -399,12 +399,12 @@ namespace Voxel
 
         private static readonly Dictionary<byte, Vector3[]> BlockVerts = new Dictionary<byte, Vector3[]>
         {
-            {Orientation.EAST, EastBlockFaceVerts},
-            {Orientation.WEST, WestBlockFaceVerts},
-            {Orientation.UP, UpBlockFaceVerts},
-            {Orientation.DOWN, DownBlockFaceVerts},
-            {Orientation.NORTH, NorthBlockFaceVerts},
-            {Orientation.SOUTH, SouthBlockFaceVerts}
+            {Orientation.East, EastBlockFaceVerts},
+            {Orientation.West, WestBlockFaceVerts},
+            {Orientation.Up, UpBlockFaceVerts},
+            {Orientation.Down, DownBlockFaceVerts},
+            {Orientation.North, NorthBlockFaceVerts},
+            {Orientation.South, SouthBlockFaceVerts}
         };
 
         #endregion
@@ -424,7 +424,7 @@ namespace Voxel
                         Voxel voxel = chunk.GetVoxelNoCheck(new Position3Int(x, y, z));
                         switch (voxel.renderType)
                         {
-                            case VoxelRenderType.SMOOTH:
+                            case VoxelRenderType.Smooth:
                             {
                                 var cubeIndex = 0;
                                 for (var i = 0; i < 8; i++)
@@ -450,7 +450,7 @@ namespace Voxel
                                         solidMesh.vertices.Add(CachedVertList[TriangleTable[cubeIndex][i + j]] - Offset);
                                         solidMesh.triangleIndices.Add(index);
                                     }
-                                    if (voxel.texture == VoxelTexture.GRASS && voxel.natural)
+                                    if (voxel.texture == VoxelTexture.Grass && voxel.natural)
                                     {
                                         Vector3 normal = Vector3.Cross(solidMesh.vertices.Last(2) - solidMesh.vertices.Last(0),
                                                                        solidMesh.vertices.Last(1) - solidMesh.vertices.Last(0));
@@ -467,11 +467,11 @@ namespace Voxel
                                             foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
                                             foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 2);
                                             foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 1);
-                                            Vector2 uv = Voxel.TILE_RATIO * (Vector2) voxel.TexturePosition();
-                                            foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TILE_RATIO, y = Voxel.TILE_RATIO});
-                                            foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TILE_RATIO});
+                                            Vector2 uv = Voxel.TileRatio * (Vector2) voxel.TexturePosition();
+                                            foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio, y = Voxel.TileRatio});
+                                            foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio});
                                             foliageMesh.uvs.Add(uv);
-                                            foliageMesh.uvs.Add(uv + new Vector2 {y = Voxel.TILE_RATIO});
+                                            foliageMesh.uvs.Add(uv + new Vector2 {y = Voxel.TileRatio});
                                         }
                                     }
                                     int length = voxel.FaceUVs(CachedUvs);
@@ -480,7 +480,7 @@ namespace Voxel
 
                                 break;
                             }
-                            case VoxelRenderType.BLOCK:
+                            case VoxelRenderType.Block:
                             {
                                 for (var i = 0; i < 6; i++)
                                 {

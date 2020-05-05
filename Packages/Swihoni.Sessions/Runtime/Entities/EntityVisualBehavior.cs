@@ -6,18 +6,27 @@ namespace Swihoni.Sessions.Entities
     {
         public int id;
 
-        private Renderer[] m_Renderers;
+        [SerializeField] protected Renderer[] m_Renderers;
+        protected EntityManager m_Manager;
 
-        internal void Setup() => m_Renderers = GetComponentsInChildren<Renderer>();
+        internal virtual void Setup(EntityManager manager) => m_Manager = manager;
 
-        public void SetVisible(bool isEnabled) => gameObject.SetActive(isEnabled);
+        public void SetVisible(bool isEnabled)
+        {
+            foreach (Renderer meshRenderer in m_Renderers)
+                meshRenderer.enabled = isEnabled;
+        }
 
-        public void Render(EntityContainer entity)
+        public virtual void Render(EntityContainer entity)
         {
             if (entity.Without(out ThrowableComponent throwable)) return;
 
+            SetVisible(IsVisible(entity));
+            
             Transform t = transform;
             t.SetPositionAndRotation(throwable.position, throwable.rotation);
         }
+
+        public virtual bool IsVisible(EntityContainer entity) => true;
     }
 }

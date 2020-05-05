@@ -4,7 +4,7 @@ namespace Voxel
 {
     public static class Noise
     {
-        private static readonly byte[] s_Permutations =
+        private static readonly byte[] Permutations =
         {
             151, 160, 137, 91, 90, 15,
             131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
@@ -28,7 +28,7 @@ namespace Voxel
         private static byte Perm(int i)
         {
             int r = i % byte.MaxValue;
-            return s_Permutations[r < 0 ? r + byte.MaxValue : i];
+            return Permutations[r < 0 ? r + byte.MaxValue : i];
         }
 
         private static float Grad(int hash, float x, float y)
@@ -104,15 +104,15 @@ namespace Voxel
 
         public static float Simplex(float x, float y, NoiseData noiseData)
         {
-            float output = 0.0f, denom = 0.0f, frequency = 1.0f, amplitude = 1.0f;
+            float output = 0.0f, denominator = 0.0f, frequency = 1.0f, amplitude = 1.0f;
             for (var i = 0; i < noiseData.octaves; i++)
             {
                 output += amplitude * RawSimplex(x * frequency / noiseData.lateralScale, y * frequency / noiseData.lateralScale);
-                denom += amplitude;
+                denominator += amplitude;
                 frequency *= noiseData.lacunarity;
                 amplitude *= noiseData.persistance;
             }
-            return output / denom * noiseData.verticalScale;
+            return output / denominator * noiseData.verticalScale;
         }
     }
 }

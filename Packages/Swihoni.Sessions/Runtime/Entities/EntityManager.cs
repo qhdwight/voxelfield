@@ -7,22 +7,25 @@ namespace Swihoni.Sessions.Entities
 {
     public class EntityManager
     {
+        private const int MaxEntities = 10;
+
+        private readonly EntityModifierBehavior[] m_Modifiers = new EntityModifierBehavior[MaxEntities];
+        private readonly EntityVisualBehavior[] m_Visuals = new EntityVisualBehavior[MaxEntities];
         private Pool<EntityModifierBehavior>[] m_EntityModifiersPool;
         private Pool<EntityVisualBehavior>[] m_EntityVisualsPool;
-
-        private readonly EntityModifierBehavior[] m_Modifiers = new EntityModifierBehavior[10];
-        private readonly EntityVisualBehavior[] m_Visuals = new EntityVisualBehavior[10];
+        private EntityModifierBehavior[] m_ModifierPrefabs;
 
         public void Setup()
         {
-            m_EntityModifiersPool = Resources.LoadAll<EntityModifierBehavior>("Entities")
-                                             .OrderBy(modifier => modifier.id)
-                                             .Select(prefabModifier => new Pool<EntityModifierBehavior>(0, () =>
-                                              {
-                                                  EntityModifierBehavior visualsInstance = Object.Instantiate(prefabModifier);
-                                                  visualsInstance.name = prefabModifier.name;
-                                                  return visualsInstance;
-                                              })).ToArray();
+            m_ModifierPrefabs = Resources.LoadAll<EntityModifierBehavior>("Entities")
+                                         .OrderBy(modifier => modifier.id).ToArray();
+            m_EntityModifiersPool = m_ModifierPrefabs
+                                   .Select(prefabModifier => new Pool<EntityModifierBehavior>(0, () =>
+                                    {
+                                        EntityModifierBehavior visualsInstance = Object.Instantiate(prefabModifier);
+                                        visualsInstance.name = prefabModifier.name;
+                                        return visualsInstance;
+                                    })).ToArray();
             m_EntityVisualsPool = Resources.LoadAll<EntityVisualBehavior>("Entities")
                                            .OrderBy(visuals => visuals.id)
                                            .Select(prefabVisual => new Pool<EntityVisualBehavior>(0, () =>
@@ -33,14 +36,13 @@ namespace Swihoni.Sessions.Entities
                                             })).ToArray();
         }
 
-        private EntityVisualBehavior ObtainVisual(int entityId, int index)
+        private void ObtainVisual(int entityId, int index)
         {
             Pool<EntityVisualBehavior> pool = m_EntityVisualsPool[entityId - 1];
             EntityVisualBehavior visual = pool.Obtain();
-            visual.Setup();
+            visual.Setup(this);
             visual.SetVisible(true);
             m_Visuals[index] = visual;
-            return visual;
         }
 
         private void ReturnVisual(int index)
@@ -86,6 +88,8 @@ namespace Swihoni.Sessions.Entities
             pool.Return(modifier);
             m_Modifiers[index] = null;
         }
+
+        public EntityModifierBehavior GetModifierPrefab(int entityId) => m_ModifierPrefabs[entityId - 1];
 
         public void Modify(Container session, float duration)
         {

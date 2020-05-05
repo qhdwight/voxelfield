@@ -9,8 +9,8 @@ namespace Voxel
     [RequireComponent(typeof(MeshCollider), typeof(MeshRenderer), typeof(MeshFilter))]
     public class Chunk : MonoBehaviour
     {
-        [SerializeField] private MeshFilter m_SolidMeshFilter;
-        [SerializeField] private Material m_FoliageMaterial;
+        [SerializeField] private MeshFilter m_SolidMeshFilter = default;
+        [SerializeField] private Material m_FoliageMaterial = default;
         [SerializeField] private int m_Layer;
 
         private ChunkManager m_ChunkManager;
@@ -109,8 +109,8 @@ namespace Voxel
             var density = (byte) (floatDensity * byte.MaxValue / 2.0f);
             return new VoxelChangeData
             {
-                texture = height > 5.0f ? VoxelTexture.STONE : VoxelTexture.GRASS,
-                renderType = VoxelRenderType.SMOOTH, density = density, breakable = true, orientation = Orientation.NONE, natural = true
+                texture = height > 5.0f ? VoxelTexture.Stone : VoxelTexture.Grass,
+                renderType = VoxelRenderType.Smooth, density = density, breakable = true, orientation = Orientation.None, natural = true
             };
         }
 
@@ -189,13 +189,9 @@ namespace Voxel
             mesh.SetIndices(data.triangleIndices.ToArray(), MeshTopology.Triangles, 0);
             mesh.SetUVs(0, data.uvs);
             if (data.normals.Count == 0)
-            {
                 mesh.RecalculateNormals();
-            }
             else
-            {
                 mesh.SetNormals(data.normals);
-            }
             mesh.RecalculateTangents();
         }
     }
