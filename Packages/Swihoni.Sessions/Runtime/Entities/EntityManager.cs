@@ -14,9 +14,11 @@ namespace Swihoni.Sessions.Entities
         private Pool<EntityModifierBehavior>[] m_EntityModifiersPool;
         private Pool<EntityVisualBehavior>[] m_EntityVisualsPool;
         private EntityModifierBehavior[] m_ModifierPrefabs;
+        private SessionBase m_Session;
 
-        public void Setup()
+        public void Setup(SessionBase session)
         {
+            m_Session = session;
             m_ModifierPrefabs = Resources.LoadAll<EntityModifierBehavior>("Entities")
                                          .OrderBy(modifier => modifier.id).ToArray();
             m_EntityModifiersPool = m_ModifierPrefabs
@@ -99,7 +101,7 @@ namespace Swihoni.Sessions.Entities
                 EntityContainer entity = entities[index];
                 if (entity.id == EntityId.None)
                     continue;
-                m_Modifiers[index].Modify(entity, duration);
+                m_Modifiers[index].Modify(m_Session, entity, duration);
                 // Remove modifier if lifetime has ended
                 if (entity.id == EntityId.None && m_Modifiers[index] != null) ReturnModifier(index);
             }

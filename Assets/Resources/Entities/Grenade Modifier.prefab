@@ -160,4 +160,4 @@ MonoBehaviour:
   m_Radius: 3
   m_Mask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 2048

@@ -11,7 +11,7 @@ namespace Voxel
     {
         [SerializeField] private MeshFilter m_SolidMeshFilter = default;
         [SerializeField] private Material m_FoliageMaterial = default;
-        [SerializeField] private int m_Layer;
+        [SerializeField, Layer] private int m_Layer = default;
 
         private ChunkManager m_ChunkManager;
         private MeshCollider m_MeshCollider;

@@ -76,7 +76,7 @@ namespace Swihoni.Sessions
             m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup(this));
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, modifier => modifier.Setup(this));
 
-            EntityManager.Setup();
+            EntityManager.Setup(this);
         }
 
         private void CheckDisposed()
@@ -195,7 +195,7 @@ namespace Swihoni.Sessions
 
         public abstract Ray GetRayForPlayerId(int playerId);
 
-        public virtual void AboutToRaycast(int playerId)
+        public virtual void RollbackHitboxesFor(int playerId)
         {
             // Usually transform sync happens after FixedUpdate() is called. However, our raycast is in fixed update.
             // So, we need to preemptively force the colliders in the hitbox to update.

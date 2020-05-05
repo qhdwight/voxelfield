@@ -8,6 +8,6 @@ namespace Swihoni.Sessions.Entities
 
         public virtual void SetActive(bool isEnabled) => gameObject.SetActive(isEnabled);
 
-        public virtual void Modify(EntityContainer entity, float duration) { }
+        public virtual void Modify(SessionBase session, EntityContainer entity, float duration) { }
     }
 }

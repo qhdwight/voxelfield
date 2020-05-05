@@ -96,10 +96,10 @@ namespace Swihoni.Sessions
 
         protected abstract void RollbackHitboxes(int playerId);
 
-        public sealed override void AboutToRaycast(int playerId)
+        public sealed override void RollbackHitboxesFor(int playerId)
         {
             RollbackHitboxes(playerId);
-            base.AboutToRaycast(playerId);
+            base.RollbackHitboxesFor(playerId);
         }
 
         public virtual void Disconnect()

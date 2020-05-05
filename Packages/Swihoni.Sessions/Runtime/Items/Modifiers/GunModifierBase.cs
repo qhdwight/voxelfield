@@ -77,7 +77,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             item.gunStatus.ammoInMag.Value--;
 
             Ray ray = session.GetRayForPlayerId(playerId);
-            session.AboutToRaycast(playerId);
+            session.RollbackHitboxesFor(playerId);
 
             ModeBase mode = session.GetMode();
             int hitCount = Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_PlayerMask);

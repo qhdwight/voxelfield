@@ -51,6 +51,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 if (modifier is ThrowableModifierBehavior throwableModifier)
                 {
                     modifier.transform.SetPositionAndRotation(ray.origin + ray.direction, Quaternion.identity);
+                    throwableModifier.ThrowerId = playerId;
                     throwableModifier.Rigidbody.AddForce(ray.direction * m_ThrowForce, ForceMode.Impulse);
                     throwableModifier.Rigidbody.AddRelativeTorque(new Vector3 {y = 2.0f}, ForceMode.Impulse);
                 }

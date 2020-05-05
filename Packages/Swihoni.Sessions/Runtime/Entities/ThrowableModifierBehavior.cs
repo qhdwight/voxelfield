@@ -7,13 +7,14 @@ namespace Swihoni.Sessions.Entities
     [RequireComponent(typeof(Rigidbody))]
     public class ThrowableModifierBehavior : EntityModifierBehavior
     {
-        [SerializeField] private float m_PopTime, m_Lifetime, m_Radius;
-        [SerializeField] private LayerMask m_Mask;
+        [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default;
+        [SerializeField] private LayerMask m_Mask = default;
 
         private readonly Collider[] m_OverlappingColliders = new Collider[8];
         private float m_LastElapsed;
 
         public Rigidbody Rigidbody { get; private set; }
+        public int ThrowerId { get; set; }
         public float PopTime => m_PopTime;
 
         private void Awake() => Rigidbody = GetComponent<Rigidbody>();
@@ -27,9 +28,9 @@ namespace Swihoni.Sessions.Entities
             m_LastElapsed = 0.0f;
         }
 
-        public override void Modify(EntityContainer entity, float duration)
+        public override void Modify(SessionBase session, EntityContainer entity, float duration)
         {
-            base.Modify(entity, duration);
+            base.Modify(session, entity, duration);
 
             var throwable = entity.Require<ThrowableComponent>();
             throwable.elapsed.Value += duration;
@@ -42,11 +43,17 @@ namespace Swihoni.Sessions.Entities
                 t.rotation = Quaternion.identity;
                 if (m_LastElapsed < m_PopTime)
                 {
-                    int count = Physics.OverlapSphereNonAlloc(t.position, m_Radius, m_OverlappingColliders, m_Mask.value);
+                    session.RollbackHitboxesFor(ThrowerId);
+                    int count = Physics.OverlapSphereNonAlloc(t.position, m_Radius, m_OverlappingColliders, m_Mask);
                     for (var i = 0; i < count; i++)
                     {
                         Collider hitCollider = m_OverlappingColliders[i];
                         var hitbox = hitCollider.GetComponent<PlayerHitbox>();
+                        if (hitbox)
+                        {
+                            int hitPlayerId = hitbox.Manager.PlayerId;
+                            session.GetMode().KillPlayer(session.GetPlayerFromId(hitPlayerId));
+                        }
                     }
                 }
             }
