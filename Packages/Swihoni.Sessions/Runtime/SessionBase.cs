@@ -211,7 +211,9 @@ namespace Swihoni.Sessions
         {
             var camera = player.Require<CameraComponent>();
             float yaw = camera.yaw * Mathf.Deg2Rad, pitch = camera.pitch * Mathf.Deg2Rad;
-            var direction = new Vector3(Mathf.Sin(yaw), -Mathf.Sin(pitch), Mathf.Cos(yaw));
+            // Convert from spherical coordinates to cartesian vector
+            var direction = new Vector3(Mathf.Cos(pitch) * Mathf.Sin(yaw), -Mathf.Sin(pitch), Mathf.Cos(pitch) * Mathf.Cos(yaw));
+            direction.Normalize();
             var move = player.Require<MoveComponent>();
             // TODO:refactor magic numbers
             Vector3 position = move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};

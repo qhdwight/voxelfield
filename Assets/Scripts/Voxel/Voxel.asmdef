@@ -1,0 +1,15 @@
+{
+    "name": "Voxel",
+    "references": [
+        "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

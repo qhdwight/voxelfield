@@ -28,6 +28,21 @@
             <e p="Input.asmdef" t="Include" />
             <e p="InputProvider.cs" t="Include" />
           </e>
+          <e p="Voxel" t="Include">
+            <e p="BrushStroke.cs" t="Include" />
+            <e p="Chunk.cs" t="Include" />
+            <e p="ChunkManager.cs" t="Include" />
+            <e p="Map" t="Include">
+              <e p="MapSave.cs" t="Include" />
+            </e>
+            <e p="Noise.cs" t="Include" />
+            <e p="NoiseData.cs" t="Include" />
+            <e p="Voxel.asmdef" t="Include" />
+            <e p="Voxel.cs" t="Include" />
+            <e p="VoxelChangeData.cs" t="Include" />
+            <e p="VoxelChangeMap.cs" t="Include" />
+            <e p="VoxelRenderer.cs" t="Include" />
+          </e>
         </e>
       </e>
       <e p="Compound.csproj" t="IncludeRecursive" />
@@ -57,6 +72,7 @@
             <e p="Properties.cs" t="Include" />
             <e p="PropertyBase.cs" t="Include" />
             <e p="Serializer.cs" t="Include" />
+            <e p="StreamExtensions.cs" t="Include" />
             <e p="Swihoni.Components.asmdef" t="Include" />
           </e>
           <e p="Tests" t="Include">
@@ -171,6 +187,7 @@
             <e p="Animation" t="Include">
               <e p="ArmIk.cs" t="Include" />
             </e>
+            <e p="FlagUtil.cs" t="Include" />
             <e p="Interface" t="Include">
               <e p="BufferedTextGui.cs" t="Include" />
               <e p="FpsInterface.cs" t="Include" />
@@ -178,6 +195,11 @@
               <e p="SingletonInterfaceBehaviorBase.cs" t="Include" />
             </e>
             <e p="IntervalAction.cs" t="Include" />
+            <e p="Math" t="Include">
+              <e p="Dimension.cs" t="Include" />
+              <e p="Position3Int.cs" t="Include" />
+            </e>
+            <e p="MeshData.cs" t="Include" />
             <e p="SingletonBehavior.cs" t="Include" />
             <e p="Swihoni.Util.asmdef" t="Include" />
             <e p="VectorMath.cs" t="Include" />
@@ -192,6 +214,7 @@
       <e p="Swihoni.Sessions.Tests.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Util.csproj" t="IncludeRecursive" />
       <e p="Temp/Bin" t="ExcludeRecursive" />
+      <e p="Voxel.csproj" t="IncludeRecursive" />
       <e p="obj" t="ExcludeRecursive" />
       <e p="packages" t="ExcludeRecursive" />
     </e>

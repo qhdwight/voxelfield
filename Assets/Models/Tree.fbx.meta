@@ -2,7 +2,19 @@ fileFormatVersion: 2
 guid: d3d984684f837df4193f3b75b9e4cd36
 ModelImporter:
   serializedVersion: 19300
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      74: -7662121372210210694
+    second: Leaves|BranchesAction
+  - first:
+      74: 8079835293366465027
+    second: Leaves|LeavesAction
+  - first:
+      74: -6061789057211575170
+    second: Branches|BranchesAction
+  - first:
+      74: 7018810780082260090
+    second: Branches|LeavesAction
   externalObjects:
   - first:
       type: UnityEngine:Material
