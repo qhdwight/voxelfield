@@ -21,7 +21,7 @@ namespace Swihoni.Sessions.Entities
     [Serializable]
     public class EntityId : ByteProperty
     {
-        public const byte None = 0, Grenade = None + 1;
+        public const byte None = 0, Grenade = None + 1, Molotov = Grenade + 1;
     }
 
     [Serializable]

@@ -9,7 +9,7 @@ namespace Swihoni.Sessions.Entities
         private ParticleSystem[] m_Particles;
         private ThrowableModifierBehavior m_Modifier;
         private float m_LastThrownElapsed, m_LastContactElapsed;
-        
+
         internal override void Setup(EntityManager manager)
         {
             base.Setup(manager);

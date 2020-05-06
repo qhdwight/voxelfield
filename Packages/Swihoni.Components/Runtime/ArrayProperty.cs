@@ -35,11 +35,7 @@ namespace Swihoni.Components
                 m_Values[i] = constructor();
         }
 
-        public T this[int index]
-        {
-            get => m_Values[index];
-            set => m_Values[index] = value;
-        }
+        public T this[int index] { get => m_Values[index]; set => m_Values[index] = value; }
 
         public override int Length => m_Values.Length;
 

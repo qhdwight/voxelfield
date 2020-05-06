@@ -10,6 +10,7 @@ namespace Swihoni.Sessions.Entities
     public class ThrowableModifierBehavior : EntityModifierBehavior
     {
         [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default, m_Damage = default;
+        [SerializeField] private bool m_IsDamageContinuous = false;
         [SerializeField] private LayerMask m_Mask = default;
 
         private readonly Collider[] m_OverlappingColliders = new Collider[8];
@@ -22,7 +23,7 @@ namespace Swihoni.Sessions.Entities
 
         private void Awake() => Rigidbody = GetComponent<Rigidbody>();
 
-        private void OnCollisionEnter() { m_WasCollision = true; }
+        private void OnCollisionEnter() => m_WasCollision = true;
 
         public override void SetActive(bool isEnabled)
         {
@@ -48,28 +49,8 @@ namespace Swihoni.Sessions.Entities
             if (hasPopped)
             {
                 t.rotation = Quaternion.identity;
-                if (m_LastElapsed < m_PopTime)
-                {
-                    session.RollbackHitboxesFor(ThrowerId);
-                    int count = Physics.OverlapSphereNonAlloc(t.position, m_Radius, m_OverlappingColliders, m_Mask);
-                    for (var i = 0; i < count; i++)
-                    {
-                        Collider hitCollider = m_OverlappingColliders[i];
-                        var hitbox = hitCollider.GetComponent<PlayerHitbox>();
-                        if (!hitbox || m_HitPlayers.Contains(hitbox.Manager)) continue;
-                        m_HitPlayers.Add(hitbox.Manager);
-                        int hitPlayerId = hitbox.Manager.PlayerId;
-                        Container hitPlayer = session.GetPlayerFromId(hitPlayerId);
-                        // TODO:feature damage based on range?
-                        if (hitPlayer.Present(out HealthProperty health) && health.IsAlive)
-                        {
-                            float ratio = 0.5f - Vector3.Distance(hitPlayer.Require<MoveComponent>().position, t.position) / (m_Radius * 2) + 0.5f;
-                            var damage = checked((byte) (m_Damage * ratio));
-                            session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage);
-                        }
-                    }
-                    m_HitPlayers.Clear();
-                }
+                if (m_Damage > 0 && (m_IsDamageContinuous || m_LastElapsed < m_PopTime))
+                    HurtNearby(session, duration);
             }
             else
             {
@@ -87,6 +68,37 @@ namespace Swihoni.Sessions.Entities
 
             if (throwable.thrownElapsed > m_Lifetime)
                 entity.Zero();
+        }
+
+        private void HurtNearby(SessionBase session, float duration)
+        {
+            session.RollbackHitboxesFor(ThrowerId);
+            int count = Physics.OverlapSphereNonAlloc(transform.position, m_Radius, m_OverlappingColliders, m_Mask);
+            for (var i = 0; i < count; i++)
+            {
+                Collider hitCollider = m_OverlappingColliders[i];
+                var hitbox = hitCollider.GetComponent<PlayerHitbox>();
+                if (!hitbox || m_HitPlayers.Contains(hitbox.Manager)) continue;
+                m_HitPlayers.Add(hitbox.Manager);
+                int hitPlayerId = hitbox.Manager.PlayerId;
+                Container hitPlayer = session.GetPlayerFromId(hitPlayerId);
+                // TODO:feature damage based on range?
+                if (hitPlayer.Present(out HealthProperty health) && health.IsAlive)
+                {
+                    byte damage = DamagePlayer(hitPlayer, duration);
+                    session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage);
+                }
+            }
+            m_HitPlayers.Clear();
+        }
+
+        private byte DamagePlayer(Container hitPlayer, float duration)
+        {
+            const float minRatio = 0.2f;
+            float distance = Vector3.Distance(hitPlayer.Require<MoveComponent>().position, transform.position);
+            float ratio = (minRatio - 1.0f) * (distance / m_Radius) + 1.0f;
+            if (m_IsDamageContinuous) ratio *= duration;
+            return checked((byte) (m_Damage * ratio));
         }
     }
 }

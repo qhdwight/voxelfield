@@ -25,7 +25,8 @@ namespace Swihoni.Sessions.Items.Modifiers
         public const byte None = 0,
                           TestingRifle = 1,
                           Grenade = TestingRifle + 1,
-                          Last = Grenade;
+                          Molotov = Grenade + 1,
+                          Last = Molotov;
     }
 
     [Serializable]

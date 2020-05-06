@@ -65,12 +65,12 @@ namespace Swihoni.Sessions.Modes
                 if (damage >= health)
                 {
                     KillPlayer(hitPlayer);
-                    
+
                     if (inflictingPlayer.Has(out StatsComponent stats))
                         stats.kills.Value++;
-                    
+
                     if (usesHitMarker) hitMarker.isKill.Value = true;
-                    
+
                     if (session.GetLatestSession().Without(out KillFeedProperty killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)
                     {

@@ -6,7 +6,6 @@ using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Swihoni.Sessions.Player.Components
 {

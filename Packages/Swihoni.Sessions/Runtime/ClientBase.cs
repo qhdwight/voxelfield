@@ -245,7 +245,7 @@ namespace Swihoni.Sessions
                                 localizedServerTime.Value += serverTime - previousServerSession.Require<ServerStampComponent>().time;
                             else
                                 localizedServerTime.Value = time;
-                            
+
                             if (Mathf.Abs(localizedServerTime.Value - time) > GetSettings(serverSession).TickInterval * 3)
                             {
                                 Resets++;

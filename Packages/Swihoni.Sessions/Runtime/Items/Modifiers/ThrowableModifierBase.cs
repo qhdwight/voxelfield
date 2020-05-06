@@ -44,7 +44,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         {
             Container player = session.GetPlayerFromId(playerId);
             if (player.Without<ServerTag>()) return;
-            
+
             Ray ray = SessionBase.GetRayForPlayer(player);
             EntityModifierBehavior modifier = session.EntityManager.ObtainModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
             if (modifier is ThrowableModifierBehavior throwableModifier)

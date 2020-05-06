@@ -18,18 +18,17 @@ namespace Swihoni.Sessions.Items
         {
             _itemModifiers = Resources.LoadAll<ItemModifierBase>("Modifiers")
                                       .OrderBy(modifier => modifier.id).ToArray();
-            ItemVisualBehavior[] itemVisualPrefabs = Resources.LoadAll<GameObject>("Visuals")
-                                                              .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
-                                                              .Where(visuals => visuals != null)
-                                                              .OrderBy(visuals => visuals.Id).ToArray();
-            _itemVisualPools = Enumerable.Range(1, ItemId.Last)
-                                         .Select(id => new Pool<ItemVisualBehavior>(0, () =>
-                                          {
-                                              ItemVisualBehavior visualsPrefab = itemVisualPrefabs[id - 1],
-                                                                 visualsInstance = Object.Instantiate(visualsPrefab);
-                                              visualsInstance.name = "Visual";
-                                              return visualsInstance;
-                                          })).ToArray();
+            IOrderedEnumerable<ItemVisualBehavior> itemVisualPrefabs = Resources.LoadAll<GameObject>("Visuals")
+                                                                                .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
+                                                                                .Where(visuals => visuals != null)
+                                                                                .OrderBy(visuals => visuals.Id);
+            _itemVisualPools = itemVisualPrefabs
+                              .Select(visualPrefab => new Pool<ItemVisualBehavior>(0, () =>
+                               {
+                                   ItemVisualBehavior visualsInstance = Object.Instantiate(visualPrefab);
+                                   visualsInstance.name = "Visual";
+                                   return visualsInstance;
+                               })).ToArray();
         }
 
         public static ItemVisualBehavior ObtainVisuals(byte itemId, PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
