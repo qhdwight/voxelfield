@@ -94,15 +94,14 @@ namespace Swihoni.Sessions.Items.Visuals
             float? lastStatusElapsed = null;
             ByteStatusComponent GetExpressedStatus(InventoryComponent inv) => inv.equipStatus.id == ItemEquipStatusId.Equipped ? inv.EquippedItemComponent.status : inv.equipStatus;
             ByteStatusComponent expressedStatus = GetExpressedStatus(inventory);
-            bool isSameAnimation = false, isAfter = false;
             if (lastRenderedInventory != null)
             {
+                bool isSameAnimation, isAfter;
                 ByteStatusComponent lastExpressedStatus = GetExpressedStatus(lastRenderedInventory);
                 isSameAnimation = inventory.equippedIndex == lastRenderedInventory.equippedIndex && expressedStatus.id == lastExpressedStatus.id;
                 isAfter = isSameAnimation && expressedStatus.elapsed >= lastExpressedStatus.elapsed - Mathf.Epsilon;
                 if (isSameAnimation && isAfter)
                     lastStatusElapsed = lastExpressedStatus.elapsed;
-                // Debug.Log($"{isSameAnimation} {isAfter}");
             }
             (ItemStatusVisualProperties statusVisualProperties, int _) = GetVisualProperties(item, inventory.equipStatus);
             ItemStatusVisualProperties.AnimationEvent[] animationEvents = statusVisualProperties.animationEvents;
@@ -112,8 +111,6 @@ namespace Swihoni.Sessions.Items.Visuals
                 if (!shouldDoEvent) continue;
                 if (animationEvent.audioSource) m_AudioSource.PlayOneShot(animationEvent.audioSource);
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
-                if (lastRenderedInventory != null)
-                    Debug.Log($"{isSameAnimation} {isAfter} {inventory.equippedIndex == lastRenderedInventory.equippedIndex} {expressedStatus.elapsed} {GetExpressedStatus(lastRenderedInventory).elapsed - float.Epsilon}");
             }
             if (lastRenderedInventory == null) m_PlayerItemAnimator.LastRenderedInventory = inventory.Clone();
             else lastRenderedInventory.FastCopyFrom(inventory);

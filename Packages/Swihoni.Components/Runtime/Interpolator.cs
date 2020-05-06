@@ -54,9 +54,9 @@ namespace Swihoni.Components
                         break;
                     }
                     case ComponentBase c1 when _e2 is ComponentBase c2 && _ed is ComponentBase cd:
+                        cd.InterpolateFrom(c1, c2, interpolation);
                         if (c1.GetType().IsDefined(typeof(CustomInterpolation)))
                             return Navigation.SkipDescendends;
-                        cd.InterpolateFrom(c1, c2, interpolation);
                         break;
                 }
                 return Navigation.Continue;

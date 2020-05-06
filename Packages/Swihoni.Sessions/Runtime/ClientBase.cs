@@ -93,7 +93,7 @@ namespace Swihoni.Sessions
                 m_Visuals[playerId].Render(playerId, renderPlayer, isLocalPlayer);
                 m_PlayerHud.Render(renderPlayers[localPlayerId]);
             }
-            // RenderEntities<LocalizedClientStampComponent>(renderTime, settings.TickInterval * 2);
+            RenderEntities<LocalizedClientStampComponent>(renderTime, settings.TickInterval * 2);
         }
 
         protected override void Tick(uint tick, float time, float duration)

@@ -6,6 +6,7 @@ using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Swihoni.Sessions.Player.Components
 {
@@ -110,7 +111,7 @@ namespace Swihoni.Sessions.Player.Components
         public override string ToString() => $"ID: {id}, Elapsed: {elapsed}";
     }
 
-    [Serializable]
+    [Serializable, CustomInterpolation]
     public class ItemComponent : ComponentBase
     {
         public GunStatusComponent gunStatus;
@@ -121,12 +122,14 @@ namespace Swihoni.Sessions.Player.Components
         public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
         {
             ItemModifierBase modifier = ItemAssetLink.GetModifier(i1.id);
+            Interpolator.InterpolateInto(i1.gunStatus, i2.gunStatus, gunStatus, interpolation);
+            id.Value = i2.id.Value;
             status.InterpolateFrom(i1.status, i2.status, interpolation,
                                    statusId => InventoryComponent.VisualDuration(modifier.GetStatusModifierProperties(statusId)));
         }
     }
 
-    [Serializable, ClientChecked]
+    [Serializable, ClientChecked, CustomInterpolation]
     public class InventoryComponent : ComponentBase
     {
         public ByteProperty equippedIndex;
@@ -153,7 +156,7 @@ namespace Swihoni.Sessions.Player.Components
                                           aimStatusId => VisualDuration(gm1.GetAdsStatusModifierProperties(aimStatusId)));
             equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation,
                                         equipStatusId => VisualDuration(m1.GetEquipStatusModifierProperties(equipStatusId)));
-            equippedIndex = i1.equippedIndex;
+            equippedIndex.Value = i1.equippedIndex;
             EquippedItemComponent.InterpolateFrom(i1.EquippedItemComponent, i2.EquippedItemComponent, interpolation);
         }
 
