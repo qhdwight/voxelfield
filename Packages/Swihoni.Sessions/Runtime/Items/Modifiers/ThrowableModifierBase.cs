@@ -49,7 +49,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             EntityModifierBehavior modifier = session.EntityManager.ObtainModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
             if (modifier is ThrowableModifierBehavior throwableModifier)
             {
-                modifier.transform.SetPositionAndRotation(ray.origin + ray.direction, Quaternion.identity);
+                modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.identity);
                 throwableModifier.ThrowerId = playerId;
                 Vector3 force = ray.direction * m_ThrowForce;
                 if (player.Has(out MoveComponent move)) force += move.velocity.Value * 0.1f;

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9af344c1d734f2bb47ab2895213182e, type: 3}
+  m_Name: Molotov
+  m_EditorClassIdentifier: 
+  id: 3
+  itemName: Molotov
+  movementFactor: 1
+  m_StatusModiferProperties:
+  - duration: 2
+    isPersistent: 0
+  - duration: 0.1
+    isPersistent: 0
+  - duration: 0
+    isPersistent: 0
+  - duration: 0.2
+    isPersistent: 1
+  m_EquipStatusModiferProperties:
+  - duration: 0.15
+    isPersistent: 0
+  - duration: 0.15
+    isPersistent: 0
+  - duration: Infinity
+    isPersistent: 0
+  - duration: Infinity
+    isPersistent: 0
+  m_ThrowForce: 12
+  m_AmmoCount: 2
+  m_ThrowablePrefab: {fileID: 6867841920297134542, guid: d57ee6a9487f6433daa95669d1a9b2e6,
+    type: 3}
+  m_SplashDamage: 100

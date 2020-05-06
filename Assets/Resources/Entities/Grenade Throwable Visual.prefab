@@ -1048,7 +1048,7 @@ ParticleSystem:
           inWeight: 0
           outWeight: 0
         - serializedVersion: 3
-          time: 0.7393555
+          time: 0.092972554
           value: 1
           inSlope: 0
           outSlope: 0
@@ -9915,7 +9915,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: eb9412388b350664b81b0a9f9eb45b0a,
         type: 3}
       propertyPath: m_Name
-      value: Grenade Throwable
+      value: Grenade Throwable Visual
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eb9412388b350664b81b0a9f9eb45b0a, type: 3}

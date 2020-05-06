@@ -77,7 +77,7 @@ namespace Swihoni.Sessions
                 if (isLocalPlayer)
                 {
                     Container GetInHistory(int historyIndex) => m_PlayerPredictionHistory.Get(-historyIndex);
-                    float rollback = settings.TickInterval * 2;
+                    float rollback = settings.TickInterval;
                     RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
                     renderPlayer.FastMergeSet(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
@@ -333,7 +333,7 @@ namespace Swihoni.Sessions
             }
         }
 
-        public void SendDebug(Container player)
+        private void SendDebug(Container player)
         {
             var debug = new DebugClientView(player.ElementTypes);
             debug.FastCopyFrom(player);

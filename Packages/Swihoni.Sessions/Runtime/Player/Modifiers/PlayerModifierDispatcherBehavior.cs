@@ -8,15 +8,18 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         private PlayerModifierBehaviorBase[] m_Modifiers;
         private PlayerHitboxManager m_HitboxManager;
+        private PlayerTrigger m_Trigger;
         private SessionBase m_Session;
 
-        internal void Setup(SessionBase session)
+        internal void Setup(SessionBase session, int playerId)
         {
             m_Session = session;
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
             m_HitboxManager = GetComponent<PlayerHitboxManager>();
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup(session);
             if (m_HitboxManager) m_HitboxManager.Setup(session);
+            m_Trigger = GetComponentInChildren<PlayerTrigger>();
+            if (m_Trigger) m_Trigger.Setup(playerId);
         }
 
         public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, float duration)

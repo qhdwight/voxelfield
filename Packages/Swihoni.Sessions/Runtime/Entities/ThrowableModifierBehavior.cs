@@ -9,13 +9,19 @@ namespace Swihoni.Sessions.Entities
     [RequireComponent(typeof(Rigidbody))]
     public class ThrowableModifierBehavior : EntityModifierBehavior
     {
+        private enum CollisionType
+        {
+            None, World, Player
+        }
+        
         [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default, m_Damage = default;
         [SerializeField] private bool m_IsDamageContinuous = false;
         [SerializeField] private LayerMask m_Mask = default;
+        [SerializeField] private float m_CollisionVelocityMultiplier = 0.5f;
 
         private readonly Collider[] m_OverlappingColliders = new Collider[8];
         private float m_LastElapsed;
-        private bool m_WasCollision;
+        private CollisionType m_LastCollision;
 
         public Rigidbody Rigidbody { get; private set; }
         public int ThrowerId { get; set; }
@@ -23,7 +29,11 @@ namespace Swihoni.Sessions.Entities
 
         private void Awake() => Rigidbody = GetComponent<Rigidbody>();
 
-        private void OnCollisionEnter() => m_WasCollision = true;
+        private void OnCollisionEnter(Collision other)
+        {
+            bool isInMask = (m_Mask & (1 << other.gameObject.layer)) != 0;
+            m_LastCollision = isInMask ? CollisionType.Player : CollisionType.World;
+        }
 
         public override void SetActive(bool isEnabled)
         {
@@ -33,8 +43,6 @@ namespace Swihoni.Sessions.Entities
             Rigidbody.constraints = isEnabled ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;
             m_LastElapsed = 0.0f;
         }
-
-        private readonly HashSet<PlayerHitboxManager> m_HitPlayers = new HashSet<PlayerHitboxManager>();
 
         public override void Modify(SessionBase session, EntityContainer entity, float duration)
         {
@@ -55,13 +63,15 @@ namespace Swihoni.Sessions.Entities
             else
             {
                 throwable.contactElapsed.Value += duration;
-                if (m_WasCollision)
+                if (m_LastCollision != CollisionType.None)
                 {
+                    if (m_LastCollision == CollisionType.World) Rigidbody.velocity *= m_CollisionVelocityMultiplier;
+                    else if (throwable.thrownElapsed > 0.1f) Rigidbody.velocity = Vector3.zero;
                     throwable.contactElapsed.Value = 0.0f;
                 }
             }
             m_LastElapsed = throwable.thrownElapsed;
-            m_WasCollision = false;
+            m_LastCollision = CollisionType.None;
 
             throwable.position.Value = t.position;
             throwable.rotation.Value = t.rotation;
@@ -72,15 +82,13 @@ namespace Swihoni.Sessions.Entities
 
         private void HurtNearby(SessionBase session, float duration)
         {
-            session.RollbackHitboxesFor(ThrowerId);
             int count = Physics.OverlapSphereNonAlloc(transform.position, m_Radius, m_OverlappingColliders, m_Mask);
             for (var i = 0; i < count; i++)
             {
                 Collider hitCollider = m_OverlappingColliders[i];
-                var hitbox = hitCollider.GetComponent<PlayerHitbox>();
-                if (!hitbox || m_HitPlayers.Contains(hitbox.Manager)) continue;
-                m_HitPlayers.Add(hitbox.Manager);
-                int hitPlayerId = hitbox.Manager.PlayerId;
+                var trigger = hitCollider.GetComponent<PlayerTrigger>();
+                if (!trigger) continue;
+                int hitPlayerId = trigger.PlayerId;
                 Container hitPlayer = session.GetPlayerFromId(hitPlayerId);
                 // TODO:feature damage based on range?
                 if (hitPlayer.Present(out HealthProperty health) && health.IsAlive)
@@ -89,16 +97,15 @@ namespace Swihoni.Sessions.Entities
                     session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage);
                 }
             }
-            m_HitPlayers.Clear();
         }
 
         private byte DamagePlayer(Container hitPlayer, float duration)
         {
             const float minRatio = 0.2f;
             float distance = Vector3.Distance(hitPlayer.Require<MoveComponent>().position, transform.position);
-            float ratio = (minRatio - 1.0f) * (distance / m_Radius) + 1.0f;
+            float ratio = (minRatio - 1.0f) * Mathf.Clamp01(distance / m_Radius) + 1.0f;
             if (m_IsDamageContinuous) ratio *= duration;
-            return checked((byte) (m_Damage * ratio));
+            return checked((byte) Mathf.Max(m_Damage * ratio, 1.0f));
         }
     }
 }

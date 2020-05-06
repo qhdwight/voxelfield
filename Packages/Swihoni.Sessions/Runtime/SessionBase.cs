@@ -57,14 +57,14 @@ namespace Swihoni.Sessions
             m_Interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
         }
 
-        private T[] Instantiate<T>(GameObject prefab, int length, Action<T> setup)
+        private T[] Instantiate<T>(GameObject prefab, int length, Action<int, T> setup)
         {
             return Enumerable.Range(0, length).Select(i =>
             {
                 GameObject instance = UnityObject.Instantiate(prefab);
                 instance.name = $"[{GetType().Name}] {prefab.name} ({i})";
                 var component = instance.GetComponent<T>();
-                setup(component);
+                setup(i, component);
                 return component;
             }).ToArray();
         }
@@ -73,8 +73,8 @@ namespace Swihoni.Sessions
         {
             CheckDisposed();
 
-            m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, visuals => visuals.Setup(this));
-            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, modifier => modifier.Setup(this));
+            m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, (_, visuals) => visuals.Setup(this));
+            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, (i, modifier) => modifier.Setup(this, i));
 
             EntityManager.Setup(this);
         }
@@ -234,10 +234,8 @@ namespace Swihoni.Sessions
         public virtual void Dispose()
         {
             IsDisposed = true;
-            foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier)
-                modifier.Dispose();
-            foreach (IPlayerContainerRenderer visual in m_Visuals)
-                visual.Dispose();
+            foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier) modifier.Dispose();
+            foreach (IPlayerContainerRenderer visual in m_Visuals) visual.Dispose();
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
         }

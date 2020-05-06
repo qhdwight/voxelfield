@@ -7,8 +7,8 @@ PhysicMaterial:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Grenade
-  dynamicFriction: 1
-  staticFriction: 1
+  dynamicFriction: 5
+  staticFriction: 10
   bounciness: 1
   frictionCombine: 0
-  bounceCombine: 1
+  bounceCombine: 3

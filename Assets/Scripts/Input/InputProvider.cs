@@ -42,11 +42,10 @@ namespace Input
     {
         private Dictionary<InputType, KeyCode> m_Mapping;
 
-        public KeyCode Get(InputType type) { return m_Mapping[type]; }
+        public KeyCode Get(InputType type) => m_Mapping[type];
 
-        public static InputSettings Defaults()
-        {
-            return new InputSettings
+        public static InputSettings Defaults() =>
+            new InputSettings
             {
                 m_Mapping = new Dictionary<InputType, KeyCode>
                 {
@@ -75,7 +74,6 @@ namespace Input
                     [InputType.NextConsoleCommand] = KeyCode.DownArrow,
                 }
             };
-        }
     }
 
     public class InputProvider : SingletonBehavior<InputProvider>
@@ -87,7 +85,7 @@ namespace Input
         public bool GetInput(InputType type) => UnityEngine.Input.GetKey(m_Settings.Get(type));
 
         /// <summary>
-        ///     Should be called in normal Unity Update() methods
+        /// Should be called in normal Unity Update() methods
         /// </summary>
         /// <returns>If this is the first Unity frame an input is pressed</returns>
         public bool GetInputDown(InputType type) => UnityEngine.Input.GetKeyDown(m_Settings.Get(type));
