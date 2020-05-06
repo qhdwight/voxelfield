@@ -8,7 +8,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 {
     public class PlayerMovement : PlayerModifierBehaviorBase
     {
-        private const float DefaultDownSpeed = -1.0f, RaycastOffset = 0.1f;
+        private const float DefaultDownSpeed = -0.01f, RaycastOffset = 0.1f;
 
         public const byte Upright = 0, Crouched = 1;
 

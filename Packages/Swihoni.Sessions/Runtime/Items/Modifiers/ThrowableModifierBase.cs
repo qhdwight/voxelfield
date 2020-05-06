@@ -52,7 +52,9 @@ namespace Swihoni.Sessions.Items.Modifiers
                 {
                     modifier.transform.SetPositionAndRotation(ray.origin + ray.direction, Quaternion.identity);
                     throwableModifier.ThrowerId = playerId;
-                    throwableModifier.Rigidbody.AddForce(ray.direction * m_ThrowForce, ForceMode.Impulse);
+                    Vector3 force = ray.direction * m_ThrowForce;
+                    if (player.Has(out MoveComponent move)) force += move.velocity.Value * 0.1f;
+                    throwableModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
                     throwableModifier.Rigidbody.AddRelativeTorque(new Vector3 {y = 2.0f}, ForceMode.Impulse);
                 }
             }

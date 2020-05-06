@@ -178,6 +178,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 {
                     int count = Physics.RaycastNonAlloc(m_FootstepSource.transform.position + new Vector3 {y = 0.5f}, Vector3.down, m_CachedHits,
                                                         1.0f, m_PrefabPlayerMovement.GroundMask);
+                    m_FootstepSource.pitch = Random.Range(0.95f, 1.05f);
                     if (count >= 1)
                         m_FootstepSource.PlayOneShot(m_BrushClips[Random.Range(0, m_BrushClips.Length)], normalizedSpeed);
                 }

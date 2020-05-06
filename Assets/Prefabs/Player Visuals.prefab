@@ -468,10 +468,10 @@ MonoBehaviour:
   - clip: {fileID: 7400000, guid: f7350c27255b37b4c91d1a9f40b85f87, type: 2}
   m_FootstepSource: {fileID: 4162590889218798339}
   m_BrushClips:
-  - {fileID: 8300000, guid: 07a9a9d9529af654cba7d5f9e7ef0e0c, type: 3}
-  - {fileID: 8300000, guid: a0c7cc772f6ef6b4bbfba4d90db54b46, type: 3}
-  - {fileID: 8300000, guid: 1b191427363fe02498dc1799e43f0bd5, type: 3}
-  - {fileID: 8300000, guid: 36351d38900184641b5626325b4d42a5, type: 3}
+  - {fileID: 8300000, guid: b06700587e472894aa95aa7683c38223, type: 3}
+  - {fileID: 8300000, guid: ccfc59d595578d3448244554d4fc038f, type: 3}
+  - {fileID: 8300000, guid: 061e83f2ff273bb4a871ae8470b9bef0, type: 3}
+  - {fileID: 8300000, guid: 9c3754f559486774084652b7f70b411c, type: 3}
   m_Animator: {fileID: 1247801065309422874}
   m_IsHitbox: 0
 --- !u!54 &5418487472207756051
@@ -560,7 +560,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0

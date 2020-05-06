@@ -31,7 +31,7 @@ namespace Swihoni.Sessions
             m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Loopback, 7777));
             RegisterMessages(m_Socket);
 
-            // Physics.autoSimulation = false;
+            Physics.autoSimulation = false;
         }
 
         protected virtual void PreTick(Container tickSession) { }
@@ -133,7 +133,7 @@ namespace Swihoni.Sessions
                     }
                 }
             });
-            // Physics.Simulate(duration);
+            Physics.Simulate(duration);
             EntityManager.Modify(serverSession, duration);
             SendServerSession(serverSession);
         }

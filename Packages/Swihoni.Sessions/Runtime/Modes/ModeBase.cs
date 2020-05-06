@@ -48,40 +48,44 @@ namespace Swihoni.Sessions.Modes
             int hitPlayerId = hitbox.Manager.PlayerId;
             Container hitPlayer = session.GetPlayerFromId(hitPlayerId),
                       inflictingPlayer = session.GetPlayerFromId(inflictingPlayerId);
-            if (hitPlayer.Present(out HealthProperty health) && health.IsAlive)
+            if (hitPlayer.Present(out HealthProperty health) && health.IsAlive && hitPlayer.Has<ServerTag>())
             {
-                if (hitPlayer.Has<ServerTag>())
+                var damage = checked((byte) (gun.Damage * hitbox.DamageMultiplier));
+                InflictDamage(session, inflictingPlayerId, inflictingPlayer, hitPlayer, hitPlayerId, damage);
+            }
+        }
+
+        public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage)
+        {
+            checked
+            {
+                bool usesHitMarker = inflictingPlayer.Has(out HitMarkerComponent hitMarker);
+                if (usesHitMarker) hitMarker.elapsed.Value = 1.0f;
+                var health = hitPlayer.Require<HealthProperty>();
+                if (damage >= health)
                 {
-                    bool usesHitMarker = inflictingPlayer.Has(out HitMarkerComponent hitMarker);
-                    if (usesHitMarker) hitMarker.elapsed.Value = 1.0f;
-                    checked
+                    KillPlayer(hitPlayer);
+                    
+                    if (inflictingPlayer.Has(out StatsComponent stats))
+                        stats.kills.Value++;
+                    
+                    if (usesHitMarker) hitMarker.isKill.Value = true;
+                    
+                    if (session.GetLatestSession().Without(out KillFeedProperty killFeed)) return;
+                    foreach (KillFeedComponent kill in killFeed)
                     {
-                        var damage = (byte) (gun.Damage * hitbox.DamageMultiplier);
-                        if (damage >= health)
-                        {
-                            KillPlayer(hitPlayer);
-                            if (inflictingPlayer.Has(out StatsComponent stats))
-                                stats.kills.Value++;
-                            if (usesHitMarker) hitMarker.isKill.Value = true;
-                            if (session.GetLatestSession().Has(out KillFeedProperty killFeed))
-                            {
-                                foreach (KillFeedComponent kill in killFeed)
-                                {
-                                    // Find empty kill
-                                    if (kill.elapsed > float.Epsilon) continue;
-                                    kill.elapsed.Value = 2.0f;
-                                    kill.killedPlayerId.Value = (byte) hitPlayerId;
-                                    kill.killingPlayerId.Value = (byte) inflictingPlayerId;
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            health.Value -= damage;
-                            if (usesHitMarker) hitMarker.isKill.Value = false;
-                        }
+                        // Find empty kill
+                        if (kill.elapsed > float.Epsilon) continue;
+                        kill.elapsed.Value = 2.0f;
+                        kill.killedPlayerId.Value = (byte) hitPlayerId;
+                        kill.killingPlayerId.Value = (byte) inflictingPlayerId;
+                        break;
                     }
+                }
+                else
+                {
+                    health.Value -= damage;
+                    if (usesHitMarker) hitMarker.isKill.Value = false;
                 }
             }
         }

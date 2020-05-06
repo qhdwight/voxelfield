@@ -45,7 +45,7 @@ namespace Swihoni.Sessions.Items
             Pool<ItemVisualBehavior> pool = _itemVisualPools[visual.Id - 1];
             visual.Cleanup();
             visual.SetRenderingMode(false);
-            visual.transform.SetParent(null, false);
+            visual.transform.SetParent(null, true);
             pool.Return(visual);
         }
 

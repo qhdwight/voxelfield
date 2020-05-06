@@ -80,7 +80,7 @@ MonoBehaviour:
   - animationClip: {fileID: 7400000, guid: a38f13444e884cd4da5d367ca4fee7df, type: 2}
     animationEvents:
     - time: 0
-      audioSource: {fileID: 8300000, guid: 6d2b94f4e1ddbf74aa14d69fb8f9cebe, type: 3}
+      audioSource: {fileID: 8300000, guid: 14eea82f549388a4789326b600a6fe28, type: 3}
       particleSystem: {fileID: 8614205777506101425}
       tracer: {fileID: 0}
     isReverseAnimation: 0
@@ -97,14 +97,14 @@ MonoBehaviour:
   - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
     animationEvents:
     - time: 0
-      audioSource: {fileID: 8300000, guid: 05185566266f4d64089d00f5685d262e, type: 3}
+      audioSource: {fileID: 8300000, guid: fba73e8c764fdf441a3dd094d7122cbd, type: 3}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}
     isReverseAnimation: 1
   - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
     animationEvents:
     - time: 0
-      audioSource: {fileID: 8300000, guid: 165e311a11f6fe44b972f3f3b4abf908, type: 3}
+      audioSource: {fileID: 8300000, guid: 6c1002d19619de140aa5bc40398e9eaf, type: 3}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}
     isReverseAnimation: 0

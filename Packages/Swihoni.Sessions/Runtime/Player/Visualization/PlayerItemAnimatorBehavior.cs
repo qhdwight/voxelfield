@@ -135,7 +135,10 @@ namespace Swihoni.Sessions.Player.Visualization
 
             if (m_ItemVisual) ItemAssetLink.ReturnVisuals(m_ItemVisual); // We have existing visuals but they are the wrong item id
             ItemVisualBehavior newVisuals = ItemAssetLink.ObtainVisuals(itemId, this, m_Graph);
-            newVisuals.transform.SetParent(transform, false);
+            Transform itemTransform = newVisuals.transform;
+            itemTransform.SetParent(transform);
+            itemTransform.localPosition = Vector3.zero;
+            itemTransform.localRotation = Quaternion.identity;
             m_ItemVisual = newVisuals;
             m_WasNewItemVisualThisRenderFrame = true;
             return newVisuals;

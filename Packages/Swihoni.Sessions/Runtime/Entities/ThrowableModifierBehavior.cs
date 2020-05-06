@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Swihoni.Components;
 using Swihoni.Sessions.Player;
+using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Entities
@@ -8,16 +10,20 @@ namespace Swihoni.Sessions.Entities
     public class ThrowableModifierBehavior : EntityModifierBehavior
     {
         [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default;
+        [SerializeField] private float m_Damage;
         [SerializeField] private LayerMask m_Mask = default;
 
         private readonly Collider[] m_OverlappingColliders = new Collider[8];
         private float m_LastElapsed;
+        private bool m_WasCollision;
 
         public Rigidbody Rigidbody { get; private set; }
         public int ThrowerId { get; set; }
         public float PopTime => m_PopTime;
 
         private void Awake() => Rigidbody = GetComponent<Rigidbody>();
+
+        private void OnCollisionEnter() { m_WasCollision = true; }
 
         public override void SetActive(bool isEnabled)
         {
@@ -28,14 +34,16 @@ namespace Swihoni.Sessions.Entities
             m_LastElapsed = 0.0f;
         }
 
+        private readonly HashSet<PlayerHitboxManager> m_HitPlayers = new HashSet<PlayerHitboxManager>();
+
         public override void Modify(SessionBase session, EntityContainer entity, float duration)
         {
             base.Modify(session, entity, duration);
 
             var throwable = entity.Require<ThrowableComponent>();
-            throwable.elapsed.Value += duration;
+            throwable.thrownElapsed.Value += duration;
 
-            bool hasPopped = throwable.elapsed > m_PopTime;
+            bool hasPopped = throwable.thrownElapsed > m_PopTime;
             Rigidbody.constraints = hasPopped ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
             Transform t = transform;
             if (hasPopped)
@@ -49,20 +57,35 @@ namespace Swihoni.Sessions.Entities
                     {
                         Collider hitCollider = m_OverlappingColliders[i];
                         var hitbox = hitCollider.GetComponent<PlayerHitbox>();
-                        if (hitbox)
+                        if (!hitbox || m_HitPlayers.Contains(hitbox.Manager)) continue;
+                        m_HitPlayers.Add(hitbox.Manager);
+                        int hitPlayerId = hitbox.Manager.PlayerId;
+                        Container hitPlayer = session.GetPlayerFromId(hitPlayerId);
+                        // TODO:feature damage based on range?
+                        if (hitPlayer.Present(out HealthProperty health) && health.IsAlive)
                         {
-                            int hitPlayerId = hitbox.Manager.PlayerId;
-                            session.GetMode().KillPlayer(session.GetPlayerFromId(hitPlayerId));
+                            var damage = checked((byte) m_Damage);
+                            session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage);
                         }
                     }
+                    m_HitPlayers.Clear();
                 }
             }
-            m_LastElapsed = throwable.elapsed;
+            else
+            {
+                throwable.contactElapsed.Value += duration;
+                if (m_WasCollision)
+                {
+                    throwable.contactElapsed.Value = 0.0f;
+                }
+            }
+            m_LastElapsed = throwable.thrownElapsed;
+            m_WasCollision = false;
 
             throwable.position.Value = t.position;
             throwable.rotation.Value = t.rotation;
 
-            if (throwable.elapsed > m_Lifetime)
+            if (throwable.thrownElapsed > m_Lifetime)
                 entity.Zero();
         }
     }
