@@ -34,7 +34,9 @@
             <e p="Chunk.cs" t="Include" />
             <e p="ChunkManager.cs" t="Include" />
             <e p="Map" t="Include">
+              <e p="MapManager.cs" t="Include" />
               <e p="MapSave.cs" t="Include" />
+              <e p="ModelManager.cs" t="Include" />
             </e>
             <e p="Noise.cs" t="Include" />
             <e p="NoiseData.cs" t="Include" />
