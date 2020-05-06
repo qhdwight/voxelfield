@@ -6,7 +6,7 @@ namespace Swihoni.Util.Math
 {
     public struct Position3Int : IEquatable<Position3Int>
     {
-        public static int SquareInt(int i) { return i * i; }
+        private static int SquareInt(int i) => i * i;
 
         public int x, y, z;
 
@@ -34,7 +34,7 @@ namespace Swihoni.Util.Math
             }
         }
 
-        public override string ToString() { return $"[{x}, {y}, {z}]"; }
+        public override string ToString() => $"[{x}, {y}, {z}]";
 
         public static void Serialize(Position3Int position, BinaryWriter message)
         {
@@ -47,11 +47,9 @@ namespace Swihoni.Util.Math
                                                                                          message.ReadInt32(),
                                                                                          message.ReadInt32());
 
-        public bool InsideDimension(Dimension dimension)
-        {
-            return x >= dimension.lowerBound.x && y >= dimension.lowerBound.y && z >= dimension.lowerBound.z &&
-                   x <= dimension.upperBound.x && y <= dimension.upperBound.y && z <= dimension.upperBound.z;
-        }
+        public bool InsideDimension(Dimension dimension) =>
+            x >= dimension.lowerBound.x && y >= dimension.lowerBound.y && z >= dimension.lowerBound.z
+         && x <= dimension.upperBound.x && y <= dimension.upperBound.y && z <= dimension.upperBound.z;
 
         public static float Distance(Position3Int p1, Position3Int p2) => Mathf.Sqrt(DistanceSquared(p1, p2));
 

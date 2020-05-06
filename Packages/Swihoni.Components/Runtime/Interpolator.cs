@@ -4,21 +4,21 @@ using System.Reflection;
 namespace Swihoni.Components
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class TakeSecondForInterpolation : Attribute
+    public class TakeSecondForInterpolationAttribute : Attribute
     {
     }
 
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
-    public class CustomInterpolation : Attribute
+    public class CustomInterpolationAttribute : Attribute
     {
     }
 
     [AttributeUsage(AttributeTargets.Field)]
-    public class Cyclic : Attribute
+    public class CyclicAttribute : Attribute
     {
         public readonly float minimum, maximum;
 
-        public Cyclic(float minimum, float maximum)
+        public CyclicAttribute(float minimum, float maximum)
         {
             this.minimum = minimum;
             this.maximum = maximum;
@@ -28,16 +28,29 @@ namespace Swihoni.Components
     }
 
     [AttributeUsage(AttributeTargets.Field)]
-    public class Angle : Attribute
+    public class AngleAttribute : Attribute
     {
     }
 
     [AttributeUsage(AttributeTargets.Field)]
-    public class Tolerance : Attribute
+    public class ToleranceAttribute : Attribute
     {
         public readonly float tolerance;
 
-        public Tolerance(float tolerance) { this.tolerance = tolerance; }
+        public ToleranceAttribute(float tolerance) => this.tolerance = tolerance;
+    }
+
+    /// <summary>
+    /// Interpolate field only if two given values fall within a certain range.
+    /// An example usage would be with player respawn, where the position of the player is abruptly changed.
+    /// We do not want to interpolate the player going back to spawn.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field)]
+    public class InterpolateRangeAttribute : Attribute
+    {
+        public readonly float range;
+
+        public InterpolateRangeAttribute(float range) => this.range = range;
     }
 
     public static class Interpolator
@@ -55,7 +68,7 @@ namespace Swihoni.Components
                     }
                     case ComponentBase c1 when _e2 is ComponentBase c2 && _ed is ComponentBase cd:
                         cd.InterpolateFrom(c1, c2, interpolation);
-                        if (c1.GetType().IsDefined(typeof(CustomInterpolation)))
+                        if (c1.GetType().IsDefined(typeof(CustomInterpolationAttribute)))
                             return Navigation.SkipDescendends;
                         break;
                 }

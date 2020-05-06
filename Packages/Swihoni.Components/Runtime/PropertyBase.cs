@@ -148,8 +148,8 @@ namespace Swihoni.Components
                 throw new ArgumentException("Properties are not the proper type!");
             if (Field != null)
             {
-                if (Field.IsDefined(typeof(CustomInterpolation))) return;
-                if (Field.IsDefined(typeof(TakeSecondForInterpolation)))
+                if (Field.IsDefined(typeof(CustomInterpolationAttribute))) return;
+                if (Field.IsDefined(typeof(TakeSecondForInterpolationAttribute)))
                 {
                     SetFromIfPresent(p2);
                     return;

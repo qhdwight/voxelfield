@@ -27,7 +27,7 @@ namespace Swihoni.Sessions.Entities
     [Serializable]
     public class ThrowableComponent : ComponentBase
     {
-        public VectorProperty position;
+        [InterpolateRange(5.0f)] public VectorProperty position;
         public QuaternionProperty rotation;
         public FloatProperty thrownElapsed, contactElapsed;
     }

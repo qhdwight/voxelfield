@@ -64,7 +64,7 @@ namespace Swihoni.Components
         public override bool ValueEquals(PropertyBase<float> other)
         {
             float tolerance;
-            if (Field != null && Field.IsDefined(typeof(Tolerance))) tolerance = Field.GetCustomAttribute<Tolerance>().tolerance;
+            if (Field != null && Field.IsDefined(typeof(ToleranceAttribute))) tolerance = Field.GetCustomAttribute<ToleranceAttribute>().tolerance;
             else tolerance = DefaultFloatTolerance;
             return Mathf.Abs(other.Value - Value) < tolerance;
         }
@@ -82,14 +82,14 @@ namespace Swihoni.Components
             float f1 = p1, f2 = p2;
             if (Field != null)
             {
-                if (Field.IsDefined(typeof(Angle)))
+                if (Field.IsDefined(typeof(AngleAttribute)))
                 {
                     Value = Mathf.LerpAngle(f1, f2, interpolation);
                     return;
                 }
-                if (Field.IsDefined(typeof(Cyclic)))
+                if (Field.IsDefined(typeof(CyclicAttribute)))
                 {
-                    var cyclicAttribute = Field.GetCustomAttribute<Cyclic>();
+                    var cyclicAttribute = Field.GetCustomAttribute<CyclicAttribute>();
                     CyclicInterpolateFrom(f1, f2, cyclicAttribute.minimum, cyclicAttribute.maximum, interpolation);
                     return;
                 }
@@ -122,13 +122,19 @@ namespace Swihoni.Components
         public override bool ValueEquals(PropertyBase<Vector3> other)
         {
             float tolerance;
-            if (Field != null && Field.IsDefined(typeof(Tolerance))) tolerance = Field.GetCustomAttribute<Tolerance>().tolerance;
+            if (Field != null && Field.IsDefined(typeof(ToleranceAttribute))) tolerance = Field.GetCustomAttribute<ToleranceAttribute>().tolerance;
             else tolerance = DefaultFloatTolerance;
             return Mathf.Abs(Value.x - other.Value.x) < tolerance
                 && Mathf.Abs(Value.y - other.Value.y) < tolerance
                 && Mathf.Abs(Value.z - other.Value.z) < tolerance;
         }
-
-        public override void ValueInterpolateFrom(PropertyBase<Vector3> p1, PropertyBase<Vector3> p2, float interpolation) => Value = Vector3.Lerp(p1, p2, interpolation);
+        
+        public override void ValueInterpolateFrom(PropertyBase<Vector3> p1, PropertyBase<Vector3> p2, float interpolation)
+        {
+            bool GreaterThan(Vector3 v1, Vector3 v2, float range) => (v2 - v1).sqrMagnitude > range * range;
+            bool useSecond = Field != null && Field.IsDefined(typeof(InterpolateRangeAttribute))
+                                           && GreaterThan(p1, p2, Field.GetCustomAttribute<InterpolateRangeAttribute>().range);
+            Value = useSecond ? p2 : Vector3.Lerp(p1, p2, interpolation);
+        }
     }
 }
