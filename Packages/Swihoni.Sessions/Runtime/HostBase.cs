@@ -51,6 +51,7 @@ namespace Swihoni.Sessions
             if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers)
              || m_RenderSession.Without(out LocalPlayerProperty localPlayer)) return;
 
+            SessionSettingsComponent settings = GetSettings();
             localPlayer.Value = HostPlayerId;
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
@@ -64,9 +65,8 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
-                    SessionSettingsComponent settings = GetSettings();
                     if (!settings.tickRate.HasValue) break;
-                    float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(settings.TickInterval) * 3;
+                    float rollback = settings.TickInterval * 3;
 
                     RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, renderPlayers[playerId],
                                                                    m_SessionHistory.Size, GetInHistory);
@@ -74,6 +74,7 @@ namespace Swihoni.Sessions
                 m_Visuals[playerId].Render(playerId, renderPlayers[playerId], playerId == localPlayer);
             }
             m_PlayerHud.Render(renderPlayers[HostPlayerId]);
+            RenderEntities<ServerStampComponent>(renderTime, settings.TickInterval);
         }
 
         protected override void PreTick(Container tickSession)

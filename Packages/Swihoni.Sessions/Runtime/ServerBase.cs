@@ -64,15 +64,20 @@ namespace Swihoni.Sessions
             Profiler.EndSample();
         }
 
+        private readonly List<byte> m_ToRemove = new List<byte>();
+
         private void IterateClients(uint tick, float time, float duration, Container serverSession)
         {
             var players = serverSession.Require<PlayerContainerArrayProperty>();
+            m_ToRemove.Clear();
             foreach ((IPEndPoint _, byte playerId) in m_PlayerIds)
             {
                 Container player = players[playerId];
-                HandleTimeout(time, playerId, player);
+                if (HandleTimeout(time, playerId, player)) m_ToRemove.Add(playerId);
                 CheckClientPing(player, tick, time, playerId, duration);
             }
+            foreach (byte playerId in m_ToRemove)
+                m_PlayerIds.Remove(playerId);
         }
 
         private void CheckClientPing(Container player, uint tick, float time, byte playerId, float duration)
@@ -93,13 +98,13 @@ namespace Swihoni.Sessions
             }
         }
 
-        private void HandleTimeout(float time, byte playerId, Container player)
+        private bool HandleTimeout(float time, byte playerId, Container player)
         {
             FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
-            if (serverPlayerTime.WithoutValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) return;
+            if (serverPlayerTime.WithoutValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) return false;
             Debug.LogWarning($"Dropping player with id: {playerId}");
-            m_PlayerIds.Remove(playerId);
             player.Reset();
+            return true;
         }
 
         private void Tick(Container serverSession, float time, float duration)

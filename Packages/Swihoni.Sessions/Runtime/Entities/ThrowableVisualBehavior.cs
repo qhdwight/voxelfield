@@ -4,7 +4,7 @@ namespace Swihoni.Sessions.Entities
 {
     public class ThrowableVisualBehavior : EntityVisualBehavior
     {
-        [SerializeField] private AudioClip m_PopAudioClip, m_ContactAudioClip;
+        [SerializeField] private AudioClip m_PopAudioClip = default, m_ContactAudioClip = default;
         private AudioSource m_AudioSource;
         private ParticleSystem[] m_Particles;
         private ThrowableModifierBehavior m_Modifier;

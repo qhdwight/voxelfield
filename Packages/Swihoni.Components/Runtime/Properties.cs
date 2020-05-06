@@ -117,7 +117,6 @@ namespace Swihoni.Components
         public VectorProperty() { }
 
         public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-
         public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadVector3();
 
         public override bool ValueEquals(PropertyBase<Vector3> other)

@@ -23,7 +23,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected override void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, float duration)
         {
-            if (!inputs.GetInput(PlayerInput.UseOne) && item.status.id == ThrowableStatusId.Cooking)
+            if (item.status.id == ThrowableStatusId.Cooking && !inputs.GetInput(PlayerInput.UseOne))
                 StartStatus(session, playerId, item, ItemStatusId.PrimaryUsing, duration);
         }
 
@@ -43,20 +43,17 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected virtual void Release(SessionBase session, int playerId)
         {
             Container player = session.GetPlayerFromId(playerId);
+            if (player.Without<ServerTag>()) return;
+            
             Ray ray = SessionBase.GetRayForPlayer(player);
-            if (player.Has<ServerTag>())
+            EntityModifierBehavior modifier = session.EntityManager.ObtainModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
+            if (modifier is ThrowableModifierBehavior throwableModifier)
             {
-                Debug.Log("Release");
-                EntityModifierBehavior modifier = session.EntityManager.ObtainModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
-                if (modifier is ThrowableModifierBehavior throwableModifier)
-                {
-                    modifier.transform.SetPositionAndRotation(ray.origin + ray.direction, Quaternion.identity);
-                    throwableModifier.ThrowerId = playerId;
-                    Vector3 force = ray.direction * m_ThrowForce;
-                    if (player.Has(out MoveComponent move)) force += move.velocity.Value * 0.1f;
-                    throwableModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
-                    throwableModifier.Rigidbody.AddRelativeTorque(new Vector3 {y = 2.0f}, ForceMode.Impulse);
-                }
+                modifier.transform.SetPositionAndRotation(ray.origin + ray.direction, Quaternion.identity);
+                throwableModifier.ThrowerId = playerId;
+                Vector3 force = ray.direction * m_ThrowForce;
+                if (player.Has(out MoveComponent move)) force += move.velocity.Value * 0.1f;
+                throwableModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
             }
         }
     }

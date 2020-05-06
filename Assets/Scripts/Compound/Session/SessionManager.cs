@@ -101,11 +101,17 @@ namespace Compound.Session
             }
 
             if (Input.GetKeyDown(KeyCode.H))
-                StartHost();
+            {
+                Host host = StartHost();
+            }
+            if (Input.GetKeyDown(KeyCode.Y))
+            {
+                StartServer();
+            }
             if (Input.GetKeyDown(KeyCode.J))
             {
                 Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
-                if (Application.isEditor) client.ShouldRender = false;
+                // if (Application.isEditor) client.ShouldRender = false;
             }
             if (Input.GetKeyDown(KeyCode.K))
             {

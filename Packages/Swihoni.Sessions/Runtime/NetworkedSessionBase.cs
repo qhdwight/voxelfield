@@ -77,18 +77,20 @@ namespace Swihoni.Sessions
 
         protected override void Render(float renderTime)
         {
+            Container latestSession = GetLatestSession();
             foreach (InterfaceBehaviorBase @interface in m_Interfaces)
-            {
                 if (@interface is SessionInterfaceBehavior sessionInterface)
-                    sessionInterface.Render(GetLatestSession());
-            }
-            float rollback = GetSettings().TickInterval;
+                    sessionInterface.Render(latestSession);
+        }
+
+        protected void RenderEntities<TStampComponent>(float renderTime, float rollback) where TStampComponent : StampComponent
+        {
             var renderEntities = m_RenderSession.Require<EntityArrayProperty>();
             for (var i = 0; i < renderEntities.Length; i++)
             {
                 int index = i;
                 RenderInterpolated(renderTime - rollback, renderEntities[index], m_SessionHistory.Size,
-                                   h => m_SessionHistory.Get(-h).Require<ServerStampComponent>(),
+                                   h => m_SessionHistory.Get(-h).Require<TStampComponent>(),
                                    h => m_SessionHistory.Get(-h).Require<EntityArrayProperty>()[index]);
             }
             EntityManager.Render(renderEntities);

@@ -173,7 +173,12 @@ namespace Swihoni.Sessions
                           toComponent = getInHistory(historyIndex);
                 FloatProperty toTime = getTimeInHistory(historyIndex).time,
                               fromTime = getTimeInHistory(historyIndex + 1).time;
-                if (!toTime.HasValue || !fromTime.HasValue) break;
+                if (!toTime.HasValue || !fromTime.HasValue || (historyIndex == 0 && toTime < renderTime))
+                {
+                    renderContainer.FastCopyFrom(getInHistory(0));
+                    // Debug.LogWarning("Not enough history");
+                    return;
+                }
                 if (renderTime > fromTime && renderTime < toTime)
                 {
                     float interpolation = (renderTime - fromTime) / (toTime - fromTime);
@@ -182,7 +187,8 @@ namespace Swihoni.Sessions
                 }
             }
             // Take last if we do not have enough history
-            renderContainer.FastCopyFrom(getInHistory(0));
+            // Debug.LogWarning("Not enough recent");
+            renderContainer.FastCopyFrom(getInHistory(-1));
         }
 
         protected static void RenderInterpolatedPlayer<TStampComponent>

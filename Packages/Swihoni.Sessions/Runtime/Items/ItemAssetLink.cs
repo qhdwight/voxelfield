@@ -27,7 +27,7 @@ namespace Swihoni.Sessions.Items
                                           {
                                               ItemVisualBehavior visualsPrefab = itemVisualPrefabs[id - 1],
                                                                  visualsInstance = Object.Instantiate(visualsPrefab);
-                                              visualsInstance.name = visualsPrefab.name;
+                                              visualsInstance.name = "Visual";
                                               return visualsInstance;
                                           })).ToArray();
         }

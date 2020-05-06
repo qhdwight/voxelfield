@@ -9,8 +9,7 @@ namespace Swihoni.Sessions.Entities
     [RequireComponent(typeof(Rigidbody))]
     public class ThrowableModifierBehavior : EntityModifierBehavior
     {
-        [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default;
-        [SerializeField] private float m_Damage;
+        [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default, m_Damage = default;
         [SerializeField] private LayerMask m_Mask = default;
 
         private readonly Collider[] m_OverlappingColliders = new Collider[8];
@@ -64,7 +63,8 @@ namespace Swihoni.Sessions.Entities
                         // TODO:feature damage based on range?
                         if (hitPlayer.Present(out HealthProperty health) && health.IsAlive)
                         {
-                            var damage = checked((byte) m_Damage);
+                            float ratio = 0.5f - Vector3.Distance(hitPlayer.Require<MoveComponent>().position, t.position) / (m_Radius * 2) + 0.5f;
+                            var damage = checked((byte) (m_Damage * ratio));
                             session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage);
                         }
                     }

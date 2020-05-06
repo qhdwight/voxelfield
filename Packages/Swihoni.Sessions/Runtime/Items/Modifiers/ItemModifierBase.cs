@@ -32,6 +32,7 @@ namespace Swihoni.Sessions.Items.Modifiers
     public class ItemStatusModiferProperties
     {
         public float duration;
+        public bool isPersistent;
     }
 
     [CreateAssetMenu(fileName = "Item", menuName = "Item/Item", order = 0)]
@@ -40,8 +41,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         public byte id;
         public string itemName;
         public float movementFactor = 1.0f;
-        [SerializeField] private ItemStatusModiferProperties[] m_StatusModiferProperties = default,
-                                                               m_EquipStatusModiferProperties = default;
+        [SerializeField] protected ItemStatusModiferProperties[] m_StatusModiferProperties, m_EquipStatusModiferProperties;
         public ItemStatusModiferProperties GetStatusModifierProperties(byte statusId) => m_StatusModiferProperties[statusId];
 
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
@@ -62,12 +62,18 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         private void ModifyStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, float duration)
         {
-            ByteStatusComponent status = item.status;
-            status.elapsed.Value += duration;
-            ItemStatusModiferProperties modifierProperties;
+            item.status.elapsed.Value += duration;
             StatusTick(session, playerId, item, inputs, duration);
+            EndStatus(session, playerId, item, inventory, inputs, duration);
+        }
+
+        protected virtual void EndStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, float duration)
+        {
+            ByteStatusComponent status = item.status;
+            ItemStatusModiferProperties modifierProperties;
             while (status.elapsed > (modifierProperties = m_StatusModiferProperties[status.id]).duration)
             {
+                if (modifierProperties.isPersistent) break;
                 float statusElapsed = status.elapsed;
                 byte? nextStatus = FinishStatus(session, playerId, item, inventory, inputs);
                 StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, duration, statusElapsed - modifierProperties.duration);

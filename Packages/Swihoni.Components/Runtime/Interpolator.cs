@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 
 namespace Swihoni.Components
 {
@@ -7,7 +8,7 @@ namespace Swihoni.Components
     {
     }
 
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
     public class CustomInterpolation : Attribute
     {
     }
@@ -53,6 +54,8 @@ namespace Swihoni.Components
                         break;
                     }
                     case ComponentBase c1 when _e2 is ComponentBase c2 && _ed is ComponentBase cd:
+                        if (c1.GetType().IsDefined(typeof(CustomInterpolation)))
+                            return Navigation.SkipDescendends;
                         cd.InterpolateFrom(c1, c2, interpolation);
                         break;
                 }

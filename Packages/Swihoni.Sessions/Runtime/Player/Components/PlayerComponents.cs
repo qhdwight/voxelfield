@@ -70,11 +70,11 @@ namespace Swihoni.Sessions.Player.Components
         public UShortProperty ammoInMag, ammoInReserve;
     }
 
-    [Serializable]
+    [Serializable, CustomInterpolation]
     public class ByteStatusComponent : ComponentBase
     {
-        [CustomInterpolation] public ByteProperty id;
-        [CustomInterpolation] public FloatProperty elapsed;
+        public ByteProperty id;
+        public FloatProperty elapsed;
 
         /// <summary>
         /// Note: Interpolation must be explicitly called for this type.
@@ -84,19 +84,27 @@ namespace Swihoni.Sessions.Player.Components
             float d1 = getStatusDuration(s1.id),
                   e1 = s1.elapsed,
                   e2 = s2.elapsed;
-            if (s1.id != s2.id) e2 += d1;
-            else if (e1 > e2) e2 += d1;
-            float interpolatedElapsed = Mathf.Lerp(e1, e2, interpolation);
-            byte interpolatedId;
-            if (interpolatedElapsed > d1)
+            if (float.IsPositiveInfinity(d1))
             {
-                interpolatedElapsed -= d1;
-                interpolatedId = s2.id;
+                id.Value = s2.id;
+                elapsed.Value = Mathf.Lerp(s1.id == s2.id ? e1 : 0.0f, e2, interpolation);
             }
             else
-                interpolatedId = s1.id;
-            id.Value = interpolatedId;
-            elapsed.Value = interpolatedElapsed;
+            {
+                if (s1.id != s2.id) e2 += d1;
+                else if (e1 > e2) e2 += d1;
+                float interpolatedElapsed = Mathf.Lerp(e1, e2, interpolation);
+                byte interpolatedId;
+                if (interpolatedElapsed > d1)
+                {
+                    interpolatedElapsed -= d1;
+                    interpolatedId = s2.id;
+                }
+                else
+                    interpolatedId = s1.id;
+                id.Value = interpolatedId;
+                elapsed.Value = interpolatedElapsed;
+            }
         }
 
         public override string ToString() => $"ID: {id}, Elapsed: {elapsed}";
@@ -113,7 +121,8 @@ namespace Swihoni.Sessions.Player.Components
         public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
         {
             ItemModifierBase modifier = ItemAssetLink.GetModifier(i1.id);
-            status.InterpolateFrom(i1.status, i2.status, interpolation, statusId => modifier.GetStatusModifierProperties(statusId).duration);
+            status.InterpolateFrom(i1.status, i2.status, interpolation,
+                                   statusId => InventoryComponent.VisualDuration(modifier.GetStatusModifierProperties(statusId)));
         }
     }
 
@@ -132,18 +141,22 @@ namespace Swihoni.Sessions.Player.Components
         {
             var i1 = (InventoryComponent) c1;
             var i2 = (InventoryComponent) c2;
-            if (i1.HasNoItemEquipped || i2.HasNoItemEquipped)
+            if (i1.HasNoItemEquipped || i2.HasNoItemEquipped || i1.equippedIndex != i2.equippedIndex)
             {
-                equippedIndex.Value = PlayerItemManagerModiferBehavior.NoneIndex;
+                this.FastCopyFrom(i1);
                 return;
             }
-            ItemModifierBase modifier = ItemAssetLink.GetModifier(i1.EquippedItemComponent.id);
-            if (modifier is GunModifierBase gunModifier)
-                adsStatus.InterpolateFrom(i1.adsStatus, i2.adsStatus, interpolation, aimStatusId => gunModifier.GetAdsStatusModifierProperties(aimStatusId).duration);
-            equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation, equipStatusId => modifier.GetEquipStatusModifierProperties(equipStatusId).duration);
+            // TODO:feature handle when id of equipped weapon changes
+            ItemModifierBase m1 = ItemAssetLink.GetModifier(i1.EquippedItemComponent.id);
+            if (m1 is GunModifierBase gm1)
+                adsStatus.InterpolateFrom(i1.adsStatus, i2.adsStatus, interpolation,
+                                          aimStatusId => VisualDuration(gm1.GetAdsStatusModifierProperties(aimStatusId)));
+            equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation,
+                                        equipStatusId => VisualDuration(m1.GetEquipStatusModifierProperties(equipStatusId)));
             equippedIndex = i1.equippedIndex;
-            // TODO:bug handle when id of equipped weapon changes
             EquippedItemComponent.InterpolateFrom(i1.EquippedItemComponent, i2.EquippedItemComponent, interpolation);
         }
+
+        public static float VisualDuration(ItemStatusModiferProperties m) => m.isPersistent ? float.PositiveInfinity : m.duration;
     }
 }
