@@ -78,7 +78,7 @@ namespace Voxel
 
         public MapProgressCallback MapProgress { get; set; }
 
-        public IEnumerator SetMap(MapSave map)
+        public IEnumerator LoadMap(MapSave map)
         {
             Map = map;
             SetPoolSize(map);

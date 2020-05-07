@@ -12,8 +12,12 @@ namespace Compound.Session
 
     public static class CompoundComponents
     {
-        public static SessionElements SessionElements;
+        public static readonly SessionElements SessionElements;
 
-        static CompoundComponents() { SessionElements = SessionElements.NewStandardSessionElements(); }
+        static CompoundComponents()
+        {
+            SessionElements = SessionElements.NewStandardSessionElements();
+            SessionElements.elements.Add(typeof(VoxelMapNameProperty));
+        }
     }
 }

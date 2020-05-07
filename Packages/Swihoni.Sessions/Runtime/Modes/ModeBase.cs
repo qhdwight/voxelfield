@@ -23,8 +23,9 @@ namespace Swihoni.Sessions.Modes
         internal virtual void Modify(Container session, Container playerToModify, Container commands, float duration)
         {
             if (playerToModify.Has(out HitMarkerComponent hitMarker))
-                if (hitMarker.elapsed.Value > 0.0f)
-                    hitMarker.elapsed.Value -= duration;
+                if (hitMarker.elapsed.Value > 0.0f) hitMarker.elapsed.Value -= duration;
+            if (playerToModify.Has(out DamageNotifierComponent damageNotifier))
+                if (damageNotifier.elapsed.Value > 0.0f) damageNotifier.elapsed.Value -= duration;
             if (playerToModify.Has(out HealthProperty health) && health.IsAlive && playerToModify.Has(out MoveComponent move) && move.position.Value.y < -5.0f)
             {
                 KillPlayer(playerToModify);
@@ -59,8 +60,10 @@ namespace Swihoni.Sessions.Modes
         {
             checked
             {
-                bool usesHitMarker = inflictingPlayer.Has(out HitMarkerComponent hitMarker);
+                bool usesHitMarker = inflictingPlayer.Has(out HitMarkerComponent hitMarker),
+                     usesNotifier = hitPlayer.Has(out DamageNotifierComponent damageNotifier);
                 if (usesHitMarker) hitMarker.elapsed.Value = 1.0f;
+                if (usesNotifier) damageNotifier.elapsed.Value = 1.0f;
                 var health = hitPlayer.Require<HealthProperty>();
                 if (damage >= health)
                 {

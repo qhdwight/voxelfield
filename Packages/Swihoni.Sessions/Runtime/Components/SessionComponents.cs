@@ -77,6 +77,12 @@ namespace Swihoni.Sessions.Components
         public BoolProperty isKill;
     }
 
+    [Serializable, OnlyServerTrusted]
+    public class DamageNotifierComponent : ComponentBase
+    {
+        public FloatProperty elapsed;
+    }
+
     [Serializable]
     public class PlayerContainerArrayProperty : ArrayProperty<Container>
     {

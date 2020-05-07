@@ -11,5 +11,7 @@ namespace Swihoni.Sessions
         public TickRateProperty TickRate;
 
         public ModeIdProperty ModeId;
+
+        public string mapName;
     }
 }

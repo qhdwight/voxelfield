@@ -120,7 +120,10 @@ PlayerSettings:
     16:9: 1
     Others: 1
   bundleVersion: 0.1
-  preloadedAssets: []
+  preloadedAssets:
+  - {fileID: 11400000, guid: d1f6db47c5e49c74eb793e0361488867, type: 2}
+  - {fileID: 1753436965942156853, guid: 58fdc5a4393c9d6408dea7bd18854088, type: 3}
+  - {fileID: 3621098284609304107, guid: 71ac0441fdf298943a3d88cc15dabbdb, type: 3}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -341,7 +344,7 @@ PlayerSettings:
     m_Automatic: 1
   - m_BuildTarget: WindowsStandaloneSupport
     m_APIs: 02000000
-    m_Automatic: 0
+    m_Automatic: 1
   m_BuildTargetVRSettings: []
   openGLRequireES31: 0
   openGLRequireES31AEP: 0

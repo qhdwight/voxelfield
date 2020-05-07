@@ -16,13 +16,14 @@ namespace Swihoni.Sessions.Modes
             if (player.Has(out MoveComponent move))
             {
                 move.Zero();
-                move.position.Value = new Vector3 {x = 20.0f};
+                move.position.Value = new Vector3 {y = 10.0f};
             }
             player.ZeroIfHas<CameraComponent>();
             if (player.Has(out HealthProperty health))
                 health.Value = 100;
             player.ZeroIfHas<RespawnTimerProperty>();
             player.ZeroIfHas<HitMarkerComponent>();
+            player.ZeroIfHas<DamageNotifierComponent>();
             if (player.Has(out InventoryComponent inventory))
             {
                 inventory.Zero();

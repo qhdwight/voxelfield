@@ -36,6 +36,14 @@ namespace Swihoni.Sessions
 
         protected virtual void PostTick(Container tickSession) { }
 
+        protected virtual void SettingsTick(Container serverSession)
+        {
+            var tickRate = serverSession.Require<TickRateProperty>();
+            tickRate.FastCopyFrom(DebugBehavior.Singleton.TickRate);
+            serverSession.Require<ModeIdProperty>().FastCopyFrom(DebugBehavior.Singleton.ModeId);
+            Time.fixedDeltaTime = tickRate.TickInterval;
+        }
+
         protected sealed override void Tick(uint tick, float time, float duration)
         {
             base.Tick(tick, time, duration);
@@ -45,10 +53,7 @@ namespace Swihoni.Sessions
                       serverSession = m_SessionHistory.ClaimNext();
             serverSession.FastCopyFrom(previousServerSession);
 
-            var tickRate = serverSession.Require<TickRateProperty>();
-            tickRate.FastCopyFrom(DebugBehavior.Singleton.TickRate);
-            serverSession.Require<ModeIdProperty>().FastCopyFrom(DebugBehavior.Singleton.ModeId);
-            Time.fixedDeltaTime = tickRate.TickInterval;
+            SettingsTick(serverSession);
 
             var serverStamp = serverSession.Require<ServerStampComponent>();
             serverStamp.tick.Value = tick;

@@ -99,8 +99,10 @@ namespace Swihoni.Sessions
             base.Tick(tick, time, duration);
 
             Profiler.BeginSample("Client Predict");
-            if (GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
+            Container latestSession = GetLatestSession();
+            if (GetLocalPlayerId(latestSession, out int localPlayerId))
             {
+                SettingsTick(latestSession);
                 UpdateInputs(localPlayerId);
                 Predict(tick, time, localPlayerId);
             }
@@ -114,6 +116,10 @@ namespace Swihoni.Sessions
             Receive(time);
             HandleTimeouts(time);
             Profiler.EndSample();
+        }
+
+        protected virtual void SettingsTick(Container serverSession)
+        {
         }
 
         private void HandleTimeouts(float time)
@@ -234,6 +240,7 @@ namespace Swihoni.Sessions
                         }
 
                         {
+                            // TODO:refactor make function
                             FloatProperty serverTime = serverSession.Require<ServerStampComponent>().time,
                                           localizedServerTime = serverSession.Require<LocalizedClientStampComponent>().time;
 
@@ -310,23 +317,23 @@ namespace Swihoni.Sessions
 
         protected override void RollbackHitboxes(int playerId)
         {
-            for (var i = 0; i < m_Modifier.Length; i++)
-            {
-                // int copiedPlayerId = i;
-                // Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(copiedPlayerId);
-                //
-                // Container render = m_RenderSession.GetPlayer(i).Clone();
-                //
-                // float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetSettings().TickInterval) * 3;
-                // RenderInterpolatedPlayer<LocalizedClientStampComponent>(Time.realtimeSinceStartup - rollback, render, m_SessionHistory.Size, GetInHistory);
-                //
-                // PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
-                // modifier.EvaluateHitboxes(i, render);
-
-                Container recentPlayer = m_Visuals[i].GetRecentPlayer();
-                if (i == 0 && recentPlayer != null)
-                    SendDebug(recentPlayer);
-            }
+            // for (var i = 0; i < m_Modifier.Length; i++)
+            // {
+            //     // int copiedPlayerId = i;
+            //     // Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(copiedPlayerId);
+            //     //
+            //     // Container render = m_RenderSession.GetPlayer(i).Clone();
+            //     //
+            //     // float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetSettings().TickInterval) * 3;
+            //     // RenderInterpolatedPlayer<LocalizedClientStampComponent>(Time.realtimeSinceStartup - rollback, render, m_SessionHistory.Size, GetInHistory);
+            //     //
+            //     // PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
+            //     // modifier.EvaluateHitboxes(i, render);
+            //
+            //     Container recentPlayer = m_Visuals[i].GetRecentPlayer();
+            //     if (i == 0 && recentPlayer != null)
+            //         SendDebug(recentPlayer);
+            // }
         }
 
         private void SendDebug(Container player)

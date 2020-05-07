@@ -13,6 +13,7 @@ namespace Swihoni.Sessions.Interfaces
     {
         [SerializeField] private BufferedTextGui m_HealthText = default, m_AmmoText = default;
         [SerializeField] private Image m_Crosshair = default, m_HitMarker = default;
+        [SerializeField] private Image[] m_DamageNotifiers = default;
         [SerializeField] private Color m_KillHitMarkerColor = Color.red;
         private Color m_DefaultHitMarkerColor;
 
@@ -61,6 +62,15 @@ namespace Swihoni.Sessions.Interfaces
                     m_HitMarker.color = color;
                     float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsed);
                     m_HitMarker.rectTransform.localScale = new Vector2(scale, scale);
+                }
+                if (localPlayer.Has(out DamageNotifierComponent damageNotifier))
+                {
+                    foreach (Image notifierImage in m_DamageNotifiers)
+                    {
+                        Color color = notifierImage.color;
+                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsed);
+                        notifierImage.color = color;
+                    }
                 }
             }
 

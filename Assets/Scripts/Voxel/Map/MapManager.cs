@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Swihoni.Util;
 using Swihoni.Util.Math;
-using UnityEditor;
 using UnityEngine;
 
 namespace Voxel.Map
@@ -30,20 +29,11 @@ namespace Voxel.Map
     {
         private const string MapSaveExtension = "vfm", MapSaveFolder = "Maps";
 
-        private readonly Queue<LoadMapAction> m_MapActions = new Queue<LoadMapAction>();
+        private string m_WantedMap;
 
         private static Dictionary<string, TextAsset> _defaultMaps;
 
         public MapSave Map { get; private set; }
-
-        private readonly struct LoadMapAction
-        {
-            public readonly string mapName;
-
-            public LoadMapAction(string mapName) => this.mapName = mapName;
-
-            public IEnumerator Execute() { yield return Singleton.LoadMap(mapName); }
-        }
 
         [RuntimeInitializeOnLoadMethod]
         public static void Initialize() { _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m); }
@@ -59,15 +49,22 @@ namespace Voxel.Map
         private void Start()
         {
             ChunkManager.Singleton.MapProgress += HandleMapProgressInfo;
+            // SaveTestMap();
             StartCoroutine(ManageActionsRoutine());
             SetMap("Menu");
         }
 
         private IEnumerator ManageActionsRoutine()
         {
-            // TODO do a different way?
             while (Application.isPlaying)
-                yield return m_MapActions.Count > 0 ? m_MapActions.Dequeue().Execute() : null;
+            {
+                if (m_WantedMap == null || Map != null && m_WantedMap == Map.Name)
+                    yield return null;
+                else
+                {
+                    yield return LoadMap(m_WantedMap);
+                }
+            }
         }
 
         private static string GetMapPath(string mapName) => Path.ChangeExtension(Path.Combine(GetDirectory(MapSaveFolder), mapName), MapSaveExtension);
@@ -90,10 +87,14 @@ namespace Voxel.Map
             string mapPath = GetMapPath(mapSave.Name);
             using (FileStream file = File.OpenWrite(mapPath))
             using (var writer = new BinaryWriter(file))
-            {
                 MapSave.Serialize(mapSave, writer);
-            }
-            AssetDatabase.CreateAsset(MapAsset.New(mapSave), "Assets/Test.bytes");
+            // AssetDatabase.CreateAsset(MapAsset.New(mapSave), "Assets/Test.bytes");
+            // using (var stream = new MemoryStream())
+            // using (var writer = new BinaryWriter(stream))
+            // {
+            //     MapSave.Serialize(mapSave, writer);
+            //     File.WriteAllBytes("Assets/Meme.bytes", stream.GetBuffer().Take((int) stream.Position).ToArray());
+            // }
             return true;
         }
 
@@ -107,7 +108,7 @@ namespace Voxel.Map
             if (mapSave.Models != null)
                 foreach (KeyValuePair<Position3Int, ModelData> model in mapSave.Models)
                     ModelManager.Singleton.LoadInModel(model.Value.modelId, model.Key, model.Value.rotation);
-            yield return SetMapSave(mapSave);
+            yield return LoadMapSave(mapSave);
             // if (mapName == "Test")
             // {
             //     Random.InitState(8);
@@ -147,18 +148,17 @@ namespace Voxel.Map
 
         public void SetMap(string mapName)
         {
-            if (ChunkManager.Singleton.Map != null && ChunkManager.Singleton.Map.Name == mapName) return;
-            m_MapActions.Enqueue(new LoadMapAction(mapName));
+            m_WantedMap = mapName;
         }
 
-        private static IEnumerator SetMapSave(MapSave save)
+        private static IEnumerator LoadMapSave(MapSave save)
         {
 //        if (!save.DynamicChunkLoading)
 //        {    
 //            LoadingScreen.Singleton.SetInterfaceActive(true);
 //            LoadingScreen.Singleton.SetProgress(0.0f);
 //        }
-            yield return ChunkManager.Singleton.SetMap(save);
+            yield return ChunkManager.Singleton.LoadMap(save);
         }
 
         private void HandleMapProgressInfo(in MapProgressInfo mapProgress)
