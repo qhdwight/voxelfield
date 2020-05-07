@@ -251,7 +251,7 @@ namespace Swihoni.Sessions
                                                                m_SessionHistory.Size, GetPlayerInHistory);
 
                 m_Modifier[i].EvaluateHitboxes(i, rollbackPlayer);
-                if (i == 0) PlayerVisualizerBehavior.Render(this, i, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
+                // if (i == 0) PlayerVisualizerBehavior.Render(this, i, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
         }
 

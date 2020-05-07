@@ -47,7 +47,7 @@ namespace Voxel.Map
 
         public string Name { get; }
         public int TerrainHeight { get; }
-        public Dimension Dimension { get; }
+        public Dimension Dimension { get; set; }
         public Dictionary<Position3Int, BrushStroke> BrushStrokes { get; }
         public Dictionary<Position3Int, VoxelChangeData> ChangedVoxels { get; }
         public Dictionary<Position3Int, ModelData> Models { get; }

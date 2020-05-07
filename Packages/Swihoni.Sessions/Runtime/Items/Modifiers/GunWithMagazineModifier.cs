@@ -6,9 +6,9 @@ namespace Swihoni.Sessions.Items.Modifiers
     [CreateAssetMenu(fileName = "Gun", menuName = "Item/Gun", order = 1)]
     public class GunWithMagazineModifier : GunModifierBase
     {
-        protected override void ReloadAmmo(ItemComponent itemComponents)
+        protected override void ReloadAmmo(ItemComponent item)
         {
-            GunStatusComponent gunStatus = itemComponents.gunStatus;
+            GunStatusComponent gunStatus = item.gunStatus;
             var addAmount = (ushort) (m_MagSize - gunStatus.ammoInMag);
             if (addAmount > gunStatus.ammoInReserve)
                 addAmount = gunStatus.ammoInReserve;

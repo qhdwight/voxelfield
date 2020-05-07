@@ -56,19 +56,17 @@ namespace Swihoni.Sessions.Items.Modifiers
             return base.FinishStatus(session, playerId, item, inventory, inputs);
         }
 
-        protected virtual bool CanReload(ItemComponent item, InventoryComponent inventory)
-        {
-            return item.status.id == ItemStatusId.Idle && inventory.equipStatus.id == ItemEquipStatusId.Equipped
-                                                       && item.gunStatus.ammoInReserve > 0 && item.gunStatus.ammoInMag < m_MagSize;
-        }
+        protected virtual bool CanReload(ItemComponent item, InventoryComponent inventory) =>
+            inventory.equipStatus.id == ItemEquipStatusId.Equipped
+         && item.gunStatus.ammoInReserve > 0 && item.gunStatus.ammoInMag < m_MagSize;
 
-        protected override bool CanUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false)
-        {
-            // We want to be able to interrupt reload with firing, and also make sure we can not fire with no ammo
-            return item.gunStatus.ammoInMag > 0 && base.CanUse(item, inventory, justFinishedUse);
-        }
+        /// <summary>
+        /// We want to be able to interrupt reload with firing, and also make sure we can not fire with no ammo
+        /// </summary>
+        protected override bool CanUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
+            item.gunStatus.ammoInMag > 0 && base.CanUse(item, inventory, justFinishedUse);
 
-        protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, float duration) { Fire(playerId, session, item, duration); }
+        protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, float duration) => Fire(playerId, session, item, duration);
 
         private readonly HashSet<PlayerHitboxManager> m_HitPlayers = new HashSet<PlayerHitboxManager>();
 
@@ -99,6 +97,6 @@ namespace Swihoni.Sessions.Items.Modifiers
                 StartStatus(session, playerId, itemComponent, ItemStatusId.Idle, duration);
         }
 
-        protected abstract void ReloadAmmo(ItemComponent itemComponents);
+        protected abstract void ReloadAmmo(ItemComponent item);
     }
 }

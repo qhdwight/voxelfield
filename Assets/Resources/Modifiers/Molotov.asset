@@ -35,6 +35,5 @@ MonoBehaviour:
     isPersistent: 0
   m_ThrowForce: 12
   m_AmmoCount: 2
-  m_ThrowablePrefab: {fileID: 6867841920297134542, guid: d57ee6a9487f6433daa95669d1a9b2e6,
+  m_ThrowablePrefab: {fileID: 4020915645018157247, guid: d57ee6a9487f6433daa95669d1a9b2e6,
     type: 3}
-  m_SplashDamage: 100

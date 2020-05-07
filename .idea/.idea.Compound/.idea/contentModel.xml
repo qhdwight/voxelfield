@@ -134,6 +134,7 @@
                 <e p="GunModifierBase.cs" t="Include" />
                 <e p="GunWithMagazineModifier.cs" t="Include" />
                 <e p="ItemModifierBase.cs" t="Include" />
+                <e p="ShotgunModifier.cs" t="Include" />
                 <e p="ThrowableModifierBase.cs" t="Include" />
               </e>
               <e p="Visuals" t="Include">

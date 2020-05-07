@@ -27,14 +27,11 @@ namespace Swihoni.Sessions.Modes
             if (playerToModify.Has(out DamageNotifierComponent damageNotifier))
                 if (damageNotifier.elapsed.Value > 0.0f) damageNotifier.elapsed.Value -= duration;
             if (playerToModify.Has(out HealthProperty health) && health.IsAlive && playerToModify.Has(out MoveComponent move) && move.position.Value.y < -5.0f)
-            {
                 KillPlayer(playerToModify);
-            }
             if (session.Has(out KillFeedProperty killFeed))
             {
                 foreach (KillFeedComponent kill in killFeed)
-                    if (kill.elapsed > 0.0f)
-                        kill.elapsed.Value -= duration;
+                    if (kill.elapsed > 0.0f) kill.elapsed.Value -= duration;
             }
         }
 
@@ -42,7 +39,7 @@ namespace Swihoni.Sessions.Modes
 
         public void ModifyTrusted(ModeBase mode, Container containerToModify, Container commands, float duration) { }
 
-        public void ModifyCommands(ModeBase mode, Container commandsToModify) { throw new NotImplementedException(); }
+        public void ModifyCommands(ModeBase mode, Container commandsToModify) => throw new NotImplementedException();
 
         public virtual void PlayerHit(SessionBase session, int inflictingPlayerId, PlayerHitbox hitbox, GunModifierBase gun, in RaycastHit hit, float duration)
         {
@@ -62,8 +59,9 @@ namespace Swihoni.Sessions.Modes
             {
                 bool usesHitMarker = inflictingPlayer.Has(out HitMarkerComponent hitMarker),
                      usesNotifier = hitPlayer.Has(out DamageNotifierComponent damageNotifier);
-                if (usesHitMarker) hitMarker.elapsed.Value = 1.0f;
-                if (usesNotifier) damageNotifier.elapsed.Value = 1.0f;
+                const float notifierDuration = 1.0f;
+                if (usesHitMarker) hitMarker.elapsed.Value = notifierDuration;
+                if (usesNotifier) damageNotifier.elapsed.Value = notifierDuration;
                 var health = hitPlayer.Require<HealthProperty>();
                 if (damage >= health)
                 {
@@ -78,7 +76,7 @@ namespace Swihoni.Sessions.Modes
                     foreach (KillFeedComponent kill in killFeed)
                     {
                         // Find empty kill
-                        if (kill.elapsed > float.Epsilon) continue;
+                        if (kill.elapsed > Mathf.Epsilon) continue;
                         kill.elapsed.Value = 2.0f;
                         kill.killedPlayerId.Value = (byte) hitPlayerId;
                         kill.killingPlayerId.Value = (byte) inflictingPlayerId;

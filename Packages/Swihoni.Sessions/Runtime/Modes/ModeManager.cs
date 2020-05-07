@@ -5,7 +5,7 @@ namespace Swihoni.Sessions.Modes
 {
     public static class ModeId
     {
-        public const byte Deathmatch = 0;
+        public const byte Warmup = 0;
     }
 
     public static class ModeManager

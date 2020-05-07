@@ -146,16 +146,25 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void AnimateAim(InventoryComponent inventory)
         {
-            if (!(m_ItemVisual is GunVisualBehavior gunVisuals) || !(m_ItemVisual.ModiferProperties is GunWithMagazineModifier gunModifier)) return;
-            float adsInterpolation = GetAimInterpolationValue(inventory);
+            Transform t = transform;
+            if (m_ItemVisual is GunVisualBehavior gunVisuals && m_ItemVisual.ModiferProperties is GunWithMagazineModifier)
+            {
+                float adsInterpolation = GetAimInterpolationValue(inventory);
 
-            Quaternion targetRotation = Quaternion.Inverse(Quaternion.Inverse(transform.rotation) * gunVisuals.AdsTarget.rotation);
-            transform.localRotation = Quaternion.Slerp(Quaternion.identity, targetRotation, adsInterpolation);
+                Quaternion targetRotation = Quaternion.Inverse(Quaternion.Inverse(t.rotation) * gunVisuals.AdsTarget.rotation);
+                t.localRotation = Quaternion.Slerp(Quaternion.identity, targetRotation, adsInterpolation);
 
-            Vector3 adsPosition = targetRotation * -transform.InverseTransformPoint(gunVisuals.AdsTarget.position);
-            transform.localPosition = Vector3.Slerp(m_ItemVisual.FpvOffset, adsPosition, adsInterpolation);
+                Vector3 adsPosition = targetRotation * -t.InverseTransformPoint(gunVisuals.AdsTarget.position);
+                t.localPosition = Vector3.Slerp(m_ItemVisual.FpvOffset, adsPosition, adsInterpolation);
 
-            m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView / 2, adsInterpolation);
+                m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView / 2, adsInterpolation);   
+            }
+            else
+            {
+                m_FpvCamera.fieldOfView = m_FieldOfView;
+                t.localRotation = Quaternion.identity;
+                t.localPosition = m_ItemVisual.FpvOffset;
+            }
         }
 
         private static float GetAimInterpolationValue(InventoryComponent inventory)

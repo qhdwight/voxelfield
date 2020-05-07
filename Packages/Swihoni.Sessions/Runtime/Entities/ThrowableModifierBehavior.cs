@@ -15,8 +15,7 @@ namespace Swihoni.Sessions.Entities
             Player
         }
 
-        [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default, m_Damage = default;
-        [SerializeField] private bool m_IsDamageContinuous = false;
+        [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default, m_Damage = default, m_Interval = default;
         [SerializeField] private LayerMask m_Mask = default;
         [SerializeField] private float m_CollisionVelocityMultiplier = 0.5f;
 
@@ -58,7 +57,8 @@ namespace Swihoni.Sessions.Entities
             if (hasPopped)
             {
                 t.rotation = Quaternion.identity;
-                if (m_Damage > 0 && (m_IsDamageContinuous || m_LastElapsed < m_PopTime))
+                bool justPopped = m_LastElapsed < m_PopTime;
+                if (m_Damage > 0 && (m_Interval > Mathf.Epsilon || justPopped))
                     HurtNearby(session, duration);
             }
             else
@@ -105,7 +105,7 @@ namespace Swihoni.Sessions.Entities
             const float minRatio = 0.2f;
             float distance = Vector3.Distance(hitPlayer.Require<MoveComponent>().position, transform.position);
             float ratio = (minRatio - 1.0f) * Mathf.Clamp01(distance / m_Radius) + 1.0f;
-            if (m_IsDamageContinuous) ratio *= duration;
+            if (m_Interval > Mathf.Epsilon) ratio *= duration;
             return checked((byte) Mathf.Max(m_Damage * ratio, 1.0f));
         }
     }

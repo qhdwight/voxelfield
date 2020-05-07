@@ -512,9 +512,9 @@ namespace Voxel
 
         private static Vector3 InterpolateVertex(Vector3 p1, Vector3 p2, float v1, float v2)
         {
-            if (Mathf.Abs(IsoLevel - v1) < float.Epsilon || Mathf.Abs(v1 - v2) < float.Epsilon)
+            if (Mathf.Abs(IsoLevel - v1) < Mathf.Epsilon || Mathf.Abs(v1 - v2) < Mathf.Epsilon)
                 return p1;
-            if (Mathf.Abs(IsoLevel - v2) < float.Epsilon)
+            if (Mathf.Abs(IsoLevel - v2) < Mathf.Epsilon)
                 return p2;
             float mu = (IsoLevel - v1) / (v2 - v1);
             return new Vector3(p1.x + mu * (p2.x - p1.x),

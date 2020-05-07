@@ -123,6 +123,10 @@ namespace Swihoni.Sessions.Player.Modifiers
                 itemIndex.Value = 2;
             else if (inputProvider.GetInput(InputType.ItemThree))
                 itemIndex.Value = 3;
+            else if (inputProvider.GetInput(InputType.ItemFour))
+                itemIndex.Value = 4;
+            else if (inputProvider.GetInput(InputType.ItemFive))
+                itemIndex.Value = 5;
         }
 
         private static bool FindReplacement(InventoryComponent inventory, out byte replacementIndex)

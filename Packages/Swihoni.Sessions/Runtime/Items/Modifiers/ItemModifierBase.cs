@@ -26,6 +26,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                           TestingRifle = 1,
                           Grenade = TestingRifle + 1,
                           Molotov = Grenade + 1,
+                          Shotgun = Molotov + 1,
                           Last = Molotov;
     }
 

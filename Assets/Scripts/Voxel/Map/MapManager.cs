@@ -108,6 +108,7 @@ namespace Voxel.Map
             if (mapSave.Models != null)
                 foreach (KeyValuePair<Position3Int, ModelData> model in mapSave.Models)
                     ModelManager.Singleton.LoadInModel(model.Value.modelId, model.Key, model.Value.rotation);
+            mapSave.Dimension = new Dimension(new Position3Int(-1, 0, -1), new Position3Int(0, 0, 0));
             yield return LoadMapSave(mapSave);
             // if (mapName == "Test")
             // {

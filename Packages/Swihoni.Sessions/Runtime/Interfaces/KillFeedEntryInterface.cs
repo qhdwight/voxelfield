@@ -1,5 +1,6 @@
 using Swihoni.Sessions.Components;
 using Swihoni.Util.Interface;
+using UnityEngine;
 
 namespace Swihoni.Sessions.Interfaces
 {
@@ -15,7 +16,7 @@ namespace Swihoni.Sessions.Interfaces
 
         public override void Render(KillFeedComponent kill)
         {
-            bool isVisible = kill.elapsed > float.Epsilon;
+            bool isVisible = kill.elapsed > Mathf.Epsilon;
             if (isVisible)
                 m_Text.Set(builder => builder
                                      .Append(kill.killingPlayerId.Value)

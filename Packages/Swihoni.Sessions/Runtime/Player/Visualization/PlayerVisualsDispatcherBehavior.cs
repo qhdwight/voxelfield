@@ -1,5 +1,6 @@
 using System;
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -17,6 +18,10 @@ namespace Swihoni.Sessions.Player.Visualization
     [SelectionBase]
     public class PlayerVisualsDispatcherBehavior : MonoBehaviour, IPlayerContainerRenderer
     {
+        [SerializeField] private float m_UprightCameraHeight = 1.8f, m_CrouchedCameraHeight = 1.26f;
+        [SerializeField] private AudioSource m_DamageNotifierSource;
+        private float m_LastDamageNotifierElapsed;
+
         private AudioListener m_AudioListener;
         private Camera m_Camera;
         private PlayerVisualsBehaviorBase[] m_Visuals;
@@ -37,18 +42,27 @@ namespace Swihoni.Sessions.Player.Visualization
         public void Render(int playerId, Container player, bool isLocalPlayer)
         {
             bool usesHealth = player.Has(out HealthProperty health),
+                 usesDamageNotifier = player.Has(out DamageNotifierComponent damageNotifier),
                  isVisible = !usesHealth || health.HasValue;
             if (isVisible)
             {
                 if (player.Has(out CameraComponent playerCamera))
-                {
                     m_Camera.transform.localRotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up)
                                                      * Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
-                }
                 if (player.Has(out MoveComponent move))
+                    m_Camera.transform.position = move.position + new Vector3 {y = Mathf.Lerp(m_CrouchedCameraHeight, m_UprightCameraHeight, 1.0f - move.normalizedCrouch)};
+                if (usesDamageNotifier)
                 {
-                    // TODO:refactor magic numbers
-                    m_Camera.transform.position = move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
+                    // TODO:refactor remove magic number, relying on internal state of audio source here... BAD!
+                    if (damageNotifier.elapsed > 0.9f)
+                    {
+                        if (!m_DamageNotifierSource.isPlaying) m_DamageNotifierSource.Play();
+                        // if (m_LastDamageNotifierElapsed < Mathf.Epsilon)
+                        //     m_DamageNotifierSource.PlayOneShot(m_DamageNotifierSource.clip);
+                    }
+                    else
+                        m_DamageNotifierSource.Stop();
+                    m_LastDamageNotifierElapsed = damageNotifier.elapsed;
                 }
             }
 
