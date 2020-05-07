@@ -5,9 +5,9 @@ namespace Swihoni.Sessions.Entities
     public class ThrowableVisualBehavior : EntityVisualBehavior
     {
         [SerializeField] private AudioClip m_PopAudioClip = default, m_ContactAudioClip = default;
+        protected ThrowableModifierBehavior m_Modifier;
         private AudioSource m_AudioSource;
         private ParticleSystem[] m_Particles;
-        private ThrowableModifierBehavior m_Modifier;
         private float m_LastThrownElapsed, m_LastContactElapsed;
 
         internal override void Setup(EntityManager manager)
@@ -26,14 +26,13 @@ namespace Swihoni.Sessions.Entities
 
             var throwable = entity.Require<ThrowableComponent>();
 
-            float popTime = m_Modifier.PopTime;
-            bool hasPopped = throwable.thrownElapsed > popTime;
+            bool hasPopped = throwable.thrownElapsed > throwable.popTime;
 
             if (hasPopped)
             {
-                bool hasJustPopped = m_LastThrownElapsed < popTime;
+                bool hasJustPopped = m_LastThrownElapsed < throwable.popTime;
                 if (hasJustPopped) m_AudioSource.PlayOneShot(m_PopAudioClip, 1.0f);
-                float particleElapsed = throwable.thrownElapsed - popTime;
+                float particleElapsed = throwable.thrownElapsed - throwable.popTime;
                 foreach (ParticleSystem particle in m_Particles)
                 {
                     particle.time = particleElapsed;
@@ -49,6 +48,10 @@ namespace Swihoni.Sessions.Entities
             m_LastContactElapsed = throwable.contactElapsed;
         }
 
-        public override bool IsVisible(EntityContainer entity) => entity.Require<ThrowableComponent>().thrownElapsed < m_Modifier.PopTime;
+        public override bool IsVisible(EntityContainer entity)
+        {
+            var throwable = entity.Require<ThrowableComponent>();
+            return throwable.thrownElapsed < throwable.popTime;
+        }
     }
 }

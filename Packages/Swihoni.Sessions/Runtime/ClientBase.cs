@@ -68,6 +68,8 @@ namespace Swihoni.Sessions
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (!tickRate.HasValue) return;
 
+            base.Render(renderTime);
+
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
                 bool isLocalPlayer = playerId == localPlayerId;
@@ -103,8 +105,11 @@ namespace Swihoni.Sessions
             if (GetLocalPlayerId(latestSession, out int localPlayerId))
             {
                 SettingsTick(latestSession);
-                UpdateInputs(localPlayerId);
-                Predict(tick, time, localPlayerId);
+                if (GetMode().IsReady(latestSession))
+                {
+                    UpdateInputs(localPlayerId);
+                    Predict(tick, time, localPlayerId);
+                }
             }
             Profiler.EndSample();
 
@@ -118,9 +123,7 @@ namespace Swihoni.Sessions
             Profiler.EndSample();
         }
 
-        protected virtual void SettingsTick(Container serverSession)
-        {
-        }
+        protected virtual void SettingsTick(Container serverSession) { }
 
         private void HandleTimeouts(float time)
         {

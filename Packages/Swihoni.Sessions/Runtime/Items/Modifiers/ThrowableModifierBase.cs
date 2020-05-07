@@ -40,6 +40,23 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, float duration) { }
 
+        protected override bool HasSecondaryUse() => true;
+
+        protected override void SecondaryUse(SessionBase session, int playerId, float duration)
+        {
+            var entities = session.GetLatestSession().Require<EntityArrayProperty>();
+            for (var index = 0; index < entities.Length; index++)
+            {
+                EntityContainer entity = entities[index];
+                if (session.EntityManager.Modifiers[index] is ThrowableModifierBehavior throwableModifier && throwableModifier.ThrowerId == playerId)
+                {
+                    var throwable = entity.Require<ThrowableComponent>();
+                    if (throwable.popTime > throwable.thrownElapsed)
+                        throwable.popTime.Value = throwable.thrownElapsed + duration;
+                }
+            }
+        }
+
         protected virtual void Release(SessionBase session, int playerId)
         {
             Container player = session.GetPlayerFromId(playerId);

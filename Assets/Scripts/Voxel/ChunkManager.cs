@@ -9,51 +9,19 @@ namespace Voxel
 {
     public delegate void MapProgressCallback(in MapProgressInfo mapProgressInfoCallback);
 
-    public static class MapLoadingStage
+    public enum MapLoadingStage
     {
-        public const byte CleaningUp = 0, SettingUp = 1, Generating = 2, UpdatingMesh = 3, Completed = 4;
+        CleaningUp,
+        SettingUp,
+        Generating,
+        UpdatingMesh,
+        Completed
     }
 
     public struct MapProgressInfo
     {
-        public byte stage;
+        public MapLoadingStage stage;
         public float progress;
-    }
-
-    public class VoxelChangeTransaction
-    {
-        private readonly Dictionary<Position3Int, VoxelChangeData> m_ChangeData;
-        private readonly HashSet<Chunk> m_ChunksToUpdate;
-
-        public VoxelChangeTransaction() : this(0) { }
-
-        public VoxelChangeTransaction(int size)
-        {
-            m_ChangeData = new Dictionary<Position3Int, VoxelChangeData>(size);
-            m_ChunksToUpdate = new HashSet<Chunk>();
-        }
-
-        public void AddChange(in Position3Int worldPosition, in VoxelChangeData changeData) => m_ChangeData.Add(worldPosition, changeData);
-
-        public bool HasChangeAt(in Position3Int worldPosition) => m_ChangeData.ContainsKey(worldPosition);
-
-        public void Commit()
-        {
-            foreach (KeyValuePair<Position3Int, VoxelChangeData> changeData in m_ChangeData)
-            {
-                Chunk chunk = ChunkManager.Singleton.GetChunkFromWorldPosition(changeData.Key);
-                if (!chunk) continue;
-                Position3Int voxelChunkPosition = ChunkManager.Singleton.WorldVoxelToChunkVoxel(changeData.Key, chunk);
-                chunk.SetVoxelDataNoCheck(voxelChunkPosition, changeData.Value);
-                ChunkManager.Singleton.AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, m_ChunksToUpdate);
-            }
-            foreach (Chunk chunk in m_ChunksToUpdate)
-            {
-                ChunkManager.UpdateChunkMesh(chunk);
-            }
-            m_ChangeData.Clear();
-            m_ChunksToUpdate.Clear();
-        }
     }
 
     public enum ChunkActionType
@@ -75,8 +43,18 @@ namespace Voxel
         public int ChunkSize => m_ChunkSize;
         public MapSave Map { get; private set; }
         public Dictionary<Position3Int, Chunk> Chunks { get; } = new Dictionary<Position3Int, Chunk>();
+        private MapProgressInfo m_Progress;
+        public MapProgressInfo ProgressInfo
+        {
+            get => m_Progress;
+            set
+            {
+                ProgressCallback?.Invoke(value);
+                m_Progress = value;
+            }
+        }
 
-        public MapProgressCallback MapProgress { get; set; }
+        public MapProgressCallback ProgressCallback { get; set; }
 
         public IEnumerator LoadMap(MapSave map)
         {
@@ -92,7 +70,7 @@ namespace Voxel
                 yield return ChunkActionForAllStaticMapChunks(map, ChunkActionType.Generate);
                 yield return ChunkActionForAllStaticMapChunks(map, ChunkActionType.UpdateMesh);
             }
-            MapProgress.Invoke(new MapProgressInfo {stage = MapLoadingStage.Completed});
+            ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Completed};
         }
 
         private IEnumerator DecommissionAllChunks()
@@ -105,7 +83,7 @@ namespace Voxel
                 DecommissionChunkInPosition(chunkPosition);
                 progress += 1.0f / commissionedChunks;
                 var progressInfo = new MapProgressInfo {stage = MapLoadingStage.CleaningUp, progress = progress};
-                MapProgress.Invoke(progressInfo);
+                ProgressCallback.Invoke(progressInfo);
                 yield return null;
             }
         }
@@ -148,7 +126,7 @@ namespace Voxel
                                 break;
                             }
                         }
-                        MapProgress.Invoke(progressInfo);
+                        ProgressInfo = progressInfo;
                         yield return null;
                     }
                 }

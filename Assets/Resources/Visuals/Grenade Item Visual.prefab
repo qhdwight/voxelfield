@@ -267,7 +267,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: eb9412388b350664b81b0a9f9eb45b0a,
         type: 3}
       propertyPath: m_Name
-      value: Grenade
+      value: Grenade Item Visual
       objectReference: {fileID: 0}
     - target: {fileID: 3790740219211191083, guid: eb9412388b350664b81b0a9f9eb45b0a,
         type: 3}

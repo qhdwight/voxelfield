@@ -15,8 +15,9 @@ namespace Swihoni.Sessions.Entities
             Player
         }
 
-        [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default, m_Damage = default, m_Interval = default;
+        [SerializeField] private float m_PopTime = default, m_PopDuration = default, m_Radius = default, m_Damage = default, m_Interval = default;
         [SerializeField] private LayerMask m_Mask = default;
+        [SerializeField] private float m_MinimumDamageRatio = 0.2f;
         [SerializeField] private float m_CollisionVelocityMultiplier = 0.5f;
 
         private readonly Collider[] m_OverlappingColliders = new Collider[8];
@@ -44,20 +45,24 @@ namespace Swihoni.Sessions.Entities
             m_LastElapsed = 0.0f;
         }
 
-        public override void Modify(SessionBase session, EntityContainer entity, float duration)
+        public override void Modify(SessionBase session, EntityContainer entity, float time, float duration)
         {
-            base.Modify(session, entity, duration);
+            base.Modify(session, entity, time, duration);
 
             var throwable = entity.Require<ThrowableComponent>();
             throwable.thrownElapsed.Value += duration;
 
-            bool hasPopped = throwable.thrownElapsed > m_PopTime;
+            if (throwable.thrownElapsed >= m_PopTime && m_LastElapsed < throwable.popTime) throwable.popTime.Value = throwable.thrownElapsed;
+
+            bool hasPopped = throwable.thrownElapsed >= throwable.popTime;
             Rigidbody.constraints = hasPopped ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
             Transform t = transform;
             if (hasPopped)
             {
                 t.rotation = Quaternion.identity;
-                bool justPopped = m_LastElapsed < m_PopTime;
+
+                bool justPopped = m_LastElapsed < throwable.popTime;
+
                 if (m_Damage > 0 && (m_Interval > Mathf.Epsilon || justPopped))
                     HurtNearby(session, duration);
             }
@@ -77,7 +82,7 @@ namespace Swihoni.Sessions.Entities
             throwable.position.Value = t.position;
             throwable.rotation.Value = t.rotation;
 
-            if (throwable.thrownElapsed > m_Lifetime)
+            if (throwable.thrownElapsed - throwable.popTime > m_PopDuration)
                 entity.Zero();
         }
 
@@ -102,9 +107,8 @@ namespace Swihoni.Sessions.Entities
 
         private byte DamagePlayer(Container hitPlayer, float duration)
         {
-            const float minRatio = 0.2f;
             float distance = Vector3.Distance(hitPlayer.Require<MoveComponent>().position, transform.position);
-            float ratio = (minRatio - 1.0f) * Mathf.Clamp01(distance / m_Radius) + 1.0f;
+            float ratio = (m_MinimumDamageRatio - 1.0f) * Mathf.Clamp01(distance / m_Radius) + 1.0f;
             if (m_Interval > Mathf.Epsilon) ratio *= duration;
             return checked((byte) Mathf.Max(m_Damage * ratio, 1.0f));
         }

@@ -10,7 +10,7 @@ namespace Swihoni.Sessions.Modes
     [CreateAssetMenu(fileName = "Deathmatch", menuName = "Session/Mode/Deathmatch", order = 0)]
     public class DeathmatchMode : ModeBase
     {
-        internal override void ResetPlayer(Container player)
+        internal override void SpawnPlayer(Container player)
         {
             // TODO:refactor zeroing
             if (player.Has(out MoveComponent move))
@@ -31,6 +31,7 @@ namespace Swihoni.Sessions.Modes
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Grenade, 2);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Molotov, 3);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shotgun, 4);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.C4, 5);
             }
         }
 
@@ -46,21 +47,16 @@ namespace Swihoni.Sessions.Modes
         {
             base.Modify(session, playerToModify, commands, duration);
 
-            if (commands.Without(out InputFlagProperty inputs)
-             || playerToModify.Without<ServerTag>()
-             || playerToModify.Without(out HealthProperty health)) return;
+            if (commands.Without(out InputFlagProperty inputs) || playerToModify.Without(out HealthProperty health) || health.WithoutValue)
+                return;
 
             if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive)
-            {
                 KillPlayer(playerToModify);
-            }
-            if (health.IsDead && playerToModify.Has(out RespawnTimerProperty respawn))
+            if (IsReady(session) && health.IsDead && playerToModify.Has(out RespawnTimerProperty respawn))
             {
                 respawn.Value -= duration;
-                if (respawn.Value < 0.0f)
-                {
-                    ResetPlayer(playerToModify);
-                }
+                if (respawn.Value <= 0.0f)
+                    SpawnPlayer(playerToModify);
             }
         }
     }

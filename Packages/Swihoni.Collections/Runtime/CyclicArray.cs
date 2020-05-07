@@ -38,7 +38,7 @@ namespace Swihoni.Collections
         /// <summary>
         /// Increase the pointer by one
         /// </summary>
-        public void Advance() { m_Pointer = Wrap(m_Pointer + 1); }
+        public void Advance() => m_Pointer = Wrap(m_Pointer + 1);
 
         public TElement ClaimNext()
         {
@@ -119,8 +119,8 @@ namespace Swihoni.Collections
         /// <returns>Element at index of current pointer</returns>
         public ref TElement Peek() { return ref Get(0); }
 
-        public IEnumerator<TElement> GetEnumerator() { return ((IEnumerable<TElement>) m_InternalArray).GetEnumerator(); }
+        public IEnumerator<TElement> GetEnumerator() => ((IEnumerable<TElement>) m_InternalArray).GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() { return m_InternalArray.GetEnumerator(); }
+        IEnumerator IEnumerable.GetEnumerator() => m_InternalArray.GetEnumerator();
     }
 }

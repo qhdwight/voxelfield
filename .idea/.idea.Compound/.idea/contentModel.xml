@@ -16,6 +16,7 @@
               <e p="PlayerHud.cs" t="Include" />
               <e p="Server.cs" t="Include" />
               <e p="SessionManager.cs" t="Include" />
+              <e p="WarmupMode.cs" t="Include" />
             </e>
           </e>
           <e p="Console" t="Include">
@@ -44,6 +45,7 @@
             <e p="Voxel.cs" t="Include" />
             <e p="VoxelChangeData.cs" t="Include" />
             <e p="VoxelChangeMap.cs" t="Include" />
+            <e p="VoxelChangeTransaction.cs" t="Include" />
             <e p="VoxelRenderer.cs" t="Include" />
           </e>
         </e>

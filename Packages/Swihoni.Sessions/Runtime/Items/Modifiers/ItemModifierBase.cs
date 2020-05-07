@@ -24,10 +24,11 @@ namespace Swihoni.Sessions.Items.Modifiers
     {
         public const byte None = 0,
                           TestingRifle = 1,
-                          Grenade = TestingRifle + 1,
-                          Molotov = Grenade + 1,
-                          Shotgun = Molotov + 1,
-                          Last = Molotov;
+                          Grenade = 2,
+                          Molotov = 3,
+                          Shotgun = 4,
+                          C4 = 5,
+                          Last = C4;
     }
 
     [Serializable]
@@ -94,7 +95,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                     PrimaryUse(session, playerId, itemComponent, duration);
                     break;
                 case ItemStatusId.SecondaryUsing:
-                    SecondaryUse();
+                    SecondaryUse(session, playerId, duration);
                     break;
             }
         }
@@ -121,13 +122,13 @@ namespace Swihoni.Sessions.Items.Modifiers
          && item.status.id != ItemStatusId.SecondaryUsing
          && inventory.equipStatus.id == ItemEquipStatusId.Equipped;
 
-        protected virtual void SecondaryUse() { }
+        protected virtual void SecondaryUse(SessionBase session, int playerId, float duration) { }
 
         protected virtual void PrimaryUse(SessionBase session, int playerId, ItemComponent item, float duration) { }
 
         public void ModifyCommands(SessionBase session, InputFlagProperty commandsToModify) { }
 
-        protected virtual bool HasSecondaryUse() { return false; }
+        protected virtual bool HasSecondaryUse() => false;
 
         internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, float duration) { }
     }

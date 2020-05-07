@@ -48,7 +48,6 @@ namespace Voxel.Map
 
         private void Start()
         {
-            ChunkManager.Singleton.MapProgress += HandleMapProgressInfo;
             // SaveTestMap();
             StartCoroutine(ManageActionsRoutine());
             SetMap("Menu");
@@ -108,7 +107,7 @@ namespace Voxel.Map
             if (mapSave.Models != null)
                 foreach (KeyValuePair<Position3Int, ModelData> model in mapSave.Models)
                     ModelManager.Singleton.LoadInModel(model.Value.modelId, model.Key, model.Value.rotation);
-            mapSave.Dimension = new Dimension(new Position3Int(-1, 0, -1), new Position3Int(0, 0, 0));
+            if (Application.isEditor) mapSave.Dimension = new Dimension(new Position3Int(-1, 0, -1), new Position3Int(0, 0, 0));
             yield return LoadMapSave(mapSave);
             // if (mapName == "Test")
             // {
@@ -147,10 +146,7 @@ namespace Voxel.Map
             SaveMapSave(testMap);
         }
 
-        public void SetMap(string mapName)
-        {
-            m_WantedMap = mapName;
-        }
+        public void SetMap(string mapName) { m_WantedMap = mapName; }
 
         private static IEnumerator LoadMapSave(MapSave save)
         {
@@ -160,30 +156,6 @@ namespace Voxel.Map
 //            LoadingScreen.Singleton.SetProgress(0.0f);
 //        }
             yield return ChunkManager.Singleton.LoadMap(save);
-        }
-
-        private void HandleMapProgressInfo(in MapProgressInfo mapProgress)
-        {
-//            Debug.Log($"Map Progress: Stage: {mapProgress.stage}, Percent Complete: {mapProgress.progress:P1}");
-//        switch (mapProgress.stage)
-//        {
-//            case MapLoadingStage.CLEANING_UP:
-//                LoadingScreen.Singleton.SetLoadingText("Cleaning up previouis chunks...");
-//                break;
-//            case MapLoadingStage.SETTING_UP:
-//                LoadingScreen.Singleton.SetLoadingText("Setting up chunks...");
-//                break;
-//            case MapLoadingStage.GENERATING:
-//                LoadingScreen.Singleton.SetLoadingText("Generating chunks from save...");
-//                break;
-//            case MapLoadingStage.UPDATING_MESH:
-//                LoadingScreen.Singleton.SetLoadingText("Rendering chunk meshes...");
-//                break;
-//            case MapLoadingStage.COMPLETED:
-//                LoadingScreen.Singleton.SetInterfaceActive(false);
-//                break;
-//        }
-//        LoadingScreen.Singleton.SetProgress(mapProgress.progress);
         }
     }
 }

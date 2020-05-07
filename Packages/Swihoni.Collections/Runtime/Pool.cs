@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Swihoni.Collections
 {
-    public class Pool<T> where T : class
+    public class Pool<T> : IEnumerable<T> where T : class
     {
         private readonly Stack<T> m_Pool;
         protected readonly LinkedList<T> m_InUse;
@@ -47,6 +48,10 @@ namespace Swihoni.Collections
             return obtainedItem;
         }
 
-        protected virtual T GetItemWhenEmpty() { return m_Constructor(); }
+        protected virtual T GetItemWhenEmpty() => m_Constructor();
+
+        public IEnumerator<T> GetEnumerator() => m_Pool.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => m_Pool.GetEnumerator();
     }
 }

@@ -16,6 +16,8 @@ namespace Swihoni.Sessions.Entities
         private EntityModifierBehavior[] m_ModifierPrefabs;
         private SessionBase m_Session;
 
+        public EntityModifierBehavior[] Modifiers => m_Modifiers;
+
         public void Setup(SessionBase session)
         {
             m_Session = session;
@@ -59,6 +61,13 @@ namespace Swihoni.Sessions.Entities
 
         public EntityModifierBehavior ObtainModifier(Container session, byte entityId)
         {
+            void ObtainModifierAtIndex(EntityContainer entity, int index, EntityModifierBehavior entityModifierBehavior)
+            {
+                entity.Zero();
+                if (entity.Has(out ThrowableComponent throwable)) throwable.popTime.Value = float.PositiveInfinity;
+                entity.id.Value = entityId;
+                m_Modifiers[index] = entityModifierBehavior;
+            }
             Pool<EntityModifierBehavior> pool = m_EntityModifiersPool[entityId - 1];
             EntityModifierBehavior modifier = pool.Obtain();
             modifier.SetActive(true);
@@ -68,17 +77,13 @@ namespace Swihoni.Sessions.Entities
                 EntityContainer entity = entities[index];
                 if (entity.id != EntityId.None) continue;
                 /* Found empty slot */
-                entity.Zero();
-                entity.id.Value = entityId;
-                m_Modifiers[index] = modifier;
+                ObtainModifierAtIndex(entity, index, modifier);
                 return modifier;
             }
             /* Circle back to first. We ran out of entities */
             // TODO:refactor better way?
             ReturnModifier(0);
-            entities[0].Zero();
-            entities[0].id.Value = entityId;
-            m_Modifiers[0] = modifier;
+            ObtainModifierAtIndex(entities[0], 0, modifier);
             return modifier;
         }
 
@@ -93,7 +98,7 @@ namespace Swihoni.Sessions.Entities
 
         public EntityModifierBehavior GetModifierPrefab(int entityId) => m_ModifierPrefabs[entityId - 1];
 
-        public void Modify(Container session, float duration)
+        public void Modify(Container session, float time, float duration)
         {
             var entities = session.Require<EntityArrayProperty>();
             for (var index = 0; index < entities.Length; index++)
@@ -101,7 +106,7 @@ namespace Swihoni.Sessions.Entities
                 EntityContainer entity = entities[index];
                 if (entity.id == EntityId.None)
                     continue;
-                m_Modifiers[index].Modify(m_Session, entity, duration);
+                m_Modifiers[index].Modify(m_Session, entity, time, duration);
                 // Remove modifier if lifetime has ended
                 if (entity.id == EntityId.None && m_Modifiers[index] != null) ReturnModifier(index);
             }

@@ -12,7 +12,15 @@ namespace Compound.Session
         {
             base.SettingsTick(serverSession);
 
-            MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
+            string mapName = DebugBehavior.Singleton.mapName;
+            serverSession.Require<VoxelMapNameProperty>().SetString(builder => builder.Append(mapName));
+            MapManager.Singleton.SetMap(mapName);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            MapManager.Singleton.SetMap("Menu");
         }
     }
 }

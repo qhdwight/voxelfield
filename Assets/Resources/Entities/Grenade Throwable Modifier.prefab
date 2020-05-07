@@ -155,11 +155,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 1
-  m_PopTime: 1
-  m_Lifetime: 1.5
+  m_PopTime: 2
+  m_PopDuration: 0.5
   m_Radius: 4
   m_Damage: 70
-  m_IsDamageContinuous: 0
+  m_Interval: 0
   m_Mask:
     serializedVersion: 2
     m_Bits: 65536
+  m_CollisionVelocityMultiplier: 0.5

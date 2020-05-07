@@ -66,7 +66,6 @@ namespace Swihoni.Sessions
         protected bool IsDisposed { get; private set; }
         public bool ShouldRender { get; set; } = true;
         public GameObject PlayerModifierPrefab { get; }
-        public DefaultPlayerHud PlayerHud => m_PlayerHud;
 
         protected SessionBase()
         {

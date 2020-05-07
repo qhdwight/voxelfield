@@ -29,6 +29,6 @@ namespace Swihoni.Sessions.Entities
     {
         [InterpolateRange(5.0f)] public VectorProperty position;
         public QuaternionProperty rotation;
-        public FloatProperty thrownElapsed, contactElapsed;
+        public FloatProperty thrownElapsed, contactElapsed, popTime;
     }
 }

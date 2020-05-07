@@ -1,4 +1,3 @@
-using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
@@ -12,34 +11,38 @@ namespace Swihoni.Sessions.Modes
     {
         public byte id;
 
-        internal abstract void ResetPlayer(Container player);
+        internal abstract void SpawnPlayer(Container player);
 
         internal virtual void KillPlayer(Container player)
         {
-            if (player.Has(out HealthProperty health)) health.Value = 0;
+            player.ZeroIfHas<HealthProperty>();
+            player.ZeroIfHas<HitMarkerComponent>();
             if (player.Has(out StatsComponent stats)) stats.deaths.Value++;
         }
 
         internal virtual void Modify(Container session, Container playerToModify, Container commands, float duration)
         {
+            if (playerToModify.Without(out HealthProperty health) || health.WithoutValue) return;
+
             if (playerToModify.Has(out HitMarkerComponent hitMarker))
-                if (hitMarker.elapsed.Value > 0.0f) hitMarker.elapsed.Value -= duration;
+                if (hitMarker.elapsed.Value > 0.0f)
+                    hitMarker.elapsed.Value -= duration;
             if (playerToModify.Has(out DamageNotifierComponent damageNotifier))
-                if (damageNotifier.elapsed.Value > 0.0f) damageNotifier.elapsed.Value -= duration;
-            if (playerToModify.Has(out HealthProperty health) && health.IsAlive && playerToModify.Has(out MoveComponent move) && move.position.Value.y < -5.0f)
+                if (damageNotifier.elapsed.Value > 0.0f)
+                    damageNotifier.elapsed.Value -= duration;
+            if (playerToModify.Has(out MoveComponent move) && health.IsDead && move.position.Value.y < -32.0f)
                 KillPlayer(playerToModify);
+        }
+
+        public void Modify(Container session, float duration)
+        {
             if (session.Has(out KillFeedProperty killFeed))
             {
                 foreach (KillFeedComponent kill in killFeed)
-                    if (kill.elapsed > 0.0f) kill.elapsed.Value -= duration;
+                    if (kill.elapsed > 0.0f)
+                        kill.elapsed.Value -= duration;
             }
         }
-
-        public void ModifyChecked(ModeBase mode, Container containerToModify, Container commands, float duration) { }
-
-        public void ModifyTrusted(ModeBase mode, Container containerToModify, Container commands, float duration) { }
-
-        public void ModifyCommands(ModeBase mode, Container commandsToModify) => throw new NotImplementedException();
 
         public virtual void PlayerHit(SessionBase session, int inflictingPlayerId, PlayerHitbox hitbox, GunModifierBase gun, in RaycastHit hit, float duration)
         {
@@ -90,5 +93,7 @@ namespace Swihoni.Sessions.Modes
                 }
             }
         }
+
+        public virtual bool IsReady(Container session) => true;
     }
 }

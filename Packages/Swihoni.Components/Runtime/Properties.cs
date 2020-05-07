@@ -94,7 +94,8 @@ namespace Swihoni.Components
                     return;
                 }
             }
-            Value = Mathf.Lerp(f1, f2, interpolation);
+            if (float.IsPositiveInfinity(f1) || float.IsPositiveInfinity(f2)) Value = float.PositiveInfinity;
+            else Value = Mathf.Lerp(f1, f2, interpolation);
         }
     }
 

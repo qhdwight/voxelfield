@@ -5,7 +5,6 @@ using Swihoni.Components;
 using Swihoni.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Modes;
-using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -60,6 +59,8 @@ namespace Swihoni.Sessions
             serverStamp.time.Value = time;
             serverStamp.duration.Value = duration;
             Profiler.EndSample();
+
+            if (!GetMode(serverSession).IsReady(serverSession)) return;
 
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
@@ -138,13 +139,14 @@ namespace Swihoni.Sessions
                     }
                     case DebugClientView receivedDebugClientView:
                     {
-                        PlayerVisualizerBehavior.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
+                        DebugBehavior.Singleton.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
                         break;
                     }
                 }
             });
             Physics.Simulate(duration);
-            EntityManager.Modify(serverSession, duration);
+            EntityManager.Modify(serverSession, time, duration);
+            GetMode(serverSession).Modify(serverSession, duration);
             SendServerSession(serverSession);
         }
 
@@ -222,9 +224,10 @@ namespace Swihoni.Sessions
 
         protected void SetupNewPlayer(Container session, Container player)
         {
-            GetMode(session).ResetPlayer(player);
+            GetMode(session).SpawnPlayer(player);
             // TODO:refactor zeroing
-            if (player.Has(out StatsComponent stats)) stats.Zero();
+
+            player.ZeroIfHas<StatsComponent>();
             player.Require<ServerPingComponent>().Zero();
             player.Require<ClientStampComponent>().Reset();
             player.Require<ServerStampComponent>().Reset();
