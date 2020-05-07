@@ -31,9 +31,9 @@ namespace Voxel.Map
 
     public class MapSave
     {
-        public MapSave(string name, int terrainHeight, Dimension dimension, Dictionary<Position3Int, BrushStroke> brushStrokes,
-                       Dictionary<Position3Int, VoxelChangeData> changedVoxels, bool dynamicChunkLoading, NoiseData? terrainGenerationData,
-                       Dictionary<Position3Int, ModelData> models)
+        public MapSave(string name, int terrainHeight = 0, Dimension dimension = new Dimension(), Dictionary<Position3Int, BrushStroke> brushStrokes = null,
+                       Dictionary<Position3Int, VoxelChangeData> changedVoxels = null, bool dynamicChunkLoading = false, NoiseData? terrainGenerationData = null,
+                       Dictionary<Position3Int, ModelData> models = null)
         {
             Name = name;
             TerrainHeight = terrainHeight;

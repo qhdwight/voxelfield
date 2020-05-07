@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -13,16 +11,15 @@ namespace Swihoni.Sessions
 
         private readonly Container m_HostCommands;
 
-        protected HostBase(ISessionGameObjectLinker linker,
-                           IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
-            : base(linker, sessionElements, playerElements, commandElements)
+        protected HostBase(SessionElements elements)
+            : base(elements)
         {
             // TODO:refactor zeroing
-            m_HostCommands = new Container(playerElements
-                                          .Append(typeof(ClientStampComponent))
-                                          .Append(typeof(ServerStampComponent))
-                                          .Concat(commandElements)
-                                          .Append(typeof(ServerTag)));
+            m_HostCommands = new Container(elements.playerElements
+                                                   .Append(typeof(ClientStampComponent))
+                                                   .Append(typeof(ServerStampComponent))
+                                                   .Concat(elements.commandElements)
+                                                   .Append(typeof(ServerTag)));
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Reset();
         }
@@ -51,7 +48,9 @@ namespace Swihoni.Sessions
             if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers)
              || m_RenderSession.Without(out LocalPlayerProperty localPlayer)) return;
 
-            SessionSettingsComponent settings = GetSettings();
+            var tickRate = GetLatestSession().Require<TickRateProperty>();
+            if (!tickRate.HasValue) return;
+
             localPlayer.Value = HostPlayerId;
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
@@ -65,16 +64,14 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
-                    if (!settings.tickRate.HasValue) break;
-                    float rollback = settings.TickInterval * 3;
-
+                    float rollback = tickRate.TickInterval * 3;
                     RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, renderPlayers[playerId],
                                                                    m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(playerId, renderPlayers[playerId], playerId == localPlayer);
             }
             m_PlayerHud.Render(renderPlayers[HostPlayerId]);
-            RenderEntities<ServerStampComponent>(renderTime, settings.TickInterval);
+            RenderEntities<ServerStampComponent>(renderTime, tickRate.TickInterval);
         }
 
         protected override void PreTick(Container tickSession)

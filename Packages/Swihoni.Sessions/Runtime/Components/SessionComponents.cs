@@ -1,32 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Swihoni.Components;
-using Swihoni.Sessions.Entities;
-using Swihoni.Sessions.Player.Components;
 
 namespace Swihoni.Sessions.Components
 {
     using ServerOnly = NoSerialization;
-
-    public static class StandardComponents
-    {
-        public static readonly IReadOnlyCollection<Type> StandardSessionElements = new List<Type>
-        {
-            typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(EntityArrayProperty),
-            typeof(StampComponent), typeof(SessionSettingsComponent), typeof(KillFeedProperty)
-        };
-
-        public static readonly IReadOnlyCollection<Type> StandardPlayerElements = new List<Type>
-        {
-            typeof(HealthProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent), typeof(RespawnTimerProperty),
-            typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent)
-        };
-
-        public static readonly IReadOnlyCollection<Type> StandardPlayerCommandsElements = new List<Type>
-        {
-            typeof(InputFlagProperty), typeof(WantedItemIndexProperty), typeof(MouseComponent)
-        };
-    }
 
     public class OnlyServerTrusted : Attribute
     {
@@ -113,6 +91,12 @@ namespace Swihoni.Sessions.Components
     }
 
     [Serializable]
+    public class FeedComponent : ComponentBase
+    {
+        public StringProperty feed;
+    }
+
+    [Serializable]
     public class KillFeedProperty : ArrayProperty<KillFeedComponent>
     {
         public KillFeedProperty() : base(5) { }
@@ -125,11 +109,14 @@ namespace Swihoni.Sessions.Components
     }
 
     [Serializable]
-    public class SessionSettingsComponent : ComponentBase
+    public class TickRateProperty : ByteProperty
     {
-        public ByteProperty tickRate, modeId;
+        public float TickInterval => 1.0f / Value;
+    }
 
-        public float TickInterval => 1.0f / tickRate;
+    [Serializable]
+    public class ModeIdProperty : ByteProperty
+    {
     }
 
     [Serializable]

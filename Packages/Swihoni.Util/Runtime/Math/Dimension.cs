@@ -4,7 +4,7 @@ namespace Swihoni.Util.Math
 {
     public struct Dimension
     {
-        public static Dimension Empty = new Dimension();
+        public static Dimension empty = new Dimension();
 
         public Position3Int lowerBound, upperBound;
 

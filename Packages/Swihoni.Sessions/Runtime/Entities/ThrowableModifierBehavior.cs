@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Swihoni.Components;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
@@ -11,9 +10,11 @@ namespace Swihoni.Sessions.Entities
     {
         private enum CollisionType
         {
-            None, World, Player
+            None,
+            World,
+            Player
         }
-        
+
         [SerializeField] private float m_PopTime = default, m_Lifetime = default, m_Radius = default, m_Damage = default;
         [SerializeField] private bool m_IsDamageContinuous = false;
         [SerializeField] private LayerMask m_Mask = default;

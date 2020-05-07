@@ -22,21 +22,19 @@ namespace Swihoni.Sessions
         protected readonly Container m_RollbackSession;
         protected readonly Container m_RenderSession;
 
-        protected NetworkedSessionBase(ISessionGameObjectLinker linker,
-                                       IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
-            : base(linker)
+        protected NetworkedSessionBase(SessionElements elements)
         {
-            IReadOnlyCollection<Type> serverPlayerElements = playerElements.Append(typeof(ClientStampComponent))
-                                                                           .Append(typeof(ServerStampComponent)).ToArray(),
-                                      clientCommandElements = playerElements.Append(typeof(ClientStampComponent))
-                                                                            .Concat(commandElements).ToArray();
+            IReadOnlyCollection<Type> serverPlayerElements = elements.playerElements.Append(typeof(ClientStampComponent))
+                                                                     .Append(typeof(ServerStampComponent)).ToArray(),
+                                      clientCommandElements = elements.playerElements.Append(typeof(ClientStampComponent))
+                                                                      .Concat(elements.commandElements).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor() =>
-                NewSession<ServerSessionContainer>(sessionElements.Append(typeof(ServerStampComponent)), serverPlayerElements);
+                NewSession<ServerSessionContainer>(elements.elements.Append(typeof(ServerStampComponent)), serverPlayerElements);
             m_SessionHistory = new CyclicArray<ServerSessionContainer>(250, ServerSessionContainerConstructor);
 
-            m_RollbackSession = NewSession<Container>(sessionElements, playerElements);
+            m_RollbackSession = NewSession<Container>(elements.elements, elements.playerElements);
 
-            m_RenderSession = NewSession<Container>(sessionElements, playerElements);
+            m_RenderSession = NewSession<Container>(elements.elements, elements.playerElements);
 
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);
             m_EmptyServerSession = ServerSessionContainerConstructor();
@@ -66,10 +64,8 @@ namespace Swihoni.Sessions
             command.Require<WantedItemIndexProperty>().Zero();
         }
 
-        protected SessionSettingsComponent GetSettings(Container session = null) => (session ?? GetLatestSession()).Require<SessionSettingsComponent>();
-
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
-        public override ModeBase GetMode(Container session = null) => ModeManager.GetMode(GetSettings(session).modeId);
+        public override ModeBase GetMode(Container session = null) => ModeManager.GetMode((session ?? GetLatestSession()).Require<ModeIdProperty>());
 
         public override Container GetPlayerFromId(int playerId) => GetLatestSession().GetPlayer(playerId);
 

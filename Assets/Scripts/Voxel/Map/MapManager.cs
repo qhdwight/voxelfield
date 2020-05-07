@@ -1,15 +1,38 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Swihoni.Util;
 using Swihoni.Util.Math;
+using UnityEditor;
 using UnityEngine;
 
 namespace Voxel.Map
 {
+    public class MapAsset : TextAsset
+    {
+        private MapAsset(string text) : base(text) { }
+
+        public static MapAsset New(MapSave mapSave)
+        {
+            using (var stream = new MemoryStream())
+            using (var writer = new BinaryWriter(stream))
+            {
+                MapSave.Serialize(mapSave, writer);
+                var rawText = BitConverter.ToString(stream.GetBuffer(), 0, (int) stream.Position);
+                return new MapAsset(rawText);
+            }
+        }
+    }
+
     public class MapManager : SingletonBehavior<MapManager>
     {
+        private const string MapSaveExtension = "vfm", MapSaveFolder = "Maps";
+
         private readonly Queue<LoadMapAction> m_MapActions = new Queue<LoadMapAction>();
+
+        private static Dictionary<string, TextAsset> _defaultMaps;
 
         public MapSave Map { get; private set; }
 
@@ -19,8 +42,11 @@ namespace Voxel.Map
 
             public LoadMapAction(string mapName) => this.mapName = mapName;
 
-            public IEnumerator Execute() { yield return Singleton.LoadGameMapRoutine(mapName); }
+            public IEnumerator Execute() { yield return Singleton.LoadMap(mapName); }
         }
+
+        [RuntimeInitializeOnLoadMethod]
+        public static void Initialize() { _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m); }
 
         public static string GetDirectory(string folderName)
         {
@@ -34,7 +60,7 @@ namespace Voxel.Map
         {
             ChunkManager.Singleton.MapProgress += HandleMapProgressInfo;
             StartCoroutine(ManageActionsRoutine());
-            LoadMap("Menu");
+            SetMap("Menu");
         }
 
         private IEnumerator ManageActionsRoutine()
@@ -44,61 +70,44 @@ namespace Voxel.Map
                 yield return m_MapActions.Count > 0 ? m_MapActions.Dequeue().Execute() : null;
         }
 
-        private static string GetMapPath(string mapName) { return Path.ChangeExtension(Path.Combine(GetDirectory("Maps"), mapName), "map"); }
+        private static string GetMapPath(string mapName) => Path.ChangeExtension(Path.Combine(GetDirectory(MapSaveFolder), mapName), MapSaveExtension);
 
-        private static MapSave LoadMapSave(string mapName)
+        private static MapSave ReadMapSave(string mapName)
         {
             string mapPath = GetMapPath(mapName);
+            Stream mapStream = _defaultMaps.TryGetValue(mapName, out TextAsset textAsset)
+                ? (Stream) new MemoryStream(textAsset.bytes)
+                : File.OpenRead(mapPath);
             MapSave mapSave;
-            using (var reader = new BinaryReader(File.OpenRead(mapPath)))
-            {
+            using (var reader = new BinaryReader(mapStream))
                 mapSave = MapSave.Deserialize(reader);
-            }
+            mapStream.Dispose();
             return mapSave;
         }
 
         private static bool SaveMapSave(MapSave mapSave)
         {
             string mapPath = GetMapPath(mapSave.Name);
-            using (var file = File.OpenWrite(mapPath))
+            using (FileStream file = File.OpenWrite(mapPath))
+            using (var writer = new BinaryWriter(file))
             {
-                var writer = new BinaryWriter(file); // TODO what to do for the size?
                 MapSave.Serialize(mapSave, writer);
             }
+            AssetDatabase.CreateAsset(MapAsset.New(mapSave), "Assets/Test.bytes");
             return true;
         }
 
         public bool SaveCurrentMap() => SaveMapSave(Map);
 
-        private IEnumerator LoadGameMapRoutine(string mapName)
+        private IEnumerator LoadMap(string mapName)
         {
             Debug.Log($"Starting to load map: {mapName}");
-            // TODO cleanup
-            // var tm = new MapSave("Test", 4,
-            //                      new Dimension(new Position3Int(-2, -1, -2), new Position3Int(2, 1, 2)),
-            //                      new Dictionary<Position3Int, BrushStroke>(), new Dictionary<Position3Int, VoxelChangeData>(),
-            //                      false,
-            //                      new NoiseData
-            //                      {
-            //                          seed          = 0,
-            //                          octaves       = 4,
-            //                          lateralScale  = 35.0f,
-            //                          verticalScale = 3.5f,
-            //                          persistance   = 0.5f,
-            //                          lacunarity    = 0.5f
-            //                      }, new Dictionary<Position3Int, ModelData>());
-            // SaveMapSave(tm);
-            MapSave
-                testMap = LoadMapSave("Test"),
-                menuMap = new MapSave("Menu", 0,
-                                      Dimension.Empty,
-                                      null, null, false, null, null);
-            MapSave mapSave = mapName == "Test" ? testMap : menuMap;
+            MapSave mapSave = mapName == "Menu" ? new MapSave(mapName) : ReadMapSave(mapName);
             ModelManager.Singleton.ClearAllModels();
             if (mapSave.Models != null)
                 foreach (KeyValuePair<Position3Int, ModelData> model in mapSave.Models)
                     ModelManager.Singleton.LoadInModel(model.Value.modelId, model.Key, model.Value.rotation);
-            yield return LoadMapSave(mapSave);
+            yield return SetMapSave(mapSave);
             // if (mapName == "Test")
             // {
             //     Random.InitState(8);
@@ -118,16 +127,38 @@ namespace Voxel.Map
             Map = mapSave;
         }
 
-        public void LoadMap(string mapName) => m_MapActions.Enqueue(new LoadMapAction(mapName));
+        private static void SaveTestMap()
+        {
+            var testMap = new MapSave("Test", 4,
+                                      new Dimension(new Position3Int(-2, -1, -2), new Position3Int(2, 1, 2)),
+                                      new Dictionary<Position3Int, BrushStroke>(), new Dictionary<Position3Int, VoxelChangeData>(),
+                                      false,
+                                      new NoiseData
+                                      {
+                                          seed = 0,
+                                          octaves = 4,
+                                          lateralScale = 35.0f,
+                                          verticalScale = 3.5f,
+                                          persistance = 0.5f,
+                                          lacunarity = 0.5f
+                                      }, new Dictionary<Position3Int, ModelData>());
+            SaveMapSave(testMap);
+        }
 
-        private static IEnumerator LoadMapSave(MapSave save)
+        public void SetMap(string mapName)
+        {
+            if (ChunkManager.Singleton.Map != null && ChunkManager.Singleton.Map.Name == mapName) return;
+            m_MapActions.Enqueue(new LoadMapAction(mapName));
+        }
+
+        private static IEnumerator SetMapSave(MapSave save)
         {
 //        if (!save.DynamicChunkLoading)
 //        {    
 //            LoadingScreen.Singleton.SetInterfaceActive(true);
 //            LoadingScreen.Singleton.SetProgress(0.0f);
 //        }
-            yield return ChunkManager.Singleton.LoadMap(save);
+            yield return ChunkManager.Singleton.SetMap(save);
         }
 
         private void HandleMapProgressInfo(in MapProgressInfo mapProgress)

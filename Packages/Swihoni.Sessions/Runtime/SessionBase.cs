@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -13,6 +14,30 @@ using UnityObject = UnityEngine.Object;
 
 namespace Swihoni.Sessions
 {
+    public class SessionElements
+    {
+        public List<Type> elements, playerElements, commandElements;
+
+        public static SessionElements NewStandardSessionElements() => new SessionElements
+        {
+            elements = new List<Type>
+            {
+                typeof(TickRateProperty), typeof(ModeIdProperty),
+                typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(EntityArrayProperty),
+                typeof(StampComponent), typeof(KillFeedProperty)
+            },
+            playerElements = new List<Type>
+            {
+                typeof(HealthProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent), typeof(RespawnTimerProperty),
+                typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent)
+            },
+            commandElements = new List<Type>
+            {
+                typeof(InputFlagProperty), typeof(WantedItemIndexProperty), typeof(MouseComponent)
+            }
+        };
+    }
+
     public interface IPlayerContainerRenderer : IDisposable
     {
         void Setup(SessionBase session);
@@ -21,12 +46,6 @@ namespace Swihoni.Sessions
         void Render(int playerId, Container player, bool isLocalPlayer);
 
         Container GetRecentPlayer();
-    }
-
-    [Serializable]
-    public class FeedComponent : ComponentBase
-    {
-        public StringProperty feed;
     }
 
     public abstract class SessionBase : IDisposable
@@ -49,10 +68,10 @@ namespace Swihoni.Sessions
         public GameObject PlayerModifierPrefab { get; }
         public DefaultPlayerHud PlayerHud => m_PlayerHud;
 
-        protected SessionBase(ISessionGameObjectLinker linker)
+        protected SessionBase()
         {
-            PlayerModifierPrefab = linker.GetPlayerModifierPrefab();
-            m_PlayerVisualsPrefab = linker.GetPlayerVisualsPrefab();
+            PlayerModifierPrefab = SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab();
+            m_PlayerVisualsPrefab = SessionGameObjectLinker.Singleton.GetPlayerVisualsPrefab();
             m_PlayerHud = UnityObject.FindObjectOfType<DefaultPlayerHud>();
             m_Interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
         }
@@ -97,15 +116,22 @@ namespace Swihoni.Sessions
 
         private void HandleCursorLockState()
         {
-            var desiredLockState = CursorLockMode.Locked;
-            ShouldInterruptCommands = false;
-            foreach (InterfaceBehaviorBase @interface in m_Interfaces)
+            CursorLockMode desiredLockState;
+            if (Application.isFocused)
             {
-                if (@interface.NeedsCursor)
-                    desiredLockState = CursorLockMode.Confined;
-                if (@interface.InterruptsCommands)
-                    ShouldInterruptCommands = true;
+                desiredLockState = CursorLockMode.Locked;
+                ShouldInterruptCommands = false;
+                foreach (InterfaceBehaviorBase @interface in m_Interfaces)
+                {
+                    if (@interface.NeedsCursor)
+                        desiredLockState = CursorLockMode.Confined;
+                    if (@interface.InterruptsCommands)
+                        ShouldInterruptCommands = true;
+                }
             }
+            else
+                desiredLockState = CursorLockMode.None;
+
             bool desiredVisibility = desiredLockState != CursorLockMode.Locked;
             if (Cursor.lockState == desiredLockState && Cursor.visible == desiredVisibility) return;
 
@@ -115,7 +141,10 @@ namespace Swihoni.Sessions
 
         protected virtual void Render(float renderTime) { }
 
-        protected virtual void Tick(uint tick, float time, float duration) { }
+        protected virtual void Tick(uint tick, float time, float duration)
+        {
+            GetLatestSession().Require<TickRateProperty>().IfPresent(tickRate => Time.fixedDeltaTime = 1.0f / tickRate);
+        }
 
         protected virtual void Input(float time, float delta) { }
 

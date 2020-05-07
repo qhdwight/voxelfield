@@ -21,7 +21,8 @@ namespace Swihoni.Sessions.Player.Components
     [Serializable, ClientChecked]
     public class MoveComponent : ComponentBase
     {
-        [Tolerance(0.01f), InterpolateRange(2.0f)] public VectorProperty position, velocity;
+        [Tolerance(0.01f), InterpolateRange(2.0f)]
+        public VectorProperty position, velocity;
         public ByteProperty groundTick;
         public FloatProperty normalizedCrouch;
         [Cyclic(0.0f, 1.0f)] public FloatProperty normalizedMove;

@@ -35,7 +35,11 @@ namespace Swihoni.Components
                 m_Values[i] = constructor();
         }
 
-        public T this[int index] { get => m_Values[index]; set => m_Values[index] = value; }
+        public T this[int index]
+        {
+            get => m_Values[index];
+            set => m_Values[index] = value;
+        }
 
         public override int Length => m_Values.Length;
 
@@ -52,9 +56,7 @@ namespace Swihoni.Components
     public class CharProperty : PropertyBase<char>
     {
         public override bool ValueEquals(PropertyBase<char> other) => other.Value == Value;
-
         public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-
         public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadChar();
     }
 
@@ -65,12 +67,14 @@ namespace Swihoni.Components
 
         public StringProperty(int size) : base(size) => m_Builder = new StringBuilder(size);
 
+        public bool HasValue => m_Values[0].HasValue;
+
         public StringBuilder GetString()
         {
             m_Builder.Clear();
-            foreach (char character in m_Values)
+            foreach (CharProperty character in m_Values)
             {
-                if (character == '\0')
+                if (character.WithoutValue)
                     break;
                 m_Builder.Append(character);
             }
@@ -87,7 +91,7 @@ namespace Swihoni.Components
                     m_Values[i].Value = m_Builder[i];
                 else
                 {
-                    m_Values[i].Value = '\0';
+                    m_Values[i].Clear();
                     break;
                 }
             }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -23,16 +22,15 @@ namespace Swihoni.Sessions
 
         public IPEndPoint IpEndPoint { get; }
 
-        protected ClientBase(ISessionGameObjectLinker linker, IPEndPoint ipEndPoint, IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements,
-                             IReadOnlyCollection<Type> commandElements)
-            : base(linker, sessionElements, playerElements, commandElements)
+        protected ClientBase(SessionElements elements, IPEndPoint ipEndPoint)
+            : base(elements)
         {
             IpEndPoint = ipEndPoint;
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
             // TODO:refactor zeroing
             ZeroCommand(m_CommandHistory.Peek());
-            m_PlayerPredictionHistory = new CyclicArray<Container>(250, () => new Container(playerElements.Append(typeof(ClientStampComponent))));
+            m_PlayerPredictionHistory = new CyclicArray<Container>(250, () => new Container(elements.playerElements.Append(typeof(ClientStampComponent))));
             m_PlayerPredictionHistory.Peek().Zero();
             m_PlayerPredictionHistory.Peek().Require<ClientStampComponent>().Reset();
 
@@ -67,9 +65,9 @@ namespace Swihoni.Sessions
             if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers) || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
                 return;
 
-            base.Render(renderTime);
+            var tickRate = GetLatestSession().Require<TickRateProperty>();
+            if (!tickRate.HasValue) return;
 
-            SessionSettingsComponent settings = GetSettings();
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
                 bool isLocalPlayer = playerId == localPlayerId;
@@ -77,7 +75,7 @@ namespace Swihoni.Sessions
                 if (isLocalPlayer)
                 {
                     Container GetInHistory(int historyIndex) => m_PlayerPredictionHistory.Get(-historyIndex);
-                    float rollback = settings.TickInterval;
+                    float rollback = tickRate.TickInterval;
                     RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
                     renderPlayer.FastMergeSet(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
@@ -87,19 +85,17 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
 
-                    float rollback = settings.TickInterval * 3;
+                    float rollback = tickRate.TickInterval * 3;
                     RenderInterpolatedPlayer<LocalizedClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(playerId, renderPlayer, isLocalPlayer);
                 m_PlayerHud.Render(renderPlayers[localPlayerId]);
             }
-            RenderEntities<LocalizedClientStampComponent>(renderTime, settings.TickInterval * 2);
+            RenderEntities<LocalizedClientStampComponent>(renderTime, tickRate.TickInterval * 2);
         }
 
         protected override void Tick(uint tick, float time, float duration)
         {
-            GetSettings().tickRate.IfPresent(tickRate => Time.fixedDeltaTime = 1.0f / tickRate);
-
             base.Tick(tick, time, duration);
 
             Profiler.BeginSample("Client Predict");
@@ -246,7 +242,7 @@ namespace Swihoni.Sessions
                             else
                                 localizedServerTime.Value = time;
 
-                            if (Mathf.Abs(localizedServerTime.Value - time) > GetSettings(serverSession).TickInterval * 3)
+                            if (Mathf.Abs(localizedServerTime.Value - time) > serverSession.Require<TickRateProperty>().TickInterval * 3)
                             {
                                 Resets++;
                                 localizedServerTime.Value = time;
@@ -273,7 +269,7 @@ namespace Swihoni.Sessions
                             GetLocalPlayerId(serverSession, out int localPlayerId);
                             if (playerId != localPlayerId) m_Modifier[playerId].Synchronize(serverPlayer);
 
-                            if (Mathf.Abs(localizedServerTime.Value - time) > GetSettings(serverSession).TickInterval * 3)
+                            if (Mathf.Abs(localizedServerTime.Value - time) > serverSession.Require<TickRateProperty>().TickInterval * 3)
                             {
                                 // Debug.LogWarning($"[{GetType().Name}] Client reset");
                                 Resets++;

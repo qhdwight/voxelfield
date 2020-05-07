@@ -128,7 +128,7 @@ namespace Swihoni.Components
                 && Mathf.Abs(Value.y - other.Value.y) < tolerance
                 && Mathf.Abs(Value.z - other.Value.z) < tolerance;
         }
-        
+
         public override void ValueInterpolateFrom(PropertyBase<Vector3> p1, PropertyBase<Vector3> p2, float interpolation)
         {
             bool GreaterThan(Vector3 v1, Vector3 v2, float range) => (v2 - v1).sqrMagnitude > range * range;

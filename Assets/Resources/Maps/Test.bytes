@@ -1,0 +1,10 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!49 &4900000
+TextAsset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Test
+  m_Script: 04-54-65-73-74-04-00-00-00-FE-FF-FF-FF-FF-FF-FF-FF-FE-FF-FF-FF-02-00-00-00-01-00-00-00-02-00-00-00-00-01-00-00-00-00-04-00-00-00-00-00-0C-42-00-00-60-40-00-00-00-3F-00-00-00-3F-00-00-00-00-00-00-00-00-00-00-00-00

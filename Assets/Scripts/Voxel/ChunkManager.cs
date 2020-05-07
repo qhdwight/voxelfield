@@ -56,29 +56,31 @@ namespace Voxel
         }
     }
 
+    public enum ChunkActionType
+    {
+        Commission,
+        Generate,
+        UpdateMesh
+    }
+
     public class ChunkManager : SingletonBehavior<ChunkManager>
     {
-        public static class ChunkActionType
-        {
-            public const byte Commission = 0, Decommission = 1, Generate = 2, UpdateMesh = 3;
-        }
-
         private static readonly VoxelChangeTransaction Transaction = new VoxelChangeTransaction();
 
         [SerializeField] private GameObject m_ChunkPrefab = default;
         [SerializeField] private int m_ChunkSize = default;
-        private MapSave m_Map;
         private readonly Stack<Chunk> m_ChunkPool = new Stack<Chunk>();
         private int m_PoolSize;
 
         public int ChunkSize => m_ChunkSize;
+        public MapSave Map { get; private set; }
         public Dictionary<Position3Int, Chunk> Chunks { get; } = new Dictionary<Position3Int, Chunk>();
 
         public MapProgressCallback MapProgress { get; set; }
 
-        public IEnumerator LoadMap(MapSave map)
+        public IEnumerator SetMap(MapSave map)
         {
-            m_Map = map;
+            Map = map;
             SetPoolSize(map);
             // Decommission all current chunks
             yield return DecommissionAllChunks();
@@ -108,7 +110,7 @@ namespace Voxel
             }
         }
 
-        private IEnumerator ChunkActionForAllStaticMapChunks(MapSave map, byte actionType)
+        private IEnumerator ChunkActionForAllStaticMapChunks(MapSave map, ChunkActionType actionType)
         {
             var progress = 0.0f;
             for (int x = map.Dimension.lowerBound.x; x <= map.Dimension.upperBound.x; x++)
@@ -202,7 +204,7 @@ namespace Voxel
             Chunk chunk = GetChunkFromWorldPosition(worldPosition);
             if (!chunk) return null;
             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-            VoxelChangeData? change = chunk.RevertToMapSave(voxelChunkPosition, m_Map);
+            VoxelChangeData? change = chunk.RevertToMapSave(voxelChunkPosition, Map);
             if (updateMesh) UpdateChunkMesh(chunk, voxelChunkPosition);
             return change;
         }

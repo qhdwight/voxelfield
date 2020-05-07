@@ -32,10 +32,11 @@ namespace Swihoni.Sessions.Tests
         [Test]
         public void TestSessionClone()
         {
-            var s1 = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
-            IEnumerable<Type> playerElements = StandardComponents.StandardPlayerElements
-                                                                 .Concat(StandardComponents.StandardPlayerCommandsElements)
-                                                                 .Append(typeof(StampComponent));
+            var standardElements = SessionElements.NewStandardSessionElements();
+            var s1 = new ServerSessionContainer(standardElements.elements.Append(typeof(ServerStampComponent)));
+            IEnumerable<Type> playerElements = standardElements.playerElements
+                                                               .Concat(standardElements.commandElements)
+                                                               .Append(typeof(StampComponent));
             s1.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(playerElements));
             s1.Zero();
 
@@ -68,10 +69,11 @@ namespace Swihoni.Sessions.Tests
         [Test]
         public void TestSessionNetworking()
         {
-            var session = new ServerSessionContainer(StandardComponents.StandardSessionElements.Append(typeof(ServerStampComponent)));
-            session.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(StandardComponents.StandardPlayerElements
-                                                                                                         .Append(typeof(ServerStampComponent))
-                                                                                                         .Append(typeof(ClientStampComponent))));
+            var standardElements = SessionElements.NewStandardSessionElements();
+            var session = new ServerSessionContainer(standardElements.elements.Append(typeof(ServerStampComponent)));
+            session.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(standardElements.playerElements
+                                                                                                       .Append(typeof(ServerStampComponent))
+                                                                                                       .Append(typeof(ClientStampComponent))));
             const float time = 0.241f;
             session.Require<ServerStampComponent>().time.Value = time;
 
@@ -107,9 +109,10 @@ namespace Swihoni.Sessions.Tests
         [Test]
         public void TestCommandNetworking()
         {
-            var clientCommands = new ClientCommandsContainer(StandardComponents.StandardPlayerElements
-                                                                               .Concat(StandardComponents.StandardPlayerCommandsElements)
-                                                                               .Append(typeof(StampComponent)));
+            var standardElements = SessionElements.NewStandardSessionElements();
+            var clientCommands = new ClientCommandsContainer(standardElements.playerElements
+                                                                             .Concat(standardElements.commandElements)
+                                                                             .Append(typeof(StampComponent)));
 
             clientCommands.Require<StampComponent>().tick.Value = 35;
             clientCommands.Require<StampComponent>().duration.Value = 0.241f;

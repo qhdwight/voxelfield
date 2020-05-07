@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Net;
 using Swihoni.Collections;
@@ -18,9 +17,8 @@ namespace Swihoni.Sessions
         private ComponentServerSocket m_Socket;
         private readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
 
-        protected ServerBase(ISessionGameObjectLinker linker,
-                             IReadOnlyCollection<Type> sessionElements, IReadOnlyCollection<Type> playerElements, IReadOnlyCollection<Type> commandElements)
-            : base(linker, sessionElements, playerElements, commandElements)
+        protected ServerBase(SessionElements elements)
+            : base(elements)
         {
             ForEachPlayer(player => player.Add(typeof(ServerTag), typeof(ServerPingComponent)));
         }
@@ -40,15 +38,17 @@ namespace Swihoni.Sessions
 
         protected sealed override void Tick(uint tick, float time, float duration)
         {
-            Profiler.BeginSample("Server Setup");
             base.Tick(tick, time, duration);
+
+            Profiler.BeginSample("Server Setup");
             Container previousServerSession = m_SessionHistory.Peek(),
                       serverSession = m_SessionHistory.ClaimNext();
             serverSession.FastCopyFrom(previousServerSession);
 
-            SessionSettingsComponent settings = GetSettings(serverSession);
-            settings.FastCopyFrom(DebugBehavior.Singleton.Settings);
-            Time.fixedDeltaTime = 1.0f / settings.tickRate;
+            var tickRate = serverSession.Require<TickRateProperty>();
+            tickRate.FastCopyFrom(DebugBehavior.Singleton.TickRate);
+            serverSession.Require<ModeIdProperty>().FastCopyFrom(DebugBehavior.Singleton.ModeId);
+            Time.fixedDeltaTime = tickRate.TickInterval;
 
             var serverStamp = serverSession.Require<ServerStampComponent>();
             serverStamp.tick.Value = tick;
@@ -172,7 +172,7 @@ namespace Swihoni.Sessions
                     {
                         serverPlayerTime.Value += clientStamp.time - serverPlayerClientStamp.time;
 
-                        if (Mathf.Abs(serverPlayerTime.Value - serverTime) > GetSettings(serverSession).TickInterval * 3)
+                        if (Mathf.Abs(serverPlayerTime.Value - serverTime) > serverSession.Require<TickRateProperty>().TickInterval * 3)
                         {
                             // Debug.LogWarning($"[{GetType().Name}] Reset time for client: {clientId}");
                             serverPlayerTime.Value = serverTime;
@@ -241,7 +241,7 @@ namespace Swihoni.Sessions
                 if (time.WithoutValue) continue;
 
                 /* See: https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking */
-                float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetSettings().TickInterval) * 3.6f + rtt;
+                float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetLatestSession().Require<TickRateProperty>().TickInterval) * 3.6f + rtt;
                 RenderInterpolatedPlayer<ServerStampComponent>(time - rollback, rollbackPlayer,
                                                                m_SessionHistory.Size, GetPlayerInHistory);
 

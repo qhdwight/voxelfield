@@ -8,12 +8,8 @@ namespace Swihoni.Sessions
     {
         public FloatProperty RollbackOverride;
 
-        public FloatProperty HitboxRollbackOverride;
+        public TickRateProperty TickRate;
 
-        public Container Predicted;
-
-        public SessionSettingsComponent Settings;
-
-        public Container RenderOverride;
+        public ModeIdProperty ModeId;
     }
 }

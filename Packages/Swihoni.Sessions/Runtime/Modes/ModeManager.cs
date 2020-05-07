@@ -18,6 +18,6 @@ namespace Swihoni.Sessions.Modes
                              .OrderBy(modifier => modifier.id).ToArray();
         }
 
-        public static ModeBase GetMode(byte modeId) { return Modes[modeId]; }
+        public static ModeBase GetMode(byte modeId) => Modes[modeId];
     }
 }

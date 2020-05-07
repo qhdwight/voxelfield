@@ -11,8 +11,6 @@ namespace Compound.Session
     {
         private NetworkedSessionBase m_Host, m_Client;
 
-        [SerializeField] private SessionGameObjectLinker m_Linker = default;
-
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
@@ -30,7 +28,7 @@ namespace Compound.Session
 
         public Host StartHost()
         {
-            var host = new Host(m_Linker);
+            var host = new Host();
             try
             {
                 host.Start();
@@ -47,7 +45,7 @@ namespace Compound.Session
 
         public Server StartServer()
         {
-            var host = new Server(m_Linker);
+            var host = new Server();
             try
             {
                 host.Start();
@@ -64,7 +62,7 @@ namespace Compound.Session
 
         public Client StartClient(IPEndPoint ipEndPoint)
         {
-            var client = new Client(m_Linker, ipEndPoint);
+            var client = new Client(ipEndPoint);
             try
             {
                 client.Start();
