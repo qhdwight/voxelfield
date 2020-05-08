@@ -105,11 +105,8 @@ namespace Swihoni.Sessions
             if (GetLocalPlayerId(latestSession, out int localPlayerId))
             {
                 SettingsTick(latestSession);
-                if (GetMode().IsReady(latestSession))
-                {
-                    UpdateInputs(localPlayerId);
-                    Predict(tick, time, localPlayerId);
-                }
+                UpdateInputs(localPlayerId);
+                Predict(tick, time, localPlayerId);
             }
             Profiler.EndSample();
 

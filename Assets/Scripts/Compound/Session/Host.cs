@@ -1,5 +1,6 @@
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Voxel;
 using Voxel.Map;
 
 namespace Compound.Session
@@ -15,6 +16,8 @@ namespace Compound.Session
             string mapName = DebugBehavior.Singleton.mapName;
             serverSession.Require<VoxelMapNameProperty>().SetString(builder => builder.Append(mapName));
             MapManager.Singleton.SetMap(mapName);
+            
+            IsPaused = ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
         }
 
         public override void Dispose()

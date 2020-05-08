@@ -1,5 +1,6 @@
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Voxel;
 using Voxel.Map;
 
 namespace Compound.Session
@@ -16,6 +17,7 @@ namespace Compound.Session
             base.SettingsTick(serverSession);
 
             MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
+            IsPaused = ChunkManager.Singleton.ProgressInfo.stage == MapLoadingStage.Completed;
         }
     }
 }

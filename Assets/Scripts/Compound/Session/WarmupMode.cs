@@ -1,13 +1,10 @@
-using Swihoni.Components;
 using Swihoni.Sessions.Modes;
 using UnityEngine;
-using Voxel;
 
 namespace Compound.Session
 {
     [CreateAssetMenu(fileName = "Warmup", menuName = "Session/Mode/Warmup", order = 0)]
     public class WarmupMode : DeathmatchMode
     {
-        public override bool IsReady(Container session) => ChunkManager.Singleton.ProgressInfo.stage == MapLoadingStage.Completed;
     }
 }

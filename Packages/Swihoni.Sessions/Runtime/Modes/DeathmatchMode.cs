@@ -52,7 +52,7 @@ namespace Swihoni.Sessions.Modes
 
             if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive)
                 KillPlayer(playerToModify);
-            if (IsReady(session) && health.IsDead && playerToModify.Has(out RespawnTimerProperty respawn))
+            if (health.IsDead && playerToModify.Has(out RespawnTimerProperty respawn))
             {
                 respawn.Value -= duration;
                 if (respawn.Value <= 0.0f)

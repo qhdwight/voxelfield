@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Swihoni.Components;
+using UnityEngine;
 
 namespace Swihoni.Sessions.Components
 {
@@ -94,6 +95,11 @@ namespace Swihoni.Sessions.Components
     {
         public ByteProperty killingPlayerId, killedPlayerId;
         public FloatProperty elapsed;
+    }
+
+    [Serializable]
+    public class PauseComponent : BoolProperty
+    {
     }
 
     [Serializable]

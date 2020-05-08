@@ -60,8 +60,6 @@ namespace Swihoni.Sessions
             serverStamp.duration.Value = duration;
             Profiler.EndSample();
 
-            if (!GetMode(serverSession).IsReady(serverSession)) return;
-
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
             Tick(serverSession, time, duration);

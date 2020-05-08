@@ -113,6 +113,7 @@ namespace Swihoni.Sessions
             // TODO:refactor standard entity components
             session.Require<EntityArrayProperty>().SetAll(() => new EntityContainer(typeof(ThrowableComponent)).Zero());
             session.ZeroIfHas<KillFeedProperty>();
+            session.ZeroIfHas<PauseComponent>();
             return session;
         }
     }

@@ -93,7 +93,5 @@ namespace Swihoni.Sessions.Modes
                 }
             }
         }
-
-        public virtual bool IsReady(Container session) => true;
     }
 }

@@ -24,11 +24,13 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, float duration)
         {
+            if (session.IsPaused) return;
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, duration);
         }
 
         public void ModifyTrusted(SessionBase session, int playerId, Container playerToModify, Container commands, float duration)
         {
+            if (session.IsPaused) return;
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(session, playerId, playerToModify, commands, duration);
         }
 
@@ -40,7 +42,6 @@ namespace Swihoni.Sessions.Player.Modifiers
         public void ModifyCommands(SessionBase session, Container commandsToModify)
         {
             if (m_Session.ShouldInterruptCommands) return;
-
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
         }
 

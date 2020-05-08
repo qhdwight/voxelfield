@@ -22,7 +22,7 @@ namespace Swihoni.Sessions
         {
             elements = new List<Type>
             {
-                typeof(TickRateProperty), typeof(ModeIdProperty),
+                typeof(TickRateProperty), typeof(ModeIdProperty), typeof(PauseComponent),
                 typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(EntityArrayProperty),
                 typeof(StampComponent), typeof(KillFeedProperty)
             },
@@ -266,6 +266,12 @@ namespace Swihoni.Sessions
             foreach (IPlayerContainerRenderer visual in m_Visuals) visual.Dispose();
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
+        }
+
+        public bool IsPaused
+        {
+            get => GetLatestSession().Require<PauseComponent>().Value;
+            set => GetLatestSession().Require<PauseComponent>().Value = value;
         }
     }
 }
