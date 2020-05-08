@@ -231,7 +231,7 @@ MonoBehaviour:
   m_CrouchDuration: 0.1
   m_GroundMask:
     serializedVersion: 2
-    m_Bits: 513
+    m_Bits: 33281
 --- !u!114 &-7077651449580160097
 MonoBehaviour:
   m_ObjectHideFlags: 0

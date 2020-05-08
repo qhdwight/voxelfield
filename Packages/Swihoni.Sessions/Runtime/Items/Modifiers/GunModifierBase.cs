@@ -16,21 +16,18 @@ namespace Swihoni.Sessions.Items.Modifiers
         public const byte HipAiming = 0, EnteringAds = 1, Ads = 2, ExitingAds = 3;
     }
 
-    public abstract class GunModifierBase : ItemModifierBase
+    public abstract class GunModifierBase : WeaponModifierBase
     {
         private const int MaxRaycastDetections = 16;
 
         private static readonly RaycastHit[] RaycastHits = new RaycastHit[MaxRaycastDetections];
 
         [SerializeField] protected ushort m_MagSize;
-        [SerializeField] private byte m_Damage = default;
         [SerializeField] private ushort m_StartingAmmoInReserve = default;
-        [SerializeField] private LayerMask m_PlayerMask = default;
         [SerializeField] private ItemStatusModiferProperties[] m_AdsModifierProperties = default;
 
         public ushort MagSize => m_MagSize;
         public ushort StartingAmmoInReserve => m_StartingAmmoInReserve;
-        public byte Damage => m_Damage;
         public ItemStatusModiferProperties GetAdsStatusModifierProperties(byte statusId) => m_AdsModifierProperties[statusId];
 
         public override void ModifyChecked(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputProperty, float duration)

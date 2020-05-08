@@ -13,10 +13,7 @@ namespace Compound.Session
         {
         }
 
-        protected override void SettingsTick(Container serverSession)
-        {
-            MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
-        }
+        protected override void SettingsTick(Container serverSession) { MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName); }
 
         public override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
     }

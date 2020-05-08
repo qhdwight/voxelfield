@@ -117,16 +117,15 @@ namespace Swihoni.Sessions.Player.Modifiers
             inputs.SetInput(PlayerInput.Reload, inputProvider.GetInput(InputType.Reload));
             inputs.SetInput(PlayerInput.Ads, inputProvider.GetInput(InputType.Ads));
             if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
-            if (inputProvider.GetInput(InputType.ItemOne))
-                itemIndex.Value = 1;
-            else if (inputProvider.GetInput(InputType.ItemTwo))
-                itemIndex.Value = 2;
-            else if (inputProvider.GetInput(InputType.ItemThree))
-                itemIndex.Value = 3;
-            else if (inputProvider.GetInput(InputType.ItemFour))
-                itemIndex.Value = 4;
-            else if (inputProvider.GetInput(InputType.ItemFive))
-                itemIndex.Value = 5;
+            if (inputProvider.GetInput(InputType.ItemOne)) itemIndex.Value = 1;
+            else if (inputProvider.GetInput(InputType.ItemTwo)) itemIndex.Value = 2;
+            else if (inputProvider.GetInput(InputType.ItemThree)) itemIndex.Value = 3;
+            else if (inputProvider.GetInput(InputType.ItemFour)) itemIndex.Value = 4;
+            else if (inputProvider.GetInput(InputType.ItemFive)) itemIndex.Value = 5;
+            else if (inputProvider.GetInput(InputType.ItemSix)) itemIndex.Value = 6;
+            else if (inputProvider.GetInput(InputType.ItemSeven)) itemIndex.Value = 7;
+            else if (inputProvider.GetInput(InputType.ItemEight)) itemIndex.Value = 8;
+            else if (inputProvider.GetInput(InputType.ItemNine)) itemIndex.Value = 9;
         }
 
         private static bool FindReplacement(InventoryComponent inventory, out byte replacementIndex)

@@ -4,6 +4,10 @@ using System.Net;
 using Console;
 using Swihoni.Sessions;
 using Swihoni.Util;
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.Build.Reporting;
+#endif
 using UnityEngine;
 
 namespace Compound.Session
@@ -11,7 +15,7 @@ namespace Compound.Session
     public class SessionManager : SingletonBehavior<SessionManager>
     {
         [SerializeField] private SessionGameObjectLinker m_LinkerReference;
-        [SerializeField] private bool m_IsServer;
+        [SerializeField] private bool m_IsServer = default;
         [SerializeField] private int m_ServerPort = 7777;
 
         private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);
@@ -150,5 +154,53 @@ namespace Compound.Session
         }
 
         private void OnApplicationQuit() => DisconnectAll();
+
+#if UNITY_EDITOR
+        [MenuItem("Build/Build Linux Server")]
+        public static void BuildLinuxServer()
+        {
+            var buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = new[] {"Assets/Scenes/Base.unity"},
+                locationPathName = "Builds/Voxelfield/Linux/Voxelfield", target = BuildTarget.StandaloneLinux64, options = BuildOptions.EnableHeadlessMode,
+            };
+
+            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            BuildSummary summary = report.summary;
+
+            switch (summary.result)
+            {
+                case BuildResult.Succeeded:
+                    Debug.Log($"Server Linux build succeeded: {summary.totalSize} bytes");
+                    break;
+                case BuildResult.Failed:
+                    Debug.Log("Server Linux build failed");
+                    break;
+            }
+        }
+
+        [MenuItem("Build/Build Windows Player")]
+        public static void BuildWindowsPlayer()
+        {
+            var buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = new[] {"Assets/Scenes/Base.unity"},
+                locationPathName = "Builds/Voxelfield/Windows/Voxelfield.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.AutoRunPlayer,
+            };
+
+            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            BuildSummary summary = report.summary;
+
+            switch (summary.result)
+            {
+                case BuildResult.Succeeded:
+                    Debug.Log($"Windows player build succeeded: {summary.totalSize} bytes");
+                    break;
+                case BuildResult.Failed:
+                    Debug.Log("Windows player build failed");
+                    break;
+            }
+        }
+#endif
     }
 }

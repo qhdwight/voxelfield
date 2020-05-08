@@ -25,7 +25,7 @@ namespace Swihoni.Sessions
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentServerSocket(new IPEndPoint(IPAddress.Loopback, 7777));
+            m_Socket = new ComponentServerSocket(IpEndPoint);
             RegisterMessages(m_Socket);
 
             Physics.autoSimulation = false;

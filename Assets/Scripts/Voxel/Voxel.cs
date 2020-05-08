@@ -7,9 +7,9 @@ namespace Voxel
         public const byte None = 0, Dirt = 1, Grass = 2, Stone = 3;
     }
 
-    public static class VoxelRenderType
+    public enum VoxelRenderType : byte
     {
-        public const byte None = 0, Block = 1, Smooth = 2;
+        None, Block, Smooth
     }
 
     public static class Orientation
@@ -25,7 +25,8 @@ namespace Voxel
             TileRatio = TileSize / ImageSize,
             PixelRatio = 1.0f / ImageSize;
 
-        public byte texture, renderType, density, orientation;
+        public byte texture, density, orientation;
+        public VoxelRenderType renderType;
         public bool breakable, natural;
 
         public void SetVoxelData(VoxelChangeData changeData)

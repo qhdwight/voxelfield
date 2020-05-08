@@ -7,17 +7,17 @@ namespace Swihoni.Sessions.Items.Modifiers
     public static class ItemStatusId
     {
         public const byte Idle = 0,
-                          PrimaryUsing = Idle + 1,
-                          SecondaryUsing = PrimaryUsing + 1,
-                          Last = SecondaryUsing;
+                          PrimaryUsing = 1,
+                          SecondaryUsing = 2,
+                          Last = 2;
     }
 
     public static class ItemEquipStatusId
     {
         public const byte Unequipping = 0,
-                          Equipping = Unequipping + 1,
-                          Equipped = Equipping + 1,
-                          Unequipped = Equipped + 1;
+                          Equipping = 1,
+                          Equipped = 2,
+                          Unequipped = 3;
     }
 
     public static class ItemId
@@ -28,7 +28,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           Molotov = 3,
                           Shotgun = 4,
                           C4 = 5,
-                          Last = C4;
+                          Shovel = 6,
+                          Last = 6;
     }
 
     [Serializable]

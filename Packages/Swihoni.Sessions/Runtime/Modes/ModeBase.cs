@@ -30,7 +30,7 @@ namespace Swihoni.Sessions.Modes
             if (playerToModify.Has(out DamageNotifierComponent damageNotifier))
                 if (damageNotifier.elapsed.Value > 0.0f)
                     damageNotifier.elapsed.Value -= duration;
-            if (playerToModify.Has(out MoveComponent move) && health.IsDead && move.position.Value.y < -32.0f)
+            if (playerToModify.Has(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
                 KillPlayer(playerToModify);
         }
 
@@ -44,14 +44,14 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void PlayerHit(SessionBase session, int inflictingPlayerId, PlayerHitbox hitbox, GunModifierBase gun, in RaycastHit hit, float duration)
+        public virtual void PlayerHit(SessionBase session, int inflictingPlayerId, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit, float duration)
         {
             int hitPlayerId = hitbox.Manager.PlayerId;
             Container hitPlayer = session.GetPlayerFromId(hitPlayerId),
                       inflictingPlayer = session.GetPlayerFromId(inflictingPlayerId);
             if (hitPlayer.Present(out HealthProperty health) && health.IsAlive && hitPlayer.Has<ServerTag>())
             {
-                var damage = checked((byte) (gun.Damage * hitbox.DamageMultiplier));
+                var damage = checked((byte) (weapon.Damage * hitbox.DamageMultiplier));
                 InflictDamage(session, inflictingPlayerId, inflictingPlayer, hitPlayer, hitPlayerId, damage);
             }
         }
