@@ -15,7 +15,7 @@ namespace Swihoni.Sessions.Interfaces
         [SerializeField] private Image m_Crosshair = default, m_HitMarker = default;
         [SerializeField] private Image[] m_DamageNotifiers = default;
         [SerializeField] private Color m_KillHitMarkerColor = Color.red;
-        [SerializeField] private BufferedTextGui m_InventoryText;
+        [SerializeField] private BufferedTextGui m_InventoryText = default;
         private Color m_DefaultHitMarkerColor;
 
         // private bool Changed<TElement>(Container container, out TElement component) where TElement : ElementBase
@@ -35,10 +35,10 @@ namespace Swihoni.Sessions.Interfaces
             if (isVisible)
             {
                 if (localPlayer.Has<HealthProperty>())
-                    m_HealthText.SetText(builder => builder.Append("Health: ").Append(health.Value));
+                    m_HealthText.BuildText(builder => builder.Append("Health: ").Append(health.Value));
                 if (localPlayer.Has(out InventoryComponent inventory) && inventory.HasItemEquipped)
                 {
-                    m_AmmoText.SetText(builder =>
+                    m_AmmoText.BuildText(builder =>
                     {
                         ItemComponent equippedItem = inventory.EquippedItemComponent;
                         ItemModifierBase modifier = ItemAssetLink.GetModifier(equippedItem.id);
@@ -55,7 +55,7 @@ namespace Swihoni.Sessions.Interfaces
                     crosshairColor.a = inventory.adsStatus.id == AdsStatusId.Ads ? 0.0f : 1.0f;
                     m_Crosshair.color = crosshairColor;
                     
-                    m_InventoryText.SetText(builder =>
+                    m_InventoryText.BuildText(builder =>
                     {
                         for (var index = 0; index < inventory.itemComponents.Length; index++)
                         {

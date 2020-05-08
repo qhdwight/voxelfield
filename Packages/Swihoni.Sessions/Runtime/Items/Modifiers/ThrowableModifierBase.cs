@@ -52,7 +52,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 {
                     var throwable = entity.Require<ThrowableComponent>();
                     if (throwable.popTime > throwable.thrownElapsed)
-                        throwable.popTime.Value = throwable.thrownElapsed + duration;
+                        throwableModifier.PopQueued = true;
                 }
             }
         }

@@ -65,7 +65,7 @@ namespace Swihoni.Sessions
                 return;
 
             var tickRate = GetLatestSession().Require<TickRateProperty>();
-            if (!tickRate.HasValue) return;
+            if (tickRate.WithoutValue) return;
 
             base.Render(renderTime);
 
@@ -175,7 +175,7 @@ namespace Swihoni.Sessions
             Container serverPlayer = serverSession.GetPlayer(localPlayerId);
             UIntProperty targetTick = serverPlayer.Require<ClientStampComponent>().tick;
 
-            if (!targetTick.HasValue)
+            if (targetTick.WithoutValue)
                 return;
             for (var playerHistoryIndex = 0; playerHistoryIndex < m_PlayerPredictionHistory.Size; playerHistoryIndex++)
             {

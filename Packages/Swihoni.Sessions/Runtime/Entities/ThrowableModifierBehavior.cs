@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Entities
 
         public Rigidbody Rigidbody { get; private set; }
         public int ThrowerId { get; set; }
-        public float PopTime => m_PopTime;
+        public bool PopQueued { get; set; }
 
         private void Awake() => Rigidbody = GetComponent<Rigidbody>();
 
@@ -42,6 +42,7 @@ namespace Swihoni.Sessions.Entities
             Rigidbody.velocity = Vector3.zero;
             Rigidbody.angularVelocity = Vector3.zero;
             Rigidbody.constraints = isEnabled ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;
+            PopQueued = false;
             m_LastElapsed = 0.0f;
         }
 
@@ -52,7 +53,12 @@ namespace Swihoni.Sessions.Entities
             var throwable = entity.Require<ThrowableComponent>();
             throwable.thrownElapsed.Value += duration;
 
-            if (throwable.thrownElapsed >= m_PopTime && m_LastElapsed < throwable.popTime) throwable.popTime.Value = throwable.thrownElapsed;
+            bool poppedFromTime = throwable.thrownElapsed >= m_PopTime && m_LastElapsed < throwable.popTime;
+            if (poppedFromTime || PopQueued)
+            {
+                throwable.popTime.Value = throwable.thrownElapsed;
+                PopQueued = false;
+            }
 
             bool hasPopped = throwable.thrownElapsed >= throwable.popTime;
             Rigidbody.constraints = hasPopped ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;

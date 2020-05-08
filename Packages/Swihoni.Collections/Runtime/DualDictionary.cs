@@ -55,11 +55,9 @@ namespace Swihoni.Collections
         public IEnumerator<(TKey, TValue)> GetEnumerator()
         {
             foreach (KeyValuePair<TKey, TValue> pair in m_Forward)
-            {
                 yield return (pair.Key, pair.Value);
-            }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

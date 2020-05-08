@@ -127,7 +127,7 @@ namespace Swihoni.Components
         {
             return other.GetType() == GetType()
                 && HasValue && other.HasValue && ValueEquals((PropertyBase<T>) other)
-                || !HasValue && !other.HasValue;
+                || WithoutValue && other.WithoutValue;
         }
 
         public abstract bool ValueEquals(PropertyBase<T> other);
@@ -164,7 +164,7 @@ namespace Swihoni.Components
         {
             if (DontSerialize || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
             writer.Write(HasValue);
-            if (!HasValue) return;
+            if (WithoutValue) return;
             SerializeValue(writer);
         }
 
@@ -172,7 +172,7 @@ namespace Swihoni.Components
         {
             if (DontSerialize || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
             HasValue = reader.ReadBoolean();
-            if (!HasValue) return;
+            if (WithoutValue) return;
             DeserializeValue(reader);
         }
 

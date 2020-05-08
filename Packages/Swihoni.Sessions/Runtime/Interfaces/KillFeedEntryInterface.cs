@@ -18,7 +18,7 @@ namespace Swihoni.Sessions.Interfaces
         {
             bool isVisible = kill.elapsed > Mathf.Epsilon;
             if (isVisible)
-                m_Text.SetText(builder => builder
+                m_Text.BuildText(builder => builder
                                      .Append(kill.killingPlayerId.Value)
                                      .Append(" [").Append("TEST").Append("] ")
                                      .Append(kill.killedPlayerId.Value));

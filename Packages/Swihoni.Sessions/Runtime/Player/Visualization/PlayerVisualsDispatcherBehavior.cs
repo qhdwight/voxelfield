@@ -19,7 +19,7 @@ namespace Swihoni.Sessions.Player.Visualization
     public class PlayerVisualsDispatcherBehavior : MonoBehaviour, IPlayerContainerRenderer
     {
         [SerializeField] private float m_UprightCameraHeight = 1.8f, m_CrouchedCameraHeight = 1.26f;
-        [SerializeField] private AudioSource m_DamageNotifierSource;
+        [SerializeField] private AudioSource m_DamageNotifierSource = default;
         private float m_LastDamageNotifierElapsed;
 
         private AudioListener m_AudioListener;
