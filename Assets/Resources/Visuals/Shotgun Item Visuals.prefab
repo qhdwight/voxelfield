@@ -81,59 +81,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &3907555585647333487
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9147744852897562181}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: acc7c863486b44aa83e35ca055b85dca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Id: 4
-  m_StatusVisualProperties:
-  - animationClip: {fileID: 7400000, guid: b05fe9f9a73cf8c4980b2dc16fbf0eb7, type: 2}
-    animationEvents: []
-    isReverseAnimation: 0
-  - animationClip: {fileID: 7400000, guid: a38f13444e884cd4da5d367ca4fee7df, type: 2}
-    animationEvents:
-    - time: 0
-      audioSource: {fileID: 8300000, guid: 14eea82f549388a4789326b600a6fe28, type: 3}
-      particleSystem: {fileID: 7884236996878736005}
-      tracer: {fileID: 0}
-    isReverseAnimation: 0
-  - animationClip: {fileID: 0}
-    animationEvents: []
-    isReverseAnimation: 0
-  - animationClip: {fileID: 7400000, guid: 5eb60bc330dafa948b0e18deaceedf73, type: 2}
-    animationEvents: []
-    isReverseAnimation: 0
-  - animationClip: {fileID: 0}
-    animationEvents: []
-    isReverseAnimation: 0
-  m_EquipStatusVisualProperties:
-  - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
-    animationEvents:
-    - time: 0
-      audioSource: {fileID: 8300000, guid: fba73e8c764fdf441a3dd094d7122cbd, type: 3}
-      particleSystem: {fileID: 0}
-      tracer: {fileID: 0}
-    isReverseAnimation: 1
-  - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
-    animationEvents:
-    - time: 0
-      audioSource: {fileID: 8300000, guid: 6c1002d19619de140aa5bc40398e9eaf, type: 3}
-      particleSystem: {fileID: 0}
-      tracer: {fileID: 0}
-    isReverseAnimation: 0
-  m_IkL: {fileID: 772136634245725804}
-  m_IkR: {fileID: 660248064201148426}
-  m_FpvOffset: {x: 0.297, y: -0.344, z: 0.213}
-  m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
-  m_AdsTarget: {fileID: 3747283386080694768}
 --- !u!1 &3121793057524815162
 GameObject:
   m_ObjectHideFlags: 0
@@ -5134,6 +5081,59 @@ Transform:
   m_Father: {fileID: 4128066143876035687}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: -90, y: 180, z: 270}
+--- !u!114 &3907555585647333487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9147744852897562181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acc7c863486b44aa83e35ca055b85dca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Id: 4
+  m_StatusVisualProperties:
+  - animationClip: {fileID: 7400000, guid: b05fe9f9a73cf8c4980b2dc16fbf0eb7, type: 2}
+    animationEvents: []
+    isReverseAnimation: 0
+  - animationClip: {fileID: 7400000, guid: a38f13444e884cd4da5d367ca4fee7df, type: 2}
+    animationEvents:
+    - time: 0
+      audioSource: {fileID: 8300000, guid: bd51211f33447e048904fad5a5398bf0, type: 3}
+      particleSystem: {fileID: 7884236996878736005}
+      tracer: {fileID: 0}
+    isReverseAnimation: 0
+  - animationClip: {fileID: 0}
+    animationEvents: []
+    isReverseAnimation: 0
+  - animationClip: {fileID: 7400000, guid: 5eb60bc330dafa948b0e18deaceedf73, type: 2}
+    animationEvents: []
+    isReverseAnimation: 0
+  - animationClip: {fileID: 0}
+    animationEvents: []
+    isReverseAnimation: 0
+  m_EquipStatusVisualProperties:
+  - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
+    animationEvents:
+    - time: 0
+      audioSource: {fileID: 8300000, guid: fba73e8c764fdf441a3dd094d7122cbd, type: 3}
+      particleSystem: {fileID: 0}
+      tracer: {fileID: 0}
+    isReverseAnimation: 1
+  - animationClip: {fileID: 7400000, guid: d1e762977109acb43b91386632ac1dc5, type: 2}
+    animationEvents:
+    - time: 0
+      audioSource: {fileID: 8300000, guid: 6c1002d19619de140aa5bc40398e9eaf, type: 3}
+      particleSystem: {fileID: 0}
+      tracer: {fileID: 0}
+    isReverseAnimation: 0
+  m_IkL: {fileID: 772136634245725804}
+  m_IkR: {fileID: 660248064201148426}
+  m_FpvOffset: {x: 0.297, y: -0.344, z: 0.213}
+  m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
+  m_AdsTarget: {fileID: 3747283386080694768}
 --- !u!1001 &996065641705416524
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5199,7 +5199,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: f5c9bf965b4ef6546bf64cba075fc475,
         type: 3}
       propertyPath: m_Name
-      value: Shotgun Variant
+      value: Shotgun Item Visuals
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5c9bf965b4ef6546bf64cba075fc475, type: 3}

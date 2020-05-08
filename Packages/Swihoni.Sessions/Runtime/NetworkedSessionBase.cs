@@ -22,10 +22,12 @@ namespace Swihoni.Sessions
         protected readonly DebugClientView m_EmptyDebugClientView;
         protected readonly Container m_RollbackSession;
         protected readonly Container m_RenderSession;
-
+        
+        public int ResetErrors { get; protected set; }
         public IPEndPoint IpEndPoint { get; }
+        public abstract ComponentSocketBase Socket { get; }
 
-        protected NetworkedSessionBase(SessionElements elements, IPEndPoint ipEndPoint)
+        protected NetworkedSessionBase(SessionElements elements, IPEndPoint ipEndPoint) : base(elements)
         {
             IpEndPoint = ipEndPoint;
             IReadOnlyCollection<Type> serverPlayerElements = elements.playerElements.Append(typeof(ClientStampComponent))

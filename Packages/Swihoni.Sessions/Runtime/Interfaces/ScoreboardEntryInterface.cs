@@ -14,10 +14,10 @@ namespace Swihoni.Sessions.Interfaces
             bool isVisible = player.Without(out HealthProperty health) || health.HasValue;
             if (isVisible && player.Has(out StatsComponent stats))
             {
-                m_KillsText.Set(builder => builder.Append(stats.kills));
-                m_DamageText.Set(builder => builder.Append(stats.damage));
-                m_DeathsText.Set(builder => builder.Append(stats.deaths));
-                m_PingText.Set(builder => builder.Append(stats.ping));
+                m_KillsText.SetText(builder => builder.Append(stats.kills));
+                m_DamageText.SetText(builder => builder.Append(stats.damage));
+                m_DeathsText.SetText(builder => builder.Append(stats.deaths));
+                m_PingText.SetText(builder => builder.Append(stats.ping));
             }
             SetInterfaceActive(isVisible);
         }

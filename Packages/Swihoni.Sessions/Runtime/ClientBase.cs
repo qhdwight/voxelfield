@@ -18,7 +18,9 @@ namespace Swihoni.Sessions
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
         private float? m_ServerReceiveTime;
-        public int Resets { get; private set; }
+        
+        public int PredictionErrors { get; private set; }
+        public override ComponentSocketBase Socket => m_Socket;
 
         protected ClientBase(SessionElements elements, IPEndPoint ipEndPoint)
             : base(elements, ipEndPoint)
@@ -203,6 +205,7 @@ namespace Swihoni.Sessions
                 }, predictedPlayer, latestPredictedPlayer, serverPlayer);
                 if (areEqual) break;
                 /* We did not predict properly */
+                PredictionErrors++;
                 // Place base from verified server
                 predictedPlayer.FastCopyFrom(serverPlayer);
                 // Replay old commands up until most recent to get back on track
@@ -254,7 +257,7 @@ namespace Swihoni.Sessions
 
                             if (Mathf.Abs(localizedServerTime.Value - time) > serverSession.Require<TickRateProperty>().TickInterval * 3)
                             {
-                                Resets++;
+                                ResetErrors++;
                                 localizedServerTime.Value = time;
                             }
                         }
@@ -282,7 +285,7 @@ namespace Swihoni.Sessions
                             if (Mathf.Abs(localizedServerTime.Value - time) > serverSession.Require<TickRateProperty>().TickInterval * 3)
                             {
                                 // Debug.LogWarning($"[{GetType().Name}] Client reset");
-                                Resets++;
+                                ResetErrors++;
                                 localizedServerTime.Value = time;
                             }
                         }
@@ -320,23 +323,24 @@ namespace Swihoni.Sessions
 
         protected override void RollbackHitboxes(int playerId)
         {
-            // for (var i = 0; i < m_Modifier.Length; i++)
-            // {
-            //     // int copiedPlayerId = i;
-            //     // Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(copiedPlayerId);
-            //     //
-            //     // Container render = m_RenderSession.GetPlayer(i).Clone();
-            //     //
-            //     // float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetSettings().TickInterval) * 3;
-            //     // RenderInterpolatedPlayer<LocalizedClientStampComponent>(Time.realtimeSinceStartup - rollback, render, m_SessionHistory.Size, GetInHistory);
-            //     //
-            //     // PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
-            //     // modifier.EvaluateHitboxes(i, render);
-            //
-            //     Container recentPlayer = m_Visuals[i].GetRecentPlayer();
-            //     if (i == 0 && recentPlayer != null)
-            //         SendDebug(recentPlayer);
-            // }
+            if (!DebugBehavior.Singleton.isDebugMode) return;
+            for (var i = 0; i < m_Modifier.Length; i++)
+            {
+                // int copiedPlayerId = i;
+                // Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(copiedPlayerId);
+                //
+                // Container render = m_RenderSession.GetPlayer(i).Clone();
+                //
+                // float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetSettings().TickInterval) * 3;
+                // RenderInterpolatedPlayer<LocalizedClientStampComponent>(Time.realtimeSinceStartup - rollback, render, m_SessionHistory.Size, GetInHistory);
+                //
+                // PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
+                // modifier.EvaluateHitboxes(i, render);
+            
+                Container recentPlayer = m_Visuals[i].GetRecentPlayer();
+                if (i == 0 && recentPlayer != null)
+                    SendDebug(recentPlayer);
+            }
         }
 
         private void SendDebug(Container player)

@@ -8,7 +8,7 @@ namespace Swihoni.Util.Interface
     {
         private readonly StringBuilder m_Builder = new StringBuilder(1 << 5);
 
-        public void Set(Action<StringBuilder> build)
+        public void SetText(Action<StringBuilder> build)
         {
             m_Builder.Clear();
             build(m_Builder);

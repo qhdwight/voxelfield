@@ -134,6 +134,7 @@
               <e p="ScoreboardEntryInterface.cs" t="Include" />
               <e p="ScoreboardInterface.cs" t="Include" />
               <e p="SessionInterfaceBehavior.cs" t="Include" />
+              <e p="StandardDebugInterface.cs" t="Include" />
               <e p="StandardKillFeedInterface.cs" t="Include" />
             </e>
             <e p="Items" t="Include">

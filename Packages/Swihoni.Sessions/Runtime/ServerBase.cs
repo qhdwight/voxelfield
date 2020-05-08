@@ -15,6 +15,8 @@ namespace Swihoni.Sessions
     {
         private ComponentServerSocket m_Socket;
         private readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
+        
+        public override ComponentSocketBase Socket => m_Socket;
 
         protected ServerBase(SessionElements elements, IPEndPoint ipEndPoint)
             : base(elements, ipEndPoint)
@@ -111,8 +113,11 @@ namespace Swihoni.Sessions
             return true;
         }
 
+        protected virtual void ServerTick(Container serverSession, float time, float duration) { }
+
         private void Tick(Container serverSession, float time, float duration)
         {
+            ServerTick(serverSession, time, duration);
             m_Socket.PollReceived((ipEndPoint, message) =>
             {
                 (byte clientId, Container serverPlayer) = GetPlayerForEndpoint(serverSession, ipEndPoint);
@@ -179,7 +184,7 @@ namespace Swihoni.Sessions
 
                         if (Mathf.Abs(serverPlayerTime.Value - serverTime) > serverSession.Require<TickRateProperty>().TickInterval * 3)
                         {
-                            // Debug.LogWarning($"[{GetType().Name}] Reset time for client: {clientId}");
+                            ResetErrors++;
                             serverPlayerTime.Value = serverTime;
                         }
 
@@ -252,7 +257,8 @@ namespace Swihoni.Sessions
                                                                m_SessionHistory.Size, GetPlayerInHistory);
 
                 m_Modifier[i].EvaluateHitboxes(i, rollbackPlayer);
-                // if (i == 0) PlayerVisualizerBehavior.Render(this, i, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
+                if (i == 0)
+                    DebugBehavior.Singleton.Render(this, i, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
         }
 

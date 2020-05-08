@@ -22,8 +22,12 @@ namespace Swihoni.Networking
         private readonly BinaryWriter m_Writer;
         private readonly BinaryReader m_Reader;
         private readonly Dictionary<Type, Pool<ElementBase>> m_MessagePools = new Dictionary<Type, Pool<ElementBase>>();
+        private readonly float m_StartTime;
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        private long m_BytesSent, m_BytesReceived;
 
+        public float SendRate => m_BytesSent / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
+        public float ReceiveRate => m_BytesReceived / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
         public HashSet<IPEndPoint> Connections => m_Connections;
 
         protected ComponentSocketBase(IPEndPoint ip)
@@ -34,8 +38,7 @@ namespace Swihoni.Networking
             m_ReadStream.SetLength(m_ReadStream.Capacity);
             m_Writer = new BinaryWriter(m_SendStream);
             m_Reader = new BinaryReader(m_ReadStream);
-            // m_MessagePools = m_Codes.Forwards.ToDictionary(pair => pair.Key,
-            //                                     pair => new Pool<ComponentBase>(0, () => (ComponentBase) Activator.CreateInstance(pair.Key)));
+            m_StartTime = Time.realtimeSinceStartup;
         }
 
         /// <summary>
@@ -60,6 +63,7 @@ namespace Swihoni.Networking
                 try
                 {
                     int bytesReceived = m_RawSocket.ReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint);
+                    m_BytesReceived += bytesReceived;
                     if (!(m_ReceiveEndPoint is IPEndPoint ipEndPoint)) continue;
                     bool isNewConnection = !m_Connections.Contains(ipEndPoint);
                     if (isNewConnection)
@@ -96,6 +100,7 @@ namespace Swihoni.Networking
                 m_Writer.Write(code);
                 message.Serialize(m_SendStream);
                 int sent = m_RawSocket.SendTo(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position + 1, SocketFlags.None, endPoint);
+                m_BytesSent += sent;
                 return true;
             }
             catch (KeyNotFoundException keyNotFoundException)

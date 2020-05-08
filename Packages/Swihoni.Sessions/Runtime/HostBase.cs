@@ -45,14 +45,15 @@ namespace Swihoni.Sessions
 
         protected override void Render(float renderTime)
         {
-            base.Render(renderTime);
             if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers)
              || m_RenderSession.Without(out LocalPlayerProperty localPlayer)) return;
-
+            
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (!tickRate.HasValue) return;
 
             localPlayer.Value = HostPlayerId;
+            base.Render(renderTime);
+            
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
                 if (playerId == localPlayer)

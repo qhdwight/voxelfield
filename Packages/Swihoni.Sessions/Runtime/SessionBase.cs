@@ -53,7 +53,7 @@ namespace Swihoni.Sessions
         internal const int MaxPlayers = 3;
 
         private readonly GameObject m_PlayerVisualsPrefab;
-
+        protected readonly SessionElements m_SessionElements;
         protected readonly DefaultPlayerHud m_PlayerHud;
         protected readonly InterfaceBehaviorBase[] m_Interfaces;
         private float m_FixedUpdateTime, m_RenderTime;
@@ -67,8 +67,9 @@ namespace Swihoni.Sessions
         public bool ShouldRender { get; set; } = true;
         public GameObject PlayerModifierPrefab { get; }
 
-        protected SessionBase()
+        protected SessionBase(SessionElements sessionElements)
         {
+            m_SessionElements = sessionElements;
             PlayerModifierPrefab = SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab();
             m_PlayerVisualsPrefab = SessionGameObjectLinker.Singleton.GetPlayerVisualsPrefab();
             m_PlayerHud = UnityObject.FindObjectOfType<DefaultPlayerHud>();
