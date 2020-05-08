@@ -16,8 +16,8 @@ namespace Swihoni.Sessions
         private ComponentServerSocket m_Socket;
         private readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
 
-        protected ServerBase(SessionElements elements)
-            : base(elements)
+        protected ServerBase(SessionElements elements, IPEndPoint ipEndPoint)
+            : base(elements, ipEndPoint)
         {
             ForEachPlayer(player => player.Add(typeof(ServerTag), typeof(ServerPingComponent)));
         }

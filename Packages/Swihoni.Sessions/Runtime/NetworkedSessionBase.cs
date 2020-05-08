@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Networking;
@@ -22,7 +23,7 @@ namespace Swihoni.Sessions
         protected readonly Container m_RollbackSession;
         protected readonly Container m_RenderSession;
 
-        protected NetworkedSessionBase(SessionElements elements)
+        protected NetworkedSessionBase(SessionElements elements, IPEndPoint ipEndPoint)
         {
             IReadOnlyCollection<Type> serverPlayerElements = elements.playerElements.Append(typeof(ClientStampComponent))
                                                                      .Append(typeof(ServerStampComponent)).ToArray(),
@@ -40,6 +41,8 @@ namespace Swihoni.Sessions
             m_EmptyServerSession = ServerSessionContainerConstructor();
             m_EmptyDebugClientView = new DebugClientView(serverPlayerElements);
         }
+
+        public IPEndPoint IpEndPoint { get; }
 
         protected void ForEachPlayer(Action<Container> action)
         {

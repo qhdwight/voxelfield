@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using Console;
 using Swihoni.Sessions;
@@ -10,8 +11,11 @@ namespace Compound.Session
     public class SessionManager : SingletonBehavior<SessionManager>
     {
         [SerializeField] private SessionGameObjectLinker m_LinkerReference;
-        
-        private NetworkedSessionBase m_Host, m_Client;
+        [SerializeField] private bool m_IsServer;
+        [SerializeField] private int m_ServerPort = 7777;
+
+        private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);
+        private readonly IPEndPoint m_LocalHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
         private void Start()
         {
@@ -19,13 +23,25 @@ namespace Compound.Session
             Application.targetFrameRate = 200;
             AudioListener.volume = 0.5f;
             ConsoleCommandExecutor.RegisterCommand("host", args => StartHost());
-            ConsoleCommandExecutor.RegisterCommand("serve", args => StartServer());
+            ConsoleCommandExecutor.RegisterCommand("serve", args => StartServer(m_LocalHost));
             ConsoleCommandExecutor.RegisterCommand("connect", args =>
             {
-                Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
+                Client client;
+                try
+                {
+                    client = StartClient(new IPEndPoint(IPAddress.Parse(args[1]), int.Parse(args[2])));
+                }
+                catch (Exception)
+                {
+                    client = StartClient(m_LocalHost);
+                }
                 Debug.Log($"Started client at {client.IpEndPoint}");
             });
             ConsoleCommandExecutor.RegisterCommand("disconnect", args => DisconnectAll());
+            if (m_IsServer)
+            {
+                StartServer(new IPEndPoint(IPAddress.Any, m_ServerPort));
+            }
         }
 
         public Host StartHost()
@@ -34,7 +50,7 @@ namespace Compound.Session
             try
             {
                 host.Start();
-                m_Host = host;
+                m_Sessions.Add(host);
                 return host;
             }
             catch (Exception exception)
@@ -45,19 +61,19 @@ namespace Compound.Session
             }
         }
 
-        public Server StartServer()
+        public Server StartServer(IPEndPoint ipEndPoint)
         {
-            var host = new Server();
+            var server = new Server(ipEndPoint);
             try
             {
-                host.Start();
-                m_Host = host;
-                return host;
+                server.Start();
+                m_Sessions.Add(server);
+                return server;
             }
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                host.Disconnect();
+                server.Disconnect();
                 return null;
             }
         }
@@ -68,7 +84,7 @@ namespace Compound.Session
             try
             {
                 client.Start();
-                m_Client = client;
+                m_Sessions.Add(client);
                 return client;
             }
             catch (Exception exception)
@@ -81,9 +97,9 @@ namespace Compound.Session
 
         public void DisconnectAll()
         {
-            m_Host?.Disconnect();
-            m_Client?.Disconnect();
-            m_Host = m_Client = null;
+            foreach (NetworkedSessionBase session in m_Sessions)
+                session.Disconnect();
+            m_Sessions.Clear();
         }
 
         private void Update()
@@ -91,8 +107,8 @@ namespace Compound.Session
             float time = Time.realtimeSinceStartup;
             try
             {
-                m_Host?.Update(time);
-                m_Client?.Update(time);
+                foreach (NetworkedSessionBase session in m_Sessions)
+                    session.Update(time);
             }
             catch (Exception exception)
             {
@@ -106,17 +122,15 @@ namespace Compound.Session
             }
             if (Input.GetKeyDown(KeyCode.Y))
             {
-                StartServer();
+                StartServer(m_LocalHost);
             }
             if (Input.GetKeyDown(KeyCode.J))
             {
-                Client client = StartClient(new IPEndPoint(IPAddress.Loopback, 7777));
-                // if (Application.isEditor) client.ShouldRender = false;
+                Client client = StartClient(m_LocalHost);
             }
             if (Input.GetKeyDown(KeyCode.K))
             {
-                m_Client?.Disconnect();
-                m_Client = null;
+                DisconnectAll();
             }
         }
 
@@ -125,8 +139,8 @@ namespace Compound.Session
             float time = Time.realtimeSinceStartup;
             try
             {
-                m_Host?.FixedUpdate(time);
-                m_Client?.FixedUpdate(time);
+                foreach (NetworkedSessionBase session in m_Sessions)
+                    session.FixedUpdate(time);
             }
             catch (Exception exception)
             {

@@ -20,12 +20,9 @@ namespace Swihoni.Sessions
         private float? m_ServerReceiveTime;
         public int Resets { get; private set; }
 
-        public IPEndPoint IpEndPoint { get; }
-
         protected ClientBase(SessionElements elements, IPEndPoint ipEndPoint)
-            : base(elements)
+            : base(elements, ipEndPoint)
         {
-            IpEndPoint = ipEndPoint;
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
             // TODO:refactor zeroing

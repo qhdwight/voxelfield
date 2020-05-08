@@ -3177,6 +3177,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_LinkerReference: {fileID: 11400000, guid: d1f6db47c5e49c74eb793e0361488867, type: 2}
+  m_IsServer: 0
+  m_ServerPort: 7777
 --- !u!1 &1133061148
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using System.Net;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Voxel;
@@ -7,8 +8,8 @@ namespace Compound.Session
 {
     public class Server : ServerBase
     {
-        public Server()
-            : base(CompoundComponents.SessionElements)
+        public Server(IPEndPoint ipEndPoint)
+            : base(CompoundComponents.SessionElements, ipEndPoint)
         {
         }
 

@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Net;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using UnityEngine;
@@ -11,8 +12,8 @@ namespace Swihoni.Sessions
 
         private readonly Container m_HostCommands;
 
-        protected HostBase(SessionElements elements)
-            : base(elements)
+        protected HostBase(SessionElements elements, IPEndPoint ipEndPoint)
+            : base(elements, ipEndPoint)
         {
             // TODO:refactor zeroing
             m_HostCommands = new Container(elements.playerElements

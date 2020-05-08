@@ -1,3 +1,4 @@
+using System.Net;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Voxel;
@@ -7,7 +8,7 @@ namespace Compound.Session
 {
     public class Host : HostBase
     {
-        public Host() : base(CompoundComponents.SessionElements) { }
+        public Host() : base(CompoundComponents.SessionElements, new IPEndPoint(IPAddress.Loopback, 7777)) { }
 
         protected override void SettingsTick(Container serverSession)
         {
