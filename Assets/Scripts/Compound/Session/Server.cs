@@ -17,7 +17,8 @@ namespace Compound.Session
             base.SettingsTick(serverSession);
 
             MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
-            IsPaused = ChunkManager.Singleton.ProgressInfo.stage == MapLoadingStage.Completed;
         }
+        
+        public override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
     }
 }

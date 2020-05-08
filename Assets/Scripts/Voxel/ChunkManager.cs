@@ -83,7 +83,7 @@ namespace Voxel
                 DecommissionChunkInPosition(chunkPosition);
                 progress += 1.0f / commissionedChunks;
                 var progressInfo = new MapProgressInfo {stage = MapLoadingStage.CleaningUp, progress = progress};
-                ProgressCallback.Invoke(progressInfo);
+                ProgressCallback?.Invoke(progressInfo);
                 yield return null;
             }
         }

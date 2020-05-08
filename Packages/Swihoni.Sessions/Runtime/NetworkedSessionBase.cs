@@ -76,7 +76,7 @@ namespace Swihoni.Sessions
             Container latestSession = GetLatestSession();
             foreach (InterfaceBehaviorBase @interface in m_Interfaces)
                 if (@interface is SessionInterfaceBehavior sessionInterface)
-                    sessionInterface.Render(latestSession);
+                    sessionInterface.Render(this, latestSession);
         }
 
         protected void RenderEntities<TStampComponent>(float renderTime, float rollback) where TStampComponent : StampComponent
@@ -113,7 +113,6 @@ namespace Swihoni.Sessions
             // TODO:refactor standard entity components
             session.Require<EntityArrayProperty>().SetAll(() => new EntityContainer(typeof(ThrowableComponent)).Zero());
             session.ZeroIfHas<KillFeedProperty>();
-            session.ZeroIfHas<PauseComponent>();
             return session;
         }
     }

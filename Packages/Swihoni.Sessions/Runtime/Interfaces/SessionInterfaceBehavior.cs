@@ -5,6 +5,6 @@ namespace Swihoni.Sessions.Interfaces
 {
     public abstract class SessionInterfaceBehavior : InterfaceBehaviorBase
     {
-        public abstract void Render(Container session);
+        public abstract void Render(SessionBase session, Container sessionContainer);
     }
 }

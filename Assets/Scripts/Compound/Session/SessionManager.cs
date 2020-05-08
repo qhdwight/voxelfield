@@ -9,6 +9,8 @@ namespace Compound.Session
 {
     public class SessionManager : SingletonBehavior<SessionManager>
     {
+        [SerializeField] private SessionGameObjectLinker m_LinkerReference;
+        
         private NetworkedSessionBase m_Host, m_Client;
 
         private void Start()

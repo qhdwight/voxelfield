@@ -98,11 +98,6 @@ namespace Swihoni.Sessions.Components
     }
 
     [Serializable]
-    public class PauseComponent : BoolProperty
-    {
-    }
-
-    [Serializable]
     public class FeedComponent : ComponentBase
     {
         public StringProperty feed;

@@ -16,14 +16,8 @@ namespace Compound.Session
             string mapName = DebugBehavior.Singleton.mapName;
             serverSession.Require<VoxelMapNameProperty>().SetString(builder => builder.Append(mapName));
             MapManager.Singleton.SetMap(mapName);
-            
-            IsPaused = ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
         }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            MapManager.Singleton.SetMap("Menu");
-        }
+        
+        public override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
     }
 }

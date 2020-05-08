@@ -53,9 +53,9 @@ namespace Swihoni.Sessions.Interfaces
 
         protected abstract bool Less(TElement e1, TElement e2);
 
-        public override void Render(Container session)
+        public override void Render(SessionBase session, Container sessionContainer)
         {
-            if (session.Without(out TArray array)) return;
+            if (sessionContainer.Without(out TArray array)) return;
 
             TComponent[] entries = GetEntries(array);
 

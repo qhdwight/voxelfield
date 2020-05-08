@@ -141,22 +141,28 @@ namespace Swihoni.Sessions
                 predictedPlayer.FastCopyFrom(previousPredictedPlayer);
                 commands.FastCopyFrom(previousCommand);
 
-                predictedStamp.tick.Value = tick;
-                predictedStamp.time.Value = time;
-                var previousClientStamp = previousPredictedPlayer.Require<ClientStampComponent>();
-                if (previousClientStamp.time.HasValue)
+                if (IsPaused)
                 {
-                    float lastTime = previousClientStamp.time.OrElse(time),
-                          duration = time - lastTime;
-                    predictedStamp.duration.Value = duration;
+                    commands.Require<ClientStampComponent>().Reset();
                 }
+                else
+                {
+                    predictedStamp.tick.Value = tick;
+                    predictedStamp.time.Value = time;
+                    var previousClientStamp = previousPredictedPlayer.Require<ClientStampComponent>();
+                    if (previousClientStamp.time.HasValue)
+                    {
+                        float lastTime = previousClientStamp.time.OrElse(time),
+                              duration = time - lastTime;
+                        predictedStamp.duration.Value = duration;
+                    }
 
-                // Inject trusted component
-                ClientCommandsContainer predictedCommands = m_CommandHistory.Peek();
-                predictedCommands.Require<ClientStampComponent>().FastCopyFrom(predictedStamp);
-                predictedPlayer.FastMergeSet(predictedCommands);
-                if (predictedStamp.duration.HasValue)
-                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, predictedCommands, predictedStamp.duration);
+                    // Inject trusted component
+                    commands.Require<ClientStampComponent>().FastCopyFrom(predictedStamp);
+                    predictedPlayer.FastMergeSet(commands);
+                    if (predictedStamp.duration.HasValue)
+                        m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.duration);
+                }
             }
         }
 
