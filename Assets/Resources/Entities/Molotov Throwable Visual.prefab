@@ -182,7 +182,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 2
   m_Renderers:
-  - {fileID: 1312979555683515595}
+  - {fileID: 5038284446771774617}
   m_PopAudioClip: {fileID: 8300000, guid: 79d39f5948c2790458f281a5658a4df8, type: 3}
   m_ContactAudioClip: {fileID: 8300000, guid: 20c272db3d9e0ee4d9d9cf5321108fe5, type: 3}
 --- !u!1 &8982202680471224715
@@ -197,7 +197,7 @@ GameObject:
   - component: {fileID: 6664976295180112509}
   - component: {fileID: 8488602968584325921}
   m_Layer: 0
-  m_Name: Particle System
+  m_Name: Fire
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -215,7 +215,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7749598569471001174}
-  m_RootOrder: 2
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!198 &6664976295180112509
 ParticleSystem:
@@ -5029,9 +5029,9 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 3384083590209366348}
   m_PrefabAsset: {fileID: 0}
---- !u!137 &1312979555683515595 stripped
-SkinnedMeshRenderer:
-  m_CorrespondingSourceObject: {fileID: 4381454792350094727, guid: 65b92125b13b89e4b9c3774c7004eb24,
+--- !u!23 &5038284446771774617 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -1504981713932161579, guid: 65b92125b13b89e4b9c3774c7004eb24,
     type: 3}
   m_PrefabInstance: {fileID: 3384083590209366348}
   m_PrefabAsset: {fileID: 0}

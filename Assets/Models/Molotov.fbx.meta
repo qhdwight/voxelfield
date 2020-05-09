@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Green Glass
+    second: {fileID: 2100000, guid: 91a37060177b9554cac960d1c511d6bc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: GreenGlass
     second: {fileID: 2100000, guid: 91a37060177b9554cac960d1c511d6bc, type: 2}
   - first:

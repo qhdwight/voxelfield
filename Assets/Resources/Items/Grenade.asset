@@ -37,4 +37,3 @@ MonoBehaviour:
   m_AmmoCount: 2
   m_ThrowablePrefab: {fileID: 7530670241173920196, guid: 15f1e88241ffddcd1939d23f0ffdd3a3,
     type: 3}
-  m_SplashDamage: 100

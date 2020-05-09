@@ -13,9 +13,11 @@ namespace Swihoni.Sessions.Interfaces
     {
         [SerializeField] private BufferedTextGui m_HealthText = default, m_AmmoText = default;
         [SerializeField] private Image m_Crosshair = default, m_HitMarker = default;
+        [SerializeField] private Sprite m_ShotgunCrosshair = default;
         [SerializeField] private Image[] m_DamageNotifiers = default;
         [SerializeField] private Color m_KillHitMarkerColor = Color.red;
         [SerializeField] private BufferedTextGui m_InventoryText = default;
+        private Sprite m_DefaultCrosshair;
         private Color m_DefaultHitMarkerColor;
 
         // private bool Changed<TElement>(Container container, out TElement component) where TElement : ElementBase
@@ -27,6 +29,7 @@ namespace Swihoni.Sessions.Interfaces
         {
             base.Awake();
             m_DefaultHitMarkerColor = m_HitMarker.color;
+            m_DefaultCrosshair = m_Crosshair.sprite;
         }
 
         public void Render(Container localPlayer)
@@ -38,10 +41,10 @@ namespace Swihoni.Sessions.Interfaces
                     m_HealthText.BuildText(builder => builder.Append("Health: ").Append(health.Value));
                 if (localPlayer.Has(out InventoryComponent inventory) && inventory.HasItemEquipped)
                 {
+                    ItemComponent equippedItem = inventory.EquippedItemComponent;
+                    ItemModifierBase modifier = ItemAssetLink.GetModifier(equippedItem.id);
                     m_AmmoText.BuildText(builder =>
                     {
-                        ItemComponent equippedItem = inventory.EquippedItemComponent;
-                        ItemModifierBase modifier = ItemAssetLink.GetModifier(equippedItem.id);
                         if (modifier is GunModifierBase gunModifier)
                             builder
                                .Append("Ammo ")
@@ -54,6 +57,9 @@ namespace Swihoni.Sessions.Interfaces
                     Color crosshairColor = m_Crosshair.color;
                     crosshairColor.a = inventory.adsStatus.id == AdsStatusId.Ads ? 0.0f : 1.0f;
                     m_Crosshair.color = crosshairColor;
+                    bool isShotgun = modifier is ShotgunModifier;
+                    m_Crosshair.sprite = isShotgun ? m_ShotgunCrosshair : m_DefaultCrosshair;
+                    m_Crosshair.rectTransform.sizeDelta = Vector2.one * (isShotgun ? 48.0f : 32.0f);
                     
                     m_InventoryText.BuildText(builder =>
                     {

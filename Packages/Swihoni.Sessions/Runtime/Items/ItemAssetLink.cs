@@ -16,11 +16,11 @@ namespace Swihoni.Sessions.Items
         [RuntimeInitializeOnLoadMethod]
         public static void Initialize()
         {
-            _itemModifiers = Resources.LoadAll<ItemModifierBase>("Modifiers")
+            _itemModifiers = Resources.LoadAll<ItemModifierBase>("Items")
                                       .OrderBy(modifier => modifier.id).ToArray();
-            IOrderedEnumerable<ItemVisualBehavior> itemVisualPrefabs = Resources.LoadAll<GameObject>("Visuals")
+            IOrderedEnumerable<ItemVisualBehavior> itemVisualPrefabs = Resources.LoadAll<GameObject>("Items")
                                                                                 .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
-                                                                                .Where(visuals => visuals != null)
+                                                                                .Where(visuals => visuals != null && visuals.Id != ItemId.None)
                                                                                 .OrderBy(visuals => visuals.Id);
             _itemVisualPools = itemVisualPrefabs
                               .Select(visualPrefab => new Pool<ItemVisualBehavior>(0, () =>
