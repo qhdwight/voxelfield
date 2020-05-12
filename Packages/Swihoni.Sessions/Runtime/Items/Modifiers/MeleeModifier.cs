@@ -20,8 +20,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             int count = Physics.RaycastNonAlloc(ray, RaycastHits, m_Distance, m_PlayerMask);
             if (count == 0) return;
             RaycastHit hit = RaycastHits[0];
-            var hitbox = hit.collider.GetComponent<PlayerHitbox>();
-            if (!hitbox || hitbox.Manager.PlayerId == playerId) return;
+            if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId) return;
             session.GetMode().PlayerHit(session, playerId, hitbox, this, hit, duration);
         }
     }

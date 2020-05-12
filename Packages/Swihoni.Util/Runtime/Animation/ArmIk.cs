@@ -67,6 +67,12 @@ namespace Swihoni.Util.Animation
 
         private void LateUpdate()
         {
+            if (Application.isPlaying) return;
+            Evaluate();
+        }
+
+        public void Evaluate()
+        {
             PositionArm(m_Left);
             PositionArm(m_Right);
         }

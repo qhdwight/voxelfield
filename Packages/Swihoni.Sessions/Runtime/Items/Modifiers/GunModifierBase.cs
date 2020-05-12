@@ -77,8 +77,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)
             {
                 RaycastHit hit = RaycastHits[hitIndex];
-                var hitbox = hit.collider.GetComponent<PlayerHitbox>();
-                if (!hitbox || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
+                if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
                 m_HitPlayers.Add(hitbox.Manager);
                 // Debug.Log($"Player: {playerId} hit player: {hitbox.Manager.PlayerId}");
                 mode.PlayerHit(session, playerId, hitbox, this, hit, duration);

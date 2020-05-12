@@ -46,12 +46,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acc7c863486b44aa83e35ca055b85dca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Id: 1
+  m_Id: 0
   m_StatusVisualProperties:
-  - animationClip: {fileID: 0}
+  - animationClip: {fileID: 7400000, guid: 537719ae99dd0624a8c5806980bdcf6e, type: 2}
     animationEvents: []
     isReverseAnimation: 0
-  - animationClip: {fileID: 0}
+  - animationClip: {fileID: 7400000, guid: f2fa5c02a6b349a4a971678ee5f5ae9c, type: 2}
     animationEvents:
     - time: 0
       audioSource: {fileID: 8300000, guid: 14eea82f549388a4789326b600a6fe28, type: 3}
@@ -61,21 +61,18 @@ MonoBehaviour:
   - animationClip: {fileID: 0}
     animationEvents: []
     isReverseAnimation: 0
-  - animationClip: {fileID: 0}
-    animationEvents: []
-    isReverseAnimation: 0
-  - animationClip: {fileID: 0}
+  - animationClip: {fileID: 7400000, guid: f6de116ba938ba644aee4573f86fdeef, type: 2}
     animationEvents: []
     isReverseAnimation: 0
   m_EquipStatusVisualProperties:
-  - animationClip: {fileID: 0}
+  - animationClip: {fileID: 7400000, guid: a1f87a57559906843a17bc632108d04a, type: 2}
     animationEvents:
     - time: 0
       audioSource: {fileID: 8300000, guid: fba73e8c764fdf441a3dd094d7122cbd, type: 3}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}
     isReverseAnimation: 1
-  - animationClip: {fileID: 0}
+  - animationClip: {fileID: 7400000, guid: a1f87a57559906843a17bc632108d04a, type: 2}
     animationEvents:
     - time: 0
       audioSource: {fileID: 8300000, guid: 6c1002d19619de140aa5bc40398e9eaf, type: 3}
@@ -84,7 +81,7 @@ MonoBehaviour:
     isReverseAnimation: 0
   m_IkL: {fileID: 7032793369846869465}
   m_IkR: {fileID: 7032793369469315942}
-  m_FpvOffset: {x: 0.297, y: -0.344, z: 0.213}
+  m_FpvOffset: {x: 0.183, y: -0.256, z: 0.213}
   m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
   m_AdsTarget: {fileID: 7032793368327812526}
 --- !u!1 &7032793368327812527

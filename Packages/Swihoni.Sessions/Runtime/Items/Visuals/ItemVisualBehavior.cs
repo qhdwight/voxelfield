@@ -4,6 +4,7 @@ using Swihoni.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Visualization;
+using Swihoni.Util.Animation;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -43,6 +44,7 @@ namespace Swihoni.Sessions.Items.Visuals
         private AnimationMixerPlayable m_Mixer;
         private PlayerItemAnimatorBehavior m_PlayerItemAnimator;
         private Renderer[] m_Renders;
+        private ArmIk m_ArmIk;
 
         public byte Id => m_Id;
         public Vector3 FpvOffset => m_FpvOffset;
@@ -57,7 +59,8 @@ namespace Swihoni.Sessions.Items.Visuals
             m_Renders = GetComponentsInChildren<Renderer>();
             m_AudioSource = GetComponentInChildren<AudioSource>();
             ModiferProperties = ItemAssetLink.GetModifier(m_Id);
-            playerItemAnimator.ArmIk.SetTargets(m_IkL, m_IkR);
+            m_ArmIk = playerItemAnimator.ArmIk;
+            m_ArmIk.SetTargets(m_IkL, m_IkR);
             ItemStatusVisualProperties[] visualProperties = m_StatusVisualProperties.Concat(m_EquipStatusVisualProperties).ToArray();
             m_Mixer = AnimationMixerPlayable.Create(playerGraph, visualProperties.Length);
             m_Animations = new AnimationClipPlayable[visualProperties.Length];
@@ -129,6 +132,7 @@ namespace Swihoni.Sessions.Items.Visuals
             ref AnimationClipPlayable itemAnimation = ref m_Animations[animationIndex];
             itemAnimation.SetTime(interpolation * animationClip.length);
             m_PlayerGraph.Evaluate();
+            m_ArmIk.Evaluate();
         }
 
         public void SetRenderingMode(bool isEnabled, ShadowCastingMode? shadowCastingMode = null)

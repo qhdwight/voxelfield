@@ -1,3 +1,4 @@
+using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
@@ -18,6 +19,7 @@ namespace Swihoni.Sessions.Interfaces
                 m_DamageText.BuildText(builder => builder.Append(stats.damage));
                 m_DeathsText.BuildText(builder => builder.Append(stats.deaths));
                 m_PingText.BuildText(builder => builder.Append(stats.ping));
+                m_UsernameText.BuildText(builder => builder.Append(SteamClient.IsValid ? SteamClient.Name : "Default"));
             }
             SetInterfaceActive(isVisible);
         }

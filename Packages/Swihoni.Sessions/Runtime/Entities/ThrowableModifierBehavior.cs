@@ -98,8 +98,7 @@ namespace Swihoni.Sessions.Entities
             for (var i = 0; i < count; i++)
             {
                 Collider hitCollider = m_OverlappingColliders[i];
-                var trigger = hitCollider.GetComponent<PlayerTrigger>();
-                if (!trigger) continue;
+                if (!hitCollider.TryGetComponent(out PlayerTrigger trigger)) continue;
                 int hitPlayerId = trigger.PlayerId;
                 Container hitPlayer = session.GetPlayerFromId(hitPlayerId);
                 // TODO:feature damage based on range?
