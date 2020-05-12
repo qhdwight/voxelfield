@@ -37,7 +37,8 @@ namespace Swihoni.Sessions.Items.Visuals
                                                               m_EquipStatusVisualProperties = default;
         [SerializeField] private Transform m_IkL = default, m_IkR = default;
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;
-
+        [SerializeField] private ChildBehavior[] m_ChildBehaviors = default;
+        
         private AudioSource m_AudioSource;
         private AnimationClipPlayable[] m_Animations;
         private PlayableGraph m_PlayerGraph;
@@ -133,6 +134,8 @@ namespace Swihoni.Sessions.Items.Visuals
             itemAnimation.SetTime(interpolation * animationClip.length);
             m_PlayerGraph.Evaluate();
             m_ArmIk.Evaluate();
+            foreach (ChildBehavior child in m_ChildBehaviors)
+                child.Evaluate();
         }
 
         public void SetRenderingMode(bool isEnabled, ShadowCastingMode? shadowCastingMode = null)

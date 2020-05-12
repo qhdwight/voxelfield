@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Swihoni.Util
 {
+    [DisallowMultipleComponent]
     public class SteamManager : MonoBehaviour
     {
         private void Awake()
@@ -12,7 +13,7 @@ namespace Swihoni.Util
             {
                 SteamClient.Init(480);
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 Debug.LogWarning("Failed to initialize steam client");
             }
