@@ -12,11 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Parents:
-  - transform: {fileID: 4776289461792712930}
-    positionOffset: {x: -0.03883266, y: -0.02400017, z: 0.154}
-    rotationOffset: {x: 0, y: -39.21695, z: 0}
+  positionAtRest: {x: 0, y: 0, z: 0}
+  rotationAtRest: {x: 0, y: 0, z: 0}
+  weight: 0
+  m_ParentOne:
+    transform: {fileID: 4776289461792712930}
+    positionOffset: {x: -0.03883266, y: -0.024, z: 0.1536344}
+    rotationOffset: {x: 0, y: -39.217, z: 0}
     weight: 1
+  m_ParentTwo:
+    transform: {fileID: 0}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    weight: 0
 --- !u!1001 &6160638318982303581
 PrefabInstance:
   m_ObjectHideFlags: 0

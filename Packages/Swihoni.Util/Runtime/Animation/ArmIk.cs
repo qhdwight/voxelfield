@@ -65,11 +65,13 @@ namespace Swihoni.Util.Animation
             bones[HandIndex].rotation = target.rotation;
         }
 
+#if UNITY_EDITOR
         private void LateUpdate()
         {
             if (Application.isPlaying) return;
             Evaluate();
         }
+#endif
 
         public void Evaluate()
         {

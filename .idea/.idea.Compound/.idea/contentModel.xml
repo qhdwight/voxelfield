@@ -202,6 +202,7 @@
         </e>
         <e p="Swihoni.Util" t="Include">
           <e p="Editor" t="Include">
+            <e p="ChildBehaviorEditor.cs" t="Include" />
             <e p="LayerMaskDrawer.cs" t="Include" />
             <e p="Swihoni.Util.Editor.asmdef" t="Include" />
           </e>
@@ -210,6 +211,7 @@
             <e p="Animation" t="Include">
               <e p="ArmIk.cs" t="Include" />
               <e p="ChildBehavior.cs" t="Include" />
+              <e p="ItmAnimationHelper.cs" t="Include" />
             </e>
             <e p="ElapseWatcher.cs" t="Include" />
             <e p="FlagUtil.cs" t="Include" />
