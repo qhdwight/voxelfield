@@ -33,6 +33,13 @@ namespace Console
                         AudioListener.volume = volume;
                     else
                         Debug.LogWarning($"Could not parse {args[1]} as volume");
+                },
+                ["target_fps"] = args =>
+                {
+                    if (int.TryParse(args[1], out int targetFps) && targetFps >= 0)
+                        Application.targetFrameRate = targetFps;
+                    else
+                        Debug.LogWarning($"Could not parse {args[1]} as target FPS");
                 }
             };
         }

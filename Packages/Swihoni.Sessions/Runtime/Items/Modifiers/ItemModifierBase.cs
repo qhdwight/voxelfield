@@ -29,7 +29,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           Shotgun = 4,
                           C4 = 5,
                           Shovel = 6,
-                          Last = 6;
+                          Pistol = 7,
+                          Last = 7;
     }
 
     [Serializable]

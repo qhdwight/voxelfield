@@ -98,6 +98,16 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -0.083000064
       objectReference: {fileID: 0}
+    - target: {fileID: 5463473252016881896, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: m_Id
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5463473252016881999, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: m_Name
+      value: Shotgun Visuals Variant
+      objectReference: {fileID: 0}
     - target: {fileID: 6414251066945379187, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
       propertyPath: m_Mesh

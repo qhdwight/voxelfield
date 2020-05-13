@@ -7,6 +7,7 @@ namespace Swihoni.Util
     [DisallowMultipleComponent]
     public class SteamManager : MonoBehaviour
     {
+#if UNITY_STANDALONE
         private void Awake()
         {
             try
@@ -20,5 +21,6 @@ namespace Swihoni.Util
         }
 
         private void OnApplicationQuit() => SteamClient.Shutdown();
+#endif
     }
 }

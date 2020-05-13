@@ -395,8 +395,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4224837671832740945}
   - component: {fileID: 4224837671832740944}
-  - component: {fileID: 7817373600448210542}
   - component: {fileID: 3744008912643451214}
+  - component: {fileID: 7817373600448210542}
   m_Layer: 10
   m_Name: Player Visuals
   m_TagString: Untagged
@@ -435,18 +435,6 @@ MonoBehaviour:
   m_UprightCameraHeight: 1.8
   m_CrouchedCameraHeight: 1.26
   m_DamageNotifierSource: {fileID: 680046085491398468}
---- !u!114 &7817373600448210542
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4224837671832740950}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b338eb82d1a04e78a68fce8d9a4d1023, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &3744008912643451214
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -477,6 +465,18 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 9c3754f559486774084652b7f70b411c, type: 3}
   m_Animator: {fileID: 1247801065309422874}
   m_IsHitbox: 0
+--- !u!114 &7817373600448210542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4224837671832740950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b338eb82d1a04e78a68fce8d9a4d1023, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!54 &5418487472207756051
 Rigidbody:
   m_ObjectHideFlags: 0

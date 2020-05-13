@@ -133,17 +133,18 @@ namespace Swihoni.Sessions.Items.Visuals
             ref AnimationClipPlayable itemAnimation = ref m_Animations[animationIndex];
             itemAnimation.SetTime(interpolation * animationClip.length);
             m_PlayerGraph.Evaluate();
-            m_ArmIk.Evaluate();
             foreach (ChildBehavior child in m_ChildBehaviors)
                 child.Evaluate();
+            m_ArmIk.Evaluate();
         }
 
         public void SetRenderingMode(bool isEnabled, ShadowCastingMode? shadowCastingMode = null)
         {
             if (m_Renders == null) return;
+            gameObject.SetActive(isEnabled);
+            if (!isEnabled) return;
             foreach (Renderer meshRenderer in m_Renders)
             {
-                meshRenderer.enabled = isEnabled;
                 if (shadowCastingMode.HasValue)
                     meshRenderer.shadowCastingMode = shadowCastingMode.Value;
             }
