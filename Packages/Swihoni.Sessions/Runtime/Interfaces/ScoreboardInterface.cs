@@ -7,11 +7,11 @@ namespace Swihoni.Sessions.Interfaces
 {
     public class ScoreboardInterface : ArrayViewerInterfaceBase<ScoreboardEntryInterface, PlayerContainerArrayProperty, Container>
     {
-        private void Update()
+        public override void Render(SessionBase session, Container sessionContainer)
         {
-            // if (ConsoleInterface.Singleton.IsActive || !GameManager.Singleton.IsInGame) return;
             InputProvider inputs = InputProvider.Singleton;
             SetInterfaceActive(inputs.GetInput(InputType.OpenScoreboard));
+            base.Render(session, sessionContainer);
         }
 
         protected override bool Less(Container e1, Container e2)

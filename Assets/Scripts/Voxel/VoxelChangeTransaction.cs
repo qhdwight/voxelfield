@@ -20,6 +20,9 @@ namespace Voxel
 
         public bool HasChangeAt(in Position3Int worldPosition) => m_ChangeData.ContainsKey(worldPosition);
 
+        /// <summary>
+        /// Apply changes to mesh and clear transaction for reuse.
+        /// </summary>
         public void Commit()
         {
             foreach (KeyValuePair<Position3Int, VoxelChangeData> changeData in m_ChangeData)

@@ -51,7 +51,6 @@
             <e p="Voxel.asmdef" t="Include" />
             <e p="Voxel.cs" t="Include" />
             <e p="VoxelChangeData.cs" t="Include" />
-            <e p="VoxelChangeMap.cs" t="Include" />
             <e p="VoxelChangeTransaction.cs" t="Include" />
             <e p="VoxelRenderer.cs" t="Include" />
           </e>

@@ -31,6 +31,11 @@ namespace Voxel
         UpdateMesh
     }
 
+    public interface IVoxelChanges
+    {
+        void SetVoxel(in Position3Int voxelWorldPosition, VoxelChangeData change);
+    }
+
     public class ChunkManager : SingletonBehavior<ChunkManager>
     {
         private static readonly VoxelChangeTransaction Transaction = new VoxelChangeTransaction();
@@ -275,7 +280,7 @@ namespace Voxel
         }
 
         public void RemoveVoxelRadius
-            (in Position3Int worldPositionCenter, float radius, bool replaceGrassWithDirt = false, VoxelChangeMap changedVoxels = null)
+            (in Position3Int worldPositionCenter, float radius, bool replaceGrassWithDirt = false, IVoxelChanges changedVoxels = null)
         {
             int roundedRadius = Mathf.CeilToInt(radius);
             for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
@@ -296,7 +301,7 @@ namespace Voxel
                         if (newDensity >= currentDensity) continue;
                         var changeData = new VoxelChangeData {density = newDensity};
                         if (replaceGrassWithDirt && voxel.Value.texture == VoxelTexture.Grass) changeData.texture = VoxelTexture.Dirt;
-                        changedVoxels?.Set(voxelWorldPosition, changeData);
+                        changedVoxels?.SetVoxel(voxelWorldPosition, changeData);
                         if (!Transaction.HasChangeAt(voxelWorldPosition)) Transaction.AddChange(voxelWorldPosition, changeData);
                     }
                 }

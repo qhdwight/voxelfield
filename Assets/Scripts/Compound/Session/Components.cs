@@ -17,9 +17,11 @@ namespace Compound.Session
     }
 
     [Serializable, Additive]
-    public class ChangedVoxelsProperty : PropertyBase, IEnumerable<(Position3Int, VoxelChangeData)>
+    public class ChangedVoxelsProperty : PropertyBase, IVoxelChanges, IEnumerable<(Position3Int, VoxelChangeData)>
     {
         private Dictionary<Position3Int, VoxelChangeData> m_ChangeMap = new Dictionary<Position3Int, VoxelChangeData>();
+        
+        public int Count => m_ChangeMap.Count;
 
         public override void Serialize(BinaryWriter writer)
         {
@@ -34,7 +36,8 @@ namespace Compound.Session
         public override void Deserialize(BinaryReader reader)
         {
             Clear();
-            for (var i = 0; i < reader.ReadInt32(); i++)
+            int count = reader.ReadInt32();
+            for (var i = 0; i < count; i++)
                 m_ChangeMap.Add(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
         }
 
@@ -48,7 +51,12 @@ namespace Compound.Session
         {
             if (!(other is ChangedVoxelsProperty otherChanged)) throw new ArgumentException("Other was not voxel change map");
             Clear();
-            foreach ((Position3Int position, VoxelChangeData changeData) in otherChanged)
+            AddAllFrom(otherChanged);
+        }
+
+        public void AddAllFrom(ChangedVoxelsProperty other)
+        {
+            foreach ((Position3Int position, VoxelChangeData changeData) in other)
                 SetVoxel(position, changeData);
         }
 

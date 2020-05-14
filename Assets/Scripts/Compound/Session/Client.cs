@@ -15,6 +15,7 @@ namespace Compound.Session
         }
         
         private readonly Mini m_Mini;
+        private readonly VoxelChangeTransaction m_Transaction = new VoxelChangeTransaction();
 
         public Client(IPEndPoint ipEndPoint) : base(CompoundComponents.SessionElements, ipEndPoint) => m_Mini = new Mini(this);
 
@@ -25,9 +26,8 @@ namespace Compound.Session
             base.Received(session);
             var changed = session.Require<ChangedVoxelsProperty>();
             foreach ((Position3Int position, VoxelChangeData change) in changed)
-            {
-                m_Mini.SetVoxelData(position, change);
-            }
+                m_Transaction.AddChange(position, change);
+            m_Transaction.Commit();
         }
 
         public override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;

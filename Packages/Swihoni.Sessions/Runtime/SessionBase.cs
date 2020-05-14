@@ -284,6 +284,9 @@ namespace Swihoni.Sessions
             IsDisposed = true;
             foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier) modifier.Dispose();
             foreach (IPlayerContainerRenderer visual in m_Visuals) visual.Dispose();
+            foreach (InterfaceBehaviorBase @interface in m_Interfaces)
+                if (@interface is SessionInterfaceBehavior sessionInterface)
+                    sessionInterface.SessionEnded();
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
         }

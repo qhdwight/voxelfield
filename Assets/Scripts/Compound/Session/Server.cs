@@ -11,18 +11,23 @@ namespace Compound.Session
     {
         public class Mini : MiniBase
         {
+            private readonly ChangedVoxelsProperty m_AllChanges = new ChangedVoxelsProperty();
+            
             public Mini(SessionBase session) : base(session) { }
 
             public override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true)
             {
-                base.SetVoxelData(worldPosition, change, chunk, updateMesh);
                 var changed = m_Session.GetLatestSession().Require<ChangedVoxelsProperty>();
+                base.SetVoxelData(worldPosition, change, chunk, updateMesh);
                 changed.SetVoxel(worldPosition, change);
+                m_AllChanges.AddAllFrom(changed);
             }
 
-            public override void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, in VoxelChangeMap changedVoxels = null)
+            public override void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, ChangedVoxelsProperty changedVoxels = null)
             {
-                base.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, in changedVoxels);
+                var changed = m_Session.GetLatestSession().Require<ChangedVoxelsProperty>();
+                base.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, changed);
+                m_AllChanges.AddAllFrom(changed);
             }
         }
 
