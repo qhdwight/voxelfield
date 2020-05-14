@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
 using Swihoni.Util.Math;
 using Voxel;
 
@@ -14,8 +15,8 @@ namespace Compound.Session
     {
         public VoxelMapNameProperty() : base(16) { }
     }
-    
-    [Serializable]
+
+    [Serializable, Additive]
     public class ChangedVoxelsProperty : PropertyBase, IEnumerable<(Position3Int, VoxelChangeData)>
     {
         private Dictionary<Position3Int, VoxelChangeData> m_ChangeMap = new Dictionary<Position3Int, VoxelChangeData>();
@@ -34,7 +35,7 @@ namespace Compound.Session
         {
             Clear();
             for (var i = 0; i < reader.ReadInt32(); i++)
-                SetVoxel(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
+                m_ChangeMap.Add(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
         }
 
         public override bool Equals(PropertyBase other) => throw new NotImplementedException();
@@ -50,7 +51,7 @@ namespace Compound.Session
             foreach ((Position3Int position, VoxelChangeData changeData) in otherChanged)
                 SetVoxel(position, changeData);
         }
-        
+
         public void SetVoxel(in Position3Int position, VoxelChangeData change)
         {
             if (m_ChangeMap.TryGetValue(position, out VoxelChangeData existingChange))
@@ -80,7 +81,7 @@ namespace Compound.Session
         static CompoundComponents()
         {
             SessionElements = SessionElements.NewStandardSessionElements();
-            SessionElements.elements.Add(typeof(VoxelMapNameProperty));
+            SessionElements.elements.AddRange(new[] {typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty)});
         }
     }
 }

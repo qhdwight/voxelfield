@@ -52,7 +52,7 @@ namespace Swihoni.Sessions
             Profiler.BeginSample("Server Setup");
             Container previousServerSession = m_SessionHistory.Peek(),
                       serverSession = m_SessionHistory.ClaimNext();
-            serverSession.FastCopyFrom(previousServerSession);
+            CopyFromPreviousSession(previousServerSession, serverSession);
 
             SettingsTick(serverSession);
 
@@ -104,7 +104,7 @@ namespace Swihoni.Sessions
             }
         }
 
-        private bool HandleTimeout(float time, byte playerId, Container player)
+        private static bool HandleTimeout(float time, byte playerId, Container player)
         {
             FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
             if (serverPlayerTime.WithoutValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) return false;

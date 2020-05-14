@@ -31,9 +31,7 @@ namespace Voxel
                 ChunkManager.Singleton.AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, m_ChunksToUpdate);
             }
             foreach (Chunk chunk in m_ChunksToUpdate)
-            {
                 ChunkManager.UpdateChunkMesh(chunk);
-            }
             m_ChangeData.Clear();
             m_ChunksToUpdate.Clear();
         }

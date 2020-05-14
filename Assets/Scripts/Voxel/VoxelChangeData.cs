@@ -19,7 +19,7 @@ namespace Voxel
 
         public override string ToString() => $"Texture: {texture}, Render Type: {renderType}, Density: {density}, Orientation: {orientation}, Breakable: {breakable}";
 
-        public static void Serialize(BinaryWriter message, VoxelChangeData changeData)
+        public static void Serialize(BinaryWriter message, in VoxelChangeData changeData)
         {
             byte flags = 0;
             if (changeData.texture.HasValue) FlagUtil.SetFlag(ref flags, TextureFlagIndex);
@@ -50,7 +50,7 @@ namespace Voxel
             return data;
         }
 
-        public void Merge(VoxelChangeData newChange)
+        public void Merge(in VoxelChangeData newChange)
         {
             if (newChange.texture.HasValue) texture = newChange.texture.Value;
             if (newChange.renderType.HasValue) renderType = newChange.renderType.Value;

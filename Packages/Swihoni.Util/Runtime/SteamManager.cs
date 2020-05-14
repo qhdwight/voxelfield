@@ -7,7 +7,7 @@ namespace Swihoni.Util
     [DisallowMultipleComponent]
     public class SteamManager : MonoBehaviour
     {
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE_WIN
         private void Awake()
         {
             try

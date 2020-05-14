@@ -11,11 +11,12 @@ namespace Compound.Session
     {
         private class Mini : Server.Mini
         {
+            public Mini(SessionBase session) : base(session) { }
         }
 
-        private readonly Mini m_Mini = new Mini();
+        private readonly Mini m_Mini;
 
-        public Host() : base(CompoundComponents.SessionElements, new IPEndPoint(IPAddress.Loopback, 7777)) { }
+        public Host() : base(CompoundComponents.SessionElements, new IPEndPoint(IPAddress.Loopback, 7777)) => m_Mini = new Mini(this);
 
         protected override void SettingsTick(Container serverSession)
         {

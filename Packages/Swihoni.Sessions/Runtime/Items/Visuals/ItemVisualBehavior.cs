@@ -141,10 +141,9 @@ namespace Swihoni.Sessions.Items.Visuals
         public void SetRenderingMode(bool isEnabled, ShadowCastingMode? shadowCastingMode = null)
         {
             if (m_Renders == null) return;
-            gameObject.SetActive(isEnabled);
-            if (!isEnabled) return;
             foreach (Renderer meshRenderer in m_Renders)
             {
+                meshRenderer.enabled = isEnabled;
                 if (shadowCastingMode.HasValue)
                     meshRenderer.shadowCastingMode = shadowCastingMode.Value;
             }

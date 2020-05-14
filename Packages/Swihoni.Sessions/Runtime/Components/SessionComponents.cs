@@ -1,21 +1,24 @@
 using System;
 using System.Collections.Generic;
 using Swihoni.Components;
-using UnityEngine;
 
 namespace Swihoni.Sessions.Components
 {
     using ServerOnly = NoSerialization;
 
-    public class OnlyServerTrusted : Attribute
+    public class OnlyServerTrustedAttribute : Attribute
     {
     }
 
-    public class ClientTrusted : Attribute
+    public class ClientTrustedAttribute : Attribute
     {
     }
 
-    public class ClientChecked : Attribute
+    public class ClientCheckedAttribute : Attribute
+    {
+    }
+
+    public class AdditiveAttribute : Attribute
     {
     }
 

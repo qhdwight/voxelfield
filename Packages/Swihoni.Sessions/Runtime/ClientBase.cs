@@ -187,12 +187,12 @@ namespace Swihoni.Sessions
                 ElementExtensions.NavigateZipped((predictedElement, latestPredictedElement, serverElement) =>
                 {
                     Type type = predictedElement.GetType();
-                    if (type.IsDefined(typeof(OnlyServerTrusted)))
+                    if (type.IsDefined(typeof(OnlyServerTrustedAttribute)))
                     {
                         latestPredictedElement.FastMergeSet(serverElement);
                         return Navigation.SkipDescendends;
                     }
-                    if (type.IsDefined(typeof(ClientTrusted)))
+                    if (type.IsDefined(typeof(ClientTrustedAttribute)))
                         return Navigation.SkipDescendends;
                     switch (predictedElement)
                     {
@@ -234,17 +234,19 @@ namespace Swihoni.Sessions
                         Profiler.BeginSample("Client Receive Setup");
                         ServerSessionContainer previousServerSession = m_SessionHistory.Peek(),
                                                serverSession = m_SessionHistory.ClaimNext();
-                        serverSession.FastCopyFrom(previousServerSession);
+                        CopyFromPreviousSession(previousServerSession, serverSession);
                         serverSession.FastMergeSet(receivedServerSession);
                         Profiler.EndSample();
 
+                        Received(serverSession);
+                        
                         UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
                         if (previousServerTick.HasValue && serverSession.Require<ServerStampComponent>().tick <= previousServerTick)
                         {
                             Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
                             break;
                         }
-
+                        
                         {
                             // TODO:refactor make function
                             FloatProperty serverTime = serverSession.Require<ServerStampComponent>().time,
@@ -307,6 +309,8 @@ namespace Swihoni.Sessions
                 }
             });
         }
+
+        protected virtual void Received(Container session) { }
 
         private static bool GetLocalPlayerId(Container session, out int localPlayerId)
         {

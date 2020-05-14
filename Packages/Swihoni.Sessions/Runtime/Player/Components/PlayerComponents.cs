@@ -119,6 +119,11 @@ namespace Swihoni.Sessions.Player.Components
         // Embedded item components are only explicitly interpolated, since usually it only needs to be done on equipped item
         public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
         {
+            if (i1.id == ItemId.None)
+            {
+                this.FastCopyFrom(i1);
+                return;
+            }
             ItemModifierBase modifier = ItemAssetLink.GetModifier(i1.id);
             Interpolator.InterpolateInto(i1.gunStatus, i2.gunStatus, gunStatus, interpolation);
             id.Value = i2.id.Value;
@@ -142,11 +147,11 @@ namespace Swihoni.Sessions.Player.Components
         {
             var i1 = (InventoryComponent) c1;
             var i2 = (InventoryComponent) c2;
-            if (i1.HasNoItemEquipped || i2.HasNoItemEquipped || i1.equippedIndex != i2.equippedIndex)
-            {
-                this.FastCopyFrom(i1);
-                return;
-            }
+            // if (i1.HasNoItemEquipped || i2.HasNoItemEquipped || i1.equippedIndex != i2.equippedIndex)
+            // {
+            //     this.FastCopyFrom(i1);
+            //     return;
+            // }
             // TODO:feature handle when id of equipped weapon changes
             ItemModifierBase m1 = ItemAssetLink.GetModifier(i1.EquippedItemComponent.id);
             if (m1 is GunModifierBase gm1)
@@ -155,7 +160,8 @@ namespace Swihoni.Sessions.Player.Components
             equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation,
                                         equipStatusId => VisualDuration(m1.GetEquipStatusModifierProperties(equipStatusId)));
             equippedIndex.Value = i1.equippedIndex;
-            EquippedItemComponent.InterpolateFrom(i1.EquippedItemComponent, i2.EquippedItemComponent, interpolation);
+            for (var i = 0; i < i1.itemComponents.Length; i++)
+                itemComponents[i].InterpolateFrom(i1.itemComponents[i], i2.itemComponents[i], interpolation);
         }
 
         public static float VisualDuration(ItemStatusModiferProperties m) => m.isPersistent ? float.PositiveInfinity : m.duration;

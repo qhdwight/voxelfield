@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
@@ -226,6 +227,24 @@ namespace Swihoni.Sessions
         {
             RenderInterpolated(renderTime, renderContainer, maxRollback,
                                historyIndex => getInHistory(historyIndex).Require<TStampComponent>(), getInHistory);
+        }
+
+        protected static void CopyFromPreviousSession(Container previous, Container current)
+        {
+            ElementExtensions.NavigateZipped((_previous, _current) =>
+            {
+                if (_current.GetType().IsDefined(typeof(AdditiveAttribute)))
+                {
+                    _current.Zero();
+                    return Navigation.SkipDescendends;
+                }
+                if (_previous is PropertyBase previousProperty && _current is PropertyBase currentProperty)
+                {
+                    currentProperty.Clear();
+                    currentProperty.SetFromIfPresent(previousProperty);
+                }
+                return Navigation.Continue;
+            }, previous, current);
         }
 
         public abstract Ray GetRayForPlayerId(int playerId);

@@ -28,7 +28,7 @@ namespace Compound.Item
                 case VoxelRenderType.Block:
                     mini.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth});
                     break;
-                case VoxelRenderType.Smooth:
+                    case VoxelRenderType.Smooth:
                     mini.RemoveVoxelRadius(position, m_DestroyRadius, true);
                     break;
             }
