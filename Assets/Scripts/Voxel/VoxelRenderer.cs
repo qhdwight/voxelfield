@@ -452,14 +452,14 @@ namespace Voxel
                                     }
                                     if (voxel.texture == VoxelTexture.Grass && voxel.natural)
                                     {
-                                        Vector3 normal = Vector3.Cross(solidMesh.vertices.Last(2) - solidMesh.vertices.Last(0),
-                                                                       solidMesh.vertices.Last(1) - solidMesh.vertices.Last(0));
+                                        Vector3 normal = Vector3.Cross(solidMesh.vertices.FromEnd(2) - solidMesh.vertices.FromEnd(0),
+                                                                       solidMesh.vertices.FromEnd(1) - solidMesh.vertices.FromEnd(0));
                                         if (normal.y > 0.0f)
                                         {
-                                            foliageMesh.vertices.Add(solidMesh.vertices.Last(1) + Vector3.up);
-                                            foliageMesh.vertices.Add(solidMesh.vertices.Last(1));
-                                            foliageMesh.vertices.Add(solidMesh.vertices.Last(0));
-                                            foliageMesh.vertices.Add(solidMesh.vertices.Last(0) + Vector3.up);
+                                            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1) + Vector3.up);
+                                            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1));
+                                            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0));
+                                            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0) + Vector3.up);
                                             for (var k = 0; k < 4; k++) foliageMesh.normals.Add(Vector3.up);
                                             foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
                                             foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 3);
@@ -522,6 +522,6 @@ namespace Voxel
                                p1.z + mu * (p2.z - p1.z));
         }
 
-        private static T Last<T>(this IReadOnlyList<T> list, int index) => list[list.Count - 1 - index];
+        private static T FromEnd<T>(this IReadOnlyList<T> list, int index) => list[list.Count - 1 - index];
     }
 }

@@ -22,7 +22,7 @@ namespace Swihoni.Sessions
         protected readonly DebugClientView m_EmptyDebugClientView;
         protected readonly Container m_RollbackSession;
         protected readonly Container m_RenderSession;
-        
+
         public int ResetErrors { get; protected set; }
         public IPEndPoint IpEndPoint { get; }
         public abstract ComponentSocketBase Socket { get; }
@@ -33,6 +33,7 @@ namespace Swihoni.Sessions
             IReadOnlyCollection<Type> serverPlayerElements = elements.playerElements.Append(typeof(ClientStampComponent))
                                                                      .Append(typeof(ServerStampComponent)).ToArray(),
                                       clientCommandElements = elements.playerElements.Append(typeof(ClientStampComponent))
+                                                                      .Append(typeof(AcknowledgedServerTickProperty))
                                                                       .Concat(elements.commandElements).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor() =>
                 NewSession<ServerSessionContainer>(elements.elements.Append(typeof(ServerStampComponent)), serverPlayerElements);

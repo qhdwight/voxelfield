@@ -64,6 +64,11 @@ namespace Swihoni.Sessions.Components
     {
     }
 
+    [Serializable]
+    public class AcknowledgedServerTickProperty : UIntProperty
+    {
+    }
+
     /// <summary>
     /// Use to put server time of updates into client time.
     /// </summary>

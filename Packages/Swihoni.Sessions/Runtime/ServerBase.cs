@@ -15,7 +15,7 @@ namespace Swihoni.Sessions
     {
         private ComponentServerSocket m_Socket;
         private readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
-        
+
         public override ComponentSocketBase Socket => m_Socket;
 
         protected ServerBase(SessionElements elements, IPEndPoint ipEndPoint)
@@ -167,7 +167,7 @@ namespace Swihoni.Sessions
         {
             FloatProperty serverPlayerTime = serverPlayer.Require<ServerStampComponent>().time;
             var clientStamp = receivedClientCommands.Require<ClientStampComponent>();
-            float serverTime = serverSession.Require<ServerStampComponent>().time;
+            var serverStamp = serverSession.Require<ServerStampComponent>();
             var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
             // Clients start to tag with ticks once they receive their first server player state
             if (clientStamp.tick.HasValue)
@@ -177,15 +177,17 @@ namespace Swihoni.Sessions
                     serverPlayerClientStamp.FastMergeSet(clientStamp);
                 else
                 {
+                    uint acknowledgedServerTick = receivedClientCommands.Require<AcknowledgedServerTickProperty>();
+                    Debug.Log(serverStamp.tick - acknowledgedServerTick);
                     // Make sure this is the newest tick
                     if (clientStamp.tick > serverPlayerClientStamp.tick)
                     {
                         serverPlayerTime.Value += clientStamp.time - serverPlayerClientStamp.time;
 
-                        if (Mathf.Abs(serverPlayerTime.Value - serverTime) > serverSession.Require<TickRateProperty>().TickInterval * 3)
+                        if (Mathf.Abs(serverPlayerTime.Value - serverStamp.time) > serverSession.Require<TickRateProperty>().TickInterval * 3)
                         {
                             ResetErrors++;
-                            serverPlayerTime.Value = serverTime;
+                            serverPlayerTime.Value = serverStamp.time;
                         }
 
                         ModeBase mode = GetMode(serverSession);
@@ -193,12 +195,11 @@ namespace Swihoni.Sessions
                         m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.duration);
                         mode.Modify(serverSession, serverPlayer, receivedClientCommands, clientStamp.duration);
                     }
-                    else
-                        Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
+                    else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
                 }
             }
             else
-                serverPlayerTime.Value = serverTime;
+                serverPlayerTime.Value = serverStamp.time;
         }
 
         /// <summary>

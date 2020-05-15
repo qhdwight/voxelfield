@@ -18,7 +18,7 @@ namespace Swihoni.Sessions
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
         private float? m_ServerReceiveTime;
-        
+
         public int PredictionErrors { get; private set; }
         public override ComponentSocketBase Socket => m_Socket;
 
@@ -135,33 +135,32 @@ namespace Swihoni.Sessions
                       predictedPlayer = m_PlayerPredictionHistory.ClaimNext();
             ClientCommandsContainer previousCommand = m_CommandHistory.Peek(),
                                     commands = m_CommandHistory.ClaimNext();
-            if (predictedPlayer.Has(out ClientStampComponent predictedStamp))
+            if (predictedPlayer.Without(out ClientStampComponent predictedStamp)) return;
+
+            predictedPlayer.FastCopyFrom(previousPredictedPlayer);
+            commands.FastCopyFrom(previousCommand);
+
+            if (IsPaused)
             {
-                predictedPlayer.FastCopyFrom(previousPredictedPlayer);
-                commands.FastCopyFrom(previousCommand);
-
-                if (IsPaused)
+                commands.Require<ClientStampComponent>().Reset();
+            }
+            else
+            {
+                predictedStamp.tick.Value = tick;
+                predictedStamp.time.Value = time;
+                var previousClientStamp = previousPredictedPlayer.Require<ClientStampComponent>();
+                if (previousClientStamp.time.HasValue)
                 {
-                    commands.Require<ClientStampComponent>().Reset();
+                    float lastTime = previousClientStamp.time.OrElse(time),
+                          duration = time - lastTime;
+                    predictedStamp.duration.Value = duration;
                 }
-                else
-                {
-                    predictedStamp.tick.Value = tick;
-                    predictedStamp.time.Value = time;
-                    var previousClientStamp = previousPredictedPlayer.Require<ClientStampComponent>();
-                    if (previousClientStamp.time.HasValue)
-                    {
-                        float lastTime = previousClientStamp.time.OrElse(time),
-                              duration = time - lastTime;
-                        predictedStamp.duration.Value = duration;
-                    }
 
-                    // Inject trusted component
-                    commands.Require<ClientStampComponent>().FastCopyFrom(predictedStamp);
-                    predictedPlayer.FastMergeSet(commands);
-                    if (predictedStamp.duration.HasValue)
-                        m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.duration);
-                }
+                // Inject trusted component
+                commands.Require<ClientStampComponent>().FastCopyFrom(predictedStamp);
+                predictedPlayer.FastMergeSet(commands);
+                if (predictedStamp.duration.HasValue)
+                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.duration);
             }
         }
 
@@ -239,12 +238,18 @@ namespace Swihoni.Sessions
                         Profiler.EndSample();
 
                         Received(serverSession);
-                        
+
+                        uint serverTick = serverSession.Require<ServerStampComponent>().tick;
                         UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
-                        if (previousServerTick.HasValue && serverSession.Require<ServerStampComponent>().tick <= previousServerTick)
+                        if (previousServerTick.HasValue && serverTick <= previousServerTick)
                         {
                             Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
                             break;
+                        }
+                        if (previousServerTick.HasValue)
+                        {
+                            uint delta = serverTick - previousServerTick;
+                            m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick - delta + 1;    
                         }
                         
                         {
@@ -340,7 +345,7 @@ namespace Swihoni.Sessions
                 //
                 // PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
                 // modifier.EvaluateHitboxes(i, render);
-            
+
                 Container recentPlayer = m_Visuals[i].GetRecentPlayer();
                 if (i == 0 && recentPlayer != null)
                     SendDebug(recentPlayer);

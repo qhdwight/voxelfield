@@ -22,7 +22,9 @@ namespace Compound.Session
         private Dictionary<Position3Int, VoxelChangeData> m_ChangeMap = new Dictionary<Position3Int, VoxelChangeData>();
         
         public int Count => m_ChangeMap.Count;
-
+        
+        public bool IsMaster { get; set; }
+        
         public override void Serialize(BinaryWriter writer)
         {
             writer.Write(m_ChangeMap.Count);
