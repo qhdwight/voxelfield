@@ -117,7 +117,7 @@ namespace Swihoni.Sessions.Items.Visuals
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
             }
             if (lastRenderedInventory == null) m_PlayerItemAnimator.LastRenderedInventory = inventory.Clone();
-            else lastRenderedInventory.FastCopyFrom(inventory);
+            else lastRenderedInventory.CopyFrom(inventory);
         }
 
         public void SampleAnimation(ItemComponent item, ByteStatusComponent equipStatus, float interpolation)

@@ -21,7 +21,7 @@ namespace Swihoni.Sessions
         protected ServerBase(SessionElements elements, IPEndPoint ipEndPoint)
             : base(elements, ipEndPoint)
         {
-            ForEachPlayer(player => player.Add(typeof(ServerTag), typeof(ServerPingComponent)));
+            ForEachPlayer(player => player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent)));
         }
 
         public override void Start()
@@ -40,8 +40,8 @@ namespace Swihoni.Sessions
         protected virtual void SettingsTick(Container serverSession)
         {
             var tickRate = serverSession.Require<TickRateProperty>();
-            tickRate.FastCopyFrom(DebugBehavior.Singleton.TickRate);
-            serverSession.Require<ModeIdProperty>().FastCopyFrom(DebugBehavior.Singleton.ModeId);
+            tickRate.CopyFrom(DebugBehavior.Singleton.TickRate);
+            serverSession.Require<ModeIdProperty>().CopyFrom(DebugBehavior.Singleton.ModeId);
             Time.fixedDeltaTime = tickRate.TickInterval;
         }
 
@@ -74,7 +74,7 @@ namespace Swihoni.Sessions
 
         private void IterateClients(uint tick, float time, float duration, Container serverSession)
         {
-            var players = serverSession.Require<PlayerContainerArrayProperty>();
+            var players = serverSession.Require<PlayerContainerArrayElement>();
             m_ToRemove.Clear();
             foreach ((IPEndPoint _, byte playerId) in m_PlayerIds)
             {
@@ -131,11 +131,11 @@ namespace Swihoni.Sessions
                     case PingCheckComponent receivedPingCheck:
                     {
                         var ping = serverPlayer.Require<ServerPingComponent>();
-                        if (receivedPingCheck.tick.HasValue && ping.tick == receivedPingCheck.tick)
+                        if (receivedPingCheck.tick.WithValue && ping.tick == receivedPingCheck.tick)
                         {
                             float roundTripElapsed = time - ping.initiateTime;
                             ping.rtt.Value = roundTripElapsed;
-                            if (serverPlayer.Has(out StatsComponent stats))
+                            if (serverPlayer.With(out StatsComponent stats))
                                 stats.ping.Value = (ushort) Mathf.Round(roundTripElapsed / 2.0f * 1000.0f);
                         }
                         break;
@@ -170,11 +170,11 @@ namespace Swihoni.Sessions
             var serverStamp = serverSession.Require<ServerStampComponent>();
             var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
             // Clients start to tag with ticks once they receive their first server player state
-            if (clientStamp.tick.HasValue)
+            if (clientStamp.tick.WithValue)
             {
                 if (serverPlayerClientStamp.tick.WithoutValue)
                     // Take one tick to set initial server player client stamp
-                    serverPlayerClientStamp.FastMergeSet(clientStamp);
+                    serverPlayerClientStamp.MergeFrom(clientStamp);
                 else
                 {
                     uint acknowledgedServerTick = receivedClientCommands.Require<AcknowledgedServerTickProperty>();
@@ -191,7 +191,7 @@ namespace Swihoni.Sessions
                         }
 
                         ModeBase mode = GetMode(serverSession);
-                        serverPlayer.FastMergeSet(receivedClientCommands); // Merge in trusted
+                        serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
                         m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.duration);
                         mode.Modify(serverSession, serverPlayer, receivedClientCommands, clientStamp.duration);
                     }
@@ -231,7 +231,7 @@ namespace Swihoni.Sessions
             GetMode(session).SpawnPlayer(player);
             // TODO:refactor zeroing
 
-            player.ZeroIfHas<StatsComponent>();
+            player.ZeroIfWith<StatsComponent>();
             player.Require<ServerPingComponent>().Zero();
             player.Require<ClientStampComponent>().Reset();
             player.Require<ServerStampComponent>().Reset();

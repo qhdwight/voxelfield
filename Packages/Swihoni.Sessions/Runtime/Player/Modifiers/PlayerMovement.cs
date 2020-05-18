@@ -55,9 +55,9 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             var move = player.Require<MoveComponent>();
             m_MoveTransform.position = move.position;
-            if (player.Has(out CameraComponent playerCamera))
+            if (player.With(out CameraComponent playerCamera))
                 m_MoveTransform.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
-            m_Controller.enabled = player.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
+            m_Controller.enabled = player.Without(out HealthProperty health) || health.WithValue && health.IsAlive;
             float weight = Mathf.Lerp(0.7f, 1.0f, 1.0f - move.normalizedCrouch);
             m_Controller.height = m_PrefabController.height * weight;
             m_Controller.center = m_PrefabController.center * weight;
@@ -66,7 +66,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration)
         {
             if (player.Without(out MoveComponent move)
-             || player.Has(out HealthProperty health) && health.IsDead
+             || player.With(out HealthProperty health) && health.IsDead
              || commands.Without(out InputFlagProperty inputs)) return;
 
             base.ModifyChecked(session, playerId, player, commands, duration);

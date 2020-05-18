@@ -7,23 +7,23 @@ using UnityEngine;
 
 namespace Swihoni.Components
 {
-    public abstract class ArrayPropertyBase : ElementBase
+    public abstract class ArrayElementBase : ElementBase
     {
         public abstract int Length { get; }
 
-        public abstract object GetValue(int index);
+        public abstract Type GetElementType { get; }
 
-        public abstract Type GetElementType();
+        public abstract object GetValue(int index);
     }
 
     [Serializable]
-    public class ArrayProperty<T> : ArrayPropertyBase, IEnumerable<T> where T : ElementBase, new()
+    public class ArrayElement<T> : ArrayElementBase, IEnumerable<T> where T : ElementBase, new()
     {
         [CopyField, SerializeField] protected T[] m_Values;
 
-        public ArrayProperty(params T[] values) => m_Values = (T[]) values.Clone();
+        public ArrayElement(params T[] values) => m_Values = (T[]) values.Clone();
 
-        public ArrayProperty(int size)
+        public ArrayElement(int size)
         {
             m_Values = new T[size];
             SetAll(() => new T());
@@ -49,7 +49,7 @@ namespace Swihoni.Components
 
         public override object GetValue(int index) => this[index];
 
-        public override Type GetElementType() => typeof(T);
+        public override Type GetElementType => typeof(T);
     }
 
     [Serializable]
@@ -61,13 +61,13 @@ namespace Swihoni.Components
     }
 
     [Serializable]
-    public class StringProperty : ArrayProperty<CharProperty>
+    public class StringElement : ArrayElement<CharProperty>
     {
         private StringBuilder m_Builder;
 
-        public StringProperty(int size) : base(size) => m_Builder = new StringBuilder(size);
+        public StringElement(int size) : base(size) => m_Builder = new StringBuilder(size);
 
-        public bool HasValue => m_Values[0].HasValue;
+        public bool WithValue => m_Values[0].WithValue;
 
         public StringBuilder GetString()
         {
@@ -81,6 +81,10 @@ namespace Swihoni.Components
             return m_Builder;
         }
 
+        /// <summary>
+        /// Modifies internal character array via a string builder.
+        /// </summary>
+        /// <param name="action">Use append methods on string builder to chain.</param>
         public void SetString(Action<StringBuilder> action)
         {
             m_Builder.Clear();

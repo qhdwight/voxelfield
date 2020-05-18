@@ -23,7 +23,7 @@ namespace Swihoni.Components.Tests
         {
             OuterComponent source = OuterComponent.Arbitrary;
             var destination = new OuterComponent();
-            destination.FastCopyFrom(source);
+            destination.CopyFrom(source);
             Assert.IsTrue(destination.EqualTo(source));
         }
     }

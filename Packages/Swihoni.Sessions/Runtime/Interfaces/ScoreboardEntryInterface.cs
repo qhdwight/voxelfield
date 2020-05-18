@@ -12,8 +12,8 @@ namespace Swihoni.Sessions.Interfaces
 
         public override void Render(Container player)
         {
-            bool isVisible = player.Without(out HealthProperty health) || health.HasValue;
-            if (isVisible && player.Has(out StatsComponent stats))
+            bool isVisible = player.Without(out HealthProperty health) || health.WithValue;
+            if (isVisible && player.With(out StatsComponent stats))
             {
                 m_KillsText.BuildText(builder => builder.Append(stats.kills));
                 m_DamageText.BuildText(builder => builder.Append(stats.damage));

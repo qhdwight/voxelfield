@@ -121,7 +121,7 @@ namespace Swihoni.Sessions.Player.Components
         {
             if (i1.id == ItemId.None)
             {
-                this.FastCopyFrom(i1);
+                this.CopyFrom(i1);
                 return;
             }
             ItemModifierBase modifier = ItemAssetLink.GetModifier(i1.id);
@@ -137,7 +137,7 @@ namespace Swihoni.Sessions.Player.Components
     {
         public ByteProperty equippedIndex;
         public ByteStatusComponent equipStatus, adsStatus;
-        public ArrayProperty<ItemComponent> itemComponents = new ArrayProperty<ItemComponent>(10);
+        public ArrayElement<ItemComponent> itemComponents = new ArrayElement<ItemComponent>(10);
 
         public ItemComponent EquippedItemComponent => itemComponents[equippedIndex - 1];
         public bool HasItemEquipped => !HasNoItemEquipped;

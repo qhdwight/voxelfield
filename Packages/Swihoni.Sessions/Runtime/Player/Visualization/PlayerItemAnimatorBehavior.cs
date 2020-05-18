@@ -48,7 +48,7 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             if (player.Without(out InventoryComponent inventory)) return;
 
-            bool isVisible = (player.Without(out HealthProperty health) || health.HasValue && health.IsAlive) && inventory.HasItemEquipped;
+            bool isVisible = (player.Without(out HealthProperty health) || health.WithValue && health.IsAlive) && inventory.HasItemEquipped;
 
             if (isVisible)
             {
@@ -88,7 +88,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
                     if (m_IsFpv) AnimateAim(inventory);
 
-                    if (player.Has(out CameraComponent playerCamera) && m_TpvArmsRotator)
+                    if (player.With(out CameraComponent playerCamera) && m_TpvArmsRotator)
                     {
                         const float armClamp = 60.0f;
                         m_TpvArmsRotator.localRotation = Quaternion.AngleAxis(Mathf.Clamp(playerCamera.pitch, -armClamp, armClamp) + 90.0f, Vector3.right);

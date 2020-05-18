@@ -13,7 +13,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             if (player.Without(out CameraComponent playerCamera)
              || commands.Without(out MouseComponent mouse)
-             || player.Present(out HealthProperty health) && health.IsDead) return;
+             || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
             base.ModifyTrusted(session, playerId, player, commands, duration);
             playerCamera.yaw.Value = Mathf.Repeat(playerCamera.yaw + mouse.mouseDeltaX * InputProvider.Singleton.Sensitivity, 360.0f);
             playerCamera.pitch.Value = Mathf.Clamp(playerCamera.pitch - mouse.mouseDeltaY * InputProvider.Singleton.Sensitivity, -90.0f, 90.0f);
@@ -29,7 +29,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         internal override void SynchronizeBehavior(Container player)
         {
             if (player.Without(out CameraComponent playerCamera)) return;
-            if (playerCamera.yaw.HasValue) m_MoveTransform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
+            if (playerCamera.yaw.WithValue) m_MoveTransform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
         }
     }
 }

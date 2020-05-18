@@ -66,10 +66,10 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public override void Render(Container player, bool isLocalPlayer)
         {
-            bool usesHealth = player.Has(out HealthProperty health),
-                 isVisible = !usesHealth || health.HasValue;
+            bool usesHealth = player.With(out HealthProperty health),
+                 isVisible = !usesHealth || health.WithValue;
 
-            bool isInFpv = isLocalPlayer && (!usesHealth || health.HasValue && health.IsAlive);
+            bool isInFpv = isLocalPlayer && (!usesHealth || health.WithValue && health.IsAlive);
 
             foreach (Renderer render in m_FpvRenders)
             {
@@ -81,13 +81,13 @@ namespace Swihoni.Sessions.Player.Visualization
             if (isVisible)
             {
                 isAnimatorEnabled = health.IsAlive;
-                if (player.Has(out MoveComponent move))
+                if (player.With(out MoveComponent move))
                 {
                     m_Animator.transform.position = move.position;
                     if (m_RagdollRigidbodies != null) SetRagdollEnabled(health.IsDead);
                     RenderMove(move);
                 }
-                if (player.Has(out CameraComponent playerCamera))
+                if (player.With(out CameraComponent playerCamera))
                 {
                     m_Animator.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
                     m_Head.localRotation = Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);

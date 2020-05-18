@@ -23,7 +23,7 @@ namespace Compound.Session
             base.SettingsTick(serverSession);
 
             string mapName = DebugBehavior.Singleton.mapName;
-            serverSession.Require<VoxelMapNameProperty>().SetString(builder => builder.Append(mapName));
+            serverSession.Require<VoxelMapNameElement>().SetString(builder => builder.Append(mapName));
             MapManager.Singleton.SetMap(mapName);
         }
 

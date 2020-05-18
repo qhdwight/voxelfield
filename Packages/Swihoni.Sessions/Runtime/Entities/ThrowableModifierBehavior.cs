@@ -102,7 +102,7 @@ namespace Swihoni.Sessions.Entities
                 int hitPlayerId = trigger.PlayerId;
                 Container hitPlayer = session.GetPlayerFromId(hitPlayerId);
                 // TODO:feature damage based on range?
-                if (hitPlayer.Present(out HealthProperty health) && health.IsAlive)
+                if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive)
                 {
                     byte damage = DamagePlayer(hitPlayer, duration);
                     session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage);

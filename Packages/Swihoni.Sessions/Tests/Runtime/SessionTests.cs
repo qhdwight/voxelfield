@@ -37,17 +37,17 @@ namespace Swihoni.Sessions.Tests
             IEnumerable<Type> playerElements = standardElements.playerElements
                                                                .Concat(standardElements.commandElements)
                                                                .Append(typeof(StampComponent));
-            s1.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(playerElements));
+            s1.Require<PlayerContainerArrayElement>().SetAll(() => new Container(playerElements));
             s1.Zero();
 
             ServerSessionContainer s2 = s1.Clone();
             Assert.IsTrue(s1.EqualTo(s2));
 
-            s1.Add(typeof(ServerTag));
-            s2.Add(typeof(LocalizedClientStampComponent));
+            s1.RegisterAppend(typeof(ServerTag));
+            s2.RegisterAppend(typeof(LocalizedClientStampComponent));
 
             float start = Time.realtimeSinceStartup;
-            s1.FastCopyFrom(s2);
+            s1.CopyFrom(s2);
             Debug.Log(1e3f * (Time.realtimeSinceStartup - start));
         }
 
@@ -71,7 +71,7 @@ namespace Swihoni.Sessions.Tests
         {
             var standardElements = SessionElements.NewStandardSessionElements();
             var session = new ServerSessionContainer(standardElements.elements.Append(typeof(ServerStampComponent)));
-            session.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(standardElements.playerElements
+            session.Require<PlayerContainerArrayElement>().SetAll(() => new Container(standardElements.playerElements
                                                                                                        .Append(typeof(ServerStampComponent))
                                                                                                        .Append(typeof(ClientStampComponent))));
             const float time = 0.241f;

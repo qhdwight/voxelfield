@@ -45,11 +45,11 @@ namespace Swihoni.Sessions
 
         protected override void Render(float renderTime)
         {
-            if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers)
+            if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
              || m_RenderSession.Without(out LocalPlayerProperty localPlayer)) return;
             
             var tickRate = GetLatestSession().Require<TickRateProperty>();
-            if (!tickRate.HasValue) return;
+            if (!tickRate.WithValue) return;
 
             localPlayer.Value = HostPlayerId;
             base.Render(renderTime);
@@ -59,12 +59,12 @@ namespace Swihoni.Sessions
                 if (playerId == localPlayer)
                 {
                     // Inject host player component
-                    renderPlayers[playerId].FastCopyFrom(m_HostCommands);
+                    renderPlayers[playerId].CopyFrom(m_HostCommands);
                 }
                 else
                 {
                     int copiedPlayerId = playerId;
-                    Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
+                    Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId];
 
                     float rollback = tickRate.TickInterval * 3;
                     RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, renderPlayers[playerId],
@@ -80,7 +80,7 @@ namespace Swihoni.Sessions
         {
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
             // Inject our current player component before normal update cycle
-            hostPlayer.FastMergeSet(m_HostCommands);
+            hostPlayer.MergeFrom(m_HostCommands);
             // Set up new player component data
             if (tickSession.Require<ServerStampComponent>().tick == 0u) SetupNewPlayer(tickSession, hostPlayer);
         }

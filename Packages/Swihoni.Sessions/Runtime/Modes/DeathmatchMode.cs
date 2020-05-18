@@ -13,18 +13,18 @@ namespace Swihoni.Sessions.Modes
         internal override void SpawnPlayer(Container player)
         {
             // TODO:refactor zeroing
-            if (player.Has(out MoveComponent move))
+            if (player.With(out MoveComponent move))
             {
                 move.Zero();
                 move.position.Value = new Vector3 {y = 10.0f};
             }
-            player.ZeroIfHas<CameraComponent>();
-            if (player.Has(out HealthProperty health))
+            player.ZeroIfWith<CameraComponent>();
+            if (player.With(out HealthProperty health))
                 health.Value = 100;
-            player.ZeroIfHas<RespawnTimerProperty>();
-            player.ZeroIfHas<HitMarkerComponent>();
-            player.ZeroIfHas<DamageNotifierComponent>();
-            if (player.Has(out InventoryComponent inventory))
+            player.ZeroIfWith<RespawnTimerProperty>();
+            player.ZeroIfWith<HitMarkerComponent>();
+            player.ZeroIfWith<DamageNotifierComponent>();
+            if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.TestingRifle, 1);
@@ -40,7 +40,7 @@ namespace Swihoni.Sessions.Modes
         {
             base.KillPlayer(player);
 
-            if (player.Has(out RespawnTimerProperty respawnTimer))
+            if (player.With(out RespawnTimerProperty respawnTimer))
                 respawnTimer.Value = 2.0f;
         }
 
@@ -53,7 +53,7 @@ namespace Swihoni.Sessions.Modes
 
             if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive)
                 KillPlayer(playerToModify);
-            if (health.IsDead && playerToModify.Has(out RespawnTimerProperty respawn))
+            if (health.IsDead && playerToModify.With(out RespawnTimerProperty respawn))
             {
                 respawn.Value -= duration;
                 if (respawn.Value <= 0.0f)

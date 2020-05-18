@@ -13,7 +13,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration)
         {
-            if (!player.Has(out InventoryComponent inventoryComponent) || player.Present(out HealthProperty health) && health.IsDead) return;
+            if (!player.With(out InventoryComponent inventoryComponent) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
             var inputProperty = commands.Require<InputFlagProperty>();
             var wantedItemIndexProperty = commands.Require<WantedItemIndexProperty>();

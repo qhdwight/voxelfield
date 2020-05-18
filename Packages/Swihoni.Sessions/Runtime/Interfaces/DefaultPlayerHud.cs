@@ -34,12 +34,12 @@ namespace Swihoni.Sessions.Interfaces
 
         public void Render(Container localPlayer)
         {
-            bool isVisible = localPlayer.Without(out HealthProperty health) || health.HasValue && health.IsAlive;
+            bool isVisible = localPlayer.Without(out HealthProperty health) || health.WithValue && health.IsAlive;
             if (isVisible)
             {
-                if (localPlayer.Has<HealthProperty>())
+                if (localPlayer.With<HealthProperty>())
                     m_HealthText.BuildText(builder => builder.Append("Health: ").Append(health.Value));
-                if (localPlayer.Has(out InventoryComponent inventory) && inventory.HasItemEquipped)
+                if (localPlayer.With(out InventoryComponent inventory) && inventory.HasItemEquipped)
                 {
                     ItemComponent equippedItem = inventory.EquippedItemComponent;
                     ItemModifierBase modifier = ItemAssetLink.GetModifier(equippedItem.id);
@@ -74,7 +74,7 @@ namespace Swihoni.Sessions.Interfaces
                         }
                     });
                 }
-                if (localPlayer.Has(out HitMarkerComponent hitMarker))
+                if (localPlayer.With(out HitMarkerComponent hitMarker))
                 {
                     bool isHitMarkerVisible = hitMarker.elapsed > 0.0f;
                     Color color = hitMarker.isKill ? m_KillHitMarkerColor : m_DefaultHitMarkerColor;
@@ -83,7 +83,7 @@ namespace Swihoni.Sessions.Interfaces
                     float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsed);
                     m_HitMarker.rectTransform.localScale = new Vector2(scale, scale);
                 }
-                if (localPlayer.Has(out DamageNotifierComponent damageNotifier))
+                if (localPlayer.With(out DamageNotifierComponent damageNotifier))
                 {
                     foreach (Image notifierImage in m_DamageNotifiers)
                     {

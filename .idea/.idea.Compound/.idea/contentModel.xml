@@ -50,7 +50,6 @@
             <e p="Voxel.asmdef" t="Include" />
             <e p="Voxel.cs" t="Include" />
             <e p="VoxelChangeData.cs" t="Include" />
-            <e p="VoxelChangeMap.cs" t="Include" />
             <e p="VoxelChangeTransaction.cs" t="Include" />
             <e p="VoxelRenderer.cs" t="Include" />
           </e>
@@ -74,7 +73,7 @@
         </e>
         <e p="Swihoni.Components" t="Include">
           <e p="Runtime" t="Include">
-            <e p="ArrayProperty.cs" t="Include" />
+            <e p="ArrayElement.cs" t="Include" />
             <e p="Cache.cs" t="Include" />
             <e p="ComponentBase.cs" t="Include" />
             <e p="Container.cs" t="Include" />
@@ -201,6 +200,7 @@
         </e>
         <e p="Swihoni.Util" t="Include">
           <e p="Editor" t="Include">
+            <e p="ChildBehaviorEditor.cs" t="Include" />
             <e p="LayerMaskDrawer.cs" t="Include" />
             <e p="Swihoni.Util.Editor.asmdef" t="Include" />
           </e>
@@ -208,6 +208,8 @@
             <e p="AnalysisLogger.cs" t="Include" />
             <e p="Animation" t="Include">
               <e p="ArmIk.cs" t="Include" />
+              <e p="ChildBehavior.cs" t="Include" />
+              <e p="ItmAnimationHelper.cs" t="Include" />
             </e>
             <e p="ElapseWatcher.cs" t="Include" />
             <e p="FlagUtil.cs" t="Include" />
@@ -225,6 +227,7 @@
             </e>
             <e p="MeshData.cs" t="Include" />
             <e p="SingletonBehavior.cs" t="Include" />
+            <e p="SteamManager.cs" t="Include" />
             <e p="Swihoni.Util.asmdef" t="Include" />
             <e p="VectorMath.cs" t="Include" />
           </e>

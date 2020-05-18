@@ -64,14 +64,14 @@ namespace Swihoni.Sessions.Entities
             void ObtainModifierAtIndex(EntityContainer entity, int index, EntityModifierBehavior entityModifierBehavior)
             {
                 entity.Zero();
-                if (entity.Has(out ThrowableComponent throwable)) throwable.popTime.Value = float.PositiveInfinity;
+                if (entity.With(out ThrowableComponent throwable)) throwable.popTime.Value = float.PositiveInfinity;
                 entity.id.Value = entityId;
                 m_Modifiers[index] = entityModifierBehavior;
             }
             Pool<EntityModifierBehavior> pool = m_EntityModifiersPool[entityId - 1];
             EntityModifierBehavior modifier = pool.Obtain();
             modifier.SetActive(true);
-            var entities = session.Require<EntityArrayProperty>();
+            var entities = session.Require<EntityArrayElement>();
             for (var index = 0; index < entities.Length; index++)
             {
                 EntityContainer entity = entities[index];
@@ -100,7 +100,7 @@ namespace Swihoni.Sessions.Entities
 
         public void Modify(Container session, float time, float duration)
         {
-            var entities = session.Require<EntityArrayProperty>();
+            var entities = session.Require<EntityArrayElement>();
             for (var index = 0; index < entities.Length; index++)
             {
                 EntityContainer entity = entities[index];
@@ -112,7 +112,7 @@ namespace Swihoni.Sessions.Entities
             }
         }
 
-        public void Render(EntityArrayProperty entities)
+        public void Render(EntityArrayElement entities)
         {
             for (var index = 0; index < entities.Length; index++)
             {

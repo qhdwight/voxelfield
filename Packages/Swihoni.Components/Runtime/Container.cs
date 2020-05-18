@@ -4,6 +4,10 @@ using System.Linq;
 
 namespace Swihoni.Components
 {
+    /// <summary>
+    /// Allows elements to be referenced by type.
+    /// Fields come first in elements, and then dynamically added elements.
+    /// </summary>
     [Serializable]
     public class Container : ComponentBase
     {
@@ -18,56 +22,64 @@ namespace Swihoni.Components
         /// <summary>
         /// Order of types determines serialization, so server and client must have the same order.
         /// </summary>
-        /// <param name="types"></param>
-        public Container(params Type[] types) => Add(types);
+        public Container(params Type[] types) => RegisterAppend(types);
 
-        protected override void Register(ElementBase instance)
+        protected override int Append(ElementBase element)
         {
-            base.Register(instance);
-            Type type = instance.GetType();
+            int index = base.Append(element);
+            Type type = element.GetType();
             if (m_TypeToId.ContainsKey(type))
                 throw new ArgumentException("Containers can only have one of each type! Make a subclass if necessary");
             m_TypeToId[type] = m_TypeToId.Count;
+            return index;
         }
 
         public ElementBase TryGet(Type type) => m_TypeToId.TryGetValue(type, out int index) ? Elements[index] : null;
 
-        public void Add(IEnumerable<Type> types)
+        /// <summary><see cref="RegisterAppend(System.Collections.Generic.IEnumerable{System.Type})"/></summary>
+        public void RegisterAppend(IEnumerable<Type> types)
         {
-            foreach (Type type in types) Add(type);
+            foreach (Type type in types) RegisterAppend(type);
         }
 
-        private void Add(Type type)
+        /// <summary>
+        /// Append an element type. Since elements must have zero argument constructors, an instance will be automatically created and registered.
+        /// </summary>
+        /// <param name="type">Must be an element.</param>
+        /// <exception cref="ArgumentException"></exception>
+        private void RegisterAppend(Type type)
         {
             if (!type.IsElement())
-                throw new ArgumentException("Type must be containable (Property or Component)");
-            Register((ElementBase) Activator.CreateInstance(type));
+                throw new ArgumentException("Type must be containable (An element, for example: property or component)");
+            Append((ElementBase) Activator.CreateInstance(type));
         }
 
-        public void Add(params Type[] types) => Add((IEnumerable<Type>) types);
+        /// <summary><see cref="RegisterAppend(System.Collections.Generic.IEnumerable{System.Type})"/></summary>
+        public void RegisterAppend(params Type[] types) => RegisterAppend((IEnumerable<Type>) types);
 
         /// <summary>
         /// Clears all elements and sets types to match given container.
         /// Note: Use carefully as this unregisters field elements.
+        /// TODO: only allow on containers of same type
         /// </summary>
         public void TakeElementTypes(Container other)
         {
             m_TypeToId.Clear();
             ClearRegistered();
             foreach (ElementBase element in other.Elements)
-                Add(element.GetType());
+                RegisterAppend(element.GetType());
         }
 
-        public bool Without<TElement>() where TElement : ElementBase { return !Has<TElement>(); }
+        public bool Without<TElement>() where TElement : ElementBase => !With<TElement>();
 
-        public bool Without<TElement>(out TElement component) where TElement : ElementBase { return !Has(out component); }
+        public bool Without<TElement>(out TElement component) where TElement : ElementBase => !With(out component);
 
-        public bool Present<TElement>(out TElement component) where TElement : PropertyBase { return Has(out component) && component.HasValue; }
+        public bool WithPropertyWithValue<TElement>(out TElement component) where TElement : PropertyBase => With(out component) && component.WithValue;
 
-        public bool Has<TElement>(out TElement component) where TElement : ElementBase
+        public bool With<TElement>(out TElement component) where TElement : ElementBase
         {
-            bool hasComponent = m_TypeToId.TryGetValue(typeof(TElement), out int index);
-            if (hasComponent)
+            bool withComponent = m_TypeToId.TryGetValue(typeof(TElement), out int index);
+            if (withComponent)
             {
                 component = (TElement) Elements[index];
                 return true;
@@ -76,12 +88,12 @@ namespace Swihoni.Components
             return false;
         }
 
-        public void ZeroIfHas<TElement>() where TElement : ElementBase
+        public void ZeroIfWith<TElement>() where TElement : ElementBase
         {
-            if (Has(out TElement element)) element.Zero();
+            if (With(out TElement element)) element.Zero();
         }
 
-        public bool Has<TElement>() => m_TypeToId.ContainsKey(typeof(TElement));
+        public bool With<TElement>() => m_TypeToId.ContainsKey(typeof(TElement));
 
         public TElement Require<TElement>()
         {

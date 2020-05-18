@@ -16,9 +16,15 @@ namespace Swihoni.Components
             return other.GetType() == GetType() && Equals((ElementBase) other);
         }
 
-        public override int GetHashCode() { return RuntimeHelpers.GetHashCode(this); }
+        public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
     }
 
+    /// <summary>
+    /// Stores a collection of elements. Access via <see cref="Elements"/> or with indexer.
+    /// Once you add an element, you need to make sure it is "owned" by the component (effectively moving it).
+    /// A conscious choice was made to use classes instead of structs, so proper responsibility has to be taken.
+    /// What this means in practice is, unless you know exactly what you are doing, once you <see cref="Append"/>
+    /// </summary>
     public abstract class ComponentBase : ElementBase
     {
         private List<ElementBase> m_Elements;
@@ -32,24 +38,26 @@ namespace Swihoni.Components
             }
         }
 
-        protected void VerifyFieldsRegistered()
+        public ElementBase this[int index] => Elements[index];
+
+        private void VerifyFieldsRegistered()
         {
             if (m_Elements != null) return;
 
             m_Elements = new List<ElementBase>();
-            FieldInfo[] fieldInfos = Cache.GetFieldInfo(GetType());
+            IReadOnlyList<FieldInfo> fieldInfos = Cache.GetFieldInfo(GetType());
             foreach (FieldInfo field in fieldInfos)
             {
                 object fieldValue = field.GetValue(this);
-                if (fieldValue is ElementBase element) Register(element);
+                if (fieldValue is ElementBase element) Append(element);
             }
         }
 
-        protected void ClearRegistered() { m_Elements = new List<ElementBase>(); }
+        protected void ClearRegistered() => m_Elements = new List<ElementBase>();
 
-        protected ComponentBase() => FillFieldElements();
+        protected ComponentBase() => InstantiateFieldElements();
 
-        private void FillFieldElements()
+        private void InstantiateFieldElements()
         {
             foreach (FieldInfo field in Cache.GetFieldInfo(GetType()))
             {
@@ -63,12 +71,22 @@ namespace Swihoni.Components
             }
         }
 
-        protected virtual void Register(ElementBase instance)
+        /// <summary>
+        /// Appends an element to the end of this component.
+        /// To be able to retrieve by type, consider using a <see cref="Container"/>.
+        /// For registering an element with a component, you wil need to remember the index.
+        /// </summary>
+        /// <returns>Index of element</returns>
+        protected virtual int Append(ElementBase element)
         {
             VerifyFieldsRegistered();
-            m_Elements.Add(instance);
+            m_Elements.Add(element);
+            return m_Elements.Count - 1;
         }
 
+        /// <summary>
+        /// Called during interpolation. Use to add custom behavior.
+        /// </summary>
         public virtual void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation) { }
     }
 }

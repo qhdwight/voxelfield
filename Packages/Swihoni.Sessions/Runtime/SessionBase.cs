@@ -24,8 +24,8 @@ namespace Swihoni.Sessions
             elements = new List<Type>
             {
                 typeof(TickRateProperty), typeof(ModeIdProperty),
-                typeof(PlayerContainerArrayProperty), typeof(LocalPlayerProperty), typeof(EntityArrayProperty),
-                typeof(StampComponent), typeof(KillFeedProperty)
+                typeof(PlayerContainerArrayElement), typeof(LocalPlayerProperty), typeof(EntityArrayElement),
+                typeof(StampComponent), typeof(KillFeedElement)
             },
             playerElements = new List<Type>
             {
@@ -144,7 +144,7 @@ namespace Swihoni.Sessions
 
         protected virtual void Tick(uint tick, float time, float duration)
         {
-            GetLatestSession().Require<TickRateProperty>().IfPresent(tickRate => Time.fixedDeltaTime = 1.0f / tickRate);
+            GetLatestSession().Require<TickRateProperty>().IfWith(tickRate => Time.fixedDeltaTime = 1.0f / tickRate);
         }
 
         protected virtual void Input(float time, float delta) { }
@@ -203,9 +203,9 @@ namespace Swihoni.Sessions
                           toComponent = getInHistory(historyIndex);
                 FloatProperty toTime = getTimeInHistory(historyIndex).time,
                               fromTime = getTimeInHistory(historyIndex + 1).time;
-                if (!toTime.HasValue || !fromTime.HasValue || (historyIndex == 0 && toTime < renderTime))
+                if (!toTime.WithValue || !fromTime.WithValue || (historyIndex == 0 && toTime < renderTime))
                 {
-                    renderContainer.FastCopyFrom(getInHistory(0));
+                    renderContainer.CopyFrom(getInHistory(0));
                     // Debug.LogWarning("Not enough history");
                     return;
                 }
@@ -218,7 +218,7 @@ namespace Swihoni.Sessions
             }
             // Take last if we do not have enough history
             // Debug.LogWarning("Not enough recent");
-            renderContainer.FastCopyFrom(getInHistory(-1));
+            renderContainer.CopyFrom(getInHistory(-1));
         }
 
         protected static void RenderInterpolatedPlayer<TStampComponent>
@@ -236,12 +236,12 @@ namespace Swihoni.Sessions
                 if (_current.GetType().IsDefined(typeof(AdditiveAttribute)))
                 {
                     _current.Zero();
-                    return Navigation.SkipDescendends;
+                    return Navigation.SkipDescendents;
                 }
                 if (_previous is PropertyBase previousProperty && _current is PropertyBase currentProperty)
                 {
                     currentProperty.Clear();
-                    currentProperty.SetFromIfPresent(previousProperty);
+                    currentProperty.SetFromIfWith(previousProperty);
                 }
                 return Navigation.Continue;
             }, previous, current);

@@ -44,7 +44,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected override void SecondaryUse(SessionBase session, int playerId, float duration)
         {
-            var entities = session.GetLatestSession().Require<EntityArrayProperty>();
+            var entities = session.GetLatestSession().Require<EntityArrayElement>();
             for (var index = 0; index < entities.Length; index++)
             {
                 EntityContainer entity = entities[index];
@@ -69,9 +69,15 @@ namespace Swihoni.Sessions.Items.Modifiers
                 modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.identity);
                 throwableModifier.ThrowerId = playerId;
                 Vector3 force = ray.direction * m_ThrowForce;
-                if (player.Has(out MoveComponent move)) force += move.velocity.Value * 0.1f;
+                if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;
                 throwableModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
             }
+        }
+
+        internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, float duration)
+        {
+            if (itemComponent.status.id == ThrowableStatusId.Cooking)
+                StartStatus(session, playerId, itemComponent, ItemStatusId.Idle, duration);
         }
     }
 }

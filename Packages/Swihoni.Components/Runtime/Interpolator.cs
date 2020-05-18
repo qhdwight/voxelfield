@@ -3,16 +3,32 @@ using System.Reflection;
 
 namespace Swihoni.Components
 {
+    /// <summary>
+    /// Use on any <see cref="PropertyBase"/>.
+    /// When interpolating, set property value to the second one.
+    /// This is useful for properties that don't have a well defined interpolation function.
+    /// TODO:feature allow for all elements not just properties
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class TakeSecondForInterpolationAttribute : Attribute
     {
     }
 
+    /// <summary>
+    /// Use on any <see cref="ElementBase"/>.
+    /// When interpolating, skip descendents of component.
+    /// The assumption is that the component has a proper <see cref="ComponentBase.InterpolateFrom"/> which provides custom interpolation for descendents.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
     public class CustomInterpolationAttribute : Attribute
     {
     }
 
+    /// <summary>
+    /// Use on any <see cref="FloatProperty"/>.
+    /// Treat number line as cyclic, when <see cref="maximum"/> is reached, loop back to <see cref="minimum"/>.
+    /// Useful for times that describe a looping action. For example, player idle state.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class CyclicAttribute : Attribute
     {
@@ -27,11 +43,20 @@ namespace Swihoni.Components
         }
     }
 
+    /// <summary>
+    /// Use on any <see cref="FloatProperty"/> describing an angle.
+    /// Interpolates an angle in degrees properly.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class AngleAttribute : Attribute
     {
     }
 
+    /// <summary>
+    /// Use on any <see cref="FloatProperty"/> or <see cref="VectorProperty"/>.
+    /// Used in comparisons between two properties to see if they are equal.
+    /// For example, checking player position.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class ToleranceAttribute : Attribute
     {
@@ -63,13 +88,13 @@ namespace Swihoni.Components
                 {
                     case PropertyBase p1 when _e2 is PropertyBase p2 && _ed is PropertyBase pd:
                     {
-                        pd.InterpolateFromIfPresent(p1, p2, interpolation);
+                        pd.InterpolateFromIfWith(p1, p2, interpolation);
                         break;
                     }
                     case ComponentBase c1 when _e2 is ComponentBase c2 && _ed is ComponentBase cd:
                         cd.InterpolateFrom(c1, c2, interpolation);
                         if (c1.GetType().IsDefined(typeof(CustomInterpolationAttribute)))
-                            return Navigation.SkipDescendends;
+                            return Navigation.SkipDescendents;
                         break;
                 }
                 return Navigation.Continue;

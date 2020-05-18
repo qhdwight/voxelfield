@@ -93,9 +93,9 @@ namespace Swihoni.Sessions.Components
     }
 
     [Serializable]
-    public class PlayerContainerArrayProperty : ArrayProperty<Container>
+    public class PlayerContainerArrayElement : ArrayElement<Container>
     {
-        public PlayerContainerArrayProperty() : base(SessionBase.MaxPlayers) { }
+        public PlayerContainerArrayElement() : base(SessionBase.MaxPlayers) { }
     }
 
     [Serializable]
@@ -108,13 +108,13 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class FeedComponent : ComponentBase
     {
-        public StringProperty feed;
+        public StringElement feed;
     }
 
     [Serializable]
-    public class KillFeedProperty : ArrayProperty<KillFeedComponent>
+    public class KillFeedElement : ArrayElement<KillFeedComponent>
     {
-        public KillFeedProperty() : base(5) { }
+        public KillFeedElement() : base(5) { }
     }
 
     [Serializable]

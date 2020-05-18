@@ -23,12 +23,12 @@ namespace Swihoni.Components.Tests
         [Test]
         public void TestString()
         {
-            var arbitrary = new StringProperty(16);
+            var arbitrary = new StringElement(16);
             arbitrary.SetString(builder => builder.Append("Test"));
             var stream = new MemoryStream();
             arbitrary.Serialize(stream);
 
-            var deserialized = new StringProperty(16);
+            var deserialized = new StringElement(16);
             stream.Position = 0;
             deserialized.Deserialize(stream);
 

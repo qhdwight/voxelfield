@@ -17,20 +17,24 @@ namespace Swihoni.Components
         private static readonly BinaryReader Reader = new BinaryReader(Stream);
         private static readonly Mutex StreamMutex = new Mutex();
 
-        static Serializer() { Stream.SetLength(Stream.Capacity); }
+        static Serializer() => Stream.SetLength(Stream.Capacity);
 
-        public static void Serialize(this ElementBase component, MemoryStream stream)
+        /// <summary>
+        /// Serialize element to beginning of stream.
+        /// TODO:feature relative to current stream position
+        /// </summary>
+        public static void Serialize(this ElementBase element, MemoryStream stream)
         {
             StreamMutex.WaitOne();
             try
             {
                 Stream.Position = 0;
-                component.Navigate(element =>
+                element.Navigate(_e =>
                 {
-                    switch (element)
+                    switch (_e)
                     {
-                        case ComponentBase _ when element.GetType().IsDefined(typeof(NoSerialization)):
-                            return Navigation.SkipDescendends;
+                        case ComponentBase _ when _e.GetType().IsDefined(typeof(NoSerialization)):
+                            return Navigation.SkipDescendents;
                         case PropertyBase property:
                             property.Serialize(Writer);
                             break;
@@ -48,20 +52,25 @@ namespace Swihoni.Components
             }
         }
 
-        public static void Deserialize(this ElementBase component, MemoryStream stream, int? length = null)
+        /// <summary>
+        /// Deserializes from beginning of stream into element.
+        /// TODO:feature relative to current stream position
+        /// </summary>
+        public static void Deserialize(this ElementBase element, MemoryStream stream, int? length = null)
         {
             StreamMutex.WaitOne();
             try
             {
+                // TODO:performance use length parameter
                 int count = stream.Capacity - (int) stream.Position;
                 Buffer.BlockCopy(stream.GetBuffer(), (int) stream.Position, Stream.GetBuffer(), 0, count);
                 Stream.Position = 0;
-                component.Navigate(element =>
+                element.Navigate(_e =>
                 {
-                    switch (element)
+                    switch (_e)
                     {
-                        case ComponentBase _ when element.GetType().IsDefined(typeof(NoSerialization)):
-                            return Navigation.SkipDescendends;
+                        case ComponentBase _ when _e.GetType().IsDefined(typeof(NoSerialization)):
+                            return Navigation.SkipDescendents;
                         case PropertyBase property:
                             property.Clear();
                             property.Deserialize(Reader);

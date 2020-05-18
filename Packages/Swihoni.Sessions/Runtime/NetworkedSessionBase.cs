@@ -51,7 +51,7 @@ namespace Swihoni.Sessions
         protected void ForEachPlayer(Action<Container> action)
         {
             foreach (ServerSessionContainer serverSession in m_SessionHistory)
-            foreach (Container player in serverSession.Require<PlayerContainerArrayProperty>())
+            foreach (Container player in serverSession.Require<PlayerContainerArrayElement>())
                 action(player);
         }
 
@@ -88,13 +88,13 @@ namespace Swihoni.Sessions
 
         protected void RenderEntities<TStampComponent>(float renderTime, float rollback) where TStampComponent : StampComponent
         {
-            var renderEntities = m_RenderSession.Require<EntityArrayProperty>();
+            var renderEntities = m_RenderSession.Require<EntityArrayElement>();
             for (var i = 0; i < renderEntities.Length; i++)
             {
                 int index = i;
                 RenderInterpolated(renderTime - rollback, renderEntities[index], m_SessionHistory.Size,
                                    h => m_SessionHistory.Get(-h).Require<TStampComponent>(),
-                                   h => m_SessionHistory.Get(-h).Require<EntityArrayProperty>()[index]);
+                                   h => m_SessionHistory.Get(-h).Require<EntityArrayElement>()[index]);
             }
             EntityManager.Render(renderEntities);
         }
@@ -115,17 +115,17 @@ namespace Swihoni.Sessions
         protected static T NewSession<T>(IEnumerable<Type> sessionElements, IEnumerable<Type> playerElements) where T : Container, new()
         {
             var session = new T();
-            session.Add(sessionElements);
-            session.Require<PlayerContainerArrayProperty>().SetAll(() => new Container(playerElements));
+            session.RegisterAppend(sessionElements);
+            session.Require<PlayerContainerArrayElement>().SetAll(() => new Container(playerElements));
             // TODO:refactor standard entity components
-            session.Require<EntityArrayProperty>().SetAll(() => new EntityContainer(typeof(ThrowableComponent)).Zero());
-            session.ZeroIfHas<KillFeedProperty>();
+            session.Require<EntityArrayElement>().SetAll(() => new EntityContainer(typeof(ThrowableComponent)).Zero());
+            session.ZeroIfWith<KillFeedElement>();
             return session;
         }
     }
 
     internal static class NetworkSessionExtensions
     {
-        internal static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayProperty>()[index];
+        internal static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
     }
 }

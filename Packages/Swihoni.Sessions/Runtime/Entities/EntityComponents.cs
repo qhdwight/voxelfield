@@ -4,9 +4,9 @@ using Swihoni.Components;
 namespace Swihoni.Sessions.Entities
 {
     [Serializable]
-    public class EntityArrayProperty : ArrayProperty<EntityContainer>
+    public class EntityArrayElement : ArrayElement<EntityContainer>
     {
-        public EntityArrayProperty() : base(10) { }
+        public EntityArrayElement() : base(10) { }
     }
 
     [Serializable]

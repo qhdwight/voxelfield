@@ -11,9 +11,9 @@ using Voxel;
 namespace Compound.Session
 {
     [Serializable]
-    public class VoxelMapNameProperty : StringProperty
+    public class VoxelMapNameElement : StringElement
     {
-        public VoxelMapNameProperty() : base(16) { }
+        public VoxelMapNameElement() : base(16) { }
     }
 
     [Serializable, Additive]
@@ -49,7 +49,7 @@ namespace Compound.Session
 
         public override void Zero() => m_ChangeMap.Clear();
 
-        public override void SetFromIfPresent(PropertyBase other)
+        public override void SetFromIfWith(PropertyBase other)
         {
             if (!(other is ChangedVoxelsProperty otherChanged)) throw new ArgumentException("Other was not voxel change map");
             Clear();
@@ -73,7 +73,7 @@ namespace Compound.Session
             m_ChangeMap.Add(position, change);
         }
 
-        public override void InterpolateFromIfPresent(PropertyBase p1, PropertyBase p2, float interpolation) => throw new NotImplementedException();
+        public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => throw new NotImplementedException();
 
         public IEnumerator<(Position3Int, VoxelChangeData)> GetEnumerator()
         {
@@ -91,7 +91,7 @@ namespace Compound.Session
         static CompoundComponents()
         {
             SessionElements = SessionElements.NewStandardSessionElements();
-            SessionElements.elements.AddRange(new[] {typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty)});
+            SessionElements.elements.AddRange(new[] {typeof(VoxelMapNameElement), typeof(ChangedVoxelsProperty)});
         }
     }
 }

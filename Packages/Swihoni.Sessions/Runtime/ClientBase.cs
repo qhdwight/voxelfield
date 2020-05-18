@@ -35,9 +35,9 @@ namespace Swihoni.Sessions
 
             foreach (ServerSessionContainer session in m_SessionHistory)
             {
-                session.Add(typeof(LocalizedClientStampComponent));
-                foreach (Container player in session.Require<PlayerContainerArrayProperty>())
-                    player.Add(typeof(LocalizedClientStampComponent));
+                session.RegisterAppend(typeof(LocalizedClientStampComponent));
+                foreach (Container player in session.Require<PlayerContainerArrayElement>())
+                    player.RegisterAppend(typeof(LocalizedClientStampComponent));
             }
         }
 
@@ -61,7 +61,7 @@ namespace Swihoni.Sessions
 
         protected override void Render(float renderTime)
         {
-            if (m_RenderSession.Without(out PlayerContainerArrayProperty renderPlayers) || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
+            if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers) || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
                 return;
 
             var tickRate = GetLatestSession().Require<TickRateProperty>();
@@ -78,13 +78,13 @@ namespace Swihoni.Sessions
                     Container GetInHistory(int historyIndex) => m_PlayerPredictionHistory.Get(-historyIndex);
                     float rollback = tickRate.TickInterval;
                     RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
-                    renderPlayer.FastMergeSet(m_CommandHistory.Peek());
+                    renderPlayer.MergeFrom(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                 }
                 else
                 {
                     int copiedPlayerId = playerId;
-                    Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayProperty>()[copiedPlayerId];
+                    Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId];
 
                     float rollback = tickRate.TickInterval * 3;
                     RenderInterpolatedPlayer<LocalizedClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
@@ -137,8 +137,8 @@ namespace Swihoni.Sessions
                                     commands = m_CommandHistory.ClaimNext();
             if (predictedPlayer.Without(out ClientStampComponent predictedStamp)) return;
 
-            predictedPlayer.FastCopyFrom(previousPredictedPlayer);
-            commands.FastCopyFrom(previousCommand);
+            predictedPlayer.CopyFrom(previousPredictedPlayer);
+            commands.CopyFrom(previousCommand);
 
             if (IsPaused)
             {
@@ -149,7 +149,7 @@ namespace Swihoni.Sessions
                 predictedStamp.tick.Value = tick;
                 predictedStamp.time.Value = time;
                 var previousClientStamp = previousPredictedPlayer.Require<ClientStampComponent>();
-                if (previousClientStamp.time.HasValue)
+                if (previousClientStamp.time.WithValue)
                 {
                     float lastTime = previousClientStamp.time.OrElse(time),
                           duration = time - lastTime;
@@ -157,9 +157,9 @@ namespace Swihoni.Sessions
                 }
 
                 // Inject trusted component
-                commands.Require<ClientStampComponent>().FastCopyFrom(predictedStamp);
-                predictedPlayer.FastMergeSet(commands);
-                if (predictedStamp.duration.HasValue)
+                commands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
+                predictedPlayer.MergeFrom(commands);
+                if (predictedStamp.duration.WithValue)
                     m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.duration);
             }
         }
@@ -188,11 +188,11 @@ namespace Swihoni.Sessions
                     Type type = predictedElement.GetType();
                     if (type.IsDefined(typeof(OnlyServerTrustedAttribute)))
                     {
-                        latestPredictedElement.FastMergeSet(serverElement);
-                        return Navigation.SkipDescendends;
+                        latestPredictedElement.MergeFrom(serverElement);
+                        return Navigation.SkipDescendents;
                     }
                     if (type.IsDefined(typeof(ClientTrustedAttribute)))
-                        return Navigation.SkipDescendends;
+                        return Navigation.SkipDescendents;
                     switch (predictedElement)
                     {
                         case PropertyBase p1 when serverElement is PropertyBase p2 && !p1.Equals(p2):
@@ -206,15 +206,15 @@ namespace Swihoni.Sessions
                 /* We did not predict properly */
                 PredictionErrors++;
                 // Place base from verified server
-                predictedPlayer.FastCopyFrom(serverPlayer);
+                predictedPlayer.CopyFrom(serverPlayer);
                 // Replay old commands up until most recent to get back on track
                 for (int commandHistoryIndex = playerHistoryIndex - 1; commandHistoryIndex >= 0; commandHistoryIndex--)
                 {
                     ClientCommandsContainer commands = m_CommandHistory.Get(-commandHistoryIndex);
                     Container pastPredictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
                     ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
-                    pastPredictedPlayer.FastCopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
-                    pastPredictedPlayer.Require<ClientStampComponent>().FastCopyFrom(stamp);
+                    pastPredictedPlayer.CopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
+                    pastPredictedPlayer.Require<ClientStampComponent>().CopyFrom(stamp);
                     m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().duration);
                 }
                 break;
@@ -234,19 +234,19 @@ namespace Swihoni.Sessions
                         ServerSessionContainer previousServerSession = m_SessionHistory.Peek(),
                                                serverSession = m_SessionHistory.ClaimNext();
                         CopyFromPreviousSession(previousServerSession, serverSession);
-                        serverSession.FastMergeSet(receivedServerSession);
+                        serverSession.MergeFrom(receivedServerSession);
                         Profiler.EndSample();
 
                         Received(serverSession);
 
                         uint serverTick = serverSession.Require<ServerStampComponent>().tick;
                         UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
-                        if (previousServerTick.HasValue && serverTick <= previousServerTick)
+                        if (previousServerTick.WithValue && serverTick <= previousServerTick)
                         {
                             Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
                             break;
                         }
-                        if (previousServerTick.HasValue)
+                        if (previousServerTick.WithValue)
                         {
                             uint delta = serverTick - previousServerTick;
                             m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick - delta + 1;    
@@ -257,7 +257,7 @@ namespace Swihoni.Sessions
                             FloatProperty serverTime = serverSession.Require<ServerStampComponent>().time,
                                           localizedServerTime = serverSession.Require<LocalizedClientStampComponent>().time;
 
-                            if (localizedServerTime.HasValue)
+                            if (localizedServerTime.WithValue)
                                 localizedServerTime.Value += serverTime - previousServerSession.Require<ServerStampComponent>().time;
                             else
                                 localizedServerTime.Value = time;
@@ -270,7 +270,7 @@ namespace Swihoni.Sessions
                         }
 
                         Profiler.BeginSample("Client Update Players");
-                        var serverPlayers = serverSession.Require<PlayerContainerArrayProperty>();
+                        var serverPlayers = serverSession.Require<PlayerContainerArrayElement>();
                         for (var playerId = 0; playerId < serverPlayers.Length; playerId++)
                         {
                             Container serverPlayer = serverPlayers[playerId];
@@ -281,7 +281,7 @@ namespace Swihoni.Sessions
                             FloatProperty serverTime = serverPlayer.Require<ServerStampComponent>().time,
                                           localizedServerTime = serverPlayer.Require<LocalizedClientStampComponent>().time;
 
-                            if (localizedServerTime.HasValue)
+                            if (localizedServerTime.WithValue)
                                 localizedServerTime.Value += serverTime - previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().time;
                             else
                                 localizedServerTime.Value = time;
@@ -319,7 +319,7 @@ namespace Swihoni.Sessions
 
         private static bool GetLocalPlayerId(Container session, out int localPlayerId)
         {
-            if (session.Has(out LocalPlayerProperty localPlayerProperty) && localPlayerProperty.HasValue)
+            if (session.With(out LocalPlayerProperty localPlayerProperty) && localPlayerProperty.WithValue)
             {
                 localPlayerId = localPlayerProperty;
                 return true;
@@ -355,7 +355,7 @@ namespace Swihoni.Sessions
         private void SendDebug(Container player)
         {
             var debug = new DebugClientView(player.ElementTypes);
-            debug.FastCopyFrom(player);
+            debug.CopyFrom(player);
             m_Socket.SendToServer(debug);
         }
 

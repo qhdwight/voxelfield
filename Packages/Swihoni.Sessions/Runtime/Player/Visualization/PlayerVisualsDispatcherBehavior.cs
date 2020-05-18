@@ -41,15 +41,15 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void Render(int playerId, Container player, bool isLocalPlayer)
         {
-            bool usesHealth = player.Has(out HealthProperty health),
-                 usesDamageNotifier = player.Has(out DamageNotifierComponent damageNotifier),
-                 isVisible = !usesHealth || health.HasValue;
+            bool usesHealth = player.With(out HealthProperty health),
+                 usesDamageNotifier = player.With(out DamageNotifierComponent damageNotifier),
+                 isVisible = !usesHealth || health.WithValue;
             if (isVisible)
             {
-                if (player.Has(out CameraComponent playerCamera))
+                if (player.With(out CameraComponent playerCamera))
                     m_Camera.transform.localRotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up)
                                                      * Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
-                if (player.Has(out MoveComponent move))
+                if (player.With(out MoveComponent move))
                     m_Camera.transform.position = move.position + new Vector3 {y = Mathf.Lerp(m_CrouchedCameraHeight, m_UprightCameraHeight, 1.0f - move.normalizedCrouch)};
                 if (usesDamageNotifier)
                 {

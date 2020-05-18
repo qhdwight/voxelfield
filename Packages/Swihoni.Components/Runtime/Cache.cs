@@ -9,7 +9,8 @@ namespace Swihoni.Components
     {
         private static readonly Dictionary<Type, FieldInfo[]> FieldCache = new Dictionary<Type, FieldInfo[]>();
 
-        internal static FieldInfo[] GetFieldInfo(Type type)
+        /// <returns>Ordered list by declaring type of fields. This places fields belonging to base classes first.</returns>
+        internal static IReadOnlyList<FieldInfo> GetFieldInfo(Type type)
         {
             if (!FieldCache.ContainsKey(type))
                 FieldCache.Add(type,

@@ -13,7 +13,7 @@ namespace Swihoni.Sessions.Interfaces
 
     public abstract class ArrayViewerInterfaceBase<TComponent, TArray, TElement> : SessionInterfaceBehavior
         where TComponent : ElementInterfaceBase<TElement>
-        where TArray : ArrayProperty<TElement>
+        where TArray : ArrayElement<TElement>
         where TElement : ElementBase, new()
     {
         [SerializeField] private GameObject m_EntryPrefab = default;
