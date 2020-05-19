@@ -67,9 +67,7 @@ namespace Swihoni.Networking
                     if (!(m_ReceiveEndPoint is IPEndPoint ipEndPoint)) continue;
                     bool isNewConnection = !m_Connections.Contains(ipEndPoint);
                     if (isNewConnection)
-                    {
                         m_Connections.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port));
-                    }
                     m_ReadStream.Position = 0;
                     byte code = m_Reader.ReadByte();
                     Type type = m_Codes.GetReverse(code);

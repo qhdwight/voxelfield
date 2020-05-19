@@ -242,12 +242,12 @@ namespace Swihoni.Sessions
         protected override void RollbackHitboxes(int playerId)
         {
             float rtt = GetPlayerFromId(playerId).Require<ServerPingComponent>().rtt;
-            for (var i = 0; i < m_Modifier.Length; i++)
+            for (var _ = 0; _ < m_Modifier.Length; _++)
             {
-                int j = i;
-                Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(j);
+                int modifierId = _;
+                Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(modifierId);
 
-                Container rollbackPlayer = m_RollbackSession.GetPlayer(i);
+                Container rollbackPlayer = m_RollbackSession.GetPlayer(modifierId);
 
                 FloatProperty time = GetPlayerInHistory(0).Require<ServerStampComponent>().time;
                 if (time.WithoutValue) continue;
@@ -257,9 +257,9 @@ namespace Swihoni.Sessions
                 RenderInterpolatedPlayer<ServerStampComponent>(time - rollback, rollbackPlayer,
                                                                m_SessionHistory.Size, GetPlayerInHistory);
 
-                m_Modifier[i].EvaluateHitboxes(i, rollbackPlayer);
-                if (i == 0)
-                    DebugBehavior.Singleton.Render(this, i, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
+                m_Modifier[modifierId].EvaluateHitboxes(modifierId, rollbackPlayer);
+                if (modifierId == 0)
+                    DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
         }
 
