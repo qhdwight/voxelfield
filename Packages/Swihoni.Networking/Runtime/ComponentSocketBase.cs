@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using Swihoni.Collections;
 using Swihoni.Components;
 using UnityEngine;
@@ -18,26 +20,21 @@ namespace Swihoni.Networking
         protected readonly HashSet<IPEndPoint> m_Connections = new HashSet<IPEndPoint>();
 
         private readonly DualDictionary<Type, byte> m_Codes;
-        private readonly MemoryStream m_SendStream = new MemoryStream(BufferSize), m_ReadStream = new MemoryStream(BufferSize);
-        private readonly BinaryWriter m_Writer;
-        private readonly BinaryReader m_Reader;
-        private readonly Dictionary<Type, Pool<ElementBase>> m_MessagePools = new Dictionary<Type, Pool<ElementBase>>();
+        private readonly Dictionary<Type, Pool<NetMessageComponent>> m_MessagePools = new Dictionary<Type, Pool<NetMessageComponent>>();
         private readonly float m_StartTime;
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
         private long m_BytesSent, m_BytesReceived;
 
         public float SendRate => m_BytesSent / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
-        public float ReceiveRate => m_BytesReceived / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
+        public float ReceiveRateS => m_BytesReceived / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
         public HashSet<IPEndPoint> Connections => m_Connections;
 
-        protected ComponentSocketBase(IPEndPoint ip)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected ComponentSocketBase(IPEndPoint ip, )
         {
             m_Ip = ip;
             m_Codes = new DualDictionary<Type, byte>();
             m_RawSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            m_ReadStream.SetLength(m_ReadStream.Capacity);
-            m_Writer = new BinaryWriter(m_SendStream);
-            m_Reader = new BinaryReader(m_ReadStream);
             m_StartTime = Time.realtimeSinceStartup;
         }
 
@@ -47,12 +44,17 @@ namespace Swihoni.Networking
         /// Container types must have an instance passed to figure out its children elements.
         /// The order of those element types is also important.
         /// </summary>
-        public void RegisterMessage(Type elementType, Container container = null)
+        public void RegisterSimpleElement(Type registerType)
         {
-            m_Codes.Add(elementType, (byte) m_Codes.Length);
-            m_MessagePools[elementType] = new Pool<ElementBase>(1, () => typeof(Container).IsAssignableFrom(elementType)
-                                                                    ? container.Clone()
-                                                                    : (ElementBase) Activator.CreateInstance(elementType));
+            m_Codes.Add(registerType, (byte) m_Codes.Length);
+            var types = new [] {}
+            m_MessagePools[registerType] = new Pool<NetMessageComponent>(1, () => new NetMessageComponent(registerType));
+        }
+
+        public void RegisterContainer(Type registerType, Container example)
+        {
+            m_Codes.Add(registerType, (byte) m_Codes.Length);
+            m_MessagePools[registerType] = new Pool<NetMessageComponent>(1, () => new NetMessageComponent(example.ElementTypes));
         }
 
         public void PollReceived(Action<IPEndPoint, ElementBase> received)
@@ -89,7 +91,7 @@ namespace Swihoni.Networking
             }
         }
 
-        public bool Send(ComponentBase message, IPEndPoint endPoint)
+        public bool Send(NetMessageComponent message, IPEndPoint endPoint)
         {
             try
             {
@@ -97,6 +99,10 @@ namespace Swihoni.Networking
                 m_SendStream.Position = 0;
                 m_Writer.Write(code);
                 message.Serialize(m_SendStream);
+                // var e = new SocketAsyncEventArgs();
+                // e.RemoteEndPoint = endPoint;
+                // e.SetBuffer(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position + 1);
+                // m_RawSocket.SendToAsync()
                 int sent = m_RawSocket.SendTo(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position + 1, SocketFlags.None, endPoint);
                 m_BytesSent += sent;
                 return true;

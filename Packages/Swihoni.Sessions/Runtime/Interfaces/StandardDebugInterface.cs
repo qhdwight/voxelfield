@@ -29,7 +29,7 @@ namespace Swihoni.Sessions.Interfaces
             {
                 m_ResetErrorText.BuildText(builder => builder.Append("Reset Errors: ").Append(networkSession.ResetErrors));
                 m_UploadText.BuildText(builder => builder.AppendFormat("Up: {0:F1} kb/s", networkSession.Socket.SendRate));
-                m_DownloadText.BuildText(builder => builder.AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.SendRate));
+                m_DownloadText.BuildText(builder => builder.AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.ReceiveRate));
             }
             m_LastUpdateTime = time;
         }

@@ -103,6 +103,7 @@
             <e p="ComponentClientSocket.cs" t="Include" />
             <e p="ComponentServerSocket.cs" t="Include" />
             <e p="ComponentSocketBase.cs" t="Include" />
+            <e p="NetMessageComponent.cs" t="Include" />
             <e p="Swihoni.Networking.asmdef" t="Include" />
           </e>
         </e>
