@@ -57,10 +57,10 @@ namespace Swihoni.Sessions
 
         protected void RegisterMessages(ComponentSocketBase socket)
         {
-            socket.RegisterMessage(typeof(ClientCommandsContainer), m_EmptyClientCommands);
-            socket.RegisterMessage(typeof(ServerSessionContainer), m_EmptyServerSession);
-            socket.RegisterMessage(typeof(DebugClientView), m_EmptyDebugClientView);
-            socket.RegisterMessage(typeof(PingCheckComponent));
+            socket.RegisterContainer(typeof(ClientCommandsContainer), m_EmptyClientCommands);
+            socket.RegisterContainer(typeof(ServerSessionContainer), m_EmptyServerSession);
+            socket.RegisterContainer(typeof(DebugClientView), m_EmptyDebugClientView);
+            socket.RegisterSimpleElement(typeof(PingCheckComponent));
         }
 
         protected static void ZeroCommand(Container command)

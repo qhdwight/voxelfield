@@ -82,8 +82,8 @@ namespace Swihoni.Sessions.Tests
             using (var server = new ComponentServerSocket(localHost))
             using (var client = new ComponentClientSocket(localHost))
             {
-                server.RegisterElement(typeof(ServerSessionContainer), session);
-                client.RegisterElement(typeof(ServerSessionContainer), session);
+                server.RegisterContainer(typeof(ServerSessionContainer), session);
+                client.RegisterContainer(typeof(ServerSessionContainer), session);
 
                 client.SendToServer(session);
 
@@ -122,8 +122,8 @@ namespace Swihoni.Sessions.Tests
             using (var server = new ComponentServerSocket(localHost))
             using (var client = new ComponentClientSocket(localHost))
             {
-                server.RegisterElement(typeof(ClientCommandsContainer), clientCommands);
-                client.RegisterElement(typeof(ClientCommandsContainer), clientCommands);
+                server.RegisterContainer(typeof(ClientCommandsContainer), clientCommands);
+                client.RegisterContainer(typeof(ClientCommandsContainer), clientCommands);
 
                 const int send = 120;
 

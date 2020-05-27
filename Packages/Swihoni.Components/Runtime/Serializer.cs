@@ -20,8 +20,7 @@ namespace Swihoni.Components
         static Serializer() => Stream.SetLength(Stream.Capacity);
 
         /// <summary>
-        /// Serialize element to beginning of stream.
-        /// TODO:feature relative to current stream position
+        /// Serialize element into stream.
         /// </summary>
         public static void Serialize(this ElementBase element, MemoryStream stream)
         {
@@ -42,7 +41,7 @@ namespace Swihoni.Components
                     return Navigation.Continue;
                 });
                 var count = (int) Stream.Position;
-                if (stream.Capacity < count) stream.Capacity = count;
+                if (stream.Capacity < count) stream.Capacity = (int) (stream.Position + count);
                 Buffer.BlockCopy(Stream.GetBuffer(), 0, stream.GetBuffer(), (int) stream.Position, count);
                 stream.Position = count;
             }
@@ -53,8 +52,7 @@ namespace Swihoni.Components
         }
 
         /// <summary>
-        /// Deserializes from beginning of stream into element.
-        /// TODO:feature relative to current stream position
+        /// Deserializes into element from stream.
         /// </summary>
         public static void Deserialize(this ElementBase element, MemoryStream stream, int? length = null)
         {

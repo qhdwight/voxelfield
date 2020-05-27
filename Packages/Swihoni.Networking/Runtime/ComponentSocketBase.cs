@@ -13,7 +13,7 @@ namespace Swihoni.Networking
 {
     public abstract class ComponentSocketBase : IDisposable
     {
-        private const int BufferSize = 1 << 16;
+        private const int InitialBufferSize = 1 << 16;
 
         protected readonly IPEndPoint m_Ip;
         protected readonly Socket m_RawSocket;
@@ -21,20 +21,22 @@ namespace Swihoni.Networking
 
         private readonly DualDictionary<Type, byte> m_Codes;
         private readonly Dictionary<Type, Pool<NetMessageComponent>> m_MessagePools = new Dictionary<Type, Pool<NetMessageComponent>>();
+        private readonly MemoryStream m_ReadStream = new MemoryStream(InitialBufferSize);
+        private readonly BinaryReader m_Reader;
         private readonly float m_StartTime;
         private EndPoint m_ReceiveEndPoint = new IPEndPoint(IPAddress.Any, 0);
         private long m_BytesSent, m_BytesReceived;
 
         public float SendRate => m_BytesSent / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
-        public float ReceiveRateS => m_BytesReceived / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
+        public float ReceiveRate => m_BytesReceived / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
         public HashSet<IPEndPoint> Connections => m_Connections;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected ComponentSocketBase(IPEndPoint ip, )
+        protected ComponentSocketBase(IPEndPoint ip)
         {
             m_Ip = ip;
             m_Codes = new DualDictionary<Type, byte>();
             m_RawSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            m_Reader = new BinaryReader(m_ReadStream);
             m_StartTime = Time.realtimeSinceStartup;
         }
 
@@ -47,14 +49,17 @@ namespace Swihoni.Networking
         public void RegisterSimpleElement(Type registerType)
         {
             m_Codes.Add(registerType, (byte) m_Codes.Length);
-            var types = new [] {}
-            m_MessagePools[registerType] = new Pool<NetMessageComponent>(1, () => new NetMessageComponent(registerType));
+            m_MessagePools[registerType] = new Pool<NetMessageComponent>(1, () =>
+            {
+                var messageElement = (ElementBase) Activator.CreateInstance(registerType);
+                return new NetMessageComponent(messageElement);
+            });
         }
 
-        public void RegisterContainer(Type registerType, Container example)
+        public void RegisterContainer(Type registerType, Container container)
         {
             m_Codes.Add(registerType, (byte) m_Codes.Length);
-            m_MessagePools[registerType] = new Pool<NetMessageComponent>(1, () => new NetMessageComponent(example.ElementTypes));
+            m_MessagePools[registerType] = new Pool<NetMessageComponent>(1, () => new NetMessageComponent(container.Clone()));
         }
 
         public void PollReceived(Action<IPEndPoint, ElementBase> received)
@@ -64,7 +69,7 @@ namespace Swihoni.Networking
                 // TODO:performance use bytes receive
                 try
                 {
-                    int bytesReceived = m_RawSocket.ReceiveFrom(m_ReadStream.GetBuffer(), 0, BufferSize, SocketFlags.None, ref m_ReceiveEndPoint);
+                    int bytesReceived = m_RawSocket.ReceiveFrom(m_ReadStream.GetBuffer(), 0, InitialBufferSize, SocketFlags.None, ref m_ReceiveEndPoint);
                     m_BytesReceived += bytesReceived;
                     if (!(m_ReceiveEndPoint is IPEndPoint ipEndPoint)) continue;
                     bool isNewConnection = !m_Connections.Contains(ipEndPoint);
@@ -73,10 +78,8 @@ namespace Swihoni.Networking
                     m_ReadStream.Position = 0;
                     byte code = m_Reader.ReadByte();
                     Type type = m_Codes.GetReverse(code);
-                    ElementBase message = m_MessagePools[type].Obtain();
-                    message.Reset();
-                    message.Deserialize(m_ReadStream);
-                    received(ipEndPoint, message);
+                    NetMessageComponent message = m_MessagePools[type].Obtain();
+                    Buffer.BlockCopy(m_ReadStream.GetBuffer(), 1, message.Stream.GetBuffer(), 0, bytesReceived - 1);
                     m_MessagePools[message.GetType()].Return(message);
                 }
                 catch (SocketException)
@@ -91,14 +94,14 @@ namespace Swihoni.Networking
             }
         }
 
-        public bool Send(NetMessageComponent message, IPEndPoint endPoint)
+        public bool Send(ElementBase element, IPEndPoint endPoint)
         {
             try
             {
-                byte code = m_Codes.GetForward(message.GetType());
+                byte code = m_Codes.GetForward(element.GetType());
                 m_SendStream.Position = 0;
                 m_Writer.Write(code);
-                message.Serialize(m_SendStream);
+                element.Serialize(m_SendStream);
                 // var e = new SocketAsyncEventArgs();
                 // e.RemoteEndPoint = endPoint;
                 // e.SetBuffer(m_SendStream.GetBuffer(), 0, (int) m_SendStream.Position + 1);
