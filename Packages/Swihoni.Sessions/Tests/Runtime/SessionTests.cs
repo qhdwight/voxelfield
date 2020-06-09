@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using LiteNetLib;
 using NUnit.Framework;
 using Swihoni.Components;
-using Swihoni.Networking;
+using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Player.Components;
@@ -72,8 +73,8 @@ namespace Swihoni.Sessions.Tests
             var standardElements = SessionElements.NewStandardSessionElements();
             var session = new ServerSessionContainer(standardElements.elements.Append(typeof(ServerStampComponent)));
             session.Require<PlayerContainerArrayElement>().SetAll(() => new Container(standardElements.playerElements
-                                                                                                       .Append(typeof(ServerStampComponent))
-                                                                                                       .Append(typeof(ClientStampComponent))));
+                                                                                                      .Append(typeof(ServerStampComponent))
+                                                                                                      .Append(typeof(ClientStampComponent))));
             const float time = 0.241f;
             session.Require<ServerStampComponent>().time.Value = time;
 
@@ -84,14 +85,17 @@ namespace Swihoni.Sessions.Tests
             {
                 server.RegisterContainer(typeof(ServerSessionContainer), session);
                 client.RegisterContainer(typeof(ServerSessionContainer), session);
+                
+                server.PollEvents();
+                client.PollEvents();
 
-                client.SendToServer(session);
+                client.SendToServer(session, DeliveryMethod.Unreliable);
 
                 var received = 0;
 
                 Thread.Sleep(100);
 
-                server.PollReceived((ipEndPoint, component) =>
+                server.PollReceived((peer, component) =>
                 {
                     switch (component)
                     {
@@ -124,11 +128,14 @@ namespace Swihoni.Sessions.Tests
             {
                 server.RegisterContainer(typeof(ClientCommandsContainer), clientCommands);
                 client.RegisterContainer(typeof(ClientCommandsContainer), clientCommands);
+                
+                server.PollEvents();
+                client.PollEvents();
 
                 const int send = 120;
 
                 for (var i = 0; i < send; i++)
-                    client.SendToServer(clientCommands);
+                    client.SendToServer(clientCommands, DeliveryMethod.Unreliable);
 
                 var received = 0;
 

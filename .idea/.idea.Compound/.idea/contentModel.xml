@@ -24,6 +24,7 @@
               <e p="SessionManager.cs" t="Include" />
               <e p="WarmupMode.cs" t="Include" />
             </e>
+            <e p="Version.cs" t="Include" />
           </e>
           <e p="Console" t="Include">
             <e p="Console.asmdef" t="Include" />
@@ -59,8 +60,55 @@
       <e p="Compound.sln" t="IncludeFlat" />
       <e p="Console.csproj" t="IncludeRecursive" />
       <e p="Input.csproj" t="IncludeRecursive" />
+      <e p="LiteNetLib.csproj" t="IncludeRecursive" />
       <e p="obj" t="ExcludeRecursive" />
       <e p="Packages" t="ExcludeRecursive">
+        <e p="LiteNetLib" t="Include">
+          <e p="Runtime" t="Include">
+            <e p="LiteNetLib" t="Include">
+              <e p="BaseChannel.cs" t="Include" />
+              <e p="ConnectionRequest.cs" t="Include" />
+              <e p="INetEventListener.cs" t="Include" />
+              <e p="Layers" t="Include">
+                <e p="Crc32cLayer.cs" t="Include" />
+                <e p="PacketLayerBase.cs" t="Include" />
+                <e p="XorEncryptLayer.cs" t="Include" />
+              </e>
+              <e p="LiteNetLib.asmdef" t="Include" />
+              <e p="NatPunchModule.cs" t="Include" />
+              <e p="NetConstants.cs" t="Include" />
+              <e p="NetDebug.cs" t="Include" />
+              <e p="NetExceptions.cs" t="Include" />
+              <e p="NetManager.cs" t="Include" />
+              <e p="NetPacket.cs" t="Include" />
+              <e p="NetPacketPool.cs" t="Include" />
+              <e p="NetPeer.cs" t="Include" />
+              <e p="NetSocket.cs" t="Include" />
+              <e p="NetStatistics.cs" t="Include" />
+              <e p="NetUtils.cs" t="Include" />
+              <e p="obj" t="Include">
+                <e p="Debug" t="Include">
+                  <e p="netcoreapp2.1" t="Include">
+                    <e p="LiteNetLib.AssemblyInfo.cs" t="Include" />
+                  </e>
+                </e>
+              </e>
+              <e p="ReliableChannel.cs" t="Include" />
+              <e p="SequencedChannel.cs" t="Include" />
+              <e p="Utils" t="Include">
+                <e p="CRC32C.cs" t="Include" />
+                <e p="FastBitConverter.cs" t="Include" />
+                <e p="INetSerializable.cs" t="Include" />
+                <e p="NetDataReader.cs" t="Include" />
+                <e p="NetDataWriter.cs" t="Include" />
+                <e p="NetPacketProcessor.cs" t="Include" />
+                <e p="NetSerializer.cs" t="Include" />
+                <e p="NtpPacket.cs" t="Include" />
+                <e p="NtpRequest.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
         <e p="Swihoni.Collections" t="Include">
           <e p="Runtime" t="Include">
             <e p="ArrayFactory.cs" t="Include" />
@@ -79,11 +127,16 @@
             <e p="Container.cs" t="Include" />
             <e p="Copier.cs" t="Include" />
             <e p="ElementExtensions.cs" t="Include" />
+            <e p="Extensions.cs" t="Include" />
             <e p="Interpolator.cs" t="Include" />
+            <e p="Networking" t="Include">
+              <e p="ComponentClientSocket.cs" t="Include" />
+              <e p="ComponentServerSocket.cs" t="Include" />
+              <e p="ComponentSocketBase.cs" t="Include" />
+            </e>
             <e p="Properties.cs" t="Include" />
             <e p="PropertyBase.cs" t="Include" />
             <e p="Serializer.cs" t="Include" />
-            <e p="StreamExtensions.cs" t="Include" />
             <e p="Swihoni.Components.asmdef" t="Include" />
           </e>
           <e p="Tests" t="Include">
@@ -95,14 +148,6 @@
               <e p="SerializerTests.cs" t="Include" />
               <e p="Swihoni.Components.Tests.asmdef" t="Include" />
             </e>
-          </e>
-        </e>
-        <e p="Swihoni.Networking" t="Include">
-          <e p="Runtime" t="Include">
-            <e p="ComponentClientSocket.cs" t="Include" />
-            <e p="ComponentServerSocket.cs" t="Include" />
-            <e p="ComponentSocketBase.cs" t="Include" />
-            <e p="Swihoni.Networking.asmdef" t="Include" />
           </e>
         </e>
         <e p="Swihoni.Sessions" t="Include">
@@ -236,7 +281,6 @@
       <e p="Swihoni.Collections.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Components.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Components.Tests.csproj" t="IncludeRecursive" />
-      <e p="Swihoni.Networking.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Session.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Sessions.Tests.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Util.csproj" t="IncludeRecursive" />

@@ -38,7 +38,7 @@ namespace Swihoni.Sessions.Items.Visuals
         [SerializeField] private Transform m_IkL = default, m_IkR = default;
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;
         [SerializeField] private ChildBehavior[] m_ChildBehaviors = default;
-        
+
         private AudioSource m_AudioSource;
         private AnimationClipPlayable[] m_Animations;
         private PlayableGraph m_PlayerGraph;

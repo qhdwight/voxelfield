@@ -2,9 +2,10 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using LiteNetLib;
 using Swihoni.Collections;
 using Swihoni.Components;
-using Swihoni.Networking;
+using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
@@ -14,6 +15,7 @@ namespace Swihoni.Sessions
 {
     public abstract class ClientBase : NetworkedSessionBase
     {
+        private readonly string m_ConnectKey;
         private readonly CyclicArray<ClientCommandsContainer> m_CommandHistory;
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
@@ -22,9 +24,10 @@ namespace Swihoni.Sessions
         public int PredictionErrors { get; private set; }
         public override ComponentSocketBase Socket => m_Socket;
 
-        protected ClientBase(SessionElements elements, IPEndPoint ipEndPoint)
+        protected ClientBase(SessionElements elements, IPEndPoint ipEndPoint, string connectKey)
             : base(elements, ipEndPoint)
         {
+            m_ConnectKey = connectKey;
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
             // TODO:refactor zeroing
@@ -44,8 +47,16 @@ namespace Swihoni.Sessions
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentClientSocket(IpEndPoint);
+            m_Socket = new ComponentClientSocket(IpEndPoint, m_ConnectKey);
+            m_Socket.Listener.PeerDisconnectedEvent += OnDisconnect;
             RegisterMessages(m_Socket);
+        }
+
+        private void OnDisconnect(NetPeer peer, DisconnectInfo disconnect)
+        {
+            if (disconnect.AdditionalData.TryGetString(out string reason))
+                Debug.Log($"Disconnected for reason: {reason}");
+            Dispose();
         }
 
         private void UpdateInputs(int localPlayerId) => m_Modifier[localPlayerId].ModifyCommands(this, m_CommandHistory.Peek());
@@ -115,19 +126,19 @@ namespace Swihoni.Sessions
 
             Profiler.BeginSample("Client Receive");
             Receive(time);
-            HandleTimeouts(time);
+            // HandleTimeouts(time);
             Profiler.EndSample();
         }
 
         protected virtual void SettingsTick(Container serverSession) { }
 
-        private void HandleTimeouts(float time)
-        {
-            if (!m_ServerReceiveTime.HasValue || Mathf.Abs(m_ServerReceiveTime.Value - time) < 2.0f) return;
-
-            Debug.LogWarning($"[{GetType().Name}] Disconnected due to stale connection!");
-            Dispose();
-        }
+        // private void HandleTimeouts(float time)
+        // {
+        //     if (!m_ServerReceiveTime.HasValue || Mathf.Abs(m_ServerReceiveTime.Value - time) < 2.0f) return;
+        //
+        //     Debug.LogWarning($"[{GetType().Name}] Disconnected due to stale connection!");
+        //     Dispose();
+        // }
 
         private void Predict(uint tick, float time, int localPlayerId)
         {
@@ -164,7 +175,7 @@ namespace Swihoni.Sessions
             }
         }
 
-        private void Send() => m_Socket.SendToServer(m_CommandHistory.Peek());
+        private void Send() => m_Socket.SendToServer(m_CommandHistory.Peek(), DeliveryMethod.ReliableUnordered);
 
         private void CheckPrediction(Container serverSession)
         {
@@ -223,7 +234,7 @@ namespace Swihoni.Sessions
 
         private void Receive(float time)
         {
-            m_Socket.PollReceived((ipEndPoint, message) =>
+            m_Socket.PollReceived((peer, message) =>
             {
                 m_ServerReceiveTime = time;
                 switch (message)
@@ -249,9 +260,9 @@ namespace Swihoni.Sessions
                         if (previousServerTick.WithValue)
                         {
                             uint delta = serverTick - previousServerTick;
-                            m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick - delta + 1;    
+                            m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick - delta + 1;
                         }
-                        
+
                         {
                             // TODO:refactor make function
                             FloatProperty serverTime = serverSession.Require<ServerStampComponent>().time,
@@ -306,11 +317,11 @@ namespace Swihoni.Sessions
 
                         break;
                     }
-                    case PingCheckComponent receivedPingCheck:
-                    {
-                        m_Socket.SendToServer(receivedPingCheck);
-                        break;
-                    }
+                    // case PingCheckComponent receivedPingCheck:
+                    // {
+                    //     m_Socket.SendToServer(receivedPingCheck, DeliveryMethod.Unreliable);
+                    //     break;
+                    // }
                 }
             });
         }
@@ -356,7 +367,7 @@ namespace Swihoni.Sessions
         {
             var debug = new DebugClientView(player.ElementTypes);
             debug.CopyFrom(player);
-            m_Socket.SendToServer(debug);
+            m_Socket.SendToServer(debug, DeliveryMethod.ReliableOrdered);
         }
 
         public override void Dispose()

@@ -60,7 +60,7 @@ namespace Swihoni.Sessions.Interfaces
                     bool isShotgun = modifier is ShotgunModifier;
                     m_Crosshair.sprite = isShotgun ? m_ShotgunCrosshair : m_DefaultCrosshair;
                     m_Crosshair.rectTransform.sizeDelta = Vector2.one * (isShotgun ? 48.0f : 32.0f);
-                    
+
                     m_InventoryText.BuildText(builder =>
                     {
                         for (var index = 0; index < inventory.itemComponents.Length; index++)

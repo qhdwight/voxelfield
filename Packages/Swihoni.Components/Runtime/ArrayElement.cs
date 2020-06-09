@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
+using LiteNetLib.Utils;
 using UnityEngine;
 
 namespace Swihoni.Components
@@ -35,11 +35,7 @@ namespace Swihoni.Components
                 m_Values[i] = constructor();
         }
 
-        public T this[int index]
-        {
-            get => m_Values[index];
-            set => m_Values[index] = value;
-        }
+        public T this[int index] { get => m_Values[index]; set => m_Values[index] = value; }
 
         public override int Length => m_Values.Length;
 
@@ -56,8 +52,8 @@ namespace Swihoni.Components
     public class CharProperty : PropertyBase<char>
     {
         public override bool ValueEquals(PropertyBase<char> other) => other.Value == Value;
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadChar();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetChar();
     }
 
     [Serializable]

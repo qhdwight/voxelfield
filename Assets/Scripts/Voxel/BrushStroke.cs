@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿using LiteNetLib.Utils;
 using Swihoni.Util.Math;
 
 namespace Voxel
@@ -9,20 +9,20 @@ namespace Voxel
         public byte radius;
         public byte texture, renderType;
 
-        public static void Serialize(BrushStroke stroke, BinaryWriter message)
+        public static void Serialize(BrushStroke stroke, NetDataWriter writer)
         {
-            message.Write(stroke.radius);
-            message.Write(stroke.texture);
-            message.Write(stroke.renderType);
+            writer.Put(stroke.radius);
+            writer.Put(stroke.texture);
+            writer.Put(stroke.renderType);
         }
 
-        public static BrushStroke Deserialize(BinaryReader message)
+        public static BrushStroke Deserialize(NetDataReader reader)
         {
             return new BrushStroke
             {
-                radius = message.ReadByte(),
-                texture = message.ReadByte(),
-                renderType = message.ReadByte()
+                radius = reader.GetByte(),
+                texture = reader.GetByte(),
+                renderType = reader.GetByte()
             };
         }
     }

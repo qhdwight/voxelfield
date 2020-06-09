@@ -6,7 +6,7 @@ namespace Swihoni.Sessions.Items.Modifiers
     {
         [SerializeField] protected byte m_Damage = default;
         [SerializeField] protected LayerMask m_PlayerMask = default;
-        
+
         public byte Damage => m_Damage;
     }
 }

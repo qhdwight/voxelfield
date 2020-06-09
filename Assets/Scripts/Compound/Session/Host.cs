@@ -16,7 +16,7 @@ namespace Compound.Session
 
         private readonly Mini m_Mini;
 
-        public Host() : base(CompoundComponents.SessionElements, new IPEndPoint(IPAddress.Loopback, 7777)) => m_Mini = new Mini(this);
+        public Host() : base(CompoundComponents.SessionElements, new IPEndPoint(IPAddress.Loopback, 7777), Server.AcceptConnection) => m_Mini = new Mini(this);
 
         protected override void SettingsTick(Container serverSession)
         {

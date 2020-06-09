@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using Swihoni.Collections;
 using Swihoni.Components;
-using Swihoni.Networking;
+using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Interfaces;
@@ -57,10 +57,10 @@ namespace Swihoni.Sessions
 
         protected void RegisterMessages(ComponentSocketBase socket)
         {
-            socket.RegisterContainer(typeof(ClientCommandsContainer), m_EmptyClientCommands);
-            socket.RegisterContainer(typeof(ServerSessionContainer), m_EmptyServerSession);
-            socket.RegisterContainer(typeof(DebugClientView), m_EmptyDebugClientView);
-            socket.RegisterSimpleElement(typeof(PingCheckComponent));
+            socket.RegisterContainer(typeof(ClientCommandsContainer), m_EmptyClientCommands, 0);
+            socket.RegisterContainer(typeof(ServerSessionContainer), m_EmptyServerSession, 1);
+            socket.RegisterContainer(typeof(DebugClientView), m_EmptyDebugClientView, 2);
+            // socket.RegisterSimpleElement(typeof(PingCheckComponent));
         }
 
         protected static void ZeroCommand(Container command)

@@ -9,7 +9,9 @@ namespace Voxel
 
     public enum VoxelRenderType : byte
     {
-        None, Block, Smooth
+        None,
+        Block,
+        Smooth
     }
 
     public static class Orientation

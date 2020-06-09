@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
@@ -59,8 +59,8 @@ namespace Swihoni.Sessions.Player.Components
         }
 
         public override bool ValueEquals(PropertyBase<Id> other) => other.Value == Value;
-        public override void SerializeValue(BinaryWriter writer) => writer.Write((byte) Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = (Id) reader.ReadByte();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put((byte) Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = (Id) reader.GetByte();
     }
 
     [Serializable]

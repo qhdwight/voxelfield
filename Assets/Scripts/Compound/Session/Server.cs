@@ -1,4 +1,6 @@
 using System.Net;
+using LiteNetLib;
+using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Util.Math;
@@ -33,12 +35,23 @@ namespace Compound.Session
 
         private readonly Mini m_Mini;
 
-        public Server(IPEndPoint ipEndPoint) : base(CompoundComponents.SessionElements, ipEndPoint) => m_Mini = new Mini(this);
+        public Server(IPEndPoint ipEndPoint) : base(CompoundComponents.SessionElements, ipEndPoint, AcceptConnection) => m_Mini = new Mini(this);
+
+        public static void AcceptConnection(ConnectionRequest request)
+        {
+            if (request.Data.TryGetString(out string result) && result == Version.String)
+                request.Accept();
+            else
+            {
+                var writer = new NetDataWriter();
+                writer.Put("Your version does not match that of the server.");
+                request.Reject(writer);
+            }
+        }
 
         protected override void SettingsTick(Container serverSession)
         {
             base.SettingsTick(serverSession);
-
             MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
         }
 

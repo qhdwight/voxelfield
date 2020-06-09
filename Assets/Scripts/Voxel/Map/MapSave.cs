@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.IO;
+using LiteNetLib.Utils;
 using Swihoni.Util.Math;
 using UnityEngine;
 
@@ -10,21 +10,21 @@ namespace Voxel.Map
         public ushort modelId;
         public Quaternion rotation;
 
-        public static void Serialize(BinaryWriter message, ModelData model)
+        public static void Serialize(NetDataWriter writer, ModelData model)
         {
-            message.Write(model.modelId);
-            message.Write(model.rotation.x);
-            message.Write(model.rotation.y);
-            message.Write(model.rotation.z);
-            message.Write(model.rotation.w);
+            writer.Put(model.modelId);
+            writer.Put(model.rotation.x);
+            writer.Put(model.rotation.y);
+            writer.Put(model.rotation.z);
+            writer.Put(model.rotation.w);
         }
 
-        public static ModelData Deserialize(BinaryReader message)
+        public static ModelData Deserialize(NetDataReader reader)
         {
             return new ModelData
             {
-                modelId = message.ReadUInt16(),
-                rotation = new Quaternion(message.ReadSingle(), message.ReadSingle(), message.ReadSingle(), message.ReadSingle())
+                modelId = reader.GetUShort(),
+                rotation = new Quaternion(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat())
             };
         }
     }
@@ -54,61 +54,61 @@ namespace Voxel.Map
         public bool DynamicChunkLoading { get; }
         public NoiseData? TerrainGenerationData { get; }
 
-        public static void Serialize(MapSave save, BinaryWriter message)
+        public static void Serialize(MapSave save, NetDataWriter writer)
         {
-            message.Write(save.Name);
-            message.Write(save.TerrainHeight);
-            Dimension.Serialize(save.Dimension, message);
-            message.Write(save.DynamicChunkLoading);
+            writer.Put(save.Name);
+            writer.Put(save.TerrainHeight);
+            Dimension.Serialize(save.Dimension, writer);
+            writer.Put(save.DynamicChunkLoading);
             // Noise data
-            message.Write(save.TerrainGenerationData.HasValue);
+            writer.Put(save.TerrainGenerationData.HasValue);
             if (save.TerrainGenerationData.HasValue)
-                NoiseData.Serialize(save.TerrainGenerationData.Value, message);
+                NoiseData.Serialize(save.TerrainGenerationData.Value, writer);
             // Brush strokes
-            message.Write(save.BrushStrokes.Count);
+            writer.Put(save.BrushStrokes.Count);
             foreach (KeyValuePair<Position3Int, BrushStroke> brushStroke in save.BrushStrokes)
             {
-                Position3Int.Serialize(brushStroke.Key, message);
-                BrushStroke.Serialize(brushStroke.Value, message);
+                Position3Int.Serialize(brushStroke.Key, writer);
+                BrushStroke.Serialize(brushStroke.Value, writer);
             }
             // Changed voxels
-            message.Write(save.ChangedVoxels.Count);
+            writer.Put(save.ChangedVoxels.Count);
             foreach (KeyValuePair<Position3Int, VoxelChangeData> change in save.ChangedVoxels)
             {
-                Position3Int.Serialize(change.Key, message);
-                VoxelChangeData.Serialize(message, change.Value);
+                Position3Int.Serialize(change.Key, writer);
+                VoxelChangeData.Serialize(writer, change.Value);
             }
-            message.Write(save.Models.Count);
+            writer.Put(save.Models.Count);
             foreach (KeyValuePair<Position3Int, ModelData> model in save.Models)
             {
-                Position3Int.Serialize(model.Key, message);
-                ModelData.Serialize(message, model.Value);
+                Position3Int.Serialize(model.Key, writer);
+                ModelData.Serialize(writer, model.Value);
             }
         }
 
-        public static MapSave Deserialize(BinaryReader message)
+        public static MapSave Deserialize(NetDataReader reader)
         {
-            string name = message.ReadString();
-            int terrainHeight = message.ReadInt32();
-            Dimension dimension = Dimension.Deserialize(message);
-            bool dynamic = message.ReadBoolean();
+            string name = reader.GetString();
+            int terrainHeight = reader.GetInt();
+            Dimension dimension = Dimension.Deserialize(reader);
+            bool dynamic = reader.GetBool();
             // Noise data
-            bool hasTerrainGenerationData = message.ReadBoolean();
-            NoiseData? data = hasTerrainGenerationData ? (NoiseData?) NoiseData.Deserialize(message) : null;
+            bool hasTerrainGenerationData = reader.GetBool();
+            NoiseData? data = hasTerrainGenerationData ? (NoiseData?) NoiseData.Deserialize(reader) : null;
             // Brush strokes
-            int brushStrokeCount = message.ReadInt32();
+            int brushStrokeCount = reader.GetInt();
             var strokes = new Dictionary<Position3Int, BrushStroke>(brushStrokeCount);
             for (var _ = 0; _ < brushStrokeCount; _++)
-                strokes.Add(Position3Int.Deserialize(message), BrushStroke.Deserialize(message));
+                strokes.Add(Position3Int.Deserialize(reader), BrushStroke.Deserialize(reader));
             // Changed voxels
-            int voxelChangeCount = message.ReadInt32();
+            int voxelChangeCount = reader.GetInt();
             var changeData = new Dictionary<Position3Int, VoxelChangeData>(voxelChangeCount);
             for (var _ = 0; _ < voxelChangeCount; _++)
-                changeData.Add(Position3Int.Deserialize(message), VoxelChangeData.Deserialize(message));
-            int modelCount = message.ReadInt32();
+                changeData.Add(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
+            int modelCount = reader.GetInt();
             var models = new Dictionary<Position3Int, ModelData>(modelCount);
             for (var _ = 0; _ < modelCount; _++)
-                models.Add(Position3Int.Deserialize(message), ModelData.Deserialize(message));
+                models.Add(Position3Int.Deserialize(reader), ModelData.Deserialize(reader));
             return new MapSave(name, terrainHeight, dimension, strokes, changeData, dynamic, data, models);
         }
     }

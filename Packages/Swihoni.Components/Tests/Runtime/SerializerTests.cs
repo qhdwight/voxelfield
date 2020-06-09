@@ -1,4 +1,4 @@
-using System.IO;
+using LiteNetLib.Utils;
 using NUnit.Framework;
 
 namespace Swihoni.Components.Tests
@@ -9,12 +9,12 @@ namespace Swihoni.Components.Tests
         public void TestSerializer()
         {
             OuterComponent arbitrary = OuterComponent.Arbitrary;
-            var stream = new MemoryStream();
-            arbitrary.Serialize(stream);
+            var writer = new NetDataWriter();
+            arbitrary.Serialize(writer);
 
             var deserialized = new OuterComponent();
-            stream.Position = 0;
-            deserialized.Deserialize(stream);
+            var reader = new NetDataReader(writer.Data);
+            deserialized.Deserialize(reader);
 
             Assert.IsTrue(arbitrary.EqualTo(deserialized));
             Assert.AreNotSame(arbitrary.inner, deserialized.inner);
@@ -25,12 +25,12 @@ namespace Swihoni.Components.Tests
         {
             var arbitrary = new StringElement(16);
             arbitrary.SetString(builder => builder.Append("Test"));
-            var stream = new MemoryStream();
-            arbitrary.Serialize(stream);
+            var writer = new NetDataWriter();
+            arbitrary.Serialize(writer);
 
             var deserialized = new StringElement(16);
-            stream.Position = 0;
-            deserialized.Deserialize(stream);
+            var reader = new NetDataReader(writer.Data);
+            deserialized.Deserialize(reader);
 
             Assert.AreEqual("Test", arbitrary.GetString().ToString());
             Assert.AreEqual("Test", deserialized.GetString().ToString());

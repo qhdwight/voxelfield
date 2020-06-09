@@ -4,11 +4,11 @@ using System.Net;
 using Console;
 using Swihoni.Sessions;
 using Swihoni.Util;
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 #endif
-using UnityEngine;
 
 namespace Compound.Session
 {

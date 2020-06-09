@@ -1,6 +1,6 @@
 using System;
-using System.IO;
 using System.Reflection;
+using LiteNetLib.Utils;
 using UnityEngine;
 
 namespace Swihoni.Components
@@ -13,8 +13,8 @@ namespace Swihoni.Components
         public UIntProperty(uint value) : base(value) { }
         public UIntProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadUInt32();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUInt();
         public override bool ValueEquals(PropertyBase<uint> other) => other.Value == Value;
     }
 
@@ -24,8 +24,8 @@ namespace Swihoni.Components
         public IntProperty(int value) : base(value) { }
         public IntProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadInt32();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetInt();
         public override bool ValueEquals(PropertyBase<int> other) => other.Value == Value;
     }
 
@@ -35,8 +35,8 @@ namespace Swihoni.Components
         public UShortProperty(ushort value) : base(value) { }
         public UShortProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadUInt16();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUShort();
         public override bool ValueEquals(PropertyBase<ushort> other) => other.Value == Value;
     }
 
@@ -46,8 +46,8 @@ namespace Swihoni.Components
         public ShortProperty(short value) : base(value) { }
         public ShortProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadInt16();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetShort();
         public override bool ValueEquals(PropertyBase<short> other) => other.Value == Value;
     }
 
@@ -57,8 +57,8 @@ namespace Swihoni.Components
         public SByteProperty(sbyte value) : base(value) { }
         public SByteProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadSByte();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetSByte();
         public override bool ValueEquals(PropertyBase<sbyte> other) => other.Value == Value;
     }
 
@@ -68,8 +68,8 @@ namespace Swihoni.Components
         public ByteProperty(byte value) : base(value) { }
         public ByteProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadByte();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetByte();
         public override bool ValueEquals(PropertyBase<byte> other) => other.Value == Value;
     }
 
@@ -77,17 +77,17 @@ namespace Swihoni.Components
     public class BoolProperty : PropertyBase<bool>
     {
         public override bool ValueEquals(PropertyBase<bool> other) => other.Value == Value;
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadBoolean();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetBool();
     }
 
     [Serializable]
     public class QuaternionProperty : PropertyBase<Quaternion>
     {
         public override bool ValueEquals(PropertyBase<Quaternion> other) => other.Value == Value;
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
+        public override void SerializeValue(NetDataWriter writer) => Extensions.Put(writer, Value);
         public override void Zero() => Value = Quaternion.identity;
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadQuaternion();
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetQuaternion();
 
         public override void ValueInterpolateFrom(PropertyBase<Quaternion> p1, PropertyBase<Quaternion> p2, float interpolation) =>
             Value = Quaternion.Lerp(p1.Value, p2.Value, interpolation);
@@ -99,8 +99,8 @@ namespace Swihoni.Components
         public FloatProperty(float value) : base(value) { }
         public FloatProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadSingle();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetFloat();
 
         public override bool ValueEquals(PropertyBase<float> other)
         {
@@ -147,8 +147,8 @@ namespace Swihoni.Components
         public VectorProperty(float x, float y, float z) : base(new Vector3(x, y, z)) { }
         public VectorProperty() { }
 
-        public override void SerializeValue(BinaryWriter writer) => writer.Write(Value);
-        public override void DeserializeValue(BinaryReader reader) => Value = reader.ReadVector3();
+        public override void SerializeValue(NetDataWriter writer) => Extensions.Put(writer, Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetVector3();
 
         public override bool ValueEquals(PropertyBase<Vector3> other)
         {

@@ -1,9 +1,0 @@
-{
-  "name": "com.swihoni.networking",
-  "version": "0.0.1",
-  "displayName": "Swihoni Networking",
-  "dependencies": {
-    "com.swihoni.collections": "0.0.1",
-    "com.swihoni.components": "0.0.1"
-  }
-}

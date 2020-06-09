@@ -10,7 +10,7 @@ namespace Swihoni.Sessions
     public class DebugBehavior : SingletonBehavior<DebugBehavior>
     {
         public bool isDebugMode;
-        
+
         private StrictPool<PlayerVisualizerBehavior> m_Pool;
 
         public FloatProperty RollbackOverride;

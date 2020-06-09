@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Net;
+using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using UnityEngine;
@@ -12,8 +13,8 @@ namespace Swihoni.Sessions
 
         private readonly Container m_HostCommands;
 
-        protected HostBase(SessionElements elements, IPEndPoint ipEndPoint)
-            : base(elements, ipEndPoint)
+        protected HostBase(SessionElements elements, IPEndPoint ipEndPoint, EventBasedNetListener.OnConnectionRequest acceptConnection)
+            : base(elements, ipEndPoint, acceptConnection)
         {
             // TODO:refactor zeroing
             m_HostCommands = new Container(elements.playerElements
@@ -47,13 +48,13 @@ namespace Swihoni.Sessions
         {
             if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
              || m_RenderSession.Without(out LocalPlayerProperty localPlayer)) return;
-            
+
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (!tickRate.WithValue) return;
 
             localPlayer.Value = HostPlayerId;
             base.Render(renderTime);
-            
+
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
                 if (playerId == localPlayer)

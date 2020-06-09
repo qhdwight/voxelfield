@@ -1,6 +1,10 @@
 {
-  "name": "com.swihoni.components",
-  "version": "0.0.1",
-  "displayName": "Swihoni Components",
-  "dependencies": {}
+    "name": "com.swihoni.components",
+    "version": "0.0.1",
+    "displayName": "Swihoni Components",
+    "dependencies": {
+        "litenetlib": "0.01",
+        "com.swihoni.util": "0.0.1",
+        "com.swihoni.collections": "0.0.1"
+    }
 }

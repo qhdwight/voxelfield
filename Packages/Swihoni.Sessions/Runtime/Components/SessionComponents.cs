@@ -44,10 +44,11 @@ namespace Swihoni.Sessions.Components
     [Serializable, ServerOnly]
     public class ServerPingComponent : ComponentBase
     {
-        public UIntProperty tick;
-        public FloatProperty rtt,          // Last measured round trip time in seconds
-                             checkElapsed, // Time elapsed since initiating check
-                             initiateTime; // Time when check was last sent to client
+        public FloatProperty rtt;
+        // public UIntProperty tick;
+        // public FloatProperty rtt,          // Last measured round trip time in seconds
+        //                      checkElapsed, // Time elapsed since initiating check
+        //                      initiateTime; // Time when check was last sent to client
     }
 
     /* Client */
@@ -117,11 +118,11 @@ namespace Swihoni.Sessions.Components
         public KillFeedElement() : base(5) { }
     }
 
-    [Serializable]
-    public class PingCheckComponent : ComponentBase
-    {
-        public UIntProperty tick;
-    }
+    // [Serializable]
+    // public class PingCheckComponent : ComponentBase
+    // {
+    //     public UIntProperty tick;
+    // }
 
     [Serializable]
     public class TickRateProperty : ByteProperty

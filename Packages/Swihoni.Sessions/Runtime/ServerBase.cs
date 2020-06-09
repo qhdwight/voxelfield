@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Net;
-using Swihoni.Collections;
+using LiteNetLib;
 using Swihoni.Components;
-using Swihoni.Networking;
+using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
@@ -13,24 +13,42 @@ namespace Swihoni.Sessions
 {
     public abstract class ServerBase : NetworkedSessionBase
     {
+        private readonly EventBasedNetListener.OnConnectionRequest m_AcceptConnection;
         private ComponentServerSocket m_Socket;
-        private readonly DualDictionary<IPEndPoint, byte> m_PlayerIds = new DualDictionary<IPEndPoint, byte>();
 
         public override ComponentSocketBase Socket => m_Socket;
 
-        protected ServerBase(SessionElements elements, IPEndPoint ipEndPoint)
+        protected ServerBase(SessionElements elements, IPEndPoint ipEndPoint, EventBasedNetListener.OnConnectionRequest acceptConnection)
             : base(elements, ipEndPoint)
         {
+            m_AcceptConnection = acceptConnection;
             ForEachPlayer(player => player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent)));
         }
 
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentServerSocket(IpEndPoint);
+            m_Socket = new ComponentServerSocket(IpEndPoint, m_AcceptConnection);
+            m_Socket.Listener.PeerConnectedEvent += OnPeerConnected;
+            m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
             RegisterMessages(m_Socket);
 
             Physics.autoSimulation = false;
+        }
+
+        private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnect)
+        {
+            int playerId = peer.GetPlayerId();
+            Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
+            GetPlayerFromId(playerId).Reset();
+        }
+
+        private void OnPeerConnected(NetPeer peer)
+        {
+            int playerId = peer.GetPlayerId();
+            Debug.Log($"[{GetType().Name}] Setting up new player for connection: {peer.EndPoint}, allocated id is: {playerId}");
+            Container session = GetLatestSession();
+            SetupNewPlayer(session, session.GetPlayer(playerId));
         }
 
         protected virtual void PreTick(Container tickSession) { }
@@ -66,61 +84,62 @@ namespace Swihoni.Sessions
             PreTick(serverSession);
             Tick(serverSession, time, duration);
             PostTick(serverSession);
-            IterateClients(tick, time, duration, serverSession);
+            // IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
         }
 
-        private readonly List<byte> m_ToRemove = new List<byte>();
-
-        private void IterateClients(uint tick, float time, float duration, Container serverSession)
-        {
-            var players = serverSession.Require<PlayerContainerArrayElement>();
-            m_ToRemove.Clear();
-            foreach ((IPEndPoint _, byte playerId) in m_PlayerIds)
-            {
-                Container player = players[playerId];
-                if (HandleTimeout(time, playerId, player)) m_ToRemove.Add(playerId);
-                CheckClientPing(player, tick, time, playerId, duration);
-            }
-            foreach (byte playerId in m_ToRemove)
-                m_PlayerIds.Remove(playerId);
-        }
-
-        private void CheckClientPing(Container player, uint tick, float time, byte playerId, float duration)
-        {
-            const float checkTime = 1.0f;
-
-            var ping = player.Require<ServerPingComponent>();
-            if (ping.initiateTime.WithoutValue) return;
-
-            ping.tick.Value = tick;
-            ping.initiateTime.Value = time;
-            ping.checkElapsed.Value += duration;
-            while (ping.checkElapsed > checkTime)
-            {
-                var check = new PingCheckComponent {tick = new UIntProperty(tick)};
-                m_Socket.Send(check, m_PlayerIds.GetReverse(playerId));
-                ping.checkElapsed.Value -= checkTime;
-            }
-        }
-
-        private static bool HandleTimeout(float time, byte playerId, Container player)
-        {
-            FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
-            if (serverPlayerTime.WithoutValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) return false;
-            Debug.LogWarning($"Dropping player with id: {playerId}");
-            player.Reset();
-            return true;
-        }
+        // private readonly List<byte> m_ToRemove = new List<byte>();
+        //
+        // private void IterateClients(uint tick, float time, float duration, Container serverSession)
+        // {
+        //     var players = serverSession.Require<PlayerContainerArrayElement>();
+        //     m_ToRemove.Clear();
+        //     foreach ((IPEndPoint _, byte playerId) in m_PlayerIds)
+        //     {
+        //         Container player = players[playerId];
+        //         if (HandleTimeout(time, playerId, player)) m_ToRemove.Add(playerId);
+        //         CheckClientPing(player, tick, time, playerId, duration);
+        //     }
+        //     foreach (byte playerId in m_ToRemove)
+        //         m_PlayerIds.Remove(playerId);
+        // }
+        //
+        // private void CheckClientPing(Container player, uint tick, float time, byte playerId, float duration)
+        // {
+        //     const float checkTime = 1.0f;
+        //
+        //     var ping = player.Require<ServerPingComponent>();
+        //     if (ping.initiateTime.WithoutValue) return;
+        //
+        //     ping.tick.Value = tick;
+        //     ping.initiateTime.Value = time;
+        //     ping.checkElapsed.Value += duration;
+        //     while (ping.checkElapsed > checkTime)
+        //     {
+        //         var check = new PingCheckComponent {tick = new UIntProperty(tick)};
+        //         m_Socket.Send(check, playerId, DeliveryMethod.ReliableSequenced);
+        //         ping.checkElapsed.Value -= checkTime;
+        //     }
+        // }
+        // 
+        // private static bool HandleTimeout(float time, byte playerId, Container player)
+        // {
+        //     FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
+        //     if (serverPlayerTime.WithoutValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) return false;
+        //     Debug.LogWarning($"Dropping player with id: {playerId}");
+        //     player.Reset();
+        //     return true;
+        // }
 
         protected virtual void ServerTick(Container serverSession, float time, float duration) { }
 
         private void Tick(Container serverSession, float time, float duration)
         {
             ServerTick(serverSession, time, duration);
-            m_Socket.PollReceived((ipEndPoint, message) =>
+            m_Socket.PollReceived((fromPeer, message) =>
             {
-                (byte clientId, Container serverPlayer) = GetPlayerForEndpoint(serverSession, ipEndPoint);
+                int clientId = fromPeer.GetPlayerId();
+                Container serverPlayer = GetPlayerFromId(clientId);
                 switch (message)
                 {
                     case ClientCommandsContainer receivedClientCommands:
@@ -128,18 +147,18 @@ namespace Swihoni.Sessions
                         HandleClientCommand(clientId, receivedClientCommands, serverSession, serverPlayer);
                         break;
                     }
-                    case PingCheckComponent receivedPingCheck:
-                    {
-                        var ping = serverPlayer.Require<ServerPingComponent>();
-                        if (receivedPingCheck.tick.WithValue && ping.tick == receivedPingCheck.tick)
-                        {
-                            float roundTripElapsed = time - ping.initiateTime;
-                            ping.rtt.Value = roundTripElapsed;
-                            if (serverPlayer.With(out StatsComponent stats))
-                                stats.ping.Value = (ushort) Mathf.Round(roundTripElapsed / 2.0f * 1000.0f);
-                        }
-                        break;
-                    }
+                    // case PingCheckComponent receivedPingCheck:
+                    // {
+                    //     var ping = serverPlayer.Require<ServerPingComponent>();
+                    //     if (receivedPingCheck.tick.WithValue && ping.tick == receivedPingCheck.tick)
+                    //     {
+                    //         float roundTripElapsed = time - ping.initiateTime;
+                    //         ping.rtt.Value = roundTripElapsed;
+                    //         if (serverPlayer.With(out StatsComponent stats))
+                    //             stats.ping.Value = (ushort) Mathf.Round(roundTripElapsed / 2.0f * 1000.0f);
+                    //     }
+                    //     break;
+                    // }
                     case DebugClientView receivedDebugClientView:
                     {
                         DebugBehavior.Singleton.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
@@ -153,17 +172,19 @@ namespace Swihoni.Sessions
             SendServerSession(serverSession);
         }
 
+        private readonly List<NetPeer> m_ConnectedPeers = new List<NetPeer>();
         private void SendServerSession(Container serverSession)
         {
             var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
-            foreach ((IPEndPoint ipEndPoint, byte id) in m_PlayerIds)
+            m_Socket.NetworkManager.GetPeersNonAlloc(m_ConnectedPeers, ConnectionState.Connected);
+            foreach (NetPeer peer in m_ConnectedPeers)
             {
-                localPlayerProperty.Value = id;
-                m_Socket.Send(serverSession, ipEndPoint);
+                localPlayerProperty.Value = (byte) peer.GetPlayerId();
+                m_Socket.Send(serverSession, peer, DeliveryMethod.ReliableUnordered);
             }
         }
 
-        private void HandleClientCommand(byte clientId, Container receivedClientCommands, Container serverSession, Container serverPlayer)
+        private void HandleClientCommand(int clientId, Container receivedClientCommands, Container serverSession, Container serverPlayer)
         {
             FloatProperty serverPlayerTime = serverPlayer.Require<ServerStampComponent>().time;
             var clientStamp = receivedClientCommands.Require<ClientStampComponent>();
@@ -202,29 +223,29 @@ namespace Swihoni.Sessions
                 serverPlayerTime.Value = serverStamp.time;
         }
 
-        /// <summary>
-        /// Handles setting up player if new connection.
-        /// </summary>
-        /// <returns>Client id allocated to connection and player container</returns>
-        private (byte clientId, Container serverPlayer) GetPlayerForEndpoint(Container serverSession, IPEndPoint ipEndPoint)
-        {
-            bool isNewPlayer = !m_PlayerIds.ContainsForward(ipEndPoint);
-            if (isNewPlayer)
-            {
-                checked
-                {
-                    byte newPlayerId = 1;
-                    while (m_PlayerIds.ContainsReverse(newPlayerId))
-                        newPlayerId++;
-                    m_PlayerIds.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port), newPlayerId);
-                    Debug.Log($"[{GetType().Name}] Received new connection: {ipEndPoint}, setting up id: {newPlayerId}");
-                }
-            }
-            byte clientId = m_PlayerIds.GetForward(ipEndPoint);
-            Container serverPlayer = serverSession.GetPlayer(clientId);
-            if (isNewPlayer) SetupNewPlayer(serverSession, serverPlayer);
-            return (clientId, serverPlayer);
-        }
+        // /// <summary>
+        // /// Handles setting up player if new connection.
+        // /// </summary>
+        // /// <returns>Client id allocated to connection and player container</returns>
+        // private (byte clientId, Container serverPlayer) GetPlayerForEndpoint(Container serverSession, IPEndPoint ipEndPoint)
+        // {
+        //     bool isNewPlayer = !m_PlayerIds.ContainsForward(ipEndPoint);
+        //     if (isNewPlayer)
+        //     {
+        //         checked
+        //         {
+        //             byte newPlayerId = 1;
+        //             while (m_PlayerIds.ContainsReverse(newPlayerId))
+        //                 newPlayerId++;
+        //             m_PlayerIds.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port), newPlayerId);
+        //             Debug.Log($"[{GetType().Name}] Received new connection: {ipEndPoint}, setting up id: {newPlayerId}");
+        //         }
+        //     }
+        //     byte clientId = m_PlayerIds.GetForward(ipEndPoint);
+        //     Container serverPlayer = serverSession.GetPlayer(clientId);
+        //     if (isNewPlayer) SetupNewPlayer(serverSession, serverPlayer);
+        //     return (clientId, serverPlayer);
+        // }
 
         protected void SetupNewPlayer(Container session, Container player)
         {

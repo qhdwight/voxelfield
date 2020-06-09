@@ -1,7 +1,7 @@
 using System;
-using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using LiteNetLib.Utils;
 using UnityEngine;
 
 namespace Swihoni.Components
@@ -47,8 +47,8 @@ namespace Swihoni.Components
             }
         }
 
-        public abstract void Serialize(BinaryWriter writer);
-        public abstract void Deserialize(BinaryReader reader);
+        public abstract void Serialize(NetDataWriter writer);
+        public abstract void Deserialize(NetDataReader reader);
         public abstract bool Equals(PropertyBase other);
         public abstract void Clear();
         public abstract void Zero();
@@ -181,26 +181,26 @@ namespace Swihoni.Components
         /// <exception cref="WithoutValueException">If <see cref="p1"/> or <see cref="p2"/> is without a value.</exception>
         public virtual void ValueInterpolateFrom(PropertyBase<T> p1, PropertyBase<T> p2, float interpolation) => SetFromIfWith(p2);
 
-        public sealed override void Serialize(BinaryWriter writer)
+        public sealed override void Serialize(NetDataWriter writer)
         {
             if (DontSerialize || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
-            writer.Write(WithValue);
+            writer.Put(WithValue);
             if (WithoutValue) return;
             SerializeValue(writer);
         }
 
-        public sealed override void Deserialize(BinaryReader reader)
+        public sealed override void Deserialize(NetDataReader reader)
         {
             if (DontSerialize || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
-            WithValue = reader.ReadBoolean();
+            WithValue = reader.GetBool();
             if (WithoutValue) return;
             DeserializeValue(reader);
         }
 
         /// <exception cref="WithoutValueException">If without value.</exception>
-        public abstract void SerializeValue(BinaryWriter writer);
+        public abstract void SerializeValue(NetDataWriter writer);
 
         /// <exception cref="WithoutValueException">If without value.</exception>
-        public abstract void DeserializeValue(BinaryReader reader);
+        public abstract void DeserializeValue(NetDataReader reader);
     }
 }

@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using LiteNetLib.Utils;
 using UnityEngine;
 
 namespace Swihoni.Util.Math
@@ -36,16 +36,16 @@ namespace Swihoni.Util.Math
 
         public override string ToString() => $"[{x}, {y}, {z}]";
 
-        public static void Serialize(Position3Int position, BinaryWriter message)
+        public static void Serialize(Position3Int position, NetDataWriter writer)
         {
-            message.Write(position.x);
-            message.Write(position.y);
-            message.Write(position.z);
+            writer.Put(position.x);
+            writer.Put(position.y);
+            writer.Put(position.z);
         }
 
-        public static Position3Int Deserialize(BinaryReader message) => new Position3Int(message.ReadInt32(),
-                                                                                         message.ReadInt32(),
-                                                                                         message.ReadInt32());
+        public static Position3Int Deserialize(NetDataReader reader) => new Position3Int(reader.GetInt(),
+                                                                                         reader.GetInt(),
+                                                                                         reader.GetInt());
 
         public bool InsideDimension(Dimension dimension) =>
             x >= dimension.lowerBound.x && y >= dimension.lowerBound.y && z >= dimension.lowerBound.z

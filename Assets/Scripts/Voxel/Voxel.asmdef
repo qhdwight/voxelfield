@@ -2,7 +2,8 @@
     "name": "Voxel",
     "references": [
         "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7",
-        "GUID:30dd5701ffd546dfba8df9f8a97a33d3"
+        "GUID:30dd5701ffd546dfba8df9f8a97a33d3",
+        "GUID:8bee8701c26fe4794a0e680ef3a54812"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

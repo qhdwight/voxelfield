@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -20,14 +20,14 @@ namespace Compound.Session
     public class ChangedVoxelsProperty : PropertyBase, IVoxelChanges, IEnumerable<(Position3Int, VoxelChangeData)>
     {
         private Dictionary<Position3Int, VoxelChangeData> m_ChangeMap = new Dictionary<Position3Int, VoxelChangeData>();
-        
+
         public int Count => m_ChangeMap.Count;
-        
+
         public bool IsMaster { get; set; }
-        
-        public override void Serialize(BinaryWriter writer)
+
+        public override void Serialize(NetDataWriter writer)
         {
-            writer.Write(m_ChangeMap.Count);
+            writer.Put(m_ChangeMap.Count);
             foreach ((Position3Int position, VoxelChangeData change) in this)
             {
                 Position3Int.Serialize(position, writer);
@@ -35,10 +35,10 @@ namespace Compound.Session
             }
         }
 
-        public override void Deserialize(BinaryReader reader)
+        public override void Deserialize(NetDataReader reader)
         {
             Clear();
-            int count = reader.ReadInt32();
+            int count = reader.GetInt();
             for (var i = 0; i < count; i++)
                 m_ChangeMap.Add(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
         }

@@ -1,5 +1,4 @@
-﻿using System.IO;
-using JetBrains.Annotations;
+﻿using LiteNetLib.Utils;
 using Swihoni.Util;
 
 namespace Voxel
@@ -19,7 +18,7 @@ namespace Voxel
 
         public override string ToString() => $"Texture: {texture}, Render Type: {renderType}, Density: {density}, Orientation: {orientation}, Breakable: {breakable}";
 
-        public static void Serialize(BinaryWriter message, in VoxelChangeData changeData)
+        public static void Serialize(NetDataWriter writer, in VoxelChangeData changeData)
         {
             byte flags = 0;
             if (changeData.texture.HasValue) FlagUtil.SetFlag(ref flags, TextureFlagIndex);
@@ -28,25 +27,25 @@ namespace Voxel
             if (changeData.orientation.HasValue) FlagUtil.SetFlag(ref flags, OrientationFlagIndex);
             if (changeData.breakable.HasValue) FlagUtil.SetFlag(ref flags, BreakableFlagIndex);
             if (changeData.natural.HasValue) FlagUtil.SetFlag(ref flags, NaturalFlagIndex);
-            message.Write(flags);
-            if (changeData.texture.HasValue) message.Write(changeData.texture.Value);
-            if (changeData.renderType.HasValue) message.Write((byte) changeData.renderType.Value);
-            if (changeData.density.HasValue) message.Write(changeData.density.Value);
-            if (changeData.orientation.HasValue) message.Write(changeData.orientation.Value);
-            if (changeData.breakable.HasValue) message.Write(changeData.breakable.Value);
-            if (changeData.natural.HasValue) message.Write(changeData.natural.Value);
+            writer.Put(flags);
+            if (changeData.texture.HasValue) writer.Put(changeData.texture.Value);
+            if (changeData.renderType.HasValue) writer.Put((byte) changeData.renderType.Value);
+            if (changeData.density.HasValue) writer.Put(changeData.density.Value);
+            if (changeData.orientation.HasValue) writer.Put(changeData.orientation.Value);
+            if (changeData.breakable.HasValue) writer.Put(changeData.breakable.Value);
+            if (changeData.natural.HasValue) writer.Put(changeData.natural.Value);
         }
 
-        public static VoxelChangeData Deserialize(BinaryReader message)
+        public static VoxelChangeData Deserialize(NetDataReader reader)
         {
-            byte flags = message.ReadByte();
+            byte flags = reader.GetByte();
             var data = new VoxelChangeData();
-            if (FlagUtil.HasFlag(flags, TextureFlagIndex)) data.texture = message.ReadByte();
-            if (FlagUtil.HasFlag(flags, RenderTypeFlagIndex)) data.renderType = (VoxelRenderType) message.ReadByte();
-            if (FlagUtil.HasFlag(flags, DensityFlagIndex)) data.density = message.ReadByte();
-            if (FlagUtil.HasFlag(flags, OrientationFlagIndex)) data.orientation = message.ReadByte();
-            if (FlagUtil.HasFlag(flags, BreakableFlagIndex)) data.breakable = message.ReadBoolean();
-            if (FlagUtil.HasFlag(flags, NaturalFlagIndex)) data.natural = message.ReadBoolean();
+            if (FlagUtil.HasFlag(flags, TextureFlagIndex)) data.texture = reader.GetByte();
+            if (FlagUtil.HasFlag(flags, RenderTypeFlagIndex)) data.renderType = (VoxelRenderType) reader.GetByte();
+            if (FlagUtil.HasFlag(flags, DensityFlagIndex)) data.density = reader.GetByte();
+            if (FlagUtil.HasFlag(flags, OrientationFlagIndex)) data.orientation = reader.GetByte();
+            if (FlagUtil.HasFlag(flags, BreakableFlagIndex)) data.breakable = reader.GetBool();
+            if (FlagUtil.HasFlag(flags, NaturalFlagIndex)) data.natural = reader.GetBool();
             return data;
         }
 

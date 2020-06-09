@@ -13,11 +13,11 @@ namespace Compound.Session
         {
             public Mini(SessionBase session) : base(session) { }
         }
-        
+
         private readonly Mini m_Mini;
         private readonly VoxelChangeTransaction m_Transaction = new VoxelChangeTransaction();
 
-        public Client(IPEndPoint ipEndPoint) : base(CompoundComponents.SessionElements, ipEndPoint) => m_Mini = new Mini(this);
+        public Client(IPEndPoint ipEndPoint) : base(CompoundComponents.SessionElements, ipEndPoint, Version.String) => m_Mini = new Mini(this);
 
         protected override void SettingsTick(Container serverSession) => MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
 

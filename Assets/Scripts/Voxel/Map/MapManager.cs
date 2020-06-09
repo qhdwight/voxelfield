@@ -1,30 +1,14 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using LiteNetLib.Utils;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 
 namespace Voxel.Map
 {
-    public class MapAsset : TextAsset
-    {
-        private MapAsset(string text) : base(text) { }
-
-        public static MapAsset New(MapSave mapSave)
-        {
-            using (var stream = new MemoryStream())
-            using (var writer = new BinaryWriter(stream))
-            {
-                MapSave.Serialize(mapSave, writer);
-                var rawText = BitConverter.ToString(stream.GetBuffer(), 0, (int) stream.Position);
-                return new MapAsset(rawText);
-            }
-        }
-    }
-
     public class MapManager : SingletonBehavior<MapManager>
     {
         private const string MapSaveExtension = "vfm", MapSaveFolder = "Maps";
@@ -48,7 +32,7 @@ namespace Voxel.Map
 
         private void Start()
         {
-            // SaveTestMap();
+            SaveTestMap();
             StartCoroutine(ManageActionsRoutine());
             SetMap("Menu");
         }
@@ -57,12 +41,9 @@ namespace Voxel.Map
         {
             while (Application.isPlaying)
             {
-                if (m_WantedMap == null || Map != null && m_WantedMap == Map.Name)
-                    yield return null;
-                else
-                {
-                    yield return LoadMap(m_WantedMap);
-                }
+                yield return m_WantedMap == null || Map != null && m_WantedMap == Map.Name
+                    ? null
+                    : LoadMap(m_WantedMap);
             }
         }
 
@@ -71,29 +52,21 @@ namespace Voxel.Map
         private static MapSave ReadMapSave(string mapName)
         {
             string mapPath = GetMapPath(mapName);
-            Stream mapStream = _defaultMaps.TryGetValue(mapName, out TextAsset textAsset)
-                ? (Stream) new MemoryStream(textAsset.bytes)
-                : File.OpenRead(mapPath);
-            MapSave mapSave;
-            using (var reader = new BinaryReader(mapStream))
-                mapSave = MapSave.Deserialize(reader);
-            mapStream.Dispose();
+            byte[] mapData = _defaultMaps.TryGetValue(mapName, out TextAsset textAsset)
+                ? textAsset.bytes
+                : File.ReadAllBytes(mapPath);
+            var reader = new NetDataReader(mapData);
+            MapSave mapSave = MapSave.Deserialize(reader);
             return mapSave;
         }
 
         private static bool SaveMapSave(MapSave mapSave)
         {
             string mapPath = GetMapPath(mapSave.Name);
-            using (FileStream file = File.OpenWrite(mapPath))
-            using (var writer = new BinaryWriter(file))
-                MapSave.Serialize(mapSave, writer);
-            // AssetDatabase.CreateAsset(MapAsset.New(mapSave), "Assets/Test.bytes");
-            // using (var stream = new MemoryStream())
-            // using (var writer = new BinaryWriter(stream))
-            // {
-            //     MapSave.Serialize(mapSave, writer);
-            //     File.WriteAllBytes("Assets/Meme.bytes", stream.GetBuffer().Take((int) stream.Position).ToArray());
-            // }
+            if (mapSave.Name == "Test") mapPath = "Assets/Resources/Maps/Test.bytes";
+            var writer = new NetDataWriter();
+            MapSave.Serialize(mapSave, writer);
+            File.WriteAllBytes(mapPath, writer.CopyData());
             return true;
         }
 

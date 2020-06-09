@@ -28,8 +28,8 @@ namespace Swihoni.Sessions.Interfaces
             if (session is NetworkedSessionBase networkSession)
             {
                 m_ResetErrorText.BuildText(builder => builder.Append("Reset Errors: ").Append(networkSession.ResetErrors));
-                m_UploadText.BuildText(builder => builder.AppendFormat("Up: {0:F1} kb/s", networkSession.Socket.SendRate));
-                m_DownloadText.BuildText(builder => builder.AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.ReceiveRate));
+                m_UploadText.BuildText(builder => builder.AppendFormat("Up: {0:F1} kb/s", networkSession.Socket.SendRateKbs));
+                m_DownloadText.BuildText(builder => builder.AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.ReceiveRateKbs));
             }
             m_LastUpdateTime = time;
         }

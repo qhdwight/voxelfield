@@ -1,0 +1,3 @@
+[submodule "Packages/LiteNetLib/Runtime"]
+	path = Packages/LiteNetLib/Runtime
+	url = git@github.com:qhdwight/lite-net-lib.git
