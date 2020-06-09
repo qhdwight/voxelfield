@@ -29,7 +29,6 @@ namespace Swihoni.Sessions
         {
             base.Start();
             m_Socket = new ComponentServerSocket(IpEndPoint, m_AcceptConnection);
-            m_Socket.Listener.PeerConnectedEvent += OnPeerConnected;
             m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
             RegisterMessages(m_Socket);
 
@@ -41,14 +40,6 @@ namespace Swihoni.Sessions
             int playerId = peer.GetPlayerId();
             Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
             GetPlayerFromId(playerId).Reset();
-        }
-
-        private void OnPeerConnected(NetPeer peer)
-        {
-            int playerId = peer.GetPlayerId();
-            Debug.Log($"[{GetType().Name}] Setting up new player for connection: {peer.EndPoint}, allocated id is: {playerId}");
-            Container session = GetLatestSession();
-            SetupNewPlayer(session, session.GetPlayer(playerId));
         }
 
         protected virtual void PreTick(Container tickSession) { }
@@ -144,6 +135,11 @@ namespace Swihoni.Sessions
                 {
                     case ClientCommandsContainer receivedClientCommands:
                     {
+                        if (serverPlayer.Require<HealthProperty>().WithoutValue)
+                        {
+                            Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {fromPeer.GetPlayerId()}");
+                            SetupNewPlayer(serverSession, serverPlayer);
+                        }
                         HandleClientCommand(clientId, receivedClientCommands, serverSession, serverPlayer);
                         break;
                     }
