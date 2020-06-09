@@ -136,11 +136,11 @@ namespace Swihoni.Sessions
         private void Tick(Container serverSession, float time, float duration)
         {
             ServerTick(serverSession, time, duration);
-            m_Socket.PollReceived((fromPeer, message) =>
+            m_Socket.PollReceived((fromPeer, element) =>
             {
                 int clientId = fromPeer.GetPlayerId();
                 Container serverPlayer = GetPlayerFromId(clientId);
-                switch (message)
+                switch (element)
                 {
                     case ClientCommandsContainer receivedClientCommands:
                     {

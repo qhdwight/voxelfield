@@ -29,7 +29,17 @@ namespace Swihoni.Components.Networking
 
         protected ComponentSocketBase()
         {
-            m_NetworkManager = new NetManager(m_Listener, new Crc32cLayer()) {EnableStatistics = true, UpdateTime = 1, ChannelsCount = 4, IPv6Enabled = false, ReuseAddress = true};
+            m_NetworkManager = new NetManager(m_Listener, new Crc32cLayer())
+            {
+                EnableStatistics = true,
+                UpdateTime = 1,
+                ChannelsCount = 4,
+                IPv6Enabled = false,
+                ReuseAddress = true,
+#if UNITY_EDITOR
+                DisconnectTimeout = int.MaxValue,
+#endif
+            };
             m_Listener.NetworkReceiveEvent += OnReceive;
             m_Listener.PeerConnectedEvent += peer => Debug.Log($"[{GetType().Name}] Connected: {peer.EndPoint}");
             m_Listener.PeerDisconnectedEvent += (peer, info) => Debug.Log($"[{GetType().Name}] Disconnected: {peer.EndPoint}");
