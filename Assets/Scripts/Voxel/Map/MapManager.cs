@@ -32,7 +32,7 @@ namespace Voxel.Map
 
         private void Start()
         {
-            SaveTestMap();
+            // SaveTestMap();
             StartCoroutine(ManageActionsRoutine());
             SetMap("Menu");
         }
@@ -51,10 +51,14 @@ namespace Voxel.Map
 
         private static MapSave ReadMapSave(string mapName)
         {
-            string mapPath = GetMapPath(mapName);
-            byte[] mapData = _defaultMaps.TryGetValue(mapName, out TextAsset textAsset)
-                ? textAsset.bytes
-                : File.ReadAllBytes(mapPath);
+            byte[] mapData;
+            if (_defaultMaps.TryGetValue(mapName, out TextAsset textAsset))
+                mapData = textAsset.bytes;
+            else
+            {
+                string mapPath = GetMapPath(mapName);
+                mapData = File.ReadAllBytes(mapPath);
+            }
             var reader = new NetDataReader(mapData);
             MapSave mapSave = MapSave.Deserialize(reader);
             return mapSave;

@@ -2,6 +2,7 @@ using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
+using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
@@ -13,7 +14,6 @@ namespace Swihoni.Sessions.Interfaces
     {
         [SerializeField] private BufferedTextGui m_HealthText = default, m_AmmoText = default;
         [SerializeField] private Image m_Crosshair = default, m_HitMarker = default;
-        [SerializeField] private Sprite m_ShotgunCrosshair = default;
         [SerializeField] private Image[] m_DamageNotifiers = default;
         [SerializeField] private Color m_KillHitMarkerColor = Color.red;
         [SerializeField] private BufferedTextGui m_InventoryText = default;
@@ -57,9 +57,10 @@ namespace Swihoni.Sessions.Interfaces
                     Color crosshairColor = m_Crosshair.color;
                     crosshairColor.a = inventory.adsStatus.id == AdsStatusId.Ads ? 0.0f : 1.0f;
                     m_Crosshair.color = crosshairColor;
-                    bool isShotgun = modifier is ShotgunModifier;
-                    m_Crosshair.sprite = isShotgun ? m_ShotgunCrosshair : m_DefaultCrosshair;
-                    m_Crosshair.rectTransform.sizeDelta = Vector2.one * (isShotgun ? 48.0f : 32.0f);
+                    ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisuals(equippedItem.id);
+                    bool isDefaultCrosshair = visualPrefab.Crosshair == null;
+                    m_Crosshair.sprite = isDefaultCrosshair ? m_DefaultCrosshair : visualPrefab.Crosshair;
+                    m_Crosshair.rectTransform.sizeDelta = Vector2.one * (isDefaultCrosshair ? 32.0f : 48.0f);
 
                     m_InventoryText.BuildText(builder =>
                     {

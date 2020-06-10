@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 namespace Swihoni.Sessions.Items.Visuals
 {
@@ -38,6 +39,7 @@ namespace Swihoni.Sessions.Items.Visuals
         [SerializeField] private Transform m_IkL = default, m_IkR = default;
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;
         [SerializeField] private ChildBehavior[] m_ChildBehaviors = default;
+        [SerializeField] private Sprite m_Crosshair = default;
 
         private AudioSource m_AudioSource;
         private AnimationClipPlayable[] m_Animations;
@@ -50,6 +52,7 @@ namespace Swihoni.Sessions.Items.Visuals
         public byte Id => m_Id;
         public Vector3 FpvOffset => m_FpvOffset;
         public Vector3 TpvOffset => m_TpvOffset;
+        public Sprite Crosshair => m_Crosshair;
 
         public ItemModifierBase ModiferProperties { get; private set; }
 

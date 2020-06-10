@@ -12,17 +12,18 @@ namespace Swihoni.Sessions.Items
     {
         private static ItemModifierBase[] _itemModifiers;
         private static Pool<ItemVisualBehavior>[] _itemVisualPools;
+        private static ItemVisualBehavior[] _itemVisualPrefabs;
 
         [RuntimeInitializeOnLoadMethod]
         public static void Initialize()
         {
             _itemModifiers = Resources.LoadAll<ItemModifierBase>("Items")
                                       .OrderBy(modifier => modifier.id).ToArray();
-            IOrderedEnumerable<ItemVisualBehavior> itemVisualPrefabs = Resources.LoadAll<GameObject>("Items")
-                                                                                .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
-                                                                                .Where(visuals => visuals != null && visuals.Id != ItemId.None)
-                                                                                .OrderBy(visuals => visuals.Id);
-            _itemVisualPools = itemVisualPrefabs
+            _itemVisualPrefabs = Resources.LoadAll<GameObject>("Items")
+                                          .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
+                                          .Where(visuals => visuals != null && visuals.Id != ItemId.None)
+                                          .OrderBy(visuals => visuals.Id).ToArray();
+            _itemVisualPools = _itemVisualPrefabs
                               .Select(visualPrefab => new Pool<ItemVisualBehavior>(0, () =>
                                {
                                    ItemVisualBehavior visualsInstance = Object.Instantiate(visualPrefab);
@@ -49,5 +50,7 @@ namespace Swihoni.Sessions.Items
         }
 
         public static ItemModifierBase GetModifier(byte itemId) => _itemModifiers[itemId - 1];
+
+        public static ItemVisualBehavior GetVisuals(byte itemId) => _itemVisualPrefabs[itemId - 1];
     }
 }

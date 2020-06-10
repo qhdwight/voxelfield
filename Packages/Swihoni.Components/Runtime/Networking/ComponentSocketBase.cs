@@ -113,6 +113,7 @@ namespace Swihoni.Components.Networking
             m_Listener.ClearConnectionRequestEvent();
             m_Listener.ClearPeerConnectedEvent();
             m_Listener.ClearPeerDisconnectedEvent();
+            m_Listener.ClearNetworkLatencyUpdateEvent();
             m_NetworkManager.Stop();
         }
     }

@@ -30,9 +30,19 @@ namespace Swihoni.Sessions
             base.Start();
             m_Socket = new ComponentServerSocket(IpEndPoint, m_AcceptConnection);
             m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
+            m_Socket.Listener.NetworkLatencyUpdateEvent += OnPingUpdate;
             RegisterMessages(m_Socket);
 
             Physics.autoSimulation = false;
+        }
+
+        private void OnPingUpdate(NetPeer peer, int latency)
+        {
+            Container player = GetPlayerFromId(peer.GetPlayerId());
+            var ping = player.Require<ServerPingComponent>();
+            ping.rtt.Value = latency / 1000.0f;
+            if (player.With(out StatsComponent stats))
+                stats.ping.Value = (ushort) (latency / 2);
         }
 
         private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnect)
@@ -169,6 +179,7 @@ namespace Swihoni.Sessions
         }
 
         private readonly List<NetPeer> m_ConnectedPeers = new List<NetPeer>();
+
         private void SendServerSession(Container serverSession)
         {
             var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
@@ -194,8 +205,9 @@ namespace Swihoni.Sessions
                     serverPlayerClientStamp.MergeFrom(clientStamp);
                 else
                 {
-                    uint acknowledgedServerTick = receivedClientCommands.Require<AcknowledgedServerTickProperty>();
-                    Debug.Log(serverStamp.tick - acknowledgedServerTick);
+                    // uint acknowledgedServerTick = receivedClientCommands.Require<AcknowledgedServerTickProperty>();
+                    // Debug.Log(serverStamp.tick - acknowledgedServerTick);
+
                     // Make sure this is the newest tick
                     if (clientStamp.tick > serverPlayerClientStamp.tick)
                     {

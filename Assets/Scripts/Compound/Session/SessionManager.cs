@@ -120,22 +120,22 @@ namespace Compound.Session
                 DisconnectAll();
             }
 
-            if (Input.GetKeyDown(KeyCode.H))
-            {
-                Host host = StartHost();
-            }
-            if (Input.GetKeyDown(KeyCode.Y))
-            {
-                StartServer(m_LocalHost);
-            }
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                Client client = StartClient(m_LocalHost);
-            }
-            if (Input.GetKeyDown(KeyCode.K))
-            {
-                DisconnectAll();
-            }
+            // if (Input.GetKeyDown(KeyCode.H))
+            // {
+            //     Host host = StartHost();
+            // }
+            // if (Input.GetKeyDown(KeyCode.Y))
+            // {
+            //     StartServer(m_LocalHost);
+            // }
+            // if (Input.GetKeyDown(KeyCode.J))
+            // {
+            //     Client client = StartClient(m_LocalHost);
+            // }
+            // if (Input.GetKeyDown(KeyCode.K))
+            // {
+            //     DisconnectAll();
+            // }
         }
 
         private void FixedUpdate()
