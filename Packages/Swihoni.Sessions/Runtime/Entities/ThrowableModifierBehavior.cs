@@ -101,7 +101,6 @@ namespace Swihoni.Sessions.Entities
                 if (!hitCollider.TryGetComponent(out PlayerTrigger trigger)) continue;
                 int hitPlayerId = trigger.PlayerId;
                 Container hitPlayer = session.GetPlayerFromId(hitPlayerId);
-                // TODO:feature damage based on range?
                 if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive)
                 {
                     byte damage = DamagePlayer(hitPlayer, duration);

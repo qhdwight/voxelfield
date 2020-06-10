@@ -20,8 +20,7 @@ namespace Swihoni.Sessions
         protected readonly ClientCommandsContainer m_EmptyClientCommands;
         protected readonly ServerSessionContainer m_EmptyServerSession;
         protected readonly DebugClientView m_EmptyDebugClientView;
-        protected readonly Container m_RollbackSession;
-        protected readonly Container m_RenderSession;
+        protected readonly Container m_RollbackSession, m_RenderSession;
 
         public int ResetErrors { get; protected set; }
         public IPEndPoint IpEndPoint { get; }
@@ -31,6 +30,7 @@ namespace Swihoni.Sessions
         {
             IpEndPoint = ipEndPoint;
             IReadOnlyCollection<Type> serverPlayerElements = elements.playerElements.Append(typeof(ClientStampComponent))
+                                                                     .Append(typeof(AcknowledgedServerTickProperty))
                                                                      .Append(typeof(ServerStampComponent)).ToArray(),
                                       clientCommandElements = elements.playerElements.Append(typeof(ClientStampComponent))
                                                                       .Append(typeof(AcknowledgedServerTickProperty))
@@ -40,7 +40,6 @@ namespace Swihoni.Sessions
             m_SessionHistory = new CyclicArray<ServerSessionContainer>(250, ServerSessionContainerConstructor);
 
             m_RollbackSession = NewSession<Container>(elements.elements, elements.playerElements);
-
             m_RenderSession = NewSession<Container>(elements.elements, elements.playerElements);
 
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);

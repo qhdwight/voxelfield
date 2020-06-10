@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using LiteNetLib;
@@ -15,6 +16,7 @@ namespace Swihoni.Sessions
     {
         private readonly EventBasedNetListener.OnConnectionRequest m_AcceptConnection;
         private ComponentServerSocket m_Socket;
+        private Container m_SendSession;
 
         public override ComponentSocketBase Socket => m_Socket;
 
@@ -23,6 +25,7 @@ namespace Swihoni.Sessions
         {
             m_AcceptConnection = acceptConnection;
             ForEachPlayer(player => player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent)));
+            m_SendSession = m_EmptyServerSession.Clone();
         }
 
         public override void Start()
@@ -83,7 +86,7 @@ namespace Swihoni.Sessions
 
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
-            Tick(serverSession, time, duration);
+            Tick(serverSession, tick, time, duration);
             PostTick(serverSession);
             // IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
@@ -134,7 +137,7 @@ namespace Swihoni.Sessions
 
         protected virtual void ServerTick(Container serverSession, float time, float duration) { }
 
-        private void Tick(Container serverSession, float time, float duration)
+        private void Tick(Container serverSession, uint tick, float time, float duration)
         {
             ServerTick(serverSession, time, duration);
             m_Socket.PollReceived((fromPeer, element) =>
@@ -175,19 +178,33 @@ namespace Swihoni.Sessions
             Physics.Simulate(duration);
             EntityManager.Modify(serverSession, time, duration);
             GetMode(serverSession).Modify(serverSession, duration);
-            SendServerSession(serverSession);
+            SendServerSession(tick, serverSession);
         }
 
         private readonly List<NetPeer> m_ConnectedPeers = new List<NetPeer>();
 
-        private void SendServerSession(Container serverSession)
+        private void SendServerSession(uint tick, Container serverSession)
         {
             var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
             m_Socket.NetworkManager.GetPeersNonAlloc(m_ConnectedPeers, ConnectionState.Connected);
             foreach (NetPeer peer in m_ConnectedPeers)
             {
-                localPlayerProperty.Value = (byte) peer.GetPlayerId();
-                m_Socket.Send(serverSession, peer, DeliveryMethod.ReliableUnordered);
+                int playerId = peer.GetPlayerId();
+                localPlayerProperty.Value = (byte) playerId;
+                Container player = GetPlayerFromId(playerId);
+                uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().OrElse(0u);
+                var delta = (int) checked(tick - lastServerTickAcknowledged);
+                // TODO:performance serialize and compress at the same time
+                ElementExtensions.NavigateZipped((mostRecent, lastAcknowledged, send) =>
+                {
+                    if (mostRecent is PropertyBase mostRecentProperty && lastAcknowledged is PropertyBase lastAcknowledgedProperty && send is PropertyBase sendProperty)
+                    {
+                        if (mostRecentProperty.Equals(lastAcknowledgedProperty)) sendProperty.Clear();
+                        else sendProperty.SetFromIfWith(mostRecentProperty);
+                    }
+                    return Navigation.Continue;
+                }, serverSession, m_SessionHistory.Get(-delta), m_SendSession);
+                m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
             }
         }
 
@@ -205,9 +222,6 @@ namespace Swihoni.Sessions
                     serverPlayerClientStamp.MergeFrom(clientStamp);
                 else
                 {
-                    // uint acknowledgedServerTick = receivedClientCommands.Require<AcknowledgedServerTickProperty>();
-                    // Debug.Log(serverStamp.tick - acknowledgedServerTick);
-
                     // Make sure this is the newest tick
                     if (clientStamp.tick > serverPlayerClientStamp.tick)
                     {
@@ -227,8 +241,7 @@ namespace Swihoni.Sessions
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
                 }
             }
-            else
-                serverPlayerTime.Value = serverStamp.time;
+            else serverPlayerTime.Value = serverStamp.time;
         }
 
         // /// <summary>

@@ -65,7 +65,7 @@ namespace Swihoni.Sessions.Components
     {
     }
 
-    [Serializable]
+    [Serializable, ClientTrusted]
     public class AcknowledgedServerTickProperty : UIntProperty
     {
     }
