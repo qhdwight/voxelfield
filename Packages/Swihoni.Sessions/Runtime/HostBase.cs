@@ -13,12 +13,13 @@ namespace Swihoni.Sessions
 
         private readonly Container m_HostCommands;
 
-        protected HostBase(SessionElements elements, IPEndPoint ipEndPoint, EventBasedNetListener.OnConnectionRequest acceptConnection)
-            : base(elements, ipEndPoint, acceptConnection)
+        protected HostBase(SessionElements elements, IPEndPoint ipEndPoint, EventBasedNetListener.OnConnectionRequest connectionRequestHandler)
+            : base(elements, ipEndPoint, connectionRequestHandler)
         {
             // TODO:refactor zeroing
             m_HostCommands = new Container(elements.playerElements
                                                    .Append(typeof(ClientStampComponent))
+                                                   .Append(typeof(AcknowledgedServerTickProperty))
                                                    .Append(typeof(ServerStampComponent))
                                                    .Concat(elements.commandElements)
                                                    .Append(typeof(ServerTag)));

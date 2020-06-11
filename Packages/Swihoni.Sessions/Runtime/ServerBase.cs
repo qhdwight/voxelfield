@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Reflection;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
@@ -14,16 +14,16 @@ namespace Swihoni.Sessions
 {
     public abstract class ServerBase : NetworkedSessionBase
     {
-        private readonly EventBasedNetListener.OnConnectionRequest m_AcceptConnection;
+        private readonly EventBasedNetListener.OnConnectionRequest m_ConnectionRequestHandler;
         private ComponentServerSocket m_Socket;
-        private Container m_SendSession;
+        private readonly Container m_SendSession;
 
         public override ComponentSocketBase Socket => m_Socket;
 
-        protected ServerBase(SessionElements elements, IPEndPoint ipEndPoint, EventBasedNetListener.OnConnectionRequest acceptConnection)
+        protected ServerBase(SessionElements elements, IPEndPoint ipEndPoint, EventBasedNetListener.OnConnectionRequest connectionRequestHandler)
             : base(elements, ipEndPoint)
         {
-            m_AcceptConnection = acceptConnection;
+            m_ConnectionRequestHandler = connectionRequestHandler;
             ForEachPlayer(player => player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent)));
             m_SendSession = m_EmptyServerSession.Clone();
         }
@@ -31,7 +31,7 @@ namespace Swihoni.Sessions
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentServerSocket(IpEndPoint, m_AcceptConnection);
+            m_Socket = new ComponentServerSocket(IpEndPoint, m_ConnectionRequestHandler);
             m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
             m_Socket.Listener.NetworkLatencyUpdateEvent += OnPingUpdate;
             RegisterMessages(m_Socket);
@@ -193,19 +193,32 @@ namespace Swihoni.Sessions
                 localPlayerProperty.Value = (byte) playerId;
                 Container player = GetPlayerFromId(playerId);
                 uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().OrElse(0u);
-                var delta = (int) checked(tick - lastServerTickAcknowledged);
-                // TODO:performance serialize and compress at the same time
-                ElementExtensions.NavigateZipped((mostRecent, lastAcknowledged, send) =>
+                var rollback = (int) checked(tick - lastServerTickAcknowledged);
+                if (lastServerTickAcknowledged == 0u)
+                    m_SendSession.CopyFrom(serverSession);
+                else
                 {
-                    if (mostRecent is PropertyBase mostRecentProperty && lastAcknowledged is PropertyBase lastAcknowledgedProperty && send is PropertyBase sendProperty)
-                    {
-                        if (mostRecentProperty.Equals(lastAcknowledgedProperty)) sendProperty.Clear();
-                        else sendProperty.SetFromIfWith(mostRecentProperty);
-                    }
-                    return Navigation.Continue;
-                }, serverSession, m_SessionHistory.Get(-delta), m_SendSession);
+                    // TODO:performance serialize and compress at the same time
+                    ElementExtensions.NavigateZipped(DeltaCompressNavigation, serverSession, m_SessionHistory.Get(-rollback), m_SendSession);
+                }
+                DeltaCompressAdditives(m_SendSession, rollback);
                 m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
             }
+        }
+
+        protected virtual void DeltaCompressAdditives(Container send, int rollback) { }
+
+        private static Navigation DeltaCompressNavigation(ElementBase mostRecent, ElementBase lastAcknowledged, ElementBase send)
+        {
+            if (mostRecent is PropertyBase mostRecentProperty && lastAcknowledged is PropertyBase lastAcknowledgedProperty && send is PropertyBase sendProperty
+             && !mostRecent.GetType().IsDefined(typeof(AdditiveAttribute)))
+            {
+                if (mostRecentProperty.Equals(lastAcknowledgedProperty))
+                    sendProperty.Clear();
+                else
+                    sendProperty.SetFromIfWith(mostRecentProperty);
+            }
+            return Navigation.Continue;
         }
 
         private void HandleClientCommand(int clientId, Container receivedClientCommands, Container serverSession, Container serverPlayer)

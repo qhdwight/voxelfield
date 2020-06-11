@@ -1,6 +1,4 @@
 using System.Net;
-using LiteNetLib;
-using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Util.Math;
@@ -35,19 +33,7 @@ namespace Compound.Session
 
         private readonly Mini m_Mini;
 
-        public Server(IPEndPoint ipEndPoint) : base(CompoundComponents.SessionElements, ipEndPoint, AcceptConnection) => m_Mini = new Mini(this);
-
-        public static void AcceptConnection(ConnectionRequest request)
-        {
-            if (request.Data.TryGetString(out string result) && result == Version.String)
-                request.Accept();
-            else
-            {
-                var writer = new NetDataWriter();
-                writer.Put("Your version does not match that of the server.");
-                request.Reject(writer);
-            }
-        }
+        public Server(IPEndPoint ipEndPoint) : base(CompoundComponents.SessionElements, ipEndPoint, MiniBase.AcceptConnection) => m_Mini = new Mini(this);
 
         protected override void SettingsTick(Container serverSession)
         {
@@ -55,9 +41,9 @@ namespace Compound.Session
             MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
         }
 
-        public override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
+        protected override void DeltaCompressAdditives(Container send, int rollback) => m_Mini.DeltaCompressAdditives(send, m_SessionHistory, rollback);
 
-        public void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData changeData, Chunk chunk = null, bool updateMesh = true) { }
+        public override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
 
         public MiniBase GetMini() => m_Mini;
     }

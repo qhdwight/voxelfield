@@ -16,7 +16,7 @@ namespace Compound.Session
 
         private readonly Mini m_Mini;
 
-        public Host() : base(CompoundComponents.SessionElements, new IPEndPoint(IPAddress.Loopback, 7777), Server.AcceptConnection) => m_Mini = new Mini(this);
+        public Host() : base(CompoundComponents.SessionElements, new IPEndPoint(IPAddress.Loopback, 7777), MiniBase.AcceptConnection) => m_Mini = new Mini(this);
 
         protected override void SettingsTick(Container serverSession)
         {
@@ -26,6 +26,8 @@ namespace Compound.Session
             serverSession.Require<VoxelMapNameElement>().SetString(builder => builder.Append(mapName));
             MapManager.Singleton.SetMap(mapName);
         }
+        
+        protected override void DeltaCompressAdditives(Container send, int rollback) => m_Mini.DeltaCompressAdditives(send, m_SessionHistory, rollback);
 
         public override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
 
