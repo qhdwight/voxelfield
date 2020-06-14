@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using Console;
 using Swihoni.Sessions;
 using Swihoni.Util;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+
 #endif
 
 namespace Compound.Session
@@ -48,8 +51,12 @@ namespace Compound.Session
             }
         }
 
+        [Conditional("UNITY_STANDALONE")]
+        private void StandaloneDisconnectAll() => DisconnectAll();
+
         public Host StartHost()
         {
+            StandaloneDisconnectAll();
             var host = new Host();
             try
             {
@@ -67,6 +74,7 @@ namespace Compound.Session
 
         public Server StartServer(IPEndPoint ipEndPoint)
         {
+            StandaloneDisconnectAll();
             var server = new Server(ipEndPoint);
             try
             {
@@ -84,6 +92,7 @@ namespace Compound.Session
 
         public Client StartClient(IPEndPoint ipEndPoint)
         {
+            StandaloneDisconnectAll();
             var client = new Client(ipEndPoint);
             try
             {

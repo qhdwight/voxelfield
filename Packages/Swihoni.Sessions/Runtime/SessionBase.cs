@@ -97,6 +97,7 @@ namespace Swihoni.Sessions
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, (i, modifier) => modifier.Setup(this, i));
 
             EntityManager.Setup(this);
+            ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(true));
         }
 
         private void CheckDisposed()
@@ -203,13 +204,14 @@ namespace Swihoni.Sessions
                           toComponent = getInHistory(historyIndex);
                 FloatProperty toTime = getTimeInHistory(historyIndex).time,
                               fromTime = getTimeInHistory(historyIndex + 1).time;
-                if (!toTime.WithValue || !fromTime.WithValue || (historyIndex == 0 && toTime < renderTime))
+                var tooRecent = false;
+                if (!toTime.WithValue || !fromTime.WithValue || (tooRecent = historyIndex == 0 && toTime < renderTime))
                 {
                     renderContainer.CopyFrom(getInHistory(0));
-                    // Debug.LogWarning("Not enough history");
+                    if (tooRecent) Debug.LogWarning("Not enough recent");
                     return;
                 }
-                if (renderTime > fromTime && renderTime < toTime)
+                if (renderTime >= fromTime && renderTime < toTime)
                 {
                     float interpolation = (renderTime - fromTime) / (toTime - fromTime);
                     Interpolator.InterpolateInto(fromComponent, toComponent, renderContainer, interpolation);
@@ -217,8 +219,8 @@ namespace Swihoni.Sessions
                 }
             }
             // Take last if we do not have enough history
-            // Debug.LogWarning("Not enough recent");
-            renderContainer.CopyFrom(getInHistory(-1));
+            Debug.LogWarning("Not enough history");
+            renderContainer.CopyFrom(getInHistory(1));
         }
 
         protected static void RenderInterpolatedPlayer<TStampComponent>
@@ -279,14 +281,19 @@ namespace Swihoni.Sessions
 
         public virtual Container GetPlayerFromId(int playerId) { throw new NotImplementedException(); }
 
+        protected void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)
+        {
+            foreach (InterfaceBehaviorBase @interface in m_Interfaces)
+                if (@interface is SessionInterfaceBehavior sessionInterface)
+                    action(sessionInterface);
+        }
+
         public virtual void Dispose()
         {
             IsDisposed = true;
             foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier) modifier.Dispose();
             foreach (IPlayerContainerRenderer visual in m_Visuals) visual.Dispose();
-            foreach (InterfaceBehaviorBase @interface in m_Interfaces)
-                if (@interface is SessionInterfaceBehavior sessionInterface)
-                    sessionInterface.SessionEnded();
+            ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
         }

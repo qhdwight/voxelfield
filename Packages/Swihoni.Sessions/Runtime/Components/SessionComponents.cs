@@ -60,7 +60,7 @@ namespace Swihoni.Sessions.Components
         public ClientCommandsContainer(IEnumerable<Type> types) : base(types) { }
     }
 
-    [Serializable]
+    [Serializable, ClientTrusted]
     public class ClientStampComponent : StampComponent
     {
     }

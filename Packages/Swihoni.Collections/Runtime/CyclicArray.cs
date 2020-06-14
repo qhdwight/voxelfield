@@ -61,7 +61,7 @@ namespace Swihoni.Collections
         /// </summary>
         /// <param name="relativeOffset">Relative offset to current pointer</param>
         /// <returns>Absolute index to internal array</returns>
-        private int GetAbsoluteFromRelativeOffset(int relativeOffset) { return Wrap(m_Pointer + relativeOffset); }
+        private int GetAbsoluteFromRelativeOffset(int relativeOffset) => Wrap(m_Pointer + relativeOffset);
 
         /// <summary>
         /// Get an element relative to the current pointer.

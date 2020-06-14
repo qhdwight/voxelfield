@@ -147,11 +147,11 @@ namespace Swihoni.Sessions.Player.Components
         {
             var i1 = (InventoryComponent) c1;
             var i2 = (InventoryComponent) c2;
-            // if (i1.HasNoItemEquipped || i2.HasNoItemEquipped || i1.equippedIndex != i2.equippedIndex)
-            // {
-            //     this.FastCopyFrom(i1);
-            //     return;
-            // }
+            if (i1.HasNoItemEquipped || i2.HasNoItemEquipped || i1.equippedIndex != i2.equippedIndex)
+            {
+                this.CopyFrom(i1);
+                return;
+            }
             // TODO:feature handle when id of equipped weapon changes
             ItemModifierBase m1 = ItemAssetLink.GetModifier(i1.EquippedItemComponent.id);
             if (m1 is GunModifierBase gm1)

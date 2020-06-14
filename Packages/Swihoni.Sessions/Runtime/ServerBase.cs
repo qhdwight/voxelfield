@@ -7,6 +7,7 @@ using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -194,13 +195,16 @@ namespace Swihoni.Sessions
                 Container player = GetPlayerFromId(playerId);
                 uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().OrElse(0u);
                 var rollback = (int) checked(tick - lastServerTickAcknowledged);
-                if (lastServerTickAcknowledged == 0u)
-                    m_SendSession.CopyFrom(serverSession);
-                else
-                {
-                    // TODO:performance serialize and compress at the same time
-                    ElementExtensions.NavigateZipped(DeltaCompressNavigation, serverSession, m_SessionHistory.Get(-rollback), m_SendSession);
-                }
+                EditorGraph.Next(rollback);
+                // if (lastServerTickAcknowledged == 0u)
+                //     m_SendSession.CopyFrom(serverSession);
+                // else
+                // {
+                //     // TODO:performance serialize and compress at the same time
+                //     ElementExtensions.NavigateZipped(DeltaCompressNavigation, serverSession, m_SessionHistory.Get(-rollback), m_SendSession);
+                // }
+                m_SendSession.CopyFrom(serverSession);
+
                 DeltaCompressAdditives(m_SendSession, rollback);
                 m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
             }
@@ -213,9 +217,8 @@ namespace Swihoni.Sessions
             if (mostRecent is PropertyBase mostRecentProperty && lastAcknowledged is PropertyBase lastAcknowledgedProperty && send is PropertyBase sendProperty
              && !mostRecent.GetType().IsDefined(typeof(AdditiveAttribute)))
             {
-                if (mostRecentProperty.Equals(lastAcknowledgedProperty))
-                    sendProperty.Clear();
-                else
+                sendProperty.Clear();
+                if (!mostRecentProperty.Equals(lastAcknowledgedProperty))
                     sendProperty.SetFromIfWith(mostRecentProperty);
             }
             return Navigation.Continue;

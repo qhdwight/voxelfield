@@ -20,7 +20,7 @@ namespace Voxel.Map
         public MapSave Map { get; private set; }
 
         [RuntimeInitializeOnLoadMethod]
-        public static void Initialize() { _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m); }
+        public static void Initialize() => _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m);
 
         public static string GetDirectory(string folderName)
         {

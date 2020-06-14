@@ -80,9 +80,7 @@ namespace Swihoni.Sessions
         protected override void Render(float renderTime)
         {
             Container latestSession = GetLatestSession();
-            foreach (InterfaceBehaviorBase @interface in m_Interfaces)
-                if (@interface is SessionInterfaceBehavior sessionInterface)
-                    sessionInterface.Render(this, latestSession);
+            ForEachSessionInterface(sessionInterface => sessionInterface.Render(this, latestSession));
         }
 
         protected void RenderEntities<TStampComponent>(float renderTime, float rollback) where TStampComponent : StampComponent

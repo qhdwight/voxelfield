@@ -7,6 +7,6 @@ namespace Swihoni.Sessions.Interfaces
     {
         public abstract void Render(SessionBase session, Container sessionContainer);
 
-        public virtual void SessionEnded() => SetInterfaceActive(false);
+        public virtual void SessionStateChange(bool isActive) => SetInterfaceActive(isActive);
     }
 }

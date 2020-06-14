@@ -36,6 +36,9 @@ namespace Swihoni.Components.Networking
                 ChannelsCount = 4,
                 IPv6Enabled = false,
                 ReuseAddress = true,
+#if UNITY_EDITOR
+                DisconnectTimeout = int.MaxValue,
+#endif
             };
             m_Listener.NetworkReceiveEvent += OnReceive;
             m_Listener.PeerConnectedEvent += peer => Debug.Log($"[{GetType().Name}] Connected: {peer.EndPoint}");
