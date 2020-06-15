@@ -8,7 +8,6 @@ using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -70,7 +69,7 @@ namespace Swihoni.Sessions
             m_Modifier[localPlayerId].ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), m_CommandHistory.Peek(), deltaUs);
         }
 
-        protected override void Render(float renderTime)
+        protected override void Render(uint renderTimeUs)
         {
             if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers) || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
                 return;
@@ -78,7 +77,7 @@ namespace Swihoni.Sessions
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (tickRate.WithoutValue) return;
 
-            base.Render(renderTime);
+            base.Render(renderTimeUs);
 
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
@@ -87,8 +86,8 @@ namespace Swihoni.Sessions
                 if (isLocalPlayer)
                 {
                     Container GetInHistory(int historyIndex) => m_PlayerPredictionHistory.Get(-historyIndex);
-                    uint renderTimeUs = TimeConversions.GetUsFromSecond(renderTime - tickRate.TickInterval);
-                    RenderInterpolatedPlayer<ClientStampComponent>(renderTimeUs, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
+                    uint playerRenderTimeUs = renderTimeUs - tickRate.TickIntervalUs;
+                    RenderInterpolatedPlayer<ClientStampComponent>(playerRenderTimeUs, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
                     renderPlayer.MergeFrom(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                 }
@@ -97,13 +96,13 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId];
 
-                    uint renderTimeUs = TimeConversions.GetUsFromSecond(renderTime - tickRate.TickInterval * 4);
-                    RenderInterpolatedPlayer<LocalizedClientStampComponent>(renderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
+                    uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
+                    RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(playerId, renderPlayer, isLocalPlayer);
                 m_PlayerHud.Render(renderPlayers[localPlayerId]);
             }
-            RenderEntities<LocalizedClientStampComponent>(renderTime, tickRate.TickInterval * 2);
+            RenderEntities<LocalizedClientStampComponent>(renderTimeUs, tickRate.TickIntervalUs * 2u);
         }
 
         protected override void Tick(uint tick, uint timeUs, uint durationUs)
@@ -269,19 +268,17 @@ namespace Swihoni.Sessions
                             // TODO:refactor make function
                             UIntProperty serverTime = serverSession.Require<ServerStampComponent>().timeUs,
                                          localizedServerTimeUs = serverSession.Require<LocalizedClientStampComponent>().timeUs;
-                            checked
-                            {
-                                if (localizedServerTimeUs.WithValue)
-                                    localizedServerTimeUs.Value += serverTime - previousServerSession.Require<ServerStampComponent>().timeUs;
-                                else
-                                    localizedServerTimeUs.Value = timeUs;
+                            
+                            if (localizedServerTimeUs.WithValue)
+                                localizedServerTimeUs.Value += checked(serverTime - previousServerSession.Require<ServerStampComponent>().timeUs);
+                            else
+                                localizedServerTimeUs.Value = timeUs;
 
-                                long delta = localizedServerTimeUs.Value - (long) timeUs;
-                                if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3)
-                                {
-                                    ResetErrors++;
-                                    localizedServerTimeUs.Value = timeUs;
-                                }
+                            long delta = localizedServerTimeUs.Value - (long) timeUs;
+                            if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3)
+                            {
+                                ResetErrors++;
+                                localizedServerTimeUs.Value = timeUs;
                             }
                         }
 
@@ -370,7 +367,7 @@ namespace Swihoni.Sessions
 
         private void SendDebug(Container player)
         {
-            var debug = new DebugClientView(player.ElementTypes);
+            DebugClientView debug = m_EmptyDebugClientView.Clone();
             debug.CopyFrom(player);
             m_Socket.SendToServer(debug, DeliveryMethod.ReliableOrdered);
         }

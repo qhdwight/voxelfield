@@ -46,7 +46,7 @@ namespace Swihoni.Sessions
             stamp.tick.Value = serverStamp.tick;
         }
 
-        protected override void Render(float renderTime)
+        protected override void Render(uint renderTimeUs)
         {
             if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
              || m_RenderSession.Without(out LocalPlayerProperty localPlayer)) return;
@@ -55,7 +55,7 @@ namespace Swihoni.Sessions
             if (!tickRate.WithValue) return;
 
             localPlayer.Value = HostPlayerId;
-            base.Render(renderTime);
+            base.Render(renderTimeUs);
 
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
@@ -69,13 +69,13 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId];
 
-                    uint renderTimeUs = TimeConversions.GetUsFromSecond(renderTime - tickRate.TickInterval * 4);
-                    RenderInterpolatedPlayer<ServerStampComponent>(renderTimeUs, renderPlayers[playerId], m_SessionHistory.Size, GetInHistory);
+                    uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
+                    RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayers[playerId], m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(playerId, renderPlayers[playerId], playerId == localPlayer);
             }
             m_PlayerHud.Render(renderPlayers[HostPlayerId]);
-            RenderEntities<ServerStampComponent>(renderTime, tickRate.TickInterval);
+            RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
         }
 
         protected override void PreTick(Container tickSession)
@@ -94,8 +94,7 @@ namespace Swihoni.Sessions
                 for (var i = 0; i < m_Modifier.Length; i++)
                     m_Modifier[i].EvaluateHitboxes(i, m_Visuals[i].GetRecentPlayer());
             }
-            else
-                base.RollbackHitboxes(playerId);
+            else base.RollbackHitboxes(playerId);
         }
 
         // TODO:refactor bad

@@ -78,15 +78,15 @@ namespace Swihoni.Sessions
 
         public override Container GetLatestSession() => m_SessionHistory.Peek();
 
-        protected override void Render(float renderTime)
+        protected override void Render(uint renderTimeUs)
         {
             Container latestSession = GetLatestSession();
             ForEachSessionInterface(sessionInterface => sessionInterface.Render(this, latestSession));
         }
 
-        protected void RenderEntities<TStampComponent>(float renderTime, float rollback) where TStampComponent : StampComponent
+        protected void RenderEntities<TStampComponent>(uint currentRenderTimeUs, uint rollbackUs) where TStampComponent : StampComponent
         {
-            uint renderTimeUs = TimeConversions.GetUsFromSecond(renderTime - rollback);
+            uint renderTimeUs = currentRenderTimeUs - rollbackUs;
             var renderEntities = m_RenderSession.Require<EntityArrayElement>();
             for (var i = 0; i < renderEntities.Length; i++)
             {

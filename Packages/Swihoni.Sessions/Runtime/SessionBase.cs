@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Swihoni.Components;
@@ -12,6 +13,7 @@ using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util;
 using Swihoni.Util.Interface;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using UnityObject = UnityEngine.Object;
 
 namespace Swihoni.Sessions
@@ -58,11 +60,12 @@ namespace Swihoni.Sessions
         protected readonly SessionElements m_SessionElements;
         protected readonly DefaultPlayerHud m_PlayerHud;
         protected readonly InterfaceBehaviorBase[] m_Interfaces;
-        private float m_FixedUpdateTime, m_RenderTime;
+        private long m_FixedUpdateTicks, m_RenderTicks;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
         protected IPlayerContainerRenderer[] m_Visuals;
         internal EntityManager EntityManager { get; } = new EntityManager();
         private uint m_Tick;
+        private Stopwatch m_Stopwatch;
         public bool ShouldInterruptCommands { get; private set; }
 
         protected bool IsDisposed { get; private set; }
@@ -94,6 +97,8 @@ namespace Swihoni.Sessions
         {
             CheckDisposed();
 
+            m_Stopwatch = Stopwatch.StartNew();
+
             m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, (_, visuals) => visuals.Setup(this));
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, (i, modifier) => modifier.Setup(this, i));
 
@@ -106,15 +111,19 @@ namespace Swihoni.Sessions
             if (IsDisposed) throw new ObjectDisposedException("Session was disposed");
         }
 
-        public void Update(float time)
+        private static uint GetUsFromTicks(long ticks) => checked((uint) Math.Round(ticks / (double) Stopwatch.Frequency * 1_000_000d));
+
+        public void Update()
         {
             CheckDisposed();
 
             HandleCursorLockState();
-            float delta = time - m_RenderTime;
-            Input(TimeConversions.GetUsFromSecond(time), TimeConversions.GetUsFromSecond(delta));
-            if (ShouldRender) Render(time);
-            m_RenderTime = time;
+            long ticks = m_Stopwatch.ElapsedTicks,
+                 tickDelta = ticks - m_RenderTicks;
+            m_RenderTicks = ticks;
+            uint timeUs = GetUsFromTicks(ticks);
+            Input(timeUs, GetUsFromTicks(tickDelta));
+            if (ShouldRender) Render(timeUs);
         }
 
         private void HandleCursorLockState()
@@ -132,8 +141,7 @@ namespace Swihoni.Sessions
                         ShouldInterruptCommands = true;
                 }
             }
-            else
-                desiredLockState = CursorLockMode.None;
+            else desiredLockState = CursorLockMode.None;
 
             bool desiredVisibility = desiredLockState != CursorLockMode.Locked;
             if (Cursor.lockState == desiredLockState && Cursor.visible == desiredVisibility) return;
@@ -142,20 +150,21 @@ namespace Swihoni.Sessions
             Cursor.visible = desiredVisibility;
         }
 
-        protected virtual void Render(float renderTime) { }
+        protected virtual void Render(uint renderTimeUs) { }
 
         protected virtual void Tick(uint tick, uint timeUs, uint durationUs) =>
             GetLatestSession().Require<TickRateProperty>().IfWith(tickRate => Time.fixedDeltaTime = 1.0f / tickRate);
 
         protected virtual void Input(uint timeUs, uint deltaUs) { }
 
-        public void FixedUpdate(float time)
+        public void FixedUpdate()
         {
-            if (IsDisposed) throw new ObjectDisposedException("Session disposed");
+            CheckDisposed();
 
-            float duration = time - m_FixedUpdateTime;
-            m_FixedUpdateTime = time;
-            Tick(m_Tick++, TimeConversions.GetUsFromSecond(time), TimeConversions.GetUsFromSecond(duration));
+            long ticks = m_Stopwatch.ElapsedTicks,
+                 tickDelta = ticks - m_FixedUpdateTicks;
+            m_FixedUpdateTicks = ticks;
+            Tick(m_Tick++, GetUsFromTicks(ticks), GetUsFromTicks(tickDelta));
         }
 
         // protected void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, CyclicArray<TComponent> componentHistory,
@@ -201,24 +210,24 @@ namespace Swihoni.Sessions
             {
                 Container fromComponent = getInHistory(historyIndex + 1),
                           toComponent = getInHistory(historyIndex);
-                UIntProperty toTime = getTimeInHistory(historyIndex).timeUs,
-                             fromTime = getTimeInHistory(historyIndex + 1).timeUs;
+                UIntProperty toTimeUs = getTimeInHistory(historyIndex).timeUs,
+                             fromTimeUs = getTimeInHistory(historyIndex + 1).timeUs;
                 var tooRecent = false;
-                if (!toTime.WithValue || !fromTime.WithValue || (tooRecent = historyIndex == 0 && toTime < renderTimeUs))
+                if (!toTimeUs.WithValue || !fromTimeUs.WithValue || (tooRecent = historyIndex == 0 && toTimeUs < renderTimeUs))
                 {
                     renderContainer.CopyFrom(getInHistory(0));
                     if (tooRecent) Debug.LogWarning("Not enough recent");
                     return;
                 }
-                if (renderTimeUs >= fromTime && renderTimeUs <= toTime)
+                if (renderTimeUs >= fromTimeUs && renderTimeUs <= toTimeUs)
                 {
-                    float interpolation = (renderTimeUs - fromTime) / (float) (toTime - fromTime);
+                    float interpolation = (renderTimeUs - fromTimeUs) / (float) (toTimeUs - fromTimeUs);
                     Interpolator.InterpolateInto(fromComponent, toComponent, renderContainer, interpolation);
                     return;
                 }
                 if (historyIndex == maxRollback - 1)
                 {
-                    Debug.Log($"{renderTimeUs}, {fromTime}, {toTime}");
+                    Debug.Log($"{renderTimeUs}, {fromTimeUs}, {toTimeUs}");
                 }
             }
             // Take last if we do not have enough history
@@ -299,6 +308,7 @@ namespace Swihoni.Sessions
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
+            m_Stopwatch.Stop();
         }
 
         public abstract bool IsPaused { get; }

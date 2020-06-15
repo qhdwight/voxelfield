@@ -45,7 +45,7 @@ namespace Swihoni.Sessions
         {
             Container player = GetPlayerFromId(peer.GetPlayerId());
             var ping = player.Require<ServerPingComponent>();
-            ping.rtt.Value = latency / 1000.0f;
+            ping.latencyUs.Value = checked((uint) latency * 1_000);
             if (player.With(out StatsComponent stats))
                 stats.ping.Value = (ushort) (latency / 2);
         }
@@ -303,23 +303,23 @@ namespace Swihoni.Sessions
 
         protected override void RollbackHitboxes(int playerId)
         {
-            float rtt = GetPlayerFromId(playerId).Require<ServerPingComponent>().rtt;
-            for (var _ = 0; _ < m_Modifier.Length; _++)
+            uint latencyUs = GetPlayerFromId(playerId).Require<ServerPingComponent>().latencyUs;
+            for (var i = 0; i < m_Modifier.Length; i++)
             {
-                int modifierId = _;
+                int modifierId = i; // Copy for use in lambda
                 Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(modifierId);
-
                 Container rollbackPlayer = m_RollbackSession.GetPlayer(modifierId);
-
                 UIntProperty timeUs = GetPlayerInHistory(0).Require<ServerStampComponent>().timeUs;
                 if (timeUs.WithoutValue) continue;
-
-                /* See: https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking */
-                float tickInterval = DebugBehavior.Singleton.RollbackOverride.OrElse(GetLatestSession().Require<TickRateProperty>().TickInterval);
-                uint rollbackUs = TimeConversions.GetUsFromSecond(tickInterval * 3.6f + rtt);
-                RenderInterpolatedPlayer<ServerStampComponent>(timeUs - rollbackUs, rollbackPlayer,
-                                                               m_SessionHistory.Size, GetPlayerInHistory);
-
+                
+                checked
+                {
+                    /* See: https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking */
+                    uint tickIntervalUs = DebugBehavior.Singleton.RollbackOverrideUs.OrElse(GetLatestSession().Require<TickRateProperty>().PlayerRenderIntervalUs),
+                         rollbackUs = tickIntervalUs + latencyUs;
+                    RenderInterpolatedPlayer<ServerStampComponent>(timeUs - rollbackUs, rollbackPlayer,
+                                                                   m_SessionHistory.Size, GetPlayerInHistory);
+                }
                 m_Modifier[modifierId].EvaluateHitboxes(modifierId, rollbackPlayer);
                 if (modifierId == 0)
                     DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));

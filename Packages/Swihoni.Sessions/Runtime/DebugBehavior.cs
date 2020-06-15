@@ -13,7 +13,7 @@ namespace Swihoni.Sessions
 
         private StrictPool<PlayerVisualizerBehavior> m_Pool;
 
-        public FloatProperty RollbackOverride;
+        public UIntProperty RollbackOverrideUs;
 
         public TickRateProperty TickRate;
 

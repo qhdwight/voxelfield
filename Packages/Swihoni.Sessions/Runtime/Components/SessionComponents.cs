@@ -45,7 +45,7 @@ namespace Swihoni.Sessions.Components
     [Serializable, ServerOnly]
     public class ServerPingComponent : ComponentBase
     {
-        public FloatProperty rtt;
+        public UIntProperty latencyUs;
         // public UIntProperty tick;
         // public FloatProperty rtt,          // Last measured round trip time in seconds
         //                      checkElapsed, // Time elapsed since initiating check
@@ -131,6 +131,8 @@ namespace Swihoni.Sessions.Components
         public float TickInterval => 1.0f / Value;
 
         public uint TickIntervalUs => TimeConversions.GetUsFromSecond(TickInterval);
+
+        public uint PlayerRenderIntervalUs => TickIntervalUs * 3;
     }
 
     [Serializable]

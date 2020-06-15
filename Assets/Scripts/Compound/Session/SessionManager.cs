@@ -121,11 +121,10 @@ namespace Compound.Session
 
         private void Update()
         {
-            float time = Time.realtimeSinceStartup;
             try
             {
                 foreach (NetworkedSessionBase session in m_Sessions)
-                    session.Update(time);
+                    session.Update();
             }
             catch (Exception exception)
             {
@@ -153,11 +152,10 @@ namespace Compound.Session
 
         private void FixedUpdate()
         {
-            float time = Time.realtimeSinceStartup;
             try
             {
                 foreach (NetworkedSessionBase session in m_Sessions)
-                    session.FixedUpdate(time);
+                    session.FixedUpdate();
             }
             catch (Exception exception)
             {

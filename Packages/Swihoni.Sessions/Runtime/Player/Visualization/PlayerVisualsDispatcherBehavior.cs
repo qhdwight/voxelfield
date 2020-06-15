@@ -55,14 +55,13 @@ namespace Swihoni.Sessions.Player.Visualization
                 if (usesDamageNotifier)
                 {
                     // TODO:refactor remove magic number, relying on internal state of audio source here... BAD!
-                    if (damageNotifier.elapsedUs * TimeConversions.MicrosecondToSecond > 0.9f)
+                    if (damageNotifier.elapsedUs > 900_000u)
                     {
                         if (!m_DamageNotifierSource.isPlaying) m_DamageNotifierSource.Play();
                         // if (m_LastDamageNotifierElapsed < Mathf.Epsilon)
                         //     m_DamageNotifierSource.PlayOneShot(m_DamageNotifierSource.clip);
                     }
-                    else
-                        m_DamageNotifierSource.Stop();
+                    else m_DamageNotifierSource.Stop();
                     m_LastDamageNotifierElapsed = damageNotifier.elapsedUs;
                 }
             }
