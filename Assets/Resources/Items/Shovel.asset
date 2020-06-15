@@ -16,20 +16,20 @@ MonoBehaviour:
   itemName: Shovel
   movementFactor: 1
   m_StatusModiferProperties:
-  - duration: 2
+  - durationUs: 2000000
     isPersistent: 0
-  - duration: 0.3
+  - durationUs: 300000
     isPersistent: 0
-  - duration: 0.5
+  - durationUs: 500000
     isPersistent: 0
   m_EquipStatusModiferProperties:
-  - duration: 0.15
+  - durationUs: 150000
     isPersistent: 0
-  - duration: 0.15
+  - durationUs: 150000
     isPersistent: 0
-  - duration: Infinity
+  - durationUs: 4294967295
     isPersistent: 0
-  - duration: Infinity
+  - durationUs: 4294967295
     isPersistent: 0
   m_Damage: 50
   m_PlayerMask:

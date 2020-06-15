@@ -3,6 +3,7 @@ using System.Net;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Sessions
@@ -29,7 +30,7 @@ namespace Swihoni.Sessions
 
         private void ReadLocalInputs(Container commandsToFill) => m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill);
 
-        protected override void Input(float time, float delta)
+        protected override void Input(uint timeUs, uint deltaUs)
         {
             Container session = GetLatestSession();
             if (session.Without(out ServerStampComponent serverStamp) || serverStamp.tick.WithoutValue)
@@ -37,11 +38,11 @@ namespace Swihoni.Sessions
 
             ReadLocalInputs(m_HostCommands);
             // m_HostCommands.Require<InventoryComponent>().Zero();
-            m_Modifier[HostPlayerId].ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
-            m_Modifier[HostPlayerId].ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, delta);
-            GetMode(session).Modify(session, m_HostCommands, m_HostCommands, delta);
+            m_Modifier[HostPlayerId].ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+            m_Modifier[HostPlayerId].ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+            GetMode(session).Modify(session, m_HostCommands, m_HostCommands, deltaUs);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
-            stamp.time.Value = time;
+            stamp.timeUs.Value = timeUs;
             stamp.tick.Value = serverStamp.tick;
         }
 
@@ -68,9 +69,8 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId];
 
-                    float rollback = tickRate.TickInterval * 4;
-                    RenderInterpolatedPlayer<ServerStampComponent>(renderTime - rollback, renderPlayers[playerId],
-                                                                   m_SessionHistory.Size, GetInHistory);
+                    uint renderTimeUs = TimeConversions.GetUsFromSecond(renderTime - tickRate.TickInterval * 4);
+                    RenderInterpolatedPlayer<ServerStampComponent>(renderTimeUs, renderPlayers[playerId], m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(playerId, renderPlayers[playerId], playerId == localPlayer);
             }

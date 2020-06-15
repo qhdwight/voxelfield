@@ -21,10 +21,10 @@ namespace Swihoni.Sessions.Items.Modifiers
         public ushort ThrowForce => m_ThrowForce;
         public ThrowableModifierBehavior ThrowablePrefab => m_ThrowablePrefab;
 
-        protected override void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, float duration)
+        protected override void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, uint durationUs)
         {
             if (item.status.id == ThrowableStatusId.Cooking && !inputs.GetInput(PlayerInput.UseOne))
-                StartStatus(session, playerId, item, ItemStatusId.PrimaryUsing, duration);
+                StartStatus(session, playerId, item, ItemStatusId.PrimaryUsing, durationUs);
         }
 
         protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
@@ -38,11 +38,11 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected override bool CanUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
             base.CanUse(item, inventory, justFinishedUse) && item.status.id != ThrowableStatusId.Cooking;
 
-        protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, float duration) { }
+        protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
 
         protected override bool HasSecondaryUse() => true;
 
-        protected override void SecondaryUse(SessionBase session, int playerId, float duration)
+        protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
             var entities = session.GetLatestSession().Require<EntityArrayElement>();
             for (var index = 0; index < entities.Length; index++)
@@ -51,7 +51,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 if (session.EntityManager.Modifiers[index] is ThrowableModifierBehavior throwableModifier && throwableModifier.ThrowerId == playerId)
                 {
                     var throwable = entity.Require<ThrowableComponent>();
-                    if (throwable.popTime > throwable.thrownElapsed)
+                    if (throwable.popTimeUs > throwable.thrownElapsedUs)
                         throwableModifier.PopQueued = true;
                 }
             }
@@ -74,10 +74,10 @@ namespace Swihoni.Sessions.Items.Modifiers
             }
         }
 
-        internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, float duration)
+        internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
         {
             if (itemComponent.status.id == ThrowableStatusId.Cooking)
-                StartStatus(session, playerId, itemComponent, ItemStatusId.Idle, duration);
+                StartStatus(session, playerId, itemComponent, ItemStatusId.Idle, durationUs);
         }
     }
 }

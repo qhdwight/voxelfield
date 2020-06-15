@@ -1,3 +1,4 @@
+using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Entities
@@ -8,7 +9,7 @@ namespace Swihoni.Sessions.Entities
         protected ThrowableModifierBehavior m_Modifier;
         private AudioSource m_AudioSource;
         private ParticleSystem[] m_Particles;
-        private float m_LastThrownElapsed, m_LastContactElapsed;
+        private uint m_LastThrownElapsedUs, m_LastContactElapsedUs;
 
         internal override void Setup(EntityManager manager)
         {
@@ -17,7 +18,7 @@ namespace Swihoni.Sessions.Entities
             m_AudioSource = GetComponent<AudioSource>();
             m_Modifier = (ThrowableModifierBehavior) m_Manager.GetModifierPrefab(id);
             foreach (ParticleSystem particle in m_Particles) particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
-            m_LastContactElapsed = float.NegativeInfinity;
+            m_LastContactElapsedUs = 0u;
         }
 
         public override void Render(EntityContainer entity)
@@ -26,32 +27,32 @@ namespace Swihoni.Sessions.Entities
 
             var throwable = entity.Require<ThrowableComponent>();
 
-            bool hasPopped = throwable.thrownElapsed > throwable.popTime;
+            bool hasPopped = throwable.thrownElapsedUs > throwable.popTimeUs;
 
             if (hasPopped)
             {
-                bool hasJustPopped = m_LastThrownElapsed < throwable.popTime;
+                bool hasJustPopped = m_LastThrownElapsedUs < throwable.popTimeUs;
                 if (hasJustPopped) m_AudioSource.PlayOneShot(m_PopAudioClip, 1.0f);
-                float particleElapsed = throwable.thrownElapsed - throwable.popTime;
+                uint particleElapsedUs = throwable.thrownElapsedUs - throwable.popTimeUs;
                 foreach (ParticleSystem particle in m_Particles)
                 {
-                    particle.time = particleElapsed;
+                    particle.time = particleElapsedUs * TimeConversions.MicrosecondToSecond;
                     if (particle.isStopped) particle.Play(false);
                 }
             }
             else
             {
-                if (throwable.contactElapsed < m_LastContactElapsed && m_LastContactElapsed > 0.1f)
+                if (throwable.contactElapsedUs < m_LastContactElapsedUs && m_LastContactElapsedUs > 0.1f)
                     m_AudioSource.PlayOneShot(m_ContactAudioClip, 1.0f);
             }
-            m_LastThrownElapsed = throwable.thrownElapsed;
-            m_LastContactElapsed = throwable.contactElapsed;
+            m_LastThrownElapsedUs = throwable.thrownElapsedUs;
+            m_LastContactElapsedUs = throwable.contactElapsedUs;
         }
 
         public override bool IsVisible(EntityContainer entity)
         {
             var throwable = entity.Require<ThrowableComponent>();
-            return throwable.thrownElapsed < throwable.popTime;
+            return throwable.thrownElapsedUs < throwable.popTimeUs;
         }
     }
 }

@@ -52,6 +52,11 @@ PrefabInstance:
       propertyPath: m_MinimumDamageRatio
       value: 0.8
       objectReference: {fileID: 0}
+    - target: {fileID: 7530670241173920196, guid: 15f1e88241ffddcd1939d23f0ffdd3a3,
+        type: 3}
+      propertyPath: m_PopDurationUs
+      value: 7000000
+      objectReference: {fileID: 0}
     - target: {fileID: 7530670241173920217, guid: 15f1e88241ffddcd1939d23f0ffdd3a3,
         type: 3}
       propertyPath: m_Name

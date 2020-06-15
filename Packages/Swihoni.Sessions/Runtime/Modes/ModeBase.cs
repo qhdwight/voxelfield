@@ -20,31 +20,31 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
         }
 
-        internal virtual void Modify(Container session, Container playerToModify, Container commands, float duration)
+        internal virtual void Modify(Container session, Container playerToModify, Container commands, uint durationUs)
         {
             if (playerToModify.Without(out HealthProperty health) || health.WithoutValue) return;
 
             if (playerToModify.With(out HitMarkerComponent hitMarker))
-                if (hitMarker.elapsed.Value > 0.0f)
-                    hitMarker.elapsed.Value -= duration;
+                if (hitMarker.elapsedUs.Value > durationUs) hitMarker.elapsedUs.Value -= durationUs;
+                else hitMarker.elapsedUs.Value = 0u;
             if (playerToModify.With(out DamageNotifierComponent damageNotifier))
-                if (damageNotifier.elapsed.Value > 0.0f)
-                    damageNotifier.elapsed.Value -= duration;
+                if (damageNotifier.elapsedUs.Value > durationUs) damageNotifier.elapsedUs.Value -= durationUs;
+                else damageNotifier.elapsedUs.Value = 0u;
             if (playerToModify.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
                 KillPlayer(playerToModify);
         }
 
-        public void Modify(Container session, float duration)
+        public void Modify(Container session, uint durationUs)
         {
             if (session.With(out KillFeedElement killFeed))
             {
                 foreach (KillFeedComponent kill in killFeed)
-                    if (kill.elapsed > 0.0f)
-                        kill.elapsed.Value -= duration;
+                    if (kill.elapsedUs > durationUs) kill.elapsedUs.Value -= durationUs;
+                    else kill.elapsedUs.Value = 0u;
             }
         }
 
-        public virtual void PlayerHit(SessionBase session, int inflictingPlayerId, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit, float duration)
+        public virtual void PlayerHit(SessionBase session, int inflictingPlayerId, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit, uint durationUs)
         {
             int hitPlayerId = hitbox.Manager.PlayerId;
             Container hitPlayer = session.GetPlayerFromId(hitPlayerId),
@@ -62,9 +62,9 @@ namespace Swihoni.Sessions.Modes
             {
                 bool usesHitMarker = inflictingPlayer.With(out HitMarkerComponent hitMarker),
                      usesNotifier = hitPlayer.With(out DamageNotifierComponent damageNotifier);
-                const float notifierDuration = 1.0f;
-                if (usesHitMarker) hitMarker.elapsed.Value = notifierDuration;
-                if (usesNotifier) damageNotifier.elapsed.Value = notifierDuration;
+                const uint notifierDuration = 1_000_000u;
+                if (usesHitMarker) hitMarker.elapsedUs.Value = notifierDuration;
+                if (usesNotifier) damageNotifier.elapsedUs.Value = notifierDuration;
                 var health = hitPlayer.Require<HealthProperty>();
                 if (damage >= health)
                 {
@@ -79,8 +79,8 @@ namespace Swihoni.Sessions.Modes
                     foreach (KillFeedComponent kill in killFeed)
                     {
                         // Find empty kill
-                        if (kill.elapsed > Mathf.Epsilon) continue;
-                        kill.elapsed.Value = 2.0f;
+                        if (kill.elapsedUs > 0u) continue;
+                        kill.elapsedUs.Value = 2_000_000u;
                         kill.killedPlayerId.Value = (byte) hitPlayerId;
                         kill.killingPlayerId.Value = (byte) inflictingPlayerId;
                         break;

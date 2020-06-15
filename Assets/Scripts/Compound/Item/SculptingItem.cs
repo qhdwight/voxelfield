@@ -15,9 +15,9 @@ namespace Compound.Item
         [SerializeField] private float m_EditDistance = 5.0f, m_DestroyRadius = 1.7f;
         [SerializeField] private LayerMask m_ChunkMask = default;
 
-        protected override void Swing(SessionBase session, int playerId, ItemComponent item, float duration)
+        protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
-            base.Swing(session, playerId, item, duration);
+            base.Swing(session, playerId, item, durationUs);
             if (session.GetPlayerFromId(playerId).Without<ServerTag>() || !GetVoxelRaycast(session, playerId, out RaycastHit hit)) return;
             var position = (Position3Int) (hit.point - hit.normal * 0.5f);
             Voxel.Voxel? voxel = ChunkManager.Singleton.GetVoxel(position);
@@ -42,7 +42,7 @@ namespace Compound.Item
 
         protected override bool HasSecondaryUse() => true;
 
-        protected override void SecondaryUse(SessionBase session, int playerId, float duration)
+        protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
             // TODO:feature add client side prediction for placing blocks
             if (session.GetPlayerFromId(playerId).Without<ServerTag>()) return;

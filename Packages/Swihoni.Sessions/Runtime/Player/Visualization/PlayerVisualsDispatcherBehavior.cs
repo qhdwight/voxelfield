@@ -2,6 +2,7 @@ using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Visualization
@@ -54,7 +55,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 if (usesDamageNotifier)
                 {
                     // TODO:refactor remove magic number, relying on internal state of audio source here... BAD!
-                    if (damageNotifier.elapsed > 0.9f)
+                    if (damageNotifier.elapsedUs * TimeConversions.MicrosecondToSecond > 0.9f)
                     {
                         if (!m_DamageNotifierSource.isPlaying) m_DamageNotifierSource.Play();
                         // if (m_LastDamageNotifierElapsed < Mathf.Epsilon)
@@ -62,7 +63,7 @@ namespace Swihoni.Sessions.Player.Visualization
                     }
                     else
                         m_DamageNotifierSource.Stop();
-                    m_LastDamageNotifierElapsed = damageNotifier.elapsed;
+                    m_LastDamageNotifierElapsed = damageNotifier.elapsedUs;
                 }
             }
 

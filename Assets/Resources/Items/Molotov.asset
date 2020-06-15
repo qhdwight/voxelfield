@@ -16,22 +16,22 @@ MonoBehaviour:
   itemName: Molotov
   movementFactor: 1
   m_StatusModiferProperties:
-  - duration: 2
+  - durationUs: 2000000
     isPersistent: 0
-  - duration: 0.1
+  - durationUs: 100000
     isPersistent: 0
-  - duration: 0
+  - durationUs: 0
     isPersistent: 0
-  - duration: 0.2
+  - durationUs: 200000
     isPersistent: 1
   m_EquipStatusModiferProperties:
-  - duration: 0.15
+  - durationUs: 150000
     isPersistent: 0
-  - duration: 0.15
+  - durationUs: 150000
     isPersistent: 0
-  - duration: Infinity
+  - durationUs: 4294967295
     isPersistent: 0
-  - duration: Infinity
+  - durationUs: 4294967295
     isPersistent: 0
   m_ThrowForce: 12
   m_AmmoCount: 2

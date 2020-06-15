@@ -9,12 +9,12 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         [SerializeField] private Transform m_MoveTransform = default;
 
-        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration)
+        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
         {
             if (player.Without(out CameraComponent playerCamera)
              || commands.Without(out MouseComponent mouse)
              || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
-            base.ModifyTrusted(session, playerId, player, commands, duration);
+            base.ModifyTrusted(session, playerId, player, commands, durationUs);
             playerCamera.yaw.Value = Mathf.Repeat(playerCamera.yaw + mouse.mouseDeltaX * InputProvider.Singleton.Sensitivity, 360.0f);
             playerCamera.pitch.Value = Mathf.Clamp(playerCamera.pitch - mouse.mouseDeltaY * InputProvider.Singleton.Sensitivity, -90.0f, 90.0f);
         }

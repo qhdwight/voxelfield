@@ -4,6 +4,7 @@ using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using Swihoni.Util.Interface;
 using UnityEngine;
 using UnityEngine.UI;
@@ -75,13 +76,14 @@ namespace Swihoni.Sessions.Interfaces
                         }
                     });
                 }
+                // TODO:refactor different durations for hit marker and damage notifier
                 if (localPlayer.With(out HitMarkerComponent hitMarker))
                 {
-                    bool isHitMarkerVisible = hitMarker.elapsed > 0.0f;
+                    bool isHitMarkerVisible = hitMarker.elapsedUs > 0.0f;
                     Color color = hitMarker.isKill ? m_KillHitMarkerColor : m_DefaultHitMarkerColor;
                     color.a = isHitMarkerVisible ? 1.0f : 0.0f;
                     m_HitMarker.color = color;
-                    float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsed);
+                    float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsedUs * TimeConversions.MicrosecondToSecond);
                     m_HitMarker.rectTransform.localScale = new Vector2(scale, scale);
                 }
                 if (localPlayer.With(out DamageNotifierComponent damageNotifier))
@@ -89,7 +91,7 @@ namespace Swihoni.Sessions.Interfaces
                     foreach (Image notifierImage in m_DamageNotifiers)
                     {
                         Color color = notifierImage.color;
-                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsed);
+                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs * TimeConversions.MicrosecondToSecond);
                         notifierImage.color = color;
                     }
                 }

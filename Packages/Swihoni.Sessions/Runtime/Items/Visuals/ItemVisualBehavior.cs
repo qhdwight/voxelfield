@@ -4,6 +4,7 @@ using Swihoni.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Visualization;
+using Swihoni.Util;
 using Swihoni.Util.Animation;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -19,7 +20,7 @@ namespace Swihoni.Sessions.Items.Visuals
         [Serializable]
         public class AnimationEvent
         {
-            public float time;
+            public uint timeUs;
             public AudioClip audioSource;
             public ParticleSystem particleSystem;
             public GameObject tracer;
@@ -98,7 +99,7 @@ namespace Swihoni.Sessions.Items.Visuals
         public void SampleEvents(ItemComponent item, InventoryComponent inventory)
         {
             InventoryComponent lastRenderedInventory = m_PlayerItemAnimator.LastRenderedInventory;
-            float? lastStatusElapsed = null;
+            uint? lastStatusElapsedUs = null;
             ByteStatusComponent GetExpressedStatus(InventoryComponent inv) => inv.equipStatus.id == ItemEquipStatusId.Equipped ? inv.EquippedItemComponent.status : inv.equipStatus;
             ByteStatusComponent expressedStatus = GetExpressedStatus(inventory);
             if (lastRenderedInventory != null)
@@ -106,15 +107,16 @@ namespace Swihoni.Sessions.Items.Visuals
                 bool isSameAnimation, isAfter;
                 ByteStatusComponent lastExpressedStatus = GetExpressedStatus(lastRenderedInventory);
                 isSameAnimation = inventory.equippedIndex == lastRenderedInventory.equippedIndex && expressedStatus.id == lastExpressedStatus.id;
-                isAfter = isSameAnimation && expressedStatus.elapsed >= lastExpressedStatus.elapsed - Mathf.Epsilon;
+                isAfter = isSameAnimation && expressedStatus.elapsedUs >= lastExpressedStatus.elapsedUs;
                 if (isSameAnimation && isAfter)
-                    lastStatusElapsed = lastExpressedStatus.elapsed;
+                    lastStatusElapsedUs = lastExpressedStatus.elapsedUs;
             }
             (ItemStatusVisualProperties statusVisualProperties, int _) = GetVisualProperties(item, inventory.equipStatus);
             ItemStatusVisualProperties.AnimationEvent[] animationEvents = statusVisualProperties.animationEvents;
             foreach (ItemStatusVisualProperties.AnimationEvent animationEvent in animationEvents)
             {
-                bool shouldDoEvent = (!lastStatusElapsed.HasValue || lastStatusElapsed.Value < animationEvent.time) && expressedStatus.elapsed >= animationEvent.time;
+                bool shouldDoEvent = (!lastStatusElapsedUs.HasValue || lastStatusElapsedUs < animationEvent.timeUs)
+                                  && expressedStatus.elapsedUs >= animationEvent.timeUs;
                 if (!shouldDoEvent) continue;
                 if (animationEvent.audioSource) m_AudioSource.PlayOneShot(animationEvent.audioSource);
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();

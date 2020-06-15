@@ -20,14 +20,14 @@ namespace Swihoni.Sessions.Tests
         public void TestItemInterpolation()
         {
             ItemAssetLink.Initialize();
-            var i1 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(0), elapsed = new FloatProperty(1.870f)}};
-            var i2 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(1), elapsed = new FloatProperty(0.038f)}};
+            var i1 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(0), elapsedUs = new UIntProperty(1870000u)}};
+            var i2 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(1), elapsedUs = new UIntProperty(38000u)}};
             var id = new ItemComponent();
             const float interpolation = 0.9f;
             Interpolator.InterpolateInto(i1, i2, id, interpolation);
             id.InterpolateFrom(i1, i2, interpolation);
             Assert.AreEqual(1, id.status.id.Value);
-            Assert.AreEqual(0.021f, id.status.elapsed.Value, 1e-3f);
+            Assert.AreEqual(21200u, id.status.elapsedUs.Value);
         }
 
         [Test]
@@ -75,8 +75,8 @@ namespace Swihoni.Sessions.Tests
             session.Require<PlayerContainerArrayElement>().SetAll(() => new Container(standardElements.playerElements
                                                                                                       .Append(typeof(ServerStampComponent))
                                                                                                       .Append(typeof(ClientStampComponent))));
-            const float time = 0.241f;
-            session.Require<ServerStampComponent>().time.Value = time;
+            const uint time = 2424124u;
+            session.Require<ServerStampComponent>().timeUs.Value = time;
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
@@ -100,7 +100,7 @@ namespace Swihoni.Sessions.Tests
                     switch (component)
                     {
                         case ServerSessionContainer container:
-                            Assert.AreEqual(time, container.Require<ServerStampComponent>().time.Value, 1e-6f);
+                            Assert.AreEqual(time, container.Require<ServerStampComponent>().timeUs.Value, 1e-6f);
                             received++;
                             break;
                     }
@@ -119,7 +119,7 @@ namespace Swihoni.Sessions.Tests
                                                                              .Append(typeof(StampComponent)));
 
             clientCommands.Require<StampComponent>().tick.Value = 35;
-            clientCommands.Require<StampComponent>().duration.Value = 0.241f;
+            clientCommands.Require<StampComponent>().durationUs.Value = 24124124u;
 
             var localHost = new IPEndPoint(IPAddress.Loopback, 7777);
 

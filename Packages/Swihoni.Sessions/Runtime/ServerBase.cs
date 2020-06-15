@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
@@ -68,9 +69,9 @@ namespace Swihoni.Sessions
             Time.fixedDeltaTime = tickRate.TickInterval;
         }
 
-        protected sealed override void Tick(uint tick, float time, float duration)
+        protected sealed override void Tick(uint tick, uint timeUs, uint durationUs)
         {
-            base.Tick(tick, time, duration);
+            base.Tick(tick, timeUs, durationUs);
 
             Profiler.BeginSample("Server Setup");
             Container previousServerSession = m_SessionHistory.Peek(),
@@ -81,13 +82,13 @@ namespace Swihoni.Sessions
 
             var serverStamp = serverSession.Require<ServerStampComponent>();
             serverStamp.tick.Value = tick;
-            serverStamp.time.Value = time;
-            serverStamp.duration.Value = duration;
+            serverStamp.timeUs.Value = timeUs;
+            serverStamp.durationUs.Value = durationUs;
             Profiler.EndSample();
 
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
-            Tick(serverSession, tick, time, duration);
+            Tick(serverSession, tick, timeUs, durationUs);
             PostTick(serverSession);
             // IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
@@ -136,11 +137,11 @@ namespace Swihoni.Sessions
         //     return true;
         // }
 
-        protected virtual void ServerTick(Container serverSession, float time, float duration) { }
+        protected virtual void ServerTick(Container serverSession, uint timeUs, uint durationUs) { }
 
-        private void Tick(Container serverSession, uint tick, float time, float duration)
+        private void Tick(Container serverSession, uint tick, uint timeUs, uint durationUs)
         {
-            ServerTick(serverSession, time, duration);
+            ServerTick(serverSession, timeUs, durationUs);
             m_Socket.PollReceived((fromPeer, element) =>
             {
                 int clientId = fromPeer.GetPlayerId();
@@ -176,9 +177,9 @@ namespace Swihoni.Sessions
                     }
                 }
             });
-            Physics.Simulate(duration);
-            EntityManager.Modify(serverSession, time, duration);
-            GetMode(serverSession).Modify(serverSession, duration);
+            Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
+            EntityManager.Modify(serverSession, timeUs, durationUs);
+            GetMode(serverSession).Modify(serverSession, durationUs);
             SendServerSession(tick, serverSession);
         }
 
@@ -195,7 +196,6 @@ namespace Swihoni.Sessions
                 Container player = GetPlayerFromId(playerId);
                 uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().OrElse(0u);
                 var rollback = (int) checked(tick - lastServerTickAcknowledged);
-                EditorGraph.Next(rollback);
                 // if (lastServerTickAcknowledged == 0u)
                 //     m_SendSession.CopyFrom(serverSession);
                 // else
@@ -226,7 +226,7 @@ namespace Swihoni.Sessions
 
         private void HandleClientCommand(int clientId, Container receivedClientCommands, Container serverSession, Container serverPlayer)
         {
-            FloatProperty serverPlayerTime = serverPlayer.Require<ServerStampComponent>().time;
+            UIntProperty serverPlayerTimeUs = serverPlayer.Require<ServerStampComponent>().timeUs;
             var clientStamp = receivedClientCommands.Require<ClientStampComponent>();
             var serverStamp = serverSession.Require<ServerStampComponent>();
             var serverPlayerClientStamp = serverPlayer.Require<ClientStampComponent>();
@@ -241,23 +241,27 @@ namespace Swihoni.Sessions
                     // Make sure this is the newest tick
                     if (clientStamp.tick > serverPlayerClientStamp.tick)
                     {
-                        serverPlayerTime.Value += clientStamp.time - serverPlayerClientStamp.time;
-
-                        if (Mathf.Abs(serverPlayerTime.Value - serverStamp.time) > serverSession.Require<TickRateProperty>().TickInterval * 3)
+                        checked
                         {
-                            ResetErrors++;
-                            serverPlayerTime.Value = serverStamp.time;
+                            serverPlayerTimeUs.Value += clientStamp.timeUs - serverPlayerClientStamp.timeUs;
+
+                            long delta = serverPlayerTimeUs.Value - (long) serverStamp.timeUs;
+                            if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3)
+                            {
+                                ResetErrors++;
+                                serverPlayerTimeUs.Value = serverStamp.timeUs;
+                            }
                         }
 
                         ModeBase mode = GetMode(serverSession);
                         serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
-                        m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.duration);
-                        mode.Modify(serverSession, serverPlayer, receivedClientCommands, clientStamp.duration);
+                        m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
+                        mode.Modify(serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
                 }
             }
-            else serverPlayerTime.Value = serverStamp.time;
+            else serverPlayerTimeUs.Value = serverStamp.timeUs;
         }
 
         // /// <summary>
@@ -307,12 +311,13 @@ namespace Swihoni.Sessions
 
                 Container rollbackPlayer = m_RollbackSession.GetPlayer(modifierId);
 
-                FloatProperty time = GetPlayerInHistory(0).Require<ServerStampComponent>().time;
-                if (time.WithoutValue) continue;
+                UIntProperty timeUs = GetPlayerInHistory(0).Require<ServerStampComponent>().timeUs;
+                if (timeUs.WithoutValue) continue;
 
                 /* See: https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking */
-                float rollback = DebugBehavior.Singleton.RollbackOverride.OrElse(GetLatestSession().Require<TickRateProperty>().TickInterval) * 3.6f + rtt;
-                RenderInterpolatedPlayer<ServerStampComponent>(time - rollback, rollbackPlayer,
+                float tickInterval = DebugBehavior.Singleton.RollbackOverride.OrElse(GetLatestSession().Require<TickRateProperty>().TickInterval);
+                uint rollbackUs = TimeConversions.GetUsFromSecond(tickInterval * 3.6f + rtt);
+                RenderInterpolatedPlayer<ServerStampComponent>(timeUs - rollbackUs, rollbackPlayer,
                                                                m_SessionHistory.Size, GetPlayerInHistory);
 
                 m_Modifier[modifierId].EvaluateHitboxes(modifierId, rollbackPlayer);

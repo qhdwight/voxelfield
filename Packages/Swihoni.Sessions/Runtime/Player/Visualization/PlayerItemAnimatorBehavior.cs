@@ -77,10 +77,10 @@ namespace Swihoni.Sessions.Player.Visualization
                     ByteStatusComponent equipStatus = inventory.equipStatus;
                     bool isEquipped = equipStatus.id == ItemEquipStatusId.Equipped;
                     ByteStatusComponent expressedStatus = isEquipped ? equippedItem.status : equipStatus;
-                    float duration = (isEquipped
-                              ? m_ItemVisual.ModiferProperties.GetStatusModifierProperties(expressedStatus.id)
-                              : m_ItemVisual.ModiferProperties.GetEquipStatusModifierProperties(expressedStatus.id)).duration,
-                          interpolation = expressedStatus.elapsed / duration;
+                    uint durationUs = (isEquipped
+                        ? m_ItemVisual.ModiferProperties.GetStatusModifierProperties(expressedStatus.id)
+                        : m_ItemVisual.ModiferProperties.GetEquipStatusModifierProperties(expressedStatus.id)).durationUs;
+                    var interpolation = (float) (expressedStatus.elapsedUs / (decimal) durationUs);
 
                     if (m_RenderItems && m_IsFpv == isLocalPlayer)
                         m_ItemVisual.SampleEvents(equippedItem, inventory);
@@ -176,8 +176,8 @@ namespace Swihoni.Sessions.Player.Visualization
                 case AdsStatusId.ExitingAds:
                 case AdsStatusId.EnteringAds:
                     var gunModifier = (GunModifierBase) ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
-                    float duration = gunModifier.GetAdsStatusModifierProperties(adsStatus.id).duration;
-                    aimInterpolation = adsStatus.elapsed / duration;
+                    uint duration = gunModifier.GetAdsStatusModifierProperties(adsStatus.id).durationUs;
+                    aimInterpolation = (float) (adsStatus.elapsedUs / (decimal) duration);
                     break;
                 case AdsStatusId.Ads:
                     aimInterpolation = 1.0f;

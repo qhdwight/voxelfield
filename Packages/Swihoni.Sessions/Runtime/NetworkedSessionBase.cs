@@ -10,6 +10,7 @@ using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using Swihoni.Util.Interface;
 
 namespace Swihoni.Sessions
@@ -85,11 +86,12 @@ namespace Swihoni.Sessions
 
         protected void RenderEntities<TStampComponent>(float renderTime, float rollback) where TStampComponent : StampComponent
         {
+            uint renderTimeUs = TimeConversions.GetUsFromSecond(renderTime - rollback);
             var renderEntities = m_RenderSession.Require<EntityArrayElement>();
             for (var i = 0; i < renderEntities.Length; i++)
             {
                 int index = i;
-                RenderInterpolated(renderTime - rollback, renderEntities[index], m_SessionHistory.Size,
+                RenderInterpolated(renderTimeUs, renderEntities[index], m_SessionHistory.Size,
                                    h => m_SessionHistory.Get(-h).Require<TStampComponent>(),
                                    h => m_SessionHistory.Get(-h).Require<EntityArrayElement>()[index]);
             }

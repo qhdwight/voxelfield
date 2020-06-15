@@ -8,6 +8,7 @@ using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -19,7 +20,6 @@ namespace Swihoni.Sessions
         private readonly CyclicArray<ClientCommandsContainer> m_CommandHistory;
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
-        private float? m_ServerReceiveTime;
 
         public int PredictionErrors { get; private set; }
         public override ComponentSocketBase Socket => m_Socket;
@@ -61,13 +61,13 @@ namespace Swihoni.Sessions
 
         private void UpdateInputs(int localPlayerId) => m_Modifier[localPlayerId].ModifyCommands(this, m_CommandHistory.Peek());
 
-        protected override void Input(float time, float delta)
+        protected override void Input(uint timeUs, uint deltaUs)
         {
             if (!GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
                 return;
 
             UpdateInputs(localPlayerId);
-            m_Modifier[localPlayerId].ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), m_CommandHistory.Peek(), delta);
+            m_Modifier[localPlayerId].ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), m_CommandHistory.Peek(), deltaUs);
         }
 
         protected override void Render(float renderTime)
@@ -87,8 +87,8 @@ namespace Swihoni.Sessions
                 if (isLocalPlayer)
                 {
                     Container GetInHistory(int historyIndex) => m_PlayerPredictionHistory.Get(-historyIndex);
-                    float rollback = tickRate.TickInterval;
-                    RenderInterpolatedPlayer<ClientStampComponent>(renderTime - rollback, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
+                    uint renderTimeUs = TimeConversions.GetUsFromSecond(renderTime - tickRate.TickInterval);
+                    RenderInterpolatedPlayer<ClientStampComponent>(renderTimeUs, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
                     renderPlayer.MergeFrom(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                 }
@@ -97,8 +97,8 @@ namespace Swihoni.Sessions
                     int copiedPlayerId = playerId;
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId];
 
-                    float rollback = tickRate.TickInterval * 4;
-                    RenderInterpolatedPlayer<LocalizedClientStampComponent>(renderTime - rollback, renderPlayer, m_SessionHistory.Size, GetInHistory);
+                    uint renderTimeUs = TimeConversions.GetUsFromSecond(renderTime - tickRate.TickInterval * 4);
+                    RenderInterpolatedPlayer<LocalizedClientStampComponent>(renderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 m_Visuals[playerId].Render(playerId, renderPlayer, isLocalPlayer);
                 m_PlayerHud.Render(renderPlayers[localPlayerId]);
@@ -106,9 +106,9 @@ namespace Swihoni.Sessions
             RenderEntities<LocalizedClientStampComponent>(renderTime, tickRate.TickInterval * 2);
         }
 
-        protected override void Tick(uint tick, float time, float duration)
+        protected override void Tick(uint tick, uint timeUs, uint durationUs)
         {
-            base.Tick(tick, time, duration);
+            base.Tick(tick, timeUs, durationUs);
 
             Profiler.BeginSample("Client Predict");
             Container latestSession = GetLatestSession();
@@ -116,7 +116,7 @@ namespace Swihoni.Sessions
             {
                 SettingsTick(latestSession);
                 UpdateInputs(localPlayerId);
-                Predict(tick, time, localPlayerId);
+                Predict(tick, timeUs, localPlayerId);
             }
             Profiler.EndSample();
 
@@ -125,7 +125,7 @@ namespace Swihoni.Sessions
             Profiler.EndSample();
 
             Profiler.BeginSample("Client Receive");
-            Receive(time);
+            Receive(timeUs);
             // HandleTimeouts(time);
             Profiler.EndSample();
         }
@@ -140,7 +140,7 @@ namespace Swihoni.Sessions
         //     Dispose();
         // }
 
-        private void Predict(uint tick, float time, int localPlayerId)
+        private void Predict(uint tick, uint timeUs, int localPlayerId)
         {
             Container previousPredictedPlayer = m_PlayerPredictionHistory.Peek(),
                       predictedPlayer = m_PlayerPredictionHistory.ClaimNext();
@@ -158,20 +158,20 @@ namespace Swihoni.Sessions
             else
             {
                 predictedStamp.tick.Value = tick;
-                predictedStamp.time.Value = time;
+                predictedStamp.timeUs.Value = timeUs;
                 var previousClientStamp = previousPredictedPlayer.Require<ClientStampComponent>();
-                if (previousClientStamp.time.WithValue)
+                if (previousClientStamp.timeUs.WithValue)
                 {
-                    float lastTime = previousClientStamp.time.OrElse(time),
-                          duration = time - lastTime;
-                    predictedStamp.duration.Value = duration;
+                    uint lastTime = previousClientStamp.timeUs.OrElse(timeUs),
+                         durationUs = timeUs - lastTime;
+                    predictedStamp.durationUs.Value = durationUs;
                 }
 
                 // Inject trusted component
                 commands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
                 predictedPlayer.MergeFrom(commands);
-                if (predictedStamp.duration.WithValue)
-                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.duration);
+                if (predictedStamp.durationUs.WithValue)
+                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.durationUs);
             }
         }
 
@@ -226,17 +226,16 @@ namespace Swihoni.Sessions
                     ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
                     pastPredictedPlayer.CopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
                     pastPredictedPlayer.Require<ClientStampComponent>().CopyFrom(stamp);
-                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().duration);
+                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().durationUs);
                 }
                 break;
             }
         }
 
-        private void Receive(float time)
+        private void Receive(uint timeUs)
         {
             m_Socket.PollReceived((peer, message) =>
             {
-                m_ServerReceiveTime = time;
                 switch (message)
                 {
                     case ServerSessionContainer receivedServerSession:
@@ -259,24 +258,30 @@ namespace Swihoni.Sessions
                         }
                         if (previousServerTick.WithValue)
                         {
-                            uint delta = serverTick - previousServerTick;
-                            m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick - delta + 1;
+                            checked
+                            {
+                                uint delta = serverTick - previousServerTick;
+                                m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick - delta + 1;
+                            }
                         }
 
                         {
                             // TODO:refactor make function
-                            FloatProperty serverTime = serverSession.Require<ServerStampComponent>().time,
-                                          localizedServerTime = serverSession.Require<LocalizedClientStampComponent>().time;
-
-                            if (localizedServerTime.WithValue)
-                                localizedServerTime.Value += serverTime - previousServerSession.Require<ServerStampComponent>().time;
-                            else
-                                localizedServerTime.Value = time;
-
-                            if (Mathf.Abs(localizedServerTime.Value - time) > serverSession.Require<TickRateProperty>().TickInterval * 3)
+                            UIntProperty serverTime = serverSession.Require<ServerStampComponent>().timeUs,
+                                         localizedServerTimeUs = serverSession.Require<LocalizedClientStampComponent>().timeUs;
+                            checked
                             {
-                                ResetErrors++;
-                                localizedServerTime.Value = time;
+                                if (localizedServerTimeUs.WithValue)
+                                    localizedServerTimeUs.Value += serverTime - previousServerSession.Require<ServerStampComponent>().timeUs;
+                                else
+                                    localizedServerTimeUs.Value = timeUs;
+
+                                long delta = localizedServerTimeUs.Value - (long) timeUs;
+                                if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3)
+                                {
+                                    ResetErrors++;
+                                    localizedServerTimeUs.Value = timeUs;
+                                }
                             }
                         }
 
@@ -289,22 +294,22 @@ namespace Swihoni.Sessions
                             if (healthProperty.WithoutValue || healthProperty.IsDead) continue;
                             /* We have been acknowledged by the server */
 
-                            FloatProperty serverTime = serverPlayer.Require<ServerStampComponent>().time,
-                                          localizedServerTime = serverPlayer.Require<LocalizedClientStampComponent>().time;
+                            UIntProperty serverTimeUs = serverPlayer.Require<ServerStampComponent>().timeUs,
+                                         localizedServerTimeUs = serverPlayer.Require<LocalizedClientStampComponent>().timeUs;
 
-                            if (localizedServerTime.WithValue)
-                                localizedServerTime.Value += serverTime - previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().time;
+                            if (localizedServerTimeUs.WithValue)
+                                localizedServerTimeUs.Value += checked(serverTimeUs - previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs);
                             else
-                                localizedServerTime.Value = time;
+                                localizedServerTimeUs.Value = timeUs;
 
                             GetLocalPlayerId(serverSession, out int localPlayerId);
                             if (playerId != localPlayerId) m_Modifier[playerId].Synchronize(serverPlayer);
 
-                            if (Mathf.Abs(localizedServerTime.Value - time) > serverSession.Require<TickRateProperty>().TickInterval * 3)
+                            if (Mathf.Abs(localizedServerTimeUs.Value - timeUs) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3)
                             {
                                 // Debug.LogWarning($"[{GetType().Name}] Client reset");
                                 ResetErrors++;
-                                localizedServerTime.Value = time;
+                                localizedServerTimeUs.Value = timeUs;
                             }
                         }
                         Profiler.EndSample();

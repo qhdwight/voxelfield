@@ -16,7 +16,7 @@ namespace Swihoni.Sessions.Interfaces
 
         public override void Render(KillFeedComponent kill)
         {
-            bool isVisible = kill.elapsed > Mathf.Epsilon;
+            bool isVisible = kill.elapsedUs > 0u;
             if (isVisible)
                 m_Text.BuildText(builder => builder
                                            .Append(kill.killingPlayerId.Value)

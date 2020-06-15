@@ -45,7 +45,7 @@ namespace Swihoni.Sessions.Player.Components
     }
 
     [Serializable, OnlyServerTrusted]
-    public class RespawnTimerProperty : FloatProperty
+    public class RespawnTimerProperty : UIntProperty
     {
         public override string ToString() => $"Respawn timer: {base.ToString()}";
     }
@@ -73,40 +73,40 @@ namespace Swihoni.Sessions.Player.Components
     public class ByteStatusComponent : ComponentBase
     {
         public ByteProperty id;
-        public FloatProperty elapsed;
+        public UIntProperty elapsedUs;
 
         /// <summary>
         /// Note: Interpolation must be explicitly called for this type.
         /// </summary>
-        public void InterpolateFrom(ByteStatusComponent s1, ByteStatusComponent s2, float interpolation, Func<byte, float> getStatusDuration)
+        public void InterpolateFrom(ByteStatusComponent s1, ByteStatusComponent s2, float interpolation, Func<byte, uint> getStatusDurationUs)
         {
-            float d1 = getStatusDuration(s1.id),
-                  e1 = s1.elapsed,
-                  e2 = s2.elapsed;
-            if (float.IsPositiveInfinity(d1))
+            uint d1 = getStatusDurationUs(s1.id),
+                 e1 = s1.elapsedUs,
+                 e2 = s2.elapsedUs;
+            if (d1 == uint.MaxValue)
             {
                 id.Value = s2.id;
-                elapsed.Value = Mathf.Lerp(s1.id == s2.id ? e1 : 0.0f, e2, interpolation);
+                elapsedUs.Value = UIntProperty.InterpolateUInt(s1.id == s2.id ? e1 : 0u, e2, interpolation);
             }
             else
             {
                 if (s1.id != s2.id) e2 += d1;
                 else if (e1 > e2) e2 += d1;
-                float interpolatedElapsed = Mathf.Lerp(e1, e2, interpolation);
+                uint interpolatedElapsedUs = UIntProperty.InterpolateUInt(e1, e2, interpolation);
                 byte interpolatedId;
-                if (interpolatedElapsed > d1)
+                if (interpolatedElapsedUs > d1)
                 {
-                    interpolatedElapsed -= d1;
+                    interpolatedElapsedUs -= d1;
                     interpolatedId = s2.id;
                 }
                 else
                     interpolatedId = s1.id;
                 id.Value = interpolatedId;
-                elapsed.Value = interpolatedElapsed;
+                elapsedUs.Value = interpolatedElapsedUs;
             }
         }
 
-        public override string ToString() => $"ID: {id}, Elapsed: {elapsed}";
+        public override string ToString() => $"ID: {id}, Elapsed: {elapsedUs}";
     }
 
     [Serializable, CustomInterpolation]
@@ -164,6 +164,6 @@ namespace Swihoni.Sessions.Player.Components
                 itemComponents[i].InterpolateFrom(i1.itemComponents[i], i2.itemComponents[i], interpolation);
         }
 
-        public static float VisualDuration(ItemStatusModiferProperties m) => m.isPersistent ? float.PositiveInfinity : m.duration;
+        public static uint VisualDuration(ItemStatusModiferProperties m) => m.isPersistent ? uint.MaxValue : m.durationUs;
     }
 }

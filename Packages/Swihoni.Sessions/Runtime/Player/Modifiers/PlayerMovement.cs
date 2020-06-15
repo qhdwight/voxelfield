@@ -63,18 +63,19 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_Controller.center = m_PrefabController.center * weight;
         }
 
-        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration)
+        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
         {
             if (player.Without(out MoveComponent move)
              || player.With(out HealthProperty health) && health.IsDead
              || commands.Without(out InputFlagProperty inputs)) return;
 
-            base.ModifyChecked(session, playerId, player, commands, duration);
+            base.ModifyChecked(session, playerId, player, commands, durationUs);
+            float duration = durationUs * TimeConversions.MicrosecondToSecond;
             FullMove(move, inputs, duration);
             ModifyStatus(move, inputs, duration);
         }
 
-        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) { }
+        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, uint durationUs) { }
 
         public override void ModifyCommands(SessionBase session, Container commands)
         {

@@ -51,8 +51,12 @@ namespace Compound.Session
             }
         }
 
-        [Conditional("UNITY_STANDALONE")]
-        private void StandaloneDisconnectAll() => DisconnectAll();
+        private void StandaloneDisconnectAll()
+        {
+#if !UNITY_EDITOR
+            DisconnectAll();
+#endif
+        }
 
         public Host StartHost()
         {

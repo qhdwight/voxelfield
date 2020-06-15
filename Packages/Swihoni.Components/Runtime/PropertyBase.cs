@@ -163,7 +163,7 @@ namespace Swihoni.Components
         /// <exception cref="ArgumentException">If types are different.</exception>
         public sealed override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation)
         {
-            if (!(p1 is PropertyBase<T>) || !(p2 is PropertyBase<T>))
+            if (!(p1 is PropertyBase<T> pt1) || !(p2 is PropertyBase<T> pt2))
                 throw new ArgumentException("Properties are not the proper type!");
             if (Field != null)
             {
@@ -174,7 +174,7 @@ namespace Swihoni.Components
                     return;
                 }
             }
-            ValueInterpolateFrom((PropertyBase<T>) p1, (PropertyBase<T>) p2, interpolation);
+            if (pt1.WithValue && pt2.WithValue) ValueInterpolateFrom(pt1, pt2, interpolation);
         }
 
         /// <summary>Interpolates into this from two properties that are known to have values.</summary>

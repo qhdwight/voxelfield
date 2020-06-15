@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Swihoni.Components;
+using Swihoni.Util;
 
 namespace Swihoni.Sessions.Components
 {
@@ -83,14 +84,14 @@ namespace Swihoni.Sessions.Components
     [Serializable, OnlyServerTrusted]
     public class HitMarkerComponent : ComponentBase
     {
-        public FloatProperty elapsed;
+        public UIntProperty elapsedUs;
         public BoolProperty isKill;
     }
 
     [Serializable, OnlyServerTrusted]
     public class DamageNotifierComponent : ComponentBase
     {
-        public FloatProperty elapsed;
+        public UIntProperty elapsedUs;
     }
 
     [Serializable]
@@ -103,7 +104,7 @@ namespace Swihoni.Sessions.Components
     public class KillFeedComponent : ComponentBase
     {
         public ByteProperty killingPlayerId, killedPlayerId;
-        public FloatProperty elapsed;
+        public UIntProperty elapsedUs;
     }
 
     [Serializable]
@@ -128,6 +129,8 @@ namespace Swihoni.Sessions.Components
     public class TickRateProperty : ByteProperty
     {
         public float TickInterval => 1.0f / Value;
+
+        public uint TickIntervalUs => TimeConversions.GetUsFromSecond(TickInterval);
     }
 
     [Serializable]
@@ -138,10 +141,9 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class StampComponent : ComponentBase
     {
-        public UIntProperty tick;
-        public FloatProperty time, duration;
+        public UIntProperty tick, timeUs, durationUs;
 
-        public override string ToString() { return $"Tick: {tick}, Time: {time}, Duration: {duration}"; }
+        public override string ToString() { return $"Tick: {tick}, Time: {timeUs}, Duration: {durationUs}"; }
     }
 
     [Serializable]

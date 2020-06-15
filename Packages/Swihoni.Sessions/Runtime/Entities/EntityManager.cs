@@ -64,7 +64,7 @@ namespace Swihoni.Sessions.Entities
             void ObtainModifierAtIndex(EntityContainer entity, int index, EntityModifierBehavior entityModifierBehavior)
             {
                 entity.Zero();
-                if (entity.With(out ThrowableComponent throwable)) throwable.popTime.Value = float.PositiveInfinity;
+                if (entity.With(out ThrowableComponent throwable)) throwable.popTimeUs.Value = uint.MaxValue;
                 entity.id.Value = entityId;
                 m_Modifiers[index] = entityModifierBehavior;
             }
@@ -98,7 +98,7 @@ namespace Swihoni.Sessions.Entities
 
         public EntityModifierBehavior GetModifierPrefab(int entityId) => m_ModifierPrefabs[entityId - 1];
 
-        public void Modify(Container session, float time, float duration)
+        public void Modify(Container session, uint timeUs, uint durationUs)
         {
             var entities = session.Require<EntityArrayElement>();
             for (var index = 0; index < entities.Length; index++)
@@ -106,7 +106,7 @@ namespace Swihoni.Sessions.Entities
                 EntityContainer entity = entities[index];
                 if (entity.id == EntityId.None)
                     continue;
-                m_Modifiers[index].Modify(m_Session, entity, time, duration);
+                m_Modifiers[index].Modify(m_Session, entity, timeUs, durationUs);
                 // Remove modifier if lifetime has ended
                 if (entity.id == EntityId.None && m_Modifiers[index] != null) ReturnModifier(index);
             }

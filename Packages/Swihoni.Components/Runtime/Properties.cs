@@ -16,6 +16,14 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUInt();
         public override bool ValueEquals(PropertyBase<uint> other) => other.Value == Value;
+        public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation) => Value = InterpolateUInt(p1.Value, p2.Value, interpolation);
+
+        // public static uint InterpolateUInt(uint u1, uint u2, float interpolation) => checked((uint) Math.Round(u1 + (u2 - u1) * interpolation));
+        public static uint InterpolateUInt(uint u1, uint u2, float interpolation)
+        {
+            decimal d1 = u1, d2 = u2, i = (decimal) interpolation;
+            return (uint) Math.Round(d1 + (d2 - d1) * i);
+        }
     }
 
     [Serializable]

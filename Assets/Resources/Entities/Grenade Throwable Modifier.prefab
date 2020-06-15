@@ -55,6 +55,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -79,6 +80,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &7530670241173920217
 GameObject:
   m_ObjectHideFlags: 0
@@ -155,12 +157,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 1
-  m_PopTime: 2
-  m_PopDuration: 0.5
+  m_PopTimeUs: 2000000
+  m_PopDurationUs: 500000
   m_Radius: 4
   m_Damage: 70
   m_Interval: 0
   m_Mask:
     serializedVersion: 2
     m_Bits: 65536
+  m_MinimumDamageRatio: 0.2
   m_CollisionVelocityMultiplier: 0.5

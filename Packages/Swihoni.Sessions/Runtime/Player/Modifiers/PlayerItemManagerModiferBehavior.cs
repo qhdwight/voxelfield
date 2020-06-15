@@ -11,28 +11,28 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         public const byte NoneIndex = 0;
 
-        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration)
+        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
         {
             if (!player.With(out InventoryComponent inventoryComponent) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
             var inputProperty = commands.Require<InputFlagProperty>();
             var wantedItemIndexProperty = commands.Require<WantedItemIndexProperty>();
 
-            ModifyEquipStatus(session, playerId, inventoryComponent, wantedItemIndexProperty, duration);
+            ModifyEquipStatus(session, playerId, inventoryComponent, wantedItemIndexProperty, durationUs);
 
             if (inventoryComponent.HasNoItemEquipped) return;
 
-            ModifyAdsStatus(inventoryComponent, inputProperty, duration);
+            ModifyAdsStatus(inventoryComponent, inputProperty, durationUs);
 
             // Modify equipped item component
             ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
             ItemModifierBase itemModifier = ItemAssetLink.GetModifier(equippedItemComponent.id);
-            itemModifier.ModifyChecked(session, playerId, equippedItemComponent, inventoryComponent, inputProperty, duration);
+            itemModifier.ModifyChecked(session, playerId, equippedItemComponent, inventoryComponent, inputProperty, durationUs);
         }
 
-        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) { }
+        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, uint durationUs) { }
 
-        private static void ModifyEquipStatus(SessionBase session, int playerId, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex, float duration)
+        private static void ModifyEquipStatus(SessionBase session, int playerId, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex, uint durationUs)
         {
             byte wantedIndex = wantedItemIndex;
             ByteStatusComponent equipStatus = inventory.equipStatus;
@@ -44,27 +44,27 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (hasValidWantedIndex && wantsNewIndex && !isAlreadyUnequipping)
             {
                 equipStatus.id.Value = ItemEquipStatusId.Unequipping;
-                equipStatus.elapsed.Value = 0.0f;
+                equipStatus.elapsedUs.Value = 0u;
             }
 
             if (inventory.HasNoItemEquipped) return;
             // We have a current equipped item
-            equipStatus.elapsed.Value += duration;
+            equipStatus.elapsedUs.Value += durationUs;
             ItemModifierBase modifier = ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
 
             // Handle finishing equip status
             ItemStatusModiferProperties modifierProperties;
-            while (equipStatus.elapsed > (modifierProperties = modifier.GetEquipStatusModifierProperties(equipStatus.id)).duration)
+            while (equipStatus.elapsedUs > (modifierProperties = modifier.GetEquipStatusModifierProperties(equipStatus.id)).durationUs)
             {
                 if (equipStatus.id == ItemEquipStatusId.Equipping) equipStatus.id.Value = ItemEquipStatusId.Equipped;
                 else if (equipStatus.id == ItemEquipStatusId.Unequipping) equipStatus.id.Value = ItemEquipStatusId.Unequipped;
-                equipStatus.elapsed.Value -= modifierProperties.duration;
+                equipStatus.elapsedUs.Value -= modifierProperties.durationUs;
             }
 
             if (equipStatus.id != ItemEquipStatusId.Unequipped) return;
             // We have just unequipped the current index
             ItemComponent equippedItemComponent = inventory.EquippedItemComponent;
-            modifier.OnUnequip(session, playerId, equippedItemComponent, duration);
+            modifier.OnUnequip(session, playerId, equippedItemComponent, durationUs);
             if (hasValidWantedIndex)
                 inventory.equippedIndex.Value = wantedIndex;
             else if (FindReplacement(inventory, out byte replacementIndex))
@@ -74,7 +74,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             equipStatus.id.Value = ItemEquipStatusId.Equipping;
         }
 
-        private static void ModifyAdsStatus(InventoryComponent inventory, InputFlagProperty inputs, float duration)
+        private static void ModifyAdsStatus(InventoryComponent inventory, InputFlagProperty inputs, uint durationUs)
         {
             ItemModifierBase modifier = ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
             if (!(modifier is GunModifierBase gunModifier)) return;
@@ -84,7 +84,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 if (inventory.adsStatus.id == AdsStatusId.HipAiming)
                 {
                     inventory.adsStatus.id.Value = AdsStatusId.EnteringAds;
-                    inventory.adsStatus.elapsed.Value = 0.0f;
+                    inventory.adsStatus.elapsedUs.Value = 0u;
                 }
             }
             else
@@ -92,19 +92,19 @@ namespace Swihoni.Sessions.Player.Modifiers
                 if (inventory.adsStatus.id == AdsStatusId.Ads)
                 {
                     inventory.adsStatus.id.Value = AdsStatusId.ExitingAds;
-                    inventory.adsStatus.elapsed.Value = 0.0f;
+                    inventory.adsStatus.elapsedUs.Value = 0u;
                 }
             }
 
             ByteStatusComponent adsStatus = inventory.adsStatus;
-            adsStatus.elapsed.Value += duration;
+            adsStatus.elapsedUs.Value += durationUs;
 
             ItemStatusModiferProperties modifierProperties;
-            while (adsStatus.elapsed > (modifierProperties = gunModifier.GetAdsStatusModifierProperties(adsStatus.id)).duration)
+            while (adsStatus.elapsedUs > (modifierProperties = gunModifier.GetAdsStatusModifierProperties(adsStatus.id)).durationUs)
             {
                 if (adsStatus.id == AdsStatusId.EnteringAds) adsStatus.id.Value = AdsStatusId.Ads;
                 else if (adsStatus.id == AdsStatusId.ExitingAds) adsStatus.id.Value = AdsStatusId.HipAiming;
-                adsStatus.elapsed.Value -= modifierProperties.duration;
+                adsStatus.elapsedUs.Value -= modifierProperties.durationUs;
             }
         }
 
@@ -148,7 +148,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             itemComponent.id.Value = itemId;
             if (itemId == ItemId.None) return;
             itemComponent.status.id.Value = ItemStatusId.Idle;
-            itemComponent.status.elapsed.Value = 0.0f;
+            itemComponent.status.elapsedUs.Value = 0u;
             ItemModifierBase itemModifier = ItemAssetLink.GetModifier(itemId);
             if (itemModifier is GunModifierBase gunModifier)
             {
@@ -156,7 +156,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 itemComponent.gunStatus.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
             }
             inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
-            inventory.equipStatus.elapsed.Value = 0.0f;
+            inventory.equipStatus.elapsedUs.Value = 0u;
             if (inventory.HasItemEquipped && inventory.equippedIndex != index) return;
             // If this replaces existing equipped item, find new one to equip
             inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;

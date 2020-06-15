@@ -22,16 +22,16 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (m_Trigger) m_Trigger.Setup(playerId);
         }
 
-        public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, float duration)
+        public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs)
         {
             if (session.IsPaused) return;
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, duration);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs);
         }
 
-        public void ModifyTrusted(SessionBase session, int playerId, Container playerToModify, Container commands, float duration)
+        public void ModifyTrusted(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs)
         {
             if (session.IsPaused) return;
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(session, playerId, playerToModify, commands, duration);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(session, playerId, playerToModify, commands, durationUs);
         }
 
         public void Synchronize(Container player)
@@ -62,12 +62,12 @@ namespace Swihoni.Sessions.Player.Modifiers
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
-        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, float duration) => SynchronizeBehavior(player);
+        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs) => SynchronizeBehavior(player);
 
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>
-        public virtual void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, float duration) => SynchronizeBehavior(player);
+        public virtual void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, uint durationUs) => SynchronizeBehavior(player);
 
         public virtual void ModifyCommands(SessionBase session, Container commands) { }
 

@@ -36,7 +36,7 @@ namespace Swihoni.Sessions.Items.Modifiers
     [Serializable]
     public class ItemStatusModiferProperties
     {
-        public float duration;
+        public uint durationUs;
         public bool isPersistent;
     }
 
@@ -50,54 +50,52 @@ namespace Swihoni.Sessions.Items.Modifiers
         public ItemStatusModiferProperties GetStatusModifierProperties(byte statusId) => m_StatusModiferProperties[statusId];
 
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
-
-        public virtual void ModifyTrusted(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputProperty, float duration) { }
-
-        public virtual void ModifyChecked(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputProperty, float duration)
+        
+        public virtual void ModifyChecked(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputProperty, uint durationUs)
         {
             if (CanUse(item, inventory))
             {
                 if (inputProperty.GetInput(PlayerInput.UseOne))
-                    StartStatus(session, playerId, item, GetUseStatus(inputProperty), duration);
+                    StartStatus(session, playerId, item, GetUseStatus(inputProperty), durationUs);
                 else if (HasSecondaryUse() && inputProperty.GetInput(PlayerInput.UseTwo))
-                    StartStatus(session, playerId, item, ItemStatusId.SecondaryUsing, duration);
+                    StartStatus(session, playerId, item, ItemStatusId.SecondaryUsing, durationUs);
             }
-            ModifyStatus(session, playerId, item, inventory, inputProperty, duration);
+            ModifyStatus(session, playerId, item, inventory, inputProperty, durationUs);
         }
 
-        private void ModifyStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, float duration)
+        private void ModifyStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, uint durationUs)
         {
-            item.status.elapsed.Value += duration;
-            StatusTick(session, playerId, item, inputs, duration);
-            EndStatus(session, playerId, item, inventory, inputs, duration);
+            item.status.elapsedUs.Value += durationUs;
+            StatusTick(session, playerId, item, inputs, durationUs);
+            EndStatus(session, playerId, item, inventory, inputs, durationUs);
         }
 
-        protected virtual void EndStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, float duration)
+        protected virtual void EndStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, uint durationUs)
         {
             ByteStatusComponent status = item.status;
             ItemStatusModiferProperties modifierProperties;
-            while (status.elapsed > (modifierProperties = m_StatusModiferProperties[status.id]).duration)
+            while (status.elapsedUs > (modifierProperties = m_StatusModiferProperties[status.id]).durationUs)
             {
                 if (modifierProperties.isPersistent) break;
-                float statusElapsed = status.elapsed;
+                uint statusElapsedUs = status.elapsedUs;
                 byte? nextStatus = FinishStatus(session, playerId, item, inventory, inputs);
-                StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, duration, statusElapsed - modifierProperties.duration);
+                StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, durationUs, statusElapsedUs - modifierProperties.durationUs);
             }
         }
 
-        protected virtual void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, float duration) { }
+        protected virtual void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, uint durationUs) { }
 
-        protected void StartStatus(SessionBase session, int playerId, ItemComponent itemComponent, byte statusId, float duration, float elapsed = 0.0f)
+        protected void StartStatus(SessionBase session, int playerId, ItemComponent itemComponent, byte statusId, uint durationUs, uint elapsedUs = 0u)
         {
             itemComponent.status.id.Value = statusId;
-            itemComponent.status.elapsed.Value = elapsed;
+            itemComponent.status.elapsedUs.Value = elapsedUs;
             switch (statusId)
             {
                 case ItemStatusId.PrimaryUsing:
-                    PrimaryUse(session, playerId, itemComponent, duration);
+                    PrimaryUse(session, playerId, itemComponent, durationUs);
                     break;
                 case ItemStatusId.SecondaryUsing:
-                    SecondaryUse(session, playerId, duration);
+                    SecondaryUse(session, playerId, durationUs);
                     break;
             }
         }
@@ -124,14 +122,14 @@ namespace Swihoni.Sessions.Items.Modifiers
          && item.status.id != ItemStatusId.SecondaryUsing
          && inventory.equipStatus.id == ItemEquipStatusId.Equipped;
 
-        protected virtual void SecondaryUse(SessionBase session, int playerId, float duration) { }
+        protected virtual void SecondaryUse(SessionBase session, int playerId, uint durationUs) { }
 
-        protected virtual void PrimaryUse(SessionBase session, int playerId, ItemComponent item, float duration) { }
+        protected virtual void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
 
         public void ModifyCommands(SessionBase session, InputFlagProperty commandsToModify) { }
 
         protected virtual bool HasSecondaryUse() => false;
 
-        internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, float duration) { }
+        internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs) { }
     }
 }

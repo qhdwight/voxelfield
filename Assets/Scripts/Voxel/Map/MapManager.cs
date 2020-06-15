@@ -108,7 +108,7 @@ namespace Voxel.Map
         private static void SaveTestMap()
         {
             var testMap = new MapSave("Test", 4,
-                                      new Dimension(new Position3Int(-2, -1, -2), new Position3Int(2, 1, 2)),
+                                      new Dimension(new Position3Int(-1, -1, -1), new Position3Int(1, 1, 1)),
                                       new Dictionary<Position3Int, BrushStroke>(), new Dictionary<Position3Int, VoxelChangeData>(),
                                       false,
                                       new NoiseData

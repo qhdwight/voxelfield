@@ -41,12 +41,12 @@ namespace Swihoni.Sessions.Modes
             base.KillPlayer(player);
 
             if (player.With(out RespawnTimerProperty respawnTimer))
-                respawnTimer.Value = 2.0f;
+                respawnTimer.Value = 2_000_000u;
         }
 
-        internal override void Modify(Container session, Container playerToModify, Container commands, float duration)
+        internal override void Modify(Container session, Container playerToModify, Container commands, uint durationUs)
         {
-            base.Modify(session, playerToModify, commands, duration);
+            base.Modify(session, playerToModify, commands, durationUs);
 
             if (commands.Without(out InputFlagProperty inputs) || playerToModify.Without(out HealthProperty health) || health.WithoutValue)
                 return;
@@ -55,9 +55,9 @@ namespace Swihoni.Sessions.Modes
                 KillPlayer(playerToModify);
             if (health.IsDead && playerToModify.With(out RespawnTimerProperty respawn))
             {
-                respawn.Value -= duration;
-                if (respawn.Value <= 0.0f)
-                    SpawnPlayer(playerToModify);
+                if (respawn.Value > durationUs) respawn.Value -= durationUs;
+                else respawn.Value = 0u;
+                if (respawn.Value == 0u) SpawnPlayer(playerToModify);
             }
         }
     }

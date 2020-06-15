@@ -9,6 +9,7 @@ using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
+using Swihoni.Util;
 using Swihoni.Util.Interface;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
@@ -111,7 +112,7 @@ namespace Swihoni.Sessions
 
             HandleCursorLockState();
             float delta = time - m_RenderTime;
-            Input(time, delta);
+            Input(TimeConversions.GetUsFromSecond(time), TimeConversions.GetUsFromSecond(delta));
             if (ShouldRender) Render(time);
             m_RenderTime = time;
         }
@@ -143,12 +144,10 @@ namespace Swihoni.Sessions
 
         protected virtual void Render(float renderTime) { }
 
-        protected virtual void Tick(uint tick, float time, float duration)
-        {
+        protected virtual void Tick(uint tick, uint timeUs, uint durationUs) =>
             GetLatestSession().Require<TickRateProperty>().IfWith(tickRate => Time.fixedDeltaTime = 1.0f / tickRate);
-        }
 
-        protected virtual void Input(float time, float delta) { }
+        protected virtual void Input(uint timeUs, uint deltaUs) { }
 
         public void FixedUpdate(float time)
         {
@@ -156,7 +155,7 @@ namespace Swihoni.Sessions
 
             float duration = time - m_FixedUpdateTime;
             m_FixedUpdateTime = time;
-            Tick(m_Tick++, time, duration);
+            Tick(m_Tick++, TimeConversions.GetUsFromSecond(time), TimeConversions.GetUsFromSecond(duration));
         }
 
         // protected void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, CyclicArray<TComponent> componentHistory,
@@ -195,27 +194,31 @@ namespace Swihoni.Sessions
         // }
 
         protected static void RenderInterpolated
-            (float renderTime, Container renderContainer, int maxRollback, Func<int, StampComponent> getTimeInHistory, Func<int, Container> getInHistory)
+            (uint renderTimeUs, Container renderContainer, int maxRollback, Func<int, StampComponent> getTimeInHistory, Func<int, Container> getInHistory)
         {
             // Interpolate all remote players
             for (var historyIndex = 0; historyIndex < maxRollback; historyIndex++)
             {
                 Container fromComponent = getInHistory(historyIndex + 1),
                           toComponent = getInHistory(historyIndex);
-                FloatProperty toTime = getTimeInHistory(historyIndex).time,
-                              fromTime = getTimeInHistory(historyIndex + 1).time;
+                UIntProperty toTime = getTimeInHistory(historyIndex).timeUs,
+                             fromTime = getTimeInHistory(historyIndex + 1).timeUs;
                 var tooRecent = false;
-                if (!toTime.WithValue || !fromTime.WithValue || (tooRecent = historyIndex == 0 && toTime < renderTime))
+                if (!toTime.WithValue || !fromTime.WithValue || (tooRecent = historyIndex == 0 && toTime < renderTimeUs))
                 {
                     renderContainer.CopyFrom(getInHistory(0));
                     if (tooRecent) Debug.LogWarning("Not enough recent");
                     return;
                 }
-                if (renderTime >= fromTime && renderTime < toTime)
+                if (renderTimeUs >= fromTime && renderTimeUs <= toTime)
                 {
-                    float interpolation = (renderTime - fromTime) / (toTime - fromTime);
+                    float interpolation = (renderTimeUs - fromTime) / (float) (toTime - fromTime);
                     Interpolator.InterpolateInto(fromComponent, toComponent, renderContainer, interpolation);
                     return;
+                }
+                if (historyIndex == maxRollback - 1)
+                {
+                    Debug.Log($"{renderTimeUs}, {fromTime}, {toTime}");
                 }
             }
             // Take last if we do not have enough history
@@ -224,10 +227,10 @@ namespace Swihoni.Sessions
         }
 
         protected static void RenderInterpolatedPlayer<TStampComponent>
-            (float renderTime, Container renderContainer, int maxRollback, Func<int, Container> getInHistory)
+            (uint renderTimeUs, Container renderContainer, int maxRollback, Func<int, Container> getInHistory)
             where TStampComponent : StampComponent
         {
-            RenderInterpolated(renderTime, renderContainer, maxRollback,
+            RenderInterpolated(renderTimeUs, renderContainer, maxRollback,
                                historyIndex => getInHistory(historyIndex).Require<TStampComponent>(), getInHistory);
         }
 
