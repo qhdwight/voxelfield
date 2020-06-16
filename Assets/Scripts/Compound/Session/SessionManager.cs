@@ -49,6 +49,10 @@ namespace Compound.Session
             {
                 StartServer(new IPEndPoint(IPAddress.Any, m_ServerPort));
             }
+            ConsoleCommandExecutor.RegisterCommand("r", args =>
+            {
+                DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]);
+            });
         }
 
         private void StandaloneDisconnectAll()

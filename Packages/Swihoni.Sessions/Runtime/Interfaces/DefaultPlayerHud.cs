@@ -6,6 +6,7 @@ using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using Swihoni.Util.Interface;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -55,8 +56,9 @@ namespace Swihoni.Sessions.Interfaces
                                .Append(" x")
                                .Append(equippedItem.gunStatus.ammoInReserve);
                     });
+                    
                     Color crosshairColor = m_Crosshair.color;
-                    crosshairColor.a = inventory.adsStatus.id == AdsStatusId.Ads ? 0.0f : 1.0f;
+                    crosshairColor.a = inventory.adsStatus.id.Else(AdsStatusId.HipAiming) == AdsStatusId.Ads ? 0.0f : 1.0f;
                     m_Crosshair.color = crosshairColor;
                     ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisuals(equippedItem.id);
                     bool isDefaultCrosshair = visualPrefab.Crosshair == null;

@@ -65,13 +65,10 @@ namespace Swihoni.Sessions.Player.Visualization
                     }
                     if (m_RenderItems)
                     {
-                        if (m_IsFpv)
-                            m_ItemVisual.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
-                        else
-                            m_ItemVisual.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
+                        if (m_IsFpv) m_ItemVisual.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
+                        else m_ItemVisual.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
                     }
-                    else
-                        m_ItemVisual.SetRenderingMode(false);
+                    else m_ItemVisual.SetRenderingMode(false);
 
                     ItemComponent equippedItem = inventory.EquippedItemComponent;
                     ByteStatusComponent equipStatus = inventory.equipStatus;

@@ -27,12 +27,13 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.TestingRifle, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Grenade, 2);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Molotov, 3);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shotgun, 4);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.C4, 5);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 6);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.TestingRifle, 2);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shotgun, 3);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 4);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Grenade, 5);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Molotov, 6);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.C4, 7);
             }
         }
 
@@ -56,8 +57,11 @@ namespace Swihoni.Sessions.Modes
             if (health.IsDead && playerToModify.With(out RespawnTimerProperty respawn))
             {
                 if (respawn.Value > durationUs) respawn.Value -= durationUs;
-                else respawn.Value = 0u;
-                if (respawn.Value == 0u) SpawnPlayer(playerToModify);
+                else
+                {
+                    respawn.Value = 0u;
+                    SpawnPlayer(playerToModify);
+                }
             }
         }
     }

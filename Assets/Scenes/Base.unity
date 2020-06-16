@@ -1259,8 +1259,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75bfa6a2e5724c1c818772ff876c90cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isDebugMode: 1
-  RollbackOverride:
+  isDebugMode: 0
+  RollbackOverrideUs:
     m_Flags: 0
     m_Value: 0
   TickRate:

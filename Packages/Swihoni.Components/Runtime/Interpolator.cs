@@ -55,7 +55,6 @@ namespace Swihoni.Components
     /// <summary>
     /// Use on any <see cref="FloatProperty"/> or <see cref="VectorProperty"/>.
     /// Used in comparisons between two properties to see if they are equal.
-    /// For example, checking player position.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class ToleranceAttribute : Attribute
@@ -63,6 +62,11 @@ namespace Swihoni.Components
         public readonly float tolerance;
 
         public ToleranceAttribute(float tolerance) => this.tolerance = tolerance;
+    }
+
+    public class PredictionToleranceAttribute : ToleranceAttribute
+    {
+        public PredictionToleranceAttribute(float tolerance) : base(tolerance) { }
     }
 
     /// <summary>

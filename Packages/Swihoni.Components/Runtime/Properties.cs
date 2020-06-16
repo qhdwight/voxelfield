@@ -93,7 +93,7 @@ namespace Swihoni.Components
     public class QuaternionProperty : PropertyBase<Quaternion>
     {
         public override bool ValueEquals(PropertyBase<Quaternion> other) => other.Value == Value;
-        public override void SerializeValue(NetDataWriter writer) => Extensions.Put(writer, Value);
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void Zero() => Value = Quaternion.identity;
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetQuaternion();
 
@@ -112,11 +112,11 @@ namespace Swihoni.Components
 
         public override bool ValueEquals(PropertyBase<float> other)
         {
-            float tolerance;
-            if (Field != null && Field.IsDefined(typeof(ToleranceAttribute))) tolerance = Field.GetCustomAttribute<ToleranceAttribute>().tolerance;
-            else tolerance = DefaultFloatTolerance;
-            return Mathf.Abs(other.Value - Value) < tolerance;
+            float tolerance = TryAttribute(out ToleranceAttribute attribute) ? attribute.tolerance : DefaultFloatTolerance;
+            return CheckWithinTolerance(other, tolerance);
         }
+
+        public bool CheckWithinTolerance(PropertyBase<float> other, float tolerance) => Mathf.Abs(other.Value - Value) < tolerance;
 
         public void CyclicInterpolateFrom(float f1, float f2, float min, float max, float interpolation)
         {
@@ -129,19 +129,15 @@ namespace Swihoni.Components
         public override void ValueInterpolateFrom(PropertyBase<float> p1, PropertyBase<float> p2, float interpolation)
         {
             float f1 = p1, f2 = p2;
-            if (Field != null)
+            if (HasAttribute<AngleAttribute>())
             {
-                if (Field.IsDefined(typeof(AngleAttribute)))
-                {
-                    Value = Mathf.LerpAngle(f1, f2, interpolation);
-                    return;
-                }
-                if (Field.IsDefined(typeof(CyclicAttribute)))
-                {
-                    var cyclicAttribute = Field.GetCustomAttribute<CyclicAttribute>();
-                    CyclicInterpolateFrom(f1, f2, cyclicAttribute.minimum, cyclicAttribute.maximum, interpolation);
-                    return;
-                }
+                Value = Mathf.LerpAngle(f1, f2, interpolation);
+                return;
+            }
+            if (TryAttribute(out CyclicAttribute cyclicAttribute))
+            {
+                CyclicInterpolateFrom(f1, f2, cyclicAttribute.minimum, cyclicAttribute.maximum, interpolation);
+                return;
             }
             if (float.IsPositiveInfinity(f1) || float.IsPositiveInfinity(f2)) Value = float.PositiveInfinity;
             else Value = Mathf.Lerp(f1, f2, interpolation);
@@ -155,24 +151,24 @@ namespace Swihoni.Components
         public VectorProperty(float x, float y, float z) : base(new Vector3(x, y, z)) { }
         public VectorProperty() { }
 
-        public override void SerializeValue(NetDataWriter writer) => Extensions.Put(writer, Value);
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetVector3();
 
         public override bool ValueEquals(PropertyBase<Vector3> other)
         {
-            float tolerance;
-            if (Field != null && Field.IsDefined(typeof(ToleranceAttribute))) tolerance = Field.GetCustomAttribute<ToleranceAttribute>().tolerance;
-            else tolerance = DefaultFloatTolerance;
-            return Mathf.Abs(Value.x - other.Value.x) < tolerance
-                && Mathf.Abs(Value.y - other.Value.y) < tolerance
-                && Mathf.Abs(Value.z - other.Value.z) < tolerance;
+            float tolerance = TryAttribute(out ToleranceAttribute toleranceAttribute) ? toleranceAttribute.tolerance : DefaultFloatTolerance;
+            return CheckWithinTolerance(other, tolerance);
         }
+
+        public bool CheckWithinTolerance(PropertyBase<Vector3> other, float tolerance)
+            => Mathf.Abs(Value.x - other.Value.x) < tolerance
+            && Mathf.Abs(Value.y - other.Value.y) < tolerance
+            && Mathf.Abs(Value.z - other.Value.z) < tolerance;
 
         public override void ValueInterpolateFrom(PropertyBase<Vector3> p1, PropertyBase<Vector3> p2, float interpolation)
         {
-            bool GreaterThan(Vector3 v1, Vector3 v2, float range) => (v2 - v1).sqrMagnitude > range * range;
-            bool useSecond = Field != null && Field.IsDefined(typeof(InterpolateRangeAttribute))
-                                           && GreaterThan(p1, p2, Field.GetCustomAttribute<InterpolateRangeAttribute>().range);
+            bool GreaterThan(in Vector3 v1, in Vector3 v2, float range) => (v2 - v1).sqrMagnitude > range * range;
+            bool useSecond = TryAttribute(out InterpolateRangeAttribute interpolateRangeAttribute) && GreaterThan(p1, p2, interpolateRangeAttribute.range);
             Value = useSecond ? p2 : Vector3.Lerp(p1, p2, interpolation);
         }
     }

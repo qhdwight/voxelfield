@@ -30,10 +30,13 @@ namespace Swihoni.Sessions
         protected NetworkedSessionBase(SessionElements elements, IPEndPoint ipEndPoint) : base(elements)
         {
             IpEndPoint = ipEndPoint;
-            IReadOnlyCollection<Type> serverPlayerElements = elements.playerElements.Append(typeof(ClientStampComponent))
+            IReadOnlyCollection<Type> serverPlayerElements = elements.playerElements
+                                                                     .Append(typeof(ClientStampComponent))
                                                                      .Append(typeof(AcknowledgedServerTickProperty))
                                                                      .Append(typeof(ServerStampComponent)).ToArray(),
-                                      clientCommandElements = elements.playerElements.Append(typeof(ClientStampComponent))
+                                                                     // .Append(typeof(HasSentInitialData)).ToArray(),
+                                      clientCommandElements = elements.playerElements
+                                                                      .Append(typeof(ClientStampComponent))
                                                                       .Append(typeof(AcknowledgedServerTickProperty))
                                                                       .Concat(elements.commandElements).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor() =>

@@ -35,6 +35,19 @@ namespace Swihoni.Components
             }
         }
 
+        public bool HasAttribute<T>() => Field != null && Field.IsDefined(typeof(T));
+
+        public bool TryAttribute<T>(out T attribute) where T : Attribute
+        {
+            if (HasAttribute<T>())
+            {
+                attribute = Field.GetCustomAttribute<T>();
+                return true;
+            }
+            attribute = null;
+            return false;
+        }
+
         public bool WithoutValue => !WithValue;
 
         public bool DontSerialize
@@ -134,7 +147,7 @@ namespace Swihoni.Components
 
         public override void Zero() => Value = default;
 
-        public T OrElse(T @default) => WithValue ? m_Value : @default;
+        public T Else(T @default) => WithValue ? m_Value : @default;
 
         /// <returns>False if types are different. Equal if both values are the same, or if both do not have values.</returns>
         public sealed override bool Equals(PropertyBase other)
@@ -183,7 +196,7 @@ namespace Swihoni.Components
 
         public sealed override void Serialize(NetDataWriter writer)
         {
-            if (DontSerialize || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            if (DontSerialize || HasAttribute<NoSerialization>()) return;
             writer.Put(WithValue);
             if (WithoutValue) return;
             SerializeValue(writer);
@@ -191,7 +204,7 @@ namespace Swihoni.Components
 
         public sealed override void Deserialize(NetDataReader reader)
         {
-            if (DontSerialize || Field != null && Field.IsDefined(typeof(NoSerialization))) return;
+            if (DontSerialize || HasAttribute<NoSerialization>()) return;
             WithValue = reader.GetBool();
             if (WithoutValue) return;
             DeserializeValue(reader);

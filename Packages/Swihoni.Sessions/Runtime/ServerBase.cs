@@ -47,7 +47,7 @@ namespace Swihoni.Sessions
             var ping = player.Require<ServerPingComponent>();
             ping.latencyUs.Value = checked((uint) latency * 1_000);
             if (player.With(out StatsComponent stats))
-                stats.ping.Value = (ushort) (latency / 2);
+                stats.ping.Value = checked((ushort) (latency / 2));
         }
 
         private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnect)
@@ -193,9 +193,10 @@ namespace Swihoni.Sessions
             {
                 int playerId = peer.GetPlayerId();
                 localPlayerProperty.Value = (byte) playerId;
-                Container player = GetPlayerFromId(playerId);
-                uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().OrElse(0u);
-                var rollback = (int) checked(tick - lastServerTickAcknowledged);
+                
+                // Container player = GetPlayerFromId(playerId);
+                // uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
+                // var rollback = checked((int) (tick - lastServerTickAcknowledged));
                 // if (lastServerTickAcknowledged == 0u)
                 //     m_SendSession.CopyFrom(serverSession);
                 // else
@@ -203,9 +204,10 @@ namespace Swihoni.Sessions
                 //     // TODO:performance serialize and compress at the same time
                 //     ElementExtensions.NavigateZipped(DeltaCompressNavigation, serverSession, m_SessionHistory.Get(-rollback), m_SendSession);
                 // }
+                
                 m_SendSession.CopyFrom(serverSession);
 
-                DeltaCompressAdditives(m_SendSession, rollback);
+                // DeltaCompressAdditives(m_SendSession, rollback);
                 m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
             }
         }
@@ -309,13 +311,14 @@ namespace Swihoni.Sessions
                 int modifierId = i; // Copy for use in lambda
                 Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(modifierId);
                 Container rollbackPlayer = m_RollbackSession.GetPlayer(modifierId);
-                UIntProperty timeUs = GetPlayerInHistory(0).Require<ServerStampComponent>().timeUs;
+                // UIntProperty timeUs = GetPlayerInHistory(0).Require<ServerStampComponent>().timeUs;
+                UIntProperty timeUs = GetLatestSession().Require<ServerStampComponent>().timeUs;
                 if (timeUs.WithoutValue) continue;
-                
+
                 checked
                 {
                     /* See: https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking */
-                    uint tickIntervalUs = DebugBehavior.Singleton.RollbackOverrideUs.OrElse(GetLatestSession().Require<TickRateProperty>().PlayerRenderIntervalUs),
+                    uint tickIntervalUs = DebugBehavior.Singleton.RollbackOverrideUs.Else(GetLatestSession().Require<TickRateProperty>().PlayerRenderIntervalUs * 2),
                          rollbackUs = tickIntervalUs + latencyUs;
                     RenderInterpolatedPlayer<ServerStampComponent>(timeUs - rollbackUs, rollbackPlayer,
                                                                    m_SessionHistory.Size, GetPlayerInHistory);
