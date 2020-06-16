@@ -30,17 +30,16 @@ namespace Swihoni.Sessions
         protected NetworkedSessionBase(SessionElements elements, IPEndPoint ipEndPoint) : base(elements)
         {
             IpEndPoint = ipEndPoint;
-            IReadOnlyCollection<Type> serverPlayerElements = elements.playerElements
+            IReadOnlyCollection<Type> sharedPlayerElements = elements.playerElements
                                                                      .Append(typeof(ClientStampComponent))
                                                                      .Append(typeof(AcknowledgedServerTickProperty))
                                                                      .Append(typeof(ServerStampComponent)).ToArray(),
-                                                                     // .Append(typeof(HasSentInitialData)).ToArray(),
                                       clientCommandElements = elements.playerElements
                                                                       .Append(typeof(ClientStampComponent))
                                                                       .Append(typeof(AcknowledgedServerTickProperty))
                                                                       .Concat(elements.commandElements).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor() =>
-                NewSession<ServerSessionContainer>(elements.elements.Append(typeof(ServerStampComponent)), serverPlayerElements);
+                NewSession<ServerSessionContainer>(elements.elements.Append(typeof(ServerStampComponent)), sharedPlayerElements);
             m_SessionHistory = new CyclicArray<ServerSessionContainer>(250, ServerSessionContainerConstructor);
 
             m_RollbackSession = NewSession<Container>(elements.elements, elements.playerElements);
@@ -48,7 +47,7 @@ namespace Swihoni.Sessions
 
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);
             m_EmptyServerSession = ServerSessionContainerConstructor();
-            m_EmptyDebugClientView = new DebugClientView(serverPlayerElements);
+            m_EmptyDebugClientView = new DebugClientView(sharedPlayerElements);
         }
 
         protected void ForEachPlayer(Action<Container> action)

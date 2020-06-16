@@ -4,9 +4,7 @@ using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Util;
 using Swihoni.Util.Interface;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -56,7 +54,7 @@ namespace Swihoni.Sessions.Interfaces
                                .Append(" x")
                                .Append(equippedItem.gunStatus.ammoInReserve);
                     });
-                    
+
                     Color crosshairColor = m_Crosshair.color;
                     crosshairColor.a = inventory.adsStatus.id.Else(AdsStatusId.HipAiming) == AdsStatusId.Ads ? 0.0f : 1.0f;
                     m_Crosshair.color = crosshairColor;
@@ -85,7 +83,7 @@ namespace Swihoni.Sessions.Interfaces
                     Color color = hitMarker.isKill ? m_KillHitMarkerColor : m_DefaultHitMarkerColor;
                     color.a = isHitMarkerVisible ? 1.0f : 0.0f;
                     m_HitMarker.color = color;
-                    float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsedUs * TimeConversions.MicrosecondToSecond);
+                    float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsedUs / 1_000_000f);
                     m_HitMarker.rectTransform.localScale = new Vector2(scale, scale);
                 }
                 if (localPlayer.With(out DamageNotifierComponent damageNotifier))
@@ -93,7 +91,7 @@ namespace Swihoni.Sessions.Interfaces
                     foreach (Image notifierImage in m_DamageNotifiers)
                     {
                         Color color = notifierImage.color;
-                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs * TimeConversions.MicrosecondToSecond);
+                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 1_000_000f);
                         notifierImage.color = color;
                     }
                 }

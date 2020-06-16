@@ -246,8 +246,7 @@ namespace Swihoni.Sessions
                         Profiler.BeginSample("Client Receive Setup");
                         ServerSessionContainer previousServerSession = m_SessionHistory.Peek(),
                                                serverSession = m_SessionHistory.ClaimNext();
-                        CopyFromPreviousSession(previousServerSession, serverSession);
-                        serverSession.MergeFrom(receivedServerSession);
+                        UpdateCurrentSessionFromReceived(previousServerSession, serverSession, receivedServerSession);
                         Profiler.EndSample();
 
                         Received(serverSession);
@@ -267,7 +266,6 @@ namespace Swihoni.Sessions
                                 m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick - delta + 1;
                             }
                         }
-
                         {
                             // TODO:refactor make function
                             UIntProperty serverTime = serverSession.Require<ServerStampComponent>().timeUs,
@@ -323,13 +321,26 @@ namespace Swihoni.Sessions
 
                         break;
                     }
-                    // case PingCheckComponent receivedPingCheck:
-                    // {
-                    //     m_Socket.SendToServer(receivedPingCheck, DeliveryMethod.Unreliable);
-                    //     break;
-                    // }
                 }
             });
+        }
+
+        private static void UpdateCurrentSessionFromReceived(ElementBase previousServerSession, ElementBase serverSession, ElementBase receivedServerSession)
+        {
+            ElementExtensions.NavigateZipped((_previous, _current, _received) =>
+            {
+                if (_current.GetType().IsDefined(typeof(AdditiveAttribute)))
+                {
+                    _current.Zero();
+                    return Navigation.SkipDescendents;
+                }
+                if (_previous is PropertyBase _previousProperty && _current is PropertyBase _currentProperty && _received is PropertyBase _receivedProperty)
+                {
+                    _currentProperty.Clear();
+                    _currentProperty.SetFromIfWith(_receivedProperty.WasSame ? _previousProperty : _receivedProperty);
+                }
+                return Navigation.Continue;
+            }, previousServerSession, serverSession, receivedServerSession);
         }
 
         protected virtual void Received(Container session) { }
@@ -364,8 +375,8 @@ namespace Swihoni.Sessions
                 // modifier.EvaluateHitboxes(i, render);
 
                 Container recentPlayer = m_Visuals[i].GetRecentPlayer();
-                if (i == 0 && recentPlayer != null)
-                    SendDebug(recentPlayer);
+
+                if (i == 0 && recentPlayer != null) SendDebug(recentPlayer);
             }
         }
 

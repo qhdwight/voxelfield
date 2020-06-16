@@ -1,4 +1,5 @@
 using System.Net;
+using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Util.Math;
@@ -26,8 +27,8 @@ namespace Compound.Session
             serverSession.Require<VoxelMapNameElement>().SetString(builder => builder.Append(mapName));
             MapManager.Singleton.SetMap(mapName);
         }
-        
-        protected override void DeltaCompressAdditives(Container send, int rollback) => m_Mini.DeltaCompressAdditives(send, m_SessionHistory, rollback);
+
+        protected override void MergeInitialData(NetPeer peer, Container serverSession, Container sendSession) => m_Mini.MergeInitialData(peer, sendSession, sendSession);
 
         public override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
 

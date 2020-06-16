@@ -243,24 +243,6 @@ namespace Swihoni.Sessions
                                historyIndex => getInHistory(historyIndex).Require<TStampComponent>(), getInHistory);
         }
 
-        protected static void CopyFromPreviousSession(Container previous, Container current)
-        {
-            ElementExtensions.NavigateZipped((_previous, _current) =>
-            {
-                if (_current.GetType().IsDefined(typeof(AdditiveAttribute)))
-                {
-                    _current.Zero();
-                    return Navigation.SkipDescendents;
-                }
-                if (_previous is PropertyBase previousProperty && _current is PropertyBase currentProperty)
-                {
-                    currentProperty.Clear();
-                    currentProperty.SetFromIfWith(previousProperty);
-                }
-                return Navigation.Continue;
-            }, previous, current);
-        }
-
         public abstract Ray GetRayForPlayerId(int playerId);
 
         public virtual void RollbackHitboxesFor(int playerId)

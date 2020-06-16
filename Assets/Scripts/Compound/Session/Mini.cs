@@ -32,17 +32,6 @@ namespace Compound.Session
                 request.Reject(writer);
             }
         }
-        
-        public virtual void DeltaCompressAdditives(Container send, CyclicArray<ServerSessionContainer> history, int rollback)
-        {
-            var totalChanges = send.Require<ChangedVoxelsProperty>();
-            totalChanges.Clear();
-            for (int i = -rollback; i <= 0; i++)
-            {
-                var changedVoxels = history.Get(i).Require<ChangedVoxelsProperty>();
-                totalChanges.AddAllFrom(changedVoxels);
-            }
-        }
     }
 
     public interface IMiniProvider

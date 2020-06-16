@@ -1,4 +1,5 @@
 using System.Net;
+using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Util.Math;
@@ -29,6 +30,12 @@ namespace Compound.Session
                 base.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, changed);
                 m_MasterChanges.AddAllFrom(changed);
             }
+
+            public void MergeInitialData(NetPeer peer, Container serverSession, Container sendSession)
+            {
+                var changedVoxels = sendSession.Require<ChangedVoxelsProperty>();
+                changedVoxels.SetFromIfWith(m_MasterChanges);
+            }
         }
 
         private readonly Mini m_Mini;
@@ -41,7 +48,7 @@ namespace Compound.Session
             MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
         }
 
-        protected override void DeltaCompressAdditives(Container send, int rollback) => m_Mini.DeltaCompressAdditives(send, m_SessionHistory, rollback);
+        protected override void MergeInitialData(NetPeer peer, Container serverSession, Container sendSession) => m_Mini.MergeInitialData(peer, serverSession, sendSession);
 
         public override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
 

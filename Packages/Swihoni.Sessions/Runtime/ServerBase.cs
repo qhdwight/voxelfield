@@ -26,7 +26,7 @@ namespace Swihoni.Sessions
             : base(elements, ipEndPoint)
         {
             m_ConnectionRequestHandler = connectionRequestHandler;
-            ForEachPlayer(player => player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent)));
+            ForEachPlayer(player => player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent), typeof(HasSentInitialData)));
             m_SendSession = m_EmptyServerSession.Clone();
         }
 
@@ -93,49 +93,24 @@ namespace Swihoni.Sessions
             // IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
         }
-
-        // private readonly List<byte> m_ToRemove = new List<byte>();
-        //
-        // private void IterateClients(uint tick, float time, float duration, Container serverSession)
-        // {
-        //     var players = serverSession.Require<PlayerContainerArrayElement>();
-        //     m_ToRemove.Clear();
-        //     foreach ((IPEndPoint _, byte playerId) in m_PlayerIds)
-        //     {
-        //         Container player = players[playerId];
-        //         if (HandleTimeout(time, playerId, player)) m_ToRemove.Add(playerId);
-        //         CheckClientPing(player, tick, time, playerId, duration);
-        //     }
-        //     foreach (byte playerId in m_ToRemove)
-        //         m_PlayerIds.Remove(playerId);
-        // }
-        //
-        // private void CheckClientPing(Container player, uint tick, float time, byte playerId, float duration)
-        // {
-        //     const float checkTime = 1.0f;
-        //
-        //     var ping = player.Require<ServerPingComponent>();
-        //     if (ping.initiateTime.WithoutValue) return;
-        //
-        //     ping.tick.Value = tick;
-        //     ping.initiateTime.Value = time;
-        //     ping.checkElapsed.Value += duration;
-        //     while (ping.checkElapsed > checkTime)
-        //     {
-        //         var check = new PingCheckComponent {tick = new UIntProperty(tick)};
-        //         m_Socket.Send(check, playerId, DeliveryMethod.ReliableSequenced);
-        //         ping.checkElapsed.Value -= checkTime;
-        //     }
-        // }
-        // 
-        // private static bool HandleTimeout(float time, byte playerId, Container player)
-        // {
-        //     FloatProperty serverPlayerTime = player.Require<ServerStampComponent>().time;
-        //     if (serverPlayerTime.WithoutValue || Mathf.Abs(serverPlayerTime.Value - time) < 2.0f) return false;
-        //     Debug.LogWarning($"Dropping player with id: {playerId}");
-        //     player.Reset();
-        //     return true;
-        // }
+        
+        private static void CopyFromPreviousSession(ElementBase previous, ElementBase current)
+        {
+            ElementExtensions.NavigateZipped((_previous, _current) =>
+            {
+                if (_current.GetType().IsDefined(typeof(AdditiveAttribute)))
+                {
+                    _current.Zero();
+                    return Navigation.SkipDescendents;
+                }
+                if (_previous is PropertyBase previousProperty && _current is PropertyBase currentProperty)
+                {
+                    currentProperty.Clear();
+                    currentProperty.SetFromIfWith(previousProperty);
+                }
+                return Navigation.Continue;
+            }, previous, current);
+        }
 
         protected virtual void ServerTick(Container serverSession, uint timeUs, uint durationUs) { }
 
@@ -158,18 +133,6 @@ namespace Swihoni.Sessions
                         HandleClientCommand(clientId, receivedClientCommands, serverSession, serverPlayer);
                         break;
                     }
-                    // case PingCheckComponent receivedPingCheck:
-                    // {
-                    //     var ping = serverPlayer.Require<ServerPingComponent>();
-                    //     if (receivedPingCheck.tick.WithValue && ping.tick == receivedPingCheck.tick)
-                    //     {
-                    //         float roundTripElapsed = time - ping.initiateTime;
-                    //         ping.rtt.Value = roundTripElapsed;
-                    //         if (serverPlayer.With(out StatsComponent stats))
-                    //             stats.ping.Value = (ushort) Mathf.Round(roundTripElapsed / 2.0f * 1000.0f);
-                    //     }
-                    //     break;
-                    // }
                     case DebugClientView receivedDebugClientView:
                     {
                         DebugBehavior.Singleton.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
@@ -187,32 +150,42 @@ namespace Swihoni.Sessions
 
         private void SendServerSession(uint tick, Container serverSession)
         {
-            var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
             m_Socket.NetworkManager.GetPeersNonAlloc(m_ConnectedPeers, ConnectionState.Connected);
             foreach (NetPeer peer in m_ConnectedPeers)
             {
+                var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
                 int playerId = peer.GetPlayerId();
                 localPlayerProperty.Value = (byte) playerId;
-                
-                // Container player = GetPlayerFromId(playerId);
-                // uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
-                // var rollback = checked((int) (tick - lastServerTickAcknowledged));
-                // if (lastServerTickAcknowledged == 0u)
-                //     m_SendSession.CopyFrom(serverSession);
-                // else
-                // {
-                //     // TODO:performance serialize and compress at the same time
-                //     ElementExtensions.NavigateZipped(DeltaCompressNavigation, serverSession, m_SessionHistory.Get(-rollback), m_SendSession);
-                // }
-                
-                m_SendSession.CopyFrom(serverSession);
-
-                // DeltaCompressAdditives(m_SendSession, rollback);
-                m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
+                SendPeerLatestSession(peer, serverSession);
             }
         }
 
-        protected virtual void DeltaCompressAdditives(Container send, int rollback) { }
+        protected virtual void SendPeerLatestSession(NetPeer peer, Container serverSession)
+        {
+            Container player = GetPlayerFromId(peer.GetPlayerId());
+            
+            // uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
+            // var rollback = checked((int) (tick - lastServerTickAcknowledged));
+            // if (lastServerTickAcknowledged == 0u)
+            //     m_SendSession.CopyFrom(serverSession);
+            // else
+            // {
+            //     // TODO:performance serialize and compress at the same time
+            //     ElementExtensions.NavigateZipped(DeltaCompressNavigation, serverSession, m_SessionHistory.Get(-rollback), m_SendSession);
+            // }
+
+            m_SendSession.CopyFrom(serverSession);
+            
+            BoolProperty hasSentInitialData = player.Require<HasSentInitialData>();
+            if (!hasSentInitialData) MergeInitialData(peer, serverSession, m_SendSession);
+
+            // DeltaCompressAdditives(m_SendSession, rollback);
+            m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
+            
+            hasSentInitialData.Value = true;
+        }
+
+        protected virtual void MergeInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
 
         private static Navigation DeltaCompressNavigation(ElementBase mostRecent, ElementBase lastAcknowledged, ElementBase send)
         {
@@ -266,30 +239,6 @@ namespace Swihoni.Sessions
             else serverPlayerTimeUs.Value = serverStamp.timeUs;
         }
 
-        // /// <summary>
-        // /// Handles setting up player if new connection.
-        // /// </summary>
-        // /// <returns>Client id allocated to connection and player container</returns>
-        // private (byte clientId, Container serverPlayer) GetPlayerForEndpoint(Container serverSession, IPEndPoint ipEndPoint)
-        // {
-        //     bool isNewPlayer = !m_PlayerIds.ContainsForward(ipEndPoint);
-        //     if (isNewPlayer)
-        //     {
-        //         checked
-        //         {
-        //             byte newPlayerId = 1;
-        //             while (m_PlayerIds.ContainsReverse(newPlayerId))
-        //                 newPlayerId++;
-        //             m_PlayerIds.Add(new IPEndPoint(ipEndPoint.Address, ipEndPoint.Port), newPlayerId);
-        //             Debug.Log($"[{GetType().Name}] Received new connection: {ipEndPoint}, setting up id: {newPlayerId}");
-        //         }
-        //     }
-        //     byte clientId = m_PlayerIds.GetForward(ipEndPoint);
-        //     Container serverPlayer = serverSession.GetPlayer(clientId);
-        //     if (isNewPlayer) SetupNewPlayer(serverSession, serverPlayer);
-        //     return (clientId, serverPlayer);
-        // }
-
         protected void SetupNewPlayer(Container session, Container player)
         {
             GetMode(session).SpawnPlayer(player);
@@ -310,6 +259,7 @@ namespace Swihoni.Sessions
             {
                 int modifierId = i; // Copy for use in lambda
                 Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(modifierId);
+
                 Container rollbackPlayer = m_RollbackSession.GetPlayer(modifierId);
                 // UIntProperty timeUs = GetPlayerInHistory(0).Require<ServerStampComponent>().timeUs;
                 UIntProperty timeUs = GetLatestSession().Require<ServerStampComponent>().timeUs;
@@ -324,8 +274,8 @@ namespace Swihoni.Sessions
                                                                    m_SessionHistory.Size, GetPlayerInHistory);
                 }
                 m_Modifier[modifierId].EvaluateHitboxes(modifierId, rollbackPlayer);
-                if (modifierId == 0)
-                    DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
+
+                if (modifierId == 0) DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
         }
 

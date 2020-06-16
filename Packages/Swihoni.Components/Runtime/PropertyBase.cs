@@ -11,7 +11,8 @@ namespace Swihoni.Components
     {
         None,
         WithValue,
-        DontSerialize
+        DontSerialize,
+        WasSame
     }
 
     /// <summary>
@@ -34,6 +35,28 @@ namespace Swihoni.Components
                 else m_Flags &= ~ElementFlags.WithValue;
             }
         }
+        
+        public bool WasSame
+        {
+            get => (m_Flags & ElementFlags.WasSame) != 0;
+            protected set
+            {
+                if (value) m_Flags |= ElementFlags.DontSerialize;
+                else m_Flags &= ~ElementFlags.DontSerialize;
+            }
+        }
+        
+        public bool WithoutValue => !WithValue;
+
+        public bool DontSerialize
+        {
+            get => (m_Flags & ElementFlags.DontSerialize) != 0;
+            protected set
+            {
+                if (value) m_Flags |= ElementFlags.DontSerialize;
+                else m_Flags &= ~ElementFlags.DontSerialize;
+            }
+        }
 
         public bool HasAttribute<T>() => Field != null && Field.IsDefined(typeof(T));
 
@@ -47,19 +70,7 @@ namespace Swihoni.Components
             attribute = null;
             return false;
         }
-
-        public bool WithoutValue => !WithValue;
-
-        public bool DontSerialize
-        {
-            get => (m_Flags & ElementFlags.DontSerialize) != 0;
-            protected set
-            {
-                if (value) m_Flags |= ElementFlags.DontSerialize;
-                else m_Flags &= ~ElementFlags.DontSerialize;
-            }
-        }
-
+        
         public abstract void Serialize(NetDataWriter writer);
         public abstract void Deserialize(NetDataReader reader);
         public abstract bool Equals(PropertyBase other);
