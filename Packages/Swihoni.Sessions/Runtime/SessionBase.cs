@@ -64,6 +64,8 @@ namespace Swihoni.Sessions
         protected internal virtual void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
 
         protected internal virtual void OnHandleNewConnection(ConnectionRequest request) => request.Accept();
+        
+        protected internal virtual void Stop() { }
     }
 
     public abstract class SessionBase : IDisposable
@@ -287,6 +289,7 @@ namespace Swihoni.Sessions
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
+            m_Injector.Stop();
             m_Stopwatch.Stop();
         }
 

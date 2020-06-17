@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ae5ee6ef34f46369f27cc0c9512b035, type: 3}
-  m_Name: Shovel
+  m_Name: Pickaxe
   m_EditorClassIdentifier: 
   id: 6
-  itemName: Shovel
+  itemName: Pickaxe
   movementFactor: 1
   m_StatusModiferProperties:
   - durationUs: 2000000

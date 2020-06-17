@@ -1,31 +1,30 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1773428102 &4329138386021026684
-ParentConstraint:
+--- !u!114 &8594671410555395737
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1716499526149561000}
   m_Enabled: 1
-  m_Weight: 1
-  m_TranslationAtRest: {x: 0, y: 0, z: 0}
-  m_RotationAtRest: {x: 0, y: 0, z: 0}
-  m_TranslationOffsets:
-  - {x: 0, y: 0, z: 0}
-  m_RotationOffsets:
-  - {x: 0, y: 0, z: 0}
-  m_AffectTranslationX: 1
-  m_AffectTranslationY: 1
-  m_AffectTranslationZ: 1
-  m_AffectRotationX: 1
-  m_AffectRotationY: 1
-  m_AffectRotationZ: 1
-  m_IsContraintActive: 1
-  m_IsLocked: 1
-  m_Sources:
-  - sourceTransform: {fileID: 7274393322790326777}
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  positionAtRest: {x: 0, y: 0, z: 0}
+  rotationAtRest: {x: 0, y: 0, z: 0}
+  weight: 0
+  m_ParentOne:
+    transform: {fileID: 7274393322790326777}
+    positionOffset: {x: 0, y: -0.04, z: 0.12}
+    rotationOffset: {x: 0, y: 0, z: 0}
     weight: 1
+  m_ParentTwo:
+    transform: {fileID: 0}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    weight: 0
 --- !u!1 &7274393322790326782
 GameObject:
   m_ObjectHideFlags: 0
@@ -67,7 +66,7 @@ GameObject:
   - component: {fileID: 7274393323216527676}
   - component: {fileID: 7274393323216527679}
   m_Layer: 0
-  m_Name: Shovel Visuals
+  m_Name: Pickaxe Visuals
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -124,6 +123,8 @@ MonoBehaviour:
   m_IkR: {fileID: 7274393322790326777}
   m_FpvOffset: {x: 0.027, y: -0.344, z: 0.213}
   m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
+  m_ChildBehaviors: []
+  m_Crosshair: {fileID: 0}
 --- !u!1 &7274393323389952821
 GameObject:
   m_ObjectHideFlags: 0
@@ -164,7 +165,7 @@ PrefabInstance:
     - target: {fileID: -4216859302048453862, guid: a6c246911bf974748826fb4178255f84,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: a6c246911bf974748826fb4178255f84,
         type: 3}
@@ -179,12 +180,12 @@ PrefabInstance:
     - target: {fileID: -4216859302048453862, guid: a6c246911bf974748826fb4178255f84,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.000000021855694
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: a6c246911bf974748826fb4178255f84,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: a6c246911bf974748826fb4178255f84,
         type: 3}

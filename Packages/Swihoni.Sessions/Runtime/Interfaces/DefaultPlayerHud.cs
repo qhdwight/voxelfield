@@ -55,9 +55,9 @@ namespace Swihoni.Sessions.Interfaces
                                .Append(equippedItem.gunStatus.ammoInReserve);
                     });
 
-                    Color crosshairColor = m_Crosshair.color;
-                    crosshairColor.a = inventory.adsStatus.id.Else(AdsStatusId.HipAiming) == AdsStatusId.Ads ? 0.0f : 1.0f;
-                    m_Crosshair.color = crosshairColor;
+                    // Color crosshairColor = m_Crosshair.color;
+                    // crosshairColor.a = inventory.adsStatus.id.Else(AdsStatusId.HipAiming) == AdsStatusId.Ads ? 0.0f : 1.0f;
+                    // m_Crosshair.color = crosshairColor;
                     ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisuals(equippedItem.id);
                     bool isDefaultCrosshair = visualPrefab.Crosshair == null;
                     m_Crosshair.sprite = isDefaultCrosshair ? m_DefaultCrosshair : visualPrefab.Crosshair;

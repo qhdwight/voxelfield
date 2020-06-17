@@ -1,3 +1,4 @@
+using System;
 using Input;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
@@ -13,6 +14,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public const byte Upright = 0, Crouched = 1;
 
         private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
+        private readonly Collider[] m_CachedContactColliders = new Collider[2];
 
         [SerializeField] private Transform m_MoveTransform = default;
 
@@ -37,6 +39,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         [SerializeField] private LayerMask m_GroundMask = default;
 
         private CharacterController m_Controller, m_PrefabController;
+        private CharacterControllerListener m_ControllerListener;
 
         public LayerMask GroundMask => m_GroundMask;
         public float MaxSpeed => m_RunSpeed * m_SprintMultiplier;
@@ -47,6 +50,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             base.Setup(session);
             m_Controller = m_MoveTransform.GetComponent<CharacterController>();
+            m_ControllerListener = m_MoveTransform.GetComponent<CharacterControllerListener>();
             m_Controller.enabled = false;
             m_PrefabController = session.PlayerModifierPrefab.GetComponentInChildren<CharacterController>();
         }
@@ -123,26 +127,28 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        private readonly Collider[] m_CachedContactColliders = new Collider[2];
-
         private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)
         {
             Vector3 initialVelocity = move.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = VectorMath.LateralMagnitude(endingVelocity);
-            
-            int count = Physics.OverlapSphereNonAlloc(m_MoveTransform.position, m_Controller.radius + RaycastOffset, m_CachedContactColliders, m_GroundMask);
-            bool isGrounded = count == 2; // Always have 1 due to ourselves. 2 means we are touching something else.
-            if (isGrounded)
-                Physics.RaycastNonAlloc(m_MoveTransform.position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
-                                        float.PositiveInfinity, m_GroundMask);
-            bool withinAngleLimit = isGrounded && Vector3.Angle(m_CachedGroundHits[0].normal, Vector3.up) < m_Controller.slopeLimit;
-            if (withinAngleLimit && endingVelocity.y < 0.0f) // Stick to ground. Only on way down, if done on way up it negates jump
+
+            Vector3 position = m_MoveTransform.position;
+            float radius = m_Controller.radius - 0.01f;
+            int count = Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance}, position + new Vector3 {y = m_Controller.height / 2.0f}, radius,
+                                                       m_CachedContactColliders, m_GroundMask);
+            Physics.RaycastNonAlloc(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
+                                    float.PositiveInfinity, m_GroundMask);
+            bool isGrounded = m_Controller.isGrounded || count == 2; // Always have 1 due to ourselves. 2 means we are touching something else
+            Debug.Log(count);
+            bool withinAngleLimit = isGrounded && Vector3.Angle(m_ControllerListener.CachedControllerHit.normal, Vector3.up) < m_Controller.slopeLimit;
+            if (endingVelocity.y < 0.0f && withinAngleLimit) // Stick to ground. Only on way down, if done on way up it negates jump
             {
                 float distance = m_CachedGroundHits[0].distance;
                 endingVelocity.y = DefaultDownSpeed;
-                if (!inputs.GetInput(PlayerInput.Jump) && distance < m_MaxStickDistance) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
+                if (!inputs.GetInput(PlayerInput.Jump) && distance < m_MaxStickDistance + RaycastOffset)
+                    m_Controller.Move(new Vector3 {y = -distance - RaycastOffset});
             }
-            
+
             Vector3 wishDirection =
                 inputs.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * m_MoveTransform.forward +
                 inputs.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * m_MoveTransform.right;

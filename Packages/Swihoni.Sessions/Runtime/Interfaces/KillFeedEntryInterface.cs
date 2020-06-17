@@ -19,7 +19,7 @@ namespace Swihoni.Sessions.Interfaces
             if (isVisible)
                 m_Text.BuildText(builder => builder
                                            .Append(kill.killingPlayerId)
-                                           .Append(" [").Append(kill.weaponName).Append("] ")
+                                           .Append(" [").Append(kill.weaponName.GetString()).Append("] ")
                                            .Append(kill.killedPlayerId));
             SetInterfaceActive(isVisible);
         }

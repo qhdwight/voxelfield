@@ -3,6 +3,7 @@ using LiteNetLib.Utils;
 using Swihoni.Sessions;
 using Swihoni.Util.Math;
 using Voxel;
+using Voxel.Map;
 
 namespace Compound.Session
 {
@@ -25,5 +26,7 @@ namespace Compound.Session
                 request.Reject(writer);
             }
         }
+
+        protected override void Stop() => MapManager.Singleton.SetMap("Menu");
     }
 }
