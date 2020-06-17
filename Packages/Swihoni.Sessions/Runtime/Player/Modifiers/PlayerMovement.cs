@@ -122,14 +122,20 @@ namespace Swihoni.Sessions.Player.Modifiers
                     move.normalizedMove.Value -= 1.0f;
             }
         }
+        
+        private readonly Collider[] m_CachedContactColliders = new Collider[2];
 
         private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)
         {
             Vector3 initialVelocity = move.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = VectorMath.LateralMagnitude(endingVelocity);
-            bool isGrounded = Physics.RaycastNonAlloc(m_MoveTransform.position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
-                                                      m_MaxStickDistance + RaycastOffset, m_GroundMask) > 0,
-                 withinAngleLimit = isGrounded && Vector3.Angle(m_CachedGroundHits[0].normal, Vector3.up) < m_Controller.slopeLimit;
+            int count = Physics.OverlapSphereNonAlloc(m_MoveTransform.position, m_Controller.radius + RaycastOffset, m_CachedContactColliders, m_GroundMask);
+            bool isGrounded = count == 2; // Always have 1 do to ourselves. 2 means we are touching something else.
+            
+            // bool isGrounded = Physics.RaycastNonAlloc(m_MoveTransform.position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
+            //                                           m_MaxStickDistance + RaycastOffset, m_GroundMask) > 0,
+            
+            bool withinAngleLimit = isGrounded && Vector3.Angle(m_CachedGroundHits[0].normal, Vector3.up) < m_Controller.slopeLimit;
             if (withinAngleLimit && endingVelocity.y < 0.0f) // Stick to ground. Only on way down, if done on way up it negates jump
             {
                 float distance = m_CachedGroundHits[0].distance;

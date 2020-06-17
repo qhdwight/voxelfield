@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using Console;
+using LiteNetLib;
 using Swihoni.Sessions;
 using Swihoni.Util;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Build.Reporting;
-
 #endif
 
 namespace Compound.Session
@@ -16,7 +16,6 @@ namespace Compound.Session
     public class SessionManager : SingletonBehavior<SessionManager>
     {
         [SerializeField] private SessionGameObjectLinker m_LinkerReference;
-        [SerializeField] private bool m_IsServer = default;
         [SerializeField] private int m_ServerPort = 7777;
 
         private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);
@@ -43,12 +42,25 @@ namespace Compound.Session
                 Debug.Log($"Started client at {client.IpEndPoint}");
             });
             ConsoleCommandExecutor.RegisterCommand("disconnect", args => DisconnectAll());
-            if (m_IsServer)
+            
+            if (Application.isBatchMode)
             {
-                StartServer(new IPEndPoint(IPAddress.Any, m_ServerPort));
+                IPEndPoint endPoint = NetUtils.MakeEndPoint(NetUtils.GetLocalIp(LocalAddrType.IPv4), m_ServerPort);
+                StartServer(endPoint);
+                Debug.Log($"Starting headless server at {endPoint}...");
             }
             ConsoleCommandExecutor.RegisterCommand("r", args => { DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]); });
+            
+            Debug.Log("Started session manager");
         }
+
+#if UNITY_EDITOR
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            foreach (NetworkedSessionBase session in m_Sessions)
+                session.SetApplicationPauseState(pauseStatus);
+        }
+#endif
 
         private void StandaloneDisconnectAll()
         {
@@ -169,6 +181,7 @@ namespace Compound.Session
         [MenuItem("Build/Build Linux Server")]
         public static void BuildLinuxServer()
         {
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = new[] {"Assets/Scenes/Base.unity"},
@@ -187,11 +200,13 @@ namespace Compound.Session
                     Debug.Log("Server Linux build failed");
                     break;
             }
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.IL2CPP);
         }
 
         [MenuItem("Build/Build Windows Player")]
         public static void BuildWindowsPlayer()
         {
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.IL2CPP);
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = new[] {"Assets/Scenes/Base.unity"},

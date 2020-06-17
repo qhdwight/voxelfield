@@ -102,6 +102,8 @@ namespace Input
         /// <returns>If this is the first Unity frame an input is pressed</returns>
         public bool GetInputDown(InputType type) => UnityEngine.Input.GetKeyDown(m_Settings.Get(type));
 
+        public float GetAxis(InputType positiveKey, InputType negativeKey) => (GetInput(positiveKey) ? 1.0f : 0.0f) + (GetInput(negativeKey) ? -1.0f : 0.0f);
+
         public static float GetMouseInput(MouseMovement mouseMovement)
         {
             switch (mouseMovement)

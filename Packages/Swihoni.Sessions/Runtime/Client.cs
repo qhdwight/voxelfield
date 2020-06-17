@@ -195,9 +195,9 @@ namespace Swihoni.Sessions
                     switch (_predicted)
                     {
                         case FloatProperty f1 when _server is FloatProperty f2 && f1.TryAttribute(out PredictionToleranceAttribute fPredictionToleranceAttribute)
-                                                                                     && !f1.CheckWithinTolerance(f2, fPredictionToleranceAttribute.tolerance):
+                                                                               && !f1.CheckWithinTolerance(f2, fPredictionToleranceAttribute.tolerance):
                         case VectorProperty v1 when _server is VectorProperty v2 && v1.TryAttribute(out PredictionToleranceAttribute vPredictionToleranceAttribute)
-                                                                                       && !v1.CheckWithinTolerance(v2, vPredictionToleranceAttribute.tolerance):
+                                                                                 && !v1.CheckWithinTolerance(v2, vPredictionToleranceAttribute.tolerance):
                         case PropertyBase p1 when _server is PropertyBase p2 && !p1.Equals(p2):
                             areEqual = false;
                             Debug.LogWarning($"Prediction error with {_predicted.GetType().Name} with predicted: {_predicted} and verified: {_server}");
@@ -235,7 +235,10 @@ namespace Swihoni.Sessions
                         Profiler.BeginSample("Client Receive Setup");
                         ServerSessionContainer previousServerSession = m_SessionHistory.Peek(),
                                                serverSession = m_SessionHistory.ClaimNext();
-                        UpdateCurrentSessionFromReceived(previousServerSession, serverSession, receivedServerSession);
+                        serverSession.CopyFrom(previousServerSession);
+                        UpdateCurrentSessionFromReceived(serverSession, receivedServerSession);
+                        // TODO:refactor truncation
+                        serverSession.Require<LocalizedClientStampComponent>().CopyFrom(previousServerSession.Require<LocalizedClientStampComponent>());
                         Profiler.EndSample();
 
                         m_Injector.OnReceive(serverSession);
@@ -257,11 +260,11 @@ namespace Swihoni.Sessions
                         }
                         {
                             // TODO:refactor make function
-                            UIntProperty serverTime = serverSession.Require<ServerStampComponent>().timeUs,
+                            UIntProperty serverTimeUs = serverSession.Require<ServerStampComponent>().timeUs,
                                          localizedServerTimeUs = serverSession.Require<LocalizedClientStampComponent>().timeUs;
 
                             if (localizedServerTimeUs.WithValue)
-                                localizedServerTimeUs.Value += checked(serverTime - previousServerSession.Require<ServerStampComponent>().timeUs);
+                                localizedServerTimeUs.Value += checked(serverTimeUs - previousServerSession.Require<ServerStampComponent>().timeUs);
                             else localizedServerTimeUs.Value = timeUs;
 
                             long delta = localizedServerTimeUs.Value - (long) timeUs;
@@ -291,9 +294,9 @@ namespace Swihoni.Sessions
                             GetLocalPlayerId(serverSession, out int localPlayerId);
                             if (playerId != localPlayerId) m_Modifier[playerId].Synchronize(serverPlayer);
 
-                            if (Math.Abs(localizedServerTimeUs.Value - timeUs) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
+                            long delta = localizedServerTimeUs.Value - (long) timeUs;
+                            if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
                             {
-                                // Debug.LogWarning($"[{GetType().Name}] Client reset");
                                 ResetErrors++;
                                 localizedServerTimeUs.Value = timeUs;
                             }
@@ -312,22 +315,17 @@ namespace Swihoni.Sessions
             });
         }
 
-        private static void UpdateCurrentSessionFromReceived(ElementBase previousServerSession, ElementBase serverSession, ElementBase receivedServerSession)
+        private static void UpdateCurrentSessionFromReceived(ElementBase serverSession, ElementBase receivedServerSession)
         {
-            ElementExtensions.NavigateZipped((_previous, _current, _received) =>
+            ElementExtensions.NavigateZipped((_current, _received) =>
             {
-                if (_current.GetType().IsDefined(typeof(AdditiveAttribute)))
+                if (_current is PropertyBase _currentProperty && _received is PropertyBase _receivedProperty)
                 {
-                    _current.Zero();
-                    return Navigation.SkipDescendents;
-                }
-                if (_previous is PropertyBase _previousProperty && _current is PropertyBase _currentProperty && _received is PropertyBase _receivedProperty)
-                {
-                    _currentProperty.Clear();
-                    _currentProperty.SetFromIfWith(_receivedProperty.WasSame ? _previousProperty : _receivedProperty);
+                    if (_current.GetType().IsDefined(typeof(AdditiveAttribute)) || !_receivedProperty.WasSame)
+                        _currentProperty.SetTo(_receivedProperty);
                 }
                 return Navigation.Continue;
-            }, previousServerSession, serverSession, receivedServerSession);
+            }, serverSession, receivedServerSession);
         }
 
         private static bool GetLocalPlayerId(Container session, out int localPlayerId)

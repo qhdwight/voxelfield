@@ -53,7 +53,7 @@ namespace Swihoni.Sessions
 
     public class SessionInjectorBase
     {
-        protected internal SessionBase TheSession { get; set; }
+        protected internal SessionBase Manager { get; set; }
 
         protected internal virtual bool IsPaused => false;
 
@@ -68,7 +68,7 @@ namespace Swihoni.Sessions
 
     public abstract class SessionBase : IDisposable
     {
-        internal const int MaxPlayers = 3;
+        internal const int MaxPlayers = 4;
 
         private readonly GameObject m_PlayerVisualsPrefab;
         protected readonly SessionElements m_SessionElements;
@@ -92,11 +92,19 @@ namespace Swihoni.Sessions
         {
             m_SessionElements = sessionElements;
             m_Injector = injector;
-            m_Injector.TheSession = this;
+            m_Injector.Manager = this;
             PlayerModifierPrefab = SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab();
             m_PlayerVisualsPrefab = SessionGameObjectLinker.Singleton.GetPlayerVisualsPrefab();
             m_PlayerHud = UnityObject.FindObjectOfType<DefaultPlayerHud>();
             m_Interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
+        }
+
+        public void SetApplicationPauseState(bool isPaused)
+        {
+            if (isPaused)
+                m_Stopwatch.Stop();
+            else
+                m_Stopwatch.Start();
         }
 
         private T[] Instantiate<T>(GameObject prefab, int length, Action<int, T> setup)
@@ -205,7 +213,7 @@ namespace Swihoni.Sessions
                 if (!toTimeUs.WithValue || !fromTimeUs.WithValue || (tooRecent = historyIndex == 0 && toTimeUs < renderTimeUs))
                 {
                     renderContainer.CopyFrom(getInHistory(0));
-                    if (tooRecent) Debug.LogWarning("Not enough recent");
+                    // if (tooRecent) Debug.LogWarning("Not enough recent");
                     return;
                 }
                 if (renderTimeUs >= fromTimeUs && renderTimeUs <= toTimeUs)
@@ -220,7 +228,7 @@ namespace Swihoni.Sessions
                 }
             }
             // Take last if we do not have enough history
-            Debug.LogWarning("Not enough history");
+            // Debug.LogWarning("Not enough history");
             renderContainer.CopyFrom(getInHistory(1));
         }
 

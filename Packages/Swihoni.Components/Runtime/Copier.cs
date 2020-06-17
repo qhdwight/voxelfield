@@ -35,10 +35,7 @@ namespace Swihoni.Components
             ElementExtensions.NavigateZipped((_destination, _source) =>
             {
                 if (_destination is PropertyBase destinationProperty && _source is PropertyBase sourceProperty)
-                {
-                    destinationProperty.Clear();
-                    destinationProperty.SetFromIfWith(sourceProperty);
-                }
+                    destinationProperty.SetTo(sourceProperty);
                 return Navigation.Continue;
             }, destination, source);
         }

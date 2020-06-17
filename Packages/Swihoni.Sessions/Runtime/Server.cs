@@ -33,13 +33,13 @@ namespace Swihoni.Sessions
             base.Start();
             m_Socket = new ComponentServerSocket(IpEndPoint, m_Injector.OnHandleNewConnection);
             m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
-            m_Socket.Listener.NetworkLatencyUpdateEvent += OnPingUpdate;
+            m_Socket.Listener.NetworkLatencyUpdateEvent += OnLatencyUpdated;
             RegisterMessages(m_Socket);
 
             Physics.autoSimulation = false;
         }
 
-        private void OnPingUpdate(NetPeer peer, int latency)
+        private void OnLatencyUpdated(NetPeer peer, int latency)
         {
             Container player = GetPlayerFromId(peer.GetPlayerId());
             var ping = player.Require<ServerPingComponent>();
@@ -82,22 +82,24 @@ namespace Swihoni.Sessions
             PostTick(serverSession);
             // IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
+
+            ElementExtensions.NavigateZipped((_previous, _current) =>
+            {
+                if (_current.GetType().IsDefined(typeof(AdditiveAttribute)) && _current is PropertyBase _currentProperty)
+                {
+                    _currentProperty.Clear();
+                    return Navigation.SkipDescendents;
+                }
+                return Navigation.Continue;
+            }, previousServerSession, serverSession);
         }
 
         private static void CopyFromPreviousSession(ElementBase previous, ElementBase current)
         {
             ElementExtensions.NavigateZipped((_previous, _current) =>
             {
-                if (_current.GetType().IsDefined(typeof(AdditiveAttribute)))
-                {
-                    _current.Zero();
-                    return Navigation.SkipDescendents;
-                }
                 if (_previous is PropertyBase previousProperty && _current is PropertyBase currentProperty)
-                {
-                    currentProperty.Clear();
-                    currentProperty.SetFromIfWith(previousProperty);
-                }
+                    currentProperty.SetTo(previousProperty);
                 return Navigation.Continue;
             }, previous, current);
         }
@@ -159,36 +161,41 @@ namespace Swihoni.Sessions
             // if (lastServerTickAcknowledged == 0u)
             //     m_SendSession.CopyFrom(serverSession);
             // else
-            //     // TODO:performance serialize and compress at the same time
+            //     // TODO:per  formance serialize and compress at the same time
             //     CompressSession(serverSession, rollback);
 
             m_SendSession.CopyFrom(serverSession);
 
-            BoolProperty hasSentInitialData = player.Require<HasSentInitialData>();
-            if (hasSentInitialData.WithValue && !hasSentInitialData)
+            if (player.Require<ClientStampComponent>().tick.WithValue)
             {
-                m_Injector.OnSendInitialData(peer, serverSession, m_SendSession);
-                hasSentInitialData.Value = true;
+                BoolProperty hasSentInitialData = player.Require<HasSentInitialData>();
+                if (!hasSentInitialData)
+                {
+                    m_Injector.OnSendInitialData(peer, serverSession, m_SendSession);
+                    hasSentInitialData.Value = true;
+                }
             }
 
-            // DeltaCompressAdditives(m_SendSession, rollback);
             m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
         }
 
+        // Not working, prediction errors on ground tick and position
         private void CompressSession(ElementBase serverSession, int rollback)
         {
             ElementExtensions.NavigateZipped((_mostRecent, _lastAcknowledged, _send) =>
             {
-                if (_mostRecent is PropertyBase mostRecentProperty && _lastAcknowledged is PropertyBase lastAcknowledgedProperty && _send is PropertyBase sendProperty
-                 && !_mostRecent.GetType().IsDefined(typeof(AdditiveAttribute)))
+                if (_mostRecent is PropertyBase _mostRecentProperty && _lastAcknowledged is PropertyBase _lastAcknowledgedProperty && _send is PropertyBase _sendProperty)
                 {
-                    if (mostRecentProperty.Equals(lastAcknowledgedProperty))
-                        sendProperty.WasSame = true;
+                    if (!_mostRecent.GetType().IsDefined(typeof(AdditiveAttribute)) && _mostRecentProperty.Equals(_lastAcknowledgedProperty)
+                                                                                    && !(_mostRecentProperty is VectorProperty))
+                    {
+                        _sendProperty.Clear();
+                        _sendProperty.WasSame = true;
+                    }
                     else
                     {
-                        sendProperty.Clear();
-                        sendProperty.SetFromIfWith(mostRecentProperty);
-                        sendProperty.WasSame = false;
+                        _sendProperty.SetTo(_mostRecentProperty);
+                        _sendProperty.WasSame = false;
                     }
                 }
                 return Navigation.Continue;
@@ -217,13 +224,12 @@ namespace Swihoni.Sessions
                             serverPlayerTimeUs.Value += clientStamp.timeUs - serverPlayerClientStamp.timeUs;
 
                             long delta = serverPlayerTimeUs.Value - (long) serverStamp.timeUs;
-                            if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3)
+                            if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
                             {
                                 ResetErrors++;
                                 serverPlayerTimeUs.Value = serverStamp.timeUs;
                             }
                         }
-
                         ModeBase mode = GetMode(serverSession);
                         serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
                         m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);

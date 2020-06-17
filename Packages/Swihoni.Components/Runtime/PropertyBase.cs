@@ -7,12 +7,12 @@ using UnityEngine;
 namespace Swihoni.Components
 {
     [Flags]
-    public enum ElementFlags : byte
+    public enum ElementFlags : sbyte
     {
-        None,
-        WithValue,
-        DontSerialize,
-        WasSame
+        None = 0,
+        WithValue = 1,
+        DontSerialize = 2,
+        WasSame = 4
     }
 
     /// <summary>
@@ -22,6 +22,12 @@ namespace Swihoni.Components
     public abstract class PropertyBase : ElementBase
     {
         [SerializeField] private ElementFlags m_Flags = ElementFlags.None;
+
+        public sbyte RawFlags
+        {
+            get => (sbyte) m_Flags;
+            set => m_Flags = (ElementFlags) value;
+        }
 
         public FieldInfo Field { get; set; }
 
@@ -41,8 +47,8 @@ namespace Swihoni.Components
             get => (m_Flags & ElementFlags.WasSame) == ElementFlags.WasSame;
             set
             {
-                if (value) m_Flags |= ElementFlags.DontSerialize;
-                else m_Flags &= ~ElementFlags.DontSerialize;
+                if (value) m_Flags |= ElementFlags.WasSame;
+                else m_Flags &= ~ElementFlags.WasSame;
             }
         }
 
@@ -77,6 +83,7 @@ namespace Swihoni.Components
         public abstract void Clear();
         public abstract void Zero();
         public abstract void SetFromIfWith(PropertyBase other);
+        public abstract void SetTo(PropertyBase other);
         public abstract void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation);
     }
 
@@ -184,6 +191,14 @@ namespace Swihoni.Components
                 Value = otherProperty.m_Value;
         }
 
+        public override void SetTo(PropertyBase other)
+        {
+            if (!(other is PropertyBase<T> otherProperty))
+                throw new ArgumentException("Other property is not of the same type");
+            if (otherProperty.WithValue) Value = otherProperty.Value;
+            else Clear();
+        }
+
         /// <exception cref="ArgumentException">If types are different.</exception>
         public sealed override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation)
         {
@@ -202,13 +217,13 @@ namespace Swihoni.Components
         }
 
         /// <summary>Interpolates into this from two properties that are known to have values.</summary>
-        /// <exception cref="WithoutValueException">If <see cref="p1"/> or <see cref="p2"/> is without a value.</exception>
+        /// <exception cref="WithoutValueException1">If <see cref="p1"/> or <see cref="p2"/> is without a value.</exception>
         public virtual void ValueInterpolateFrom(PropertyBase<T> p1, PropertyBase<T> p2, float interpolation) => SetFromIfWith(p2);
 
         public sealed override void Serialize(NetDataWriter writer)
         {
             if (DontSerialize || HasAttribute<NoSerialization>()) return;
-            writer.Put(WithValue);
+            writer.Put(RawFlags);
             if (WithoutValue) return;
             SerializeValue(writer);
         }
@@ -216,7 +231,7 @@ namespace Swihoni.Components
         public sealed override void Deserialize(NetDataReader reader)
         {
             if (DontSerialize || HasAttribute<NoSerialization>()) return;
-            WithValue = reader.GetBool();
+            RawFlags = reader.GetSByte();
             if (WithoutValue) return;
             DeserializeValue(reader);
         }
