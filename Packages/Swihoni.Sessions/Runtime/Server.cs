@@ -14,18 +14,16 @@ using UnityEngine.Profiling;
 
 namespace Swihoni.Sessions
 {
-    public abstract class ServerBase : NetworkedSessionBase
+    public class Server : NetworkedSessionBase
     {
-        private readonly EventBasedNetListener.OnConnectionRequest m_ConnectionRequestHandler;
         private ComponentServerSocket m_Socket;
         private readonly Container m_SendSession;
 
         public override ComponentSocketBase Socket => m_Socket;
 
-        protected ServerBase(SessionElements elements, IPEndPoint ipEndPoint, EventBasedNetListener.OnConnectionRequest connectionRequestHandler)
-            : base(elements, ipEndPoint)
+        public Server(SessionElements elements, IPEndPoint ipEndPoint, SessionInjectorBase injector)
+            : base(elements, ipEndPoint, injector)
         {
-            m_ConnectionRequestHandler = connectionRequestHandler;
             ForEachPlayer(player => player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent), typeof(HasSentInitialData)));
             m_SendSession = m_EmptyServerSession.Clone();
         }
@@ -33,7 +31,7 @@ namespace Swihoni.Sessions
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentServerSocket(IpEndPoint, m_ConnectionRequestHandler);
+            m_Socket = new ComponentServerSocket(IpEndPoint, m_Injector.OnHandleNewConnection);
             m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
             m_Socket.Listener.NetworkLatencyUpdateEvent += OnPingUpdate;
             RegisterMessages(m_Socket);
@@ -61,24 +59,16 @@ namespace Swihoni.Sessions
 
         protected virtual void PostTick(Container tickSession) { }
 
-        protected virtual void SettingsTick(Container serverSession)
-        {
-            var tickRate = serverSession.Require<TickRateProperty>();
-            tickRate.CopyFrom(DebugBehavior.Singleton.TickRate);
-            serverSession.Require<ModeIdProperty>().CopyFrom(DebugBehavior.Singleton.ModeId);
-            Time.fixedDeltaTime = tickRate.TickInterval;
-        }
-
         protected sealed override void Tick(uint tick, uint timeUs, uint durationUs)
         {
-            base.Tick(tick, timeUs, durationUs);
-
             Profiler.BeginSample("Server Setup");
             Container previousServerSession = m_SessionHistory.Peek(),
                       serverSession = m_SessionHistory.ClaimNext();
             CopyFromPreviousSession(previousServerSession, serverSession);
 
-            SettingsTick(serverSession);
+            base.Tick(tick, timeUs, durationUs);
+
+            m_Injector.OnSettingsTick(serverSession);
 
             var serverStamp = serverSession.Require<ServerStampComponent>();
             serverStamp.tick.Value = tick;
@@ -93,7 +83,7 @@ namespace Swihoni.Sessions
             // IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
         }
-        
+
         private static void CopyFromPreviousSession(ElementBase previous, ElementBase current)
         {
             ElementExtensions.NavigateZipped((_previous, _current) =>
@@ -156,47 +146,53 @@ namespace Swihoni.Sessions
                 var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
                 int playerId = peer.GetPlayerId();
                 localPlayerProperty.Value = (byte) playerId;
-                SendPeerLatestSession(peer, serverSession);
+                SendPeerLatestSession(tick, peer, serverSession);
             }
         }
 
-        protected virtual void SendPeerLatestSession(NetPeer peer, Container serverSession)
+        protected void SendPeerLatestSession(uint tick, NetPeer peer, Container serverSession)
         {
             Container player = GetPlayerFromId(peer.GetPlayerId());
-            
+
             // uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
             // var rollback = checked((int) (tick - lastServerTickAcknowledged));
             // if (lastServerTickAcknowledged == 0u)
             //     m_SendSession.CopyFrom(serverSession);
             // else
-            // {
             //     // TODO:performance serialize and compress at the same time
-            //     ElementExtensions.NavigateZipped(DeltaCompressNavigation, serverSession, m_SessionHistory.Get(-rollback), m_SendSession);
-            // }
+            //     CompressSession(serverSession, rollback);
 
             m_SendSession.CopyFrom(serverSession);
-            
+
             BoolProperty hasSentInitialData = player.Require<HasSentInitialData>();
-            if (!hasSentInitialData) MergeInitialData(peer, serverSession, m_SendSession);
+            if (hasSentInitialData.WithValue && !hasSentInitialData)
+            {
+                m_Injector.OnSendInitialData(peer, serverSession, m_SendSession);
+                hasSentInitialData.Value = true;
+            }
 
             // DeltaCompressAdditives(m_SendSession, rollback);
             m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
-            
-            hasSentInitialData.Value = true;
         }
 
-        protected virtual void MergeInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
-
-        private static Navigation DeltaCompressNavigation(ElementBase mostRecent, ElementBase lastAcknowledged, ElementBase send)
+        private void CompressSession(ElementBase serverSession, int rollback)
         {
-            if (mostRecent is PropertyBase mostRecentProperty && lastAcknowledged is PropertyBase lastAcknowledgedProperty && send is PropertyBase sendProperty
-             && !mostRecent.GetType().IsDefined(typeof(AdditiveAttribute)))
+            ElementExtensions.NavigateZipped((_mostRecent, _lastAcknowledged, _send) =>
             {
-                sendProperty.Clear();
-                if (!mostRecentProperty.Equals(lastAcknowledgedProperty))
-                    sendProperty.SetFromIfWith(mostRecentProperty);
-            }
-            return Navigation.Continue;
+                if (_mostRecent is PropertyBase mostRecentProperty && _lastAcknowledged is PropertyBase lastAcknowledgedProperty && _send is PropertyBase sendProperty
+                 && !_mostRecent.GetType().IsDefined(typeof(AdditiveAttribute)))
+                {
+                    if (mostRecentProperty.Equals(lastAcknowledgedProperty))
+                        sendProperty.WasSame = true;
+                    else
+                    {
+                        sendProperty.Clear();
+                        sendProperty.SetFromIfWith(mostRecentProperty);
+                        sendProperty.WasSame = false;
+                    }
+                }
+                return Navigation.Continue;
+            }, serverSession, m_SessionHistory.Get(-rollback), m_SendSession);
         }
 
         private void HandleClientCommand(int clientId, Container receivedClientCommands, Container serverSession, Container serverPlayer)
@@ -245,6 +241,7 @@ namespace Swihoni.Sessions
             // TODO:refactor zeroing
 
             player.ZeroIfWith<StatsComponent>();
+            player.Require<HasSentInitialData>().Zero();
             player.Require<ServerPingComponent>().Zero();
             player.Require<ClientStampComponent>().Reset();
             player.Require<ServerStampComponent>().Reset();

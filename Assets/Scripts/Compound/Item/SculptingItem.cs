@@ -22,14 +22,14 @@ namespace Compound.Item
             var position = (Position3Int) (hit.point - hit.normal * 0.5f);
             Voxel.Voxel? voxel = ChunkManager.Singleton.GetVoxel(position);
             if (!voxel.HasValue) return;
-            MiniBase mini = ((IMiniProvider) session).GetMini();
+            var voxelInjector = (VoxelInjector) session.Injector;
             switch (voxel.Value.renderType)
             {
                 case VoxelRenderType.Block:
-                    mini.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth});
+                    voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth});
                     break;
                 case VoxelRenderType.Smooth:
-                    mini.RemoveVoxelRadius(position, m_DestroyRadius, true);
+                    voxelInjector.RemoveVoxelRadius(position, m_DestroyRadius, true);
                     break;
             }
         }
@@ -48,8 +48,8 @@ namespace Compound.Item
             if (session.GetPlayerFromId(playerId).Without<ServerTag>()) return;
             if (!GetVoxelRaycast(session, playerId, out RaycastHit hit)) return;
             Vector3 position = hit.point + hit.normal * 0.5f;
-            MiniBase mini = ((IMiniProvider) session).GetMini();
-            mini.SetVoxelData((Position3Int) position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = VoxelTexture.Stone});
+            var voxelInjector = (VoxelInjector) session.Injector;
+            voxelInjector.SetVoxelData((Position3Int) position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = VoxelTexture.Stone});
         }
     }
 }

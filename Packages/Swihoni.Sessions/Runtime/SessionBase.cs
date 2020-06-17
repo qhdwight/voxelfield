@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
+using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
@@ -10,7 +10,6 @@ using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
-using Swihoni.Util;
 using Swihoni.Util.Interface;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -46,10 +45,25 @@ namespace Swihoni.Sessions
     {
         void Setup(SessionBase session);
 
-        // TODO: refactor is local player should use If construct
+        // TODO:refactor is local player should use If construct
         void Render(int playerId, Container player, bool isLocalPlayer);
 
         Container GetRecentPlayer();
+    }
+
+    public class SessionInjectorBase
+    {
+        protected internal SessionBase TheSession { get; set; }
+
+        protected internal virtual bool IsPaused => false;
+
+        protected internal virtual void OnSettingsTick(Container session) { }
+
+        protected internal virtual void OnReceive(ServerSessionContainer serverSession) { }
+
+        protected internal virtual void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
+
+        protected internal virtual void OnHandleNewConnection(ConnectionRequest request) => request.Accept();
     }
 
     public abstract class SessionBase : IDisposable
@@ -58,6 +72,7 @@ namespace Swihoni.Sessions
 
         private readonly GameObject m_PlayerVisualsPrefab;
         protected readonly SessionElements m_SessionElements;
+        protected readonly SessionInjectorBase m_Injector;
         protected readonly DefaultPlayerHud m_PlayerHud;
         protected readonly InterfaceBehaviorBase[] m_Interfaces;
         private long m_FixedUpdateTicks, m_RenderTicks;
@@ -68,13 +83,16 @@ namespace Swihoni.Sessions
         private Stopwatch m_Stopwatch;
         public bool ShouldInterruptCommands { get; private set; }
 
+        public SessionInjectorBase Injector => m_Injector;
         protected bool IsDisposed { get; private set; }
         public bool ShouldRender { get; set; } = true;
         public GameObject PlayerModifierPrefab { get; }
 
-        protected SessionBase(SessionElements sessionElements)
+        protected SessionBase(SessionElements sessionElements, SessionInjectorBase injector)
         {
             m_SessionElements = sessionElements;
+            m_Injector = injector;
+            m_Injector.TheSession = this;
             PlayerModifierPrefab = SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab();
             m_PlayerVisualsPrefab = SessionGameObjectLinker.Singleton.GetPlayerVisualsPrefab();
             m_PlayerHud = UnityObject.FindObjectOfType<DefaultPlayerHud>();
@@ -118,11 +136,11 @@ namespace Swihoni.Sessions
             CheckDisposed();
 
             HandleCursorLockState();
-            long ticks = m_Stopwatch.ElapsedTicks,
-                 tickDelta = ticks - m_RenderTicks;
-            m_RenderTicks = ticks;
-            uint timeUs = GetUsFromTicks(ticks);
-            Input(timeUs, GetUsFromTicks(tickDelta));
+            long clockTicks = m_Stopwatch.ElapsedTicks,
+                 clockTickDelta = clockTicks - m_RenderTicks;
+            m_RenderTicks = clockTicks;
+            uint timeUs = GetUsFromTicks(clockTicks);
+            Input(timeUs, GetUsFromTicks(clockTickDelta));
             if (ShouldRender) Render(timeUs);
         }
 
@@ -152,8 +170,14 @@ namespace Swihoni.Sessions
 
         protected virtual void Render(uint renderTimeUs) { }
 
-        protected virtual void Tick(uint tick, uint timeUs, uint durationUs) =>
-            GetLatestSession().Require<TickRateProperty>().IfWith(tickRate => Time.fixedDeltaTime = 1.0f / tickRate);
+        protected virtual void Tick(uint tick, uint timeUs, uint durationUs)
+        {
+            Container session = GetLatestSession();
+            var tickRate = session.Require<TickRateProperty>();
+            tickRate.SetFromIfWith(DebugBehavior.Singleton.TickRate);
+            session.Require<ModeIdProperty>().SetFromIfWith(DebugBehavior.Singleton.ModeId);
+            if (tickRate.WithValue) Time.fixedDeltaTime = 1.0f / tickRate;
+        }
 
         protected virtual void Input(uint timeUs, uint deltaUs) { }
 
@@ -161,46 +185,11 @@ namespace Swihoni.Sessions
         {
             CheckDisposed();
 
-            long ticks = m_Stopwatch.ElapsedTicks,
-                 tickDelta = ticks - m_FixedUpdateTicks;
-            m_FixedUpdateTicks = ticks;
-            Tick(m_Tick++, GetUsFromTicks(ticks), GetUsFromTicks(tickDelta));
+            long clockTicks = m_Stopwatch.ElapsedTicks,
+                 clockTickDelta = clockTicks - m_FixedUpdateTicks;
+            m_FixedUpdateTicks = clockTicks;
+            Tick(m_Tick++, GetUsFromTicks(clockTicks), GetUsFromTicks(clockTickDelta));
         }
-
-        // protected void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, CyclicArray<TComponent> componentHistory,
-        //                                                   Func<TComponent, float> getDuration, float rollback, float timeSinceLastUpdate)
-        //     where TComponent : ComponentBase
-        // {
-        //     InterpolateHistoryInto(componentToInterpolate, i => componentHistory.Get(i), componentHistory.Size, getDuration, rollback, timeSinceLastUpdate);
-        // }
-        //
-        // protected static void InterpolateHistoryInto<TComponent>(TComponent componentToInterpolate, Func<int, TComponent> getInHistory, int maxRollback,
-        //                                                          Func<int, float> getDuration, float rollback, float timeSinceLastUpdate)
-        //     where TComponent : ComponentBase
-        // {
-        //     int fromIndex = 0, toIndex = 0;
-        //     var durationCount = 0.0f;
-        //     for (var historyIndex = 0; historyIndex < maxRollback; historyIndex++)
-        //     {
-        //         fromIndex = -historyIndex - 1;
-        //         toIndex = -historyIndex;
-        //         durationCount += getDuration(-historyIndex);
-        //         if (durationCount >= rollback - timeSinceLastUpdate) break;
-        //         if (historyIndex != maxRollback - 1) continue;
-        //         // We do not have enough history. Copy the most recent instead
-        //         componentToInterpolate.MergeSet(getInHistory(0));
-        //         return;
-        //     }
-        //     float interpolation;
-        //     if (getDuration(toIndex) > 0.0f)
-        //     {
-        //         float elapsed = durationCount - rollback + timeSinceLastUpdate;
-        //         interpolation = elapsed / getDuration(toIndex);
-        //     }
-        //     else
-        //         interpolation = 0.0f;
-        //     Interpolator.InterpolateInto(getInHistory(fromIndex), getInHistory(toIndex), componentToInterpolate, interpolation);
-        // }
 
         protected static void RenderInterpolated
             (uint renderTimeUs, Container renderContainer, int maxRollback, Func<int, StampComponent> getTimeInHistory, Func<int, Container> getInHistory)
@@ -293,6 +282,6 @@ namespace Swihoni.Sessions
             m_Stopwatch.Stop();
         }
 
-        public abstract bool IsPaused { get; }
+        public virtual bool IsPaused => m_Injector.IsPaused;
     }
 }

@@ -1,21 +1,19 @@
 using System.Linq;
 using System.Net;
-using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Sessions
 {
-    public abstract class HostBase : ServerBase
+    public class Host : Server
     {
         private const int HostPlayerId = 0;
 
         private readonly Container m_HostCommands;
 
-        protected HostBase(SessionElements elements, IPEndPoint ipEndPoint, EventBasedNetListener.OnConnectionRequest connectionRequestHandler)
-            : base(elements, ipEndPoint, connectionRequestHandler)
+        public Host(SessionElements elements, IPEndPoint ipEndPoint, SessionInjectorBase injector)
+            : base(elements, ipEndPoint, injector)
         {
             // TODO:refactor zeroing
             m_HostCommands = new Container(elements.playerElements
@@ -37,7 +35,6 @@ namespace Swihoni.Sessions
                 return;
 
             ReadLocalInputs(m_HostCommands);
-            // m_HostCommands.Require<InventoryComponent>().Zero();
             m_Modifier[HostPlayerId].ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
             m_Modifier[HostPlayerId].ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
             GetMode(session).Modify(session, m_HostCommands, m_HostCommands, deltaUs);

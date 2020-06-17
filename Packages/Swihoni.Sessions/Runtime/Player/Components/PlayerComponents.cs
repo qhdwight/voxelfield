@@ -5,7 +5,6 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Modifiers;
-using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Components
 {
@@ -24,8 +23,7 @@ namespace Swihoni.Sessions.Player.Components
         [PredictionTolerance(0.01f), InterpolateRange(2.0f)]
         public VectorProperty position, velocity;
         public ByteProperty groundTick;
-        [PredictionTolerance(0.01f)]
-        public FloatProperty normalizedCrouch;
+        [PredictionTolerance(0.01f)] public FloatProperty normalizedCrouch;
         [Cyclic(0.0f, 1.0f)] public FloatProperty normalizedMove;
 
         public override string ToString() => $"Position: {position}, Velocity: {velocity}";

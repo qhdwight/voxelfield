@@ -2,7 +2,6 @@ using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Visualization

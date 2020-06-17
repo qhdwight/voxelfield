@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using Console;
 using Swihoni.Sessions;
 using Swihoni.Util;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -49,10 +47,7 @@ namespace Compound.Session
             {
                 StartServer(new IPEndPoint(IPAddress.Any, m_ServerPort));
             }
-            ConsoleCommandExecutor.RegisterCommand("r", args =>
-            {
-                DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]);
-            });
+            ConsoleCommandExecutor.RegisterCommand("r", args => { DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]); });
         }
 
         private void StandaloneDisconnectAll()
@@ -65,7 +60,7 @@ namespace Compound.Session
         public Host StartHost()
         {
             StandaloneDisconnectAll();
-            var host = new Host();
+            var host = new Host(VoxelfieldComponents.SessionElements, m_LocalHost, new ServerInjector());
             try
             {
                 host.Start();
@@ -83,7 +78,7 @@ namespace Compound.Session
         public Server StartServer(IPEndPoint ipEndPoint)
         {
             StandaloneDisconnectAll();
-            var server = new Server(ipEndPoint);
+            var server = new Server(VoxelfieldComponents.SessionElements, ipEndPoint, new ServerInjector());
             try
             {
                 server.Start();
@@ -101,7 +96,7 @@ namespace Compound.Session
         public Client StartClient(IPEndPoint ipEndPoint)
         {
             StandaloneDisconnectAll();
-            var client = new Client(ipEndPoint);
+            var client = new Client(VoxelfieldComponents.SessionElements, ipEndPoint, Version.String, new ClientInjector());
             try
             {
                 client.Start();
@@ -138,7 +133,7 @@ namespace Compound.Session
 
             if (Input.GetKeyDown(KeyCode.H))
             {
-                Host host = StartHost();
+                StartHost();
             }
             if (Input.GetKeyDown(KeyCode.Y))
             {
@@ -146,7 +141,7 @@ namespace Compound.Session
             }
             if (Input.GetKeyDown(KeyCode.J))
             {
-                Client client = StartClient(m_LocalHost);
+                StartClient(m_LocalHost);
             }
             if (Input.GetKeyDown(KeyCode.K))
             {

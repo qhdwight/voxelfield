@@ -21,9 +21,10 @@ namespace Swihoni.Sessions.Interfaces
             float time = Time.realtimeSinceStartup;
             if (time - m_LastUpdateTime < m_UpdateRate) return;
 
-            if (sessionContainer.WithPropertyWithValue(out LocalPlayerProperty localPlayer) && sessionContainer.GetPlayer(localPlayer).With(out StatsComponent stats) && stats.ping.WithValue)
+            if (sessionContainer.WithPropertyWithValue(out LocalPlayerProperty localPlayer) && sessionContainer.GetPlayer(localPlayer).With(out StatsComponent stats) &&
+                stats.ping.WithValue)
                 m_PingText.BuildText(builder => builder.Append("Ping: ").Append(stats.ping).Append(" ms"));
-            if (session is ClientBase client)
+            if (session is Client client)
                 m_PredictionErrorText.BuildText(builder => builder.Append("Prediction Errors: ").Append(client.PredictionErrors));
             if (session is NetworkedSessionBase networkSession)
             {

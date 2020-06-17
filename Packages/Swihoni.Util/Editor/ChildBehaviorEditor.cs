@@ -1,4 +1,3 @@
-using System;
 using Swihoni.Util.Animation;
 using UnityEditor;
 using UnityEngine;
@@ -18,7 +17,7 @@ namespace Swihoni.Util.Editor
         private void OnSceneGUI()
         {
             Handles.BeginGUI();
-            
+
             Handles.EndGUI();
         }
     }

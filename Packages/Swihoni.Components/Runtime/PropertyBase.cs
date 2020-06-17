@@ -27,7 +27,7 @@ namespace Swihoni.Components
 
         public bool WithValue
         {
-            get => (m_Flags & ElementFlags.WithValue) != 0;
+            get => (m_Flags & ElementFlags.WithValue) == ElementFlags.WithValue;
             protected set
             {
                 // TODO:refactor generalized methods for setting flags
@@ -35,22 +35,22 @@ namespace Swihoni.Components
                 else m_Flags &= ~ElementFlags.WithValue;
             }
         }
-        
+
         public bool WasSame
         {
-            get => (m_Flags & ElementFlags.WasSame) != 0;
-            protected set
+            get => (m_Flags & ElementFlags.WasSame) == ElementFlags.WasSame;
+            set
             {
                 if (value) m_Flags |= ElementFlags.DontSerialize;
                 else m_Flags &= ~ElementFlags.DontSerialize;
             }
         }
-        
+
         public bool WithoutValue => !WithValue;
 
         public bool DontSerialize
         {
-            get => (m_Flags & ElementFlags.DontSerialize) != 0;
+            get => (m_Flags & ElementFlags.DontSerialize) == ElementFlags.DontSerialize;
             protected set
             {
                 if (value) m_Flags |= ElementFlags.DontSerialize;
@@ -70,7 +70,7 @@ namespace Swihoni.Components
             attribute = null;
             return false;
         }
-        
+
         public abstract void Serialize(NetDataWriter writer);
         public abstract void Deserialize(NetDataReader reader);
         public abstract bool Equals(PropertyBase other);

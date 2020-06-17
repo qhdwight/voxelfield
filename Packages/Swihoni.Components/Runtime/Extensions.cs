@@ -25,9 +25,6 @@ namespace Swihoni.Components
             writer.Put(quaternion.w);
         }
 
-        public static int GetPlayerId(this NetPeer peer)
-        {
-            return peer.Id + 1;
-        }
+        public static int GetPlayerId(this NetPeer peer) { return peer.Id + 1; }
     }
 }

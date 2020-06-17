@@ -54,7 +54,7 @@ namespace Swihoni.Sessions.Entities
 
             var throwable = entity.Require<ThrowableComponent>();
             throwable.thrownElapsedUs.Value += durationUs;
-            
+
             bool poppedFromTime = throwable.thrownElapsedUs >= m_PopTimeUs && m_LastElapsedUs < throwable.popTimeUs;
             if (poppedFromTime || PopQueued)
             {

@@ -1,6 +1,5 @@
 using Swihoni.Sessions.Components;
 using Swihoni.Util.Interface;
-using UnityEngine;
 
 namespace Swihoni.Sessions.Interfaces
 {

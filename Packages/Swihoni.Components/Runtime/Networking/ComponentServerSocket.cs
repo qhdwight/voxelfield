@@ -2,7 +2,7 @@ using System.Net;
 using LiteNetLib;
 
 namespace Swihoni.Components.Networking
-{ 
+{
     public class ComponentServerSocket : ComponentSocketBase
     {
         public ComponentServerSocket(IPEndPoint ip, EventBasedNetListener.OnConnectionRequest acceptConnection = null)

@@ -13,7 +13,7 @@ using UnityEngine.Profiling;
 
 namespace Swihoni.Sessions
 {
-    public abstract class ClientBase : NetworkedSessionBase
+    public sealed class Client : NetworkedSessionBase
     {
         private readonly string m_ConnectKey;
         private readonly CyclicArray<ClientCommandsContainer> m_CommandHistory;
@@ -23,8 +23,8 @@ namespace Swihoni.Sessions
         public int PredictionErrors { get; private set; }
         public override ComponentSocketBase Socket => m_Socket;
 
-        protected ClientBase(SessionElements elements, IPEndPoint ipEndPoint, string connectKey)
-            : base(elements, ipEndPoint)
+        public Client(SessionElements elements, IPEndPoint ipEndPoint, string connectKey, SessionInjectorBase injector)
+            : base(elements, ipEndPoint, injector)
         {
             m_ConnectKey = connectKey;
             /* Prediction */
@@ -107,13 +107,11 @@ namespace Swihoni.Sessions
 
         protected override void Tick(uint tick, uint timeUs, uint durationUs)
         {
-            base.Tick(tick, timeUs, durationUs);
-
             Profiler.BeginSample("Client Predict");
             Container latestSession = GetLatestSession();
             if (GetLocalPlayerId(latestSession, out int localPlayerId))
             {
-                SettingsTick(latestSession);
+                m_Injector.OnSettingsTick(latestSession);
                 UpdateInputs(localPlayerId);
                 Predict(tick, timeUs, localPlayerId);
             }
@@ -125,19 +123,10 @@ namespace Swihoni.Sessions
 
             Profiler.BeginSample("Client Receive");
             Receive(timeUs);
-            // HandleTimeouts(time);
             Profiler.EndSample();
+
+            base.Tick(tick, timeUs, durationUs);
         }
-
-        protected virtual void SettingsTick(Container serverSession) { }
-
-        // private void HandleTimeouts(float time)
-        // {
-        //     if (!m_ServerReceiveTime.HasValue || Mathf.Abs(m_ServerReceiveTime.Value - time) < 2.0f) return;
-        //
-        //     Debug.LogWarning($"[{GetType().Name}] Disconnected due to stale connection!");
-        //     Dispose();
-        // }
 
         private void Predict(uint tick, uint timeUs, int localPlayerId)
         {
@@ -193,25 +182,25 @@ namespace Swihoni.Sessions
                 /* We are checking predicted */
                 var areEqual = true;
                 Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
-                ElementExtensions.NavigateZipped((predictedElement, latestPredictedElement, serverElement) =>
+                ElementExtensions.NavigateZipped((_predicted, _latestPredicted, _server) =>
                 {
-                    Type type = predictedElement.GetType();
+                    Type type = _predicted.GetType();
                     if (type.IsDefined(typeof(OnlyServerTrustedAttribute)))
                     {
-                        latestPredictedElement.MergeFrom(serverElement);
+                        _latestPredicted.MergeFrom(_server);
                         return Navigation.SkipDescendents;
                     }
                     if (type.IsDefined(typeof(ClientTrustedAttribute)))
                         return Navigation.SkipDescendents;
-                    switch (predictedElement)
+                    switch (_predicted)
                     {
-                        case FloatProperty f1 when serverElement is FloatProperty f2 && f1.TryAttribute(out PredictionToleranceAttribute fPredictionToleranceAttribute)
+                        case FloatProperty f1 when _server is FloatProperty f2 && f1.TryAttribute(out PredictionToleranceAttribute fPredictionToleranceAttribute)
                                                                                      && !f1.CheckWithinTolerance(f2, fPredictionToleranceAttribute.tolerance):
-                        case VectorProperty v1 when serverElement is VectorProperty v2 && v1.TryAttribute(out PredictionToleranceAttribute vPredictionToleranceAttribute)
+                        case VectorProperty v1 when _server is VectorProperty v2 && v1.TryAttribute(out PredictionToleranceAttribute vPredictionToleranceAttribute)
                                                                                        && !v1.CheckWithinTolerance(v2, vPredictionToleranceAttribute.tolerance):
-                        case PropertyBase p1 when serverElement is PropertyBase p2 && !p1.Equals(p2):
+                        case PropertyBase p1 when _server is PropertyBase p2 && !p1.Equals(p2):
                             areEqual = false;
-                            Debug.LogWarning($"Prediction error with {predictedElement.GetType().Name} with predicted: {predictedElement} and verified: {serverElement}");
+                            Debug.LogWarning($"Prediction error with {_predicted.GetType().Name} with predicted: {_predicted} and verified: {_server}");
                             return Navigation.Exit;
                     }
                     return Navigation.Continue;
@@ -249,7 +238,7 @@ namespace Swihoni.Sessions
                         UpdateCurrentSessionFromReceived(previousServerSession, serverSession, receivedServerSession);
                         Profiler.EndSample();
 
-                        Received(serverSession);
+                        m_Injector.OnReceive(serverSession);
 
                         uint serverTick = serverSession.Require<ServerStampComponent>().tick;
                         UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
@@ -273,11 +262,10 @@ namespace Swihoni.Sessions
 
                             if (localizedServerTimeUs.WithValue)
                                 localizedServerTimeUs.Value += checked(serverTime - previousServerSession.Require<ServerStampComponent>().timeUs);
-                            else
-                                localizedServerTimeUs.Value = timeUs;
+                            else localizedServerTimeUs.Value = timeUs;
 
                             long delta = localizedServerTimeUs.Value - (long) timeUs;
-                            if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3)
+                            if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
                             {
                                 ResetErrors++;
                                 localizedServerTimeUs.Value = timeUs;
@@ -298,13 +286,12 @@ namespace Swihoni.Sessions
 
                             if (localizedServerTimeUs.WithValue)
                                 localizedServerTimeUs.Value += checked(serverTimeUs - previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs);
-                            else
-                                localizedServerTimeUs.Value = timeUs;
+                            else localizedServerTimeUs.Value = timeUs;
 
                             GetLocalPlayerId(serverSession, out int localPlayerId);
                             if (playerId != localPlayerId) m_Modifier[playerId].Synchronize(serverPlayer);
 
-                            if (Mathf.Abs(localizedServerTimeUs.Value - timeUs) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3)
+                            if (Math.Abs(localizedServerTimeUs.Value - timeUs) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
                             {
                                 // Debug.LogWarning($"[{GetType().Name}] Client reset");
                                 ResetErrors++;
@@ -342,8 +329,6 @@ namespace Swihoni.Sessions
                 return Navigation.Continue;
             }, previousServerSession, serverSession, receivedServerSession);
         }
-
-        protected virtual void Received(Container session) { }
 
         private static bool GetLocalPlayerId(Container session, out int localPlayerId)
         {

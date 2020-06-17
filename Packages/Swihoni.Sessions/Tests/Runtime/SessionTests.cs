@@ -85,7 +85,7 @@ namespace Swihoni.Sessions.Tests
             {
                 server.RegisterContainer(typeof(ServerSessionContainer), session);
                 client.RegisterContainer(typeof(ServerSessionContainer), session);
-                
+
                 server.PollEvents();
                 client.PollEvents();
 
@@ -128,7 +128,7 @@ namespace Swihoni.Sessions.Tests
             {
                 server.RegisterContainer(typeof(ClientCommandsContainer), clientCommands);
                 client.RegisterContainer(typeof(ClientCommandsContainer), clientCommands);
-                
+
                 server.PollEvents();
                 client.PollEvents();
 

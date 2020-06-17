@@ -7,11 +7,8 @@ using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
-using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Util;
-using Swihoni.Util.Interface;
 
 namespace Swihoni.Sessions
 {
@@ -27,7 +24,7 @@ namespace Swihoni.Sessions
         public IPEndPoint IpEndPoint { get; }
         public abstract ComponentSocketBase Socket { get; }
 
-        protected NetworkedSessionBase(SessionElements elements, IPEndPoint ipEndPoint) : base(elements)
+        protected NetworkedSessionBase(SessionElements elements, IPEndPoint ipEndPoint, SessionInjectorBase injector) : base(elements, injector)
         {
             IpEndPoint = ipEndPoint;
             IReadOnlyCollection<Type> sharedPlayerElements = elements.playerElements

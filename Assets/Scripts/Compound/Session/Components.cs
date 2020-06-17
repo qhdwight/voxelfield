@@ -84,11 +84,11 @@ namespace Compound.Session
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    public static class CompoundComponents
+    public static class VoxelfieldComponents
     {
         public static readonly SessionElements SessionElements;
 
-        static CompoundComponents()
+        static VoxelfieldComponents()
         {
             SessionElements = SessionElements.NewStandardSessionElements();
             SessionElements.elements.AddRange(new[] {typeof(VoxelMapNameElement), typeof(ChangedVoxelsProperty)});

@@ -4,13 +4,11 @@ using Swihoni.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Visualization;
-using Swihoni.Util;
 using Swihoni.Util.Animation;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 using UnityEngine.Rendering;
-using UnityEngine.UI;
 
 namespace Swihoni.Sessions.Items.Visuals
 {
