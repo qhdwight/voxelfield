@@ -1,3 +1,4 @@
+using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -9,7 +10,8 @@ namespace Compound.Session
 {
     public class ClientInjector : VoxelInjector
     {
-        private readonly VoxelChangeTransaction m_Transaction = new VoxelChangeTransaction();
+        private readonly Pool<VoxelChangeTransaction> m_Transactions = new Pool<VoxelChangeTransaction>(1, () => new VoxelChangeTransaction());
+        private readonly UIntProperty m_Pointer = new UIntProperty();
 
         protected override void OnSettingsTick(Container session) => MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
 
@@ -22,9 +24,28 @@ namespace Compound.Session
         protected override void OnReceive(ServerSessionContainer serverSession)
         {
             var changed = serverSession.Require<ChangedVoxelsProperty>();
-            foreach ((Position3Int position, VoxelChangeData change) in changed)
-                m_Transaction.AddChange(position, change);
-            m_Transaction.Commit();
+
+            UIntProperty serverTick = serverSession.Require<ServerStampComponent>().tick;
+
+            if (changed.Count > 0)
+            {
+                VoxelChangeTransaction transaction = m_Transactions.Obtain();
+                foreach ((Position3Int position, VoxelChangeData change) in changed)
+                    transaction.AddChange(position, change);   
+            }
+
+            if (m_Pointer.WithoutValue || serverTick - m_Pointer == 1)
+            {
+                Flush();
+                m_Pointer.Value = serverTick;
+            }
+        }
+
+        private void Flush()
+        {
+            foreach (VoxelChangeTransaction transaction in m_Transactions.InUse)
+                transaction.Commit();
+            m_Transactions.ReturnAll();
         }
 
         protected override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;

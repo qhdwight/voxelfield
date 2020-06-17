@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
@@ -14,6 +15,8 @@ namespace Swihoni.Sessions
 {
     public abstract class NetworkedSessionBase : SessionBase
     {
+        protected const int HistoryCount = 250;
+
         protected readonly CyclicArray<ServerSessionContainer> m_SessionHistory;
         protected readonly ClientCommandsContainer m_EmptyClientCommands;
         protected readonly ServerSessionContainer m_EmptyServerSession;
@@ -37,7 +40,7 @@ namespace Swihoni.Sessions
                                                                       .Concat(elements.commandElements).ToArray();
             ServerSessionContainer ServerSessionContainerConstructor() =>
                 NewSession<ServerSessionContainer>(elements.elements.Append(typeof(ServerStampComponent)), sharedPlayerElements);
-            m_SessionHistory = new CyclicArray<ServerSessionContainer>(250, ServerSessionContainerConstructor);
+            m_SessionHistory = new CyclicArray<ServerSessionContainer>(HistoryCount, ServerSessionContainerConstructor);
 
             m_RollbackSession = NewSession<Container>(elements.elements, elements.playerElements);
             m_RenderSession = NewSession<Container>(elements.elements, elements.playerElements);
@@ -59,7 +62,6 @@ namespace Swihoni.Sessions
             socket.RegisterContainer(typeof(ClientCommandsContainer), m_EmptyClientCommands, 0);
             socket.RegisterContainer(typeof(ServerSessionContainer), m_EmptyServerSession, 1);
             socket.RegisterContainer(typeof(DebugClientView), m_EmptyDebugClientView, 2);
-            // socket.RegisterSimpleElement(typeof(PingCheckComponent));
         }
 
         protected static void ZeroCommand(Container command)

@@ -1265,7 +1265,7 @@ MonoBehaviour:
     m_Value: 0
   TickRate:
     m_Flags: 1
-    m_Value: 60
+    m_Value: 20
   ModeId:
     m_Flags: 1
     m_Value: 0

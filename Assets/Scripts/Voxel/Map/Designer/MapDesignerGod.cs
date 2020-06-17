@@ -17,7 +17,7 @@ namespace Voxel.Map.Designer
             m_FlySpeed = 5.0f,
             m_GroundSpeed = 30.0f,
             m_GravityFactor = 2.0f;
-        [SerializeField] private LayerMask m_ChunkMask;
+        [SerializeField] private LayerMask m_ChunkMask = default;
 
         private CharacterController m_Controller;
         private MoveMode m_MoveMode = MoveMode.Flying;
@@ -27,7 +27,7 @@ namespace Voxel.Map.Designer
 
         private void Update()
         {
-            if (InterfaceManager.IsAnyInterfaceActive()) return;
+            // if (InterfaceManager.IsAnyInterfaceActive()) return;
             Camera();
             Move();
             Editing();

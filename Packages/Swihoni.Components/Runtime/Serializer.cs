@@ -16,16 +16,10 @@ namespace Swihoni.Components
         /// </summary>
         public static void Serialize(this ElementBase element, NetDataWriter writer)
         {
-            element.Navigate(_e =>
+            element.Navigate(_element =>
             {
-                switch (_e)
-                {
-                    case ComponentBase _ when _e.GetType().IsDefined(typeof(NoSerialization)):
-                        return Navigation.SkipDescendents;
-                    case PropertyBase property:
-                        property.Serialize(writer);
-                        break;
-                }
+                if (_element.GetType().IsDefined(typeof(NoSerialization))) return Navigation.SkipDescendents;
+                if (_element is PropertyBase property) property.Serialize(writer);
                 return Navigation.Continue;
             });
         }

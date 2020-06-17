@@ -28,10 +28,10 @@ namespace Swihoni.Sessions
         {
             m_ConnectKey = connectKey;
             /* Prediction */
-            m_CommandHistory = new CyclicArray<ClientCommandsContainer>(250, () => m_EmptyClientCommands.Clone());
+            m_CommandHistory = new CyclicArray<ClientCommandsContainer>(HistoryCount, () => m_EmptyClientCommands.Clone());
             // TODO:refactor zeroing
             ZeroCommand(m_CommandHistory.Peek());
-            m_PlayerPredictionHistory = new CyclicArray<Container>(250, () => new Container(elements.playerElements.Append(typeof(ClientStampComponent))));
+            m_PlayerPredictionHistory = new CyclicArray<Container>(HistoryCount, () => new Container(elements.playerElements.Append(typeof(ClientStampComponent))));
             m_PlayerPredictionHistory.Peek().Zero();
             m_PlayerPredictionHistory.Peek().Require<ClientStampComponent>().Reset();
 
@@ -233,33 +233,42 @@ namespace Swihoni.Sessions
                     case ServerSessionContainer receivedServerSession:
                     {
                         Profiler.BeginSample("Client Receive Setup");
-                        ServerSessionContainer previousServerSession = m_SessionHistory.Peek(),
-                                               serverSession = m_SessionHistory.ClaimNext();
+                        ServerSessionContainer previousServerSession = m_SessionHistory.Peek();
+
+                        uint serverTick = receivedServerSession.Require<ServerStampComponent>().tick;
+                        UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
+                        ServerSessionContainer serverSession;
+                        if (previousServerTick.WithValue)
+                        {
+                            var delta = checked((int) (serverTick - (long) previousServerTick));
+                            if (delta > 0)
+                            {
+                                // We skipped tick(s). Reserve spaces to fill later
+                                m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick;
+                                for (var i = 0; i < delta - 1; i++)
+                                {
+                                    ServerSessionContainer reserved = m_SessionHistory.ClaimNext();
+                                    reserved.CopyFrom(previousServerSession);
+                                }
+                                serverSession = m_SessionHistory.ClaimNext();
+                            }
+                            else
+                            {
+                                // We received an old tick. Fill in history
+                                serverSession = m_SessionHistory.Get(delta);
+                                Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
+                            }
+                        }
+                        else serverSession = m_SessionHistory.ClaimNext();
+
                         serverSession.CopyFrom(previousServerSession);
                         UpdateCurrentSessionFromReceived(serverSession, receivedServerSession);
-                        // TODO:refactor truncation
-                        serverSession.Require<LocalizedClientStampComponent>().CopyFrom(previousServerSession.Require<LocalizedClientStampComponent>());
                         Profiler.EndSample();
 
                         m_Injector.OnReceive(serverSession);
 
-                        uint serverTick = serverSession.Require<ServerStampComponent>().tick;
-                        UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
-                        if (previousServerTick.WithValue && serverTick <= previousServerTick)
                         {
-                            Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
-                            break;
-                        }
-                        if (previousServerTick.WithValue)
-                        {
-                            checked
-                            {
-                                uint delta = serverTick - previousServerTick;
-                                m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick - delta + 1;
-                            }
-                        }
-                        {
-                            // TODO:refactor make function
+                            // TODO:refactor make class
                             UIntProperty serverTimeUs = serverSession.Require<ServerStampComponent>().timeUs,
                                          localizedServerTimeUs = serverSession.Require<LocalizedClientStampComponent>().timeUs;
 
@@ -282,7 +291,7 @@ namespace Swihoni.Sessions
                             Container serverPlayer = serverPlayers[playerId];
                             var healthProperty = serverPlayer.Require<HealthProperty>();
                             if (healthProperty.WithoutValue || healthProperty.IsDead) continue;
-                            /* We have been acknowledged by the server */
+                            /* Valid player */
 
                             UIntProperty serverTimeUs = serverPlayer.Require<ServerStampComponent>().timeUs,
                                          localizedServerTimeUs = serverPlayer.Require<LocalizedClientStampComponent>().timeUs;

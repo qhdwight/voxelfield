@@ -122,26 +122,27 @@ namespace Swihoni.Sessions.Player.Modifiers
                     move.normalizedMove.Value -= 1.0f;
             }
         }
-        
+
         private readonly Collider[] m_CachedContactColliders = new Collider[2];
 
         private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)
         {
             Vector3 initialVelocity = move.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = VectorMath.LateralMagnitude(endingVelocity);
+            
             int count = Physics.OverlapSphereNonAlloc(m_MoveTransform.position, m_Controller.radius + RaycastOffset, m_CachedContactColliders, m_GroundMask);
-            bool isGrounded = count == 2; // Always have 1 do to ourselves. 2 means we are touching something else.
-            
-            // bool isGrounded = Physics.RaycastNonAlloc(m_MoveTransform.position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
-            //                                           m_MaxStickDistance + RaycastOffset, m_GroundMask) > 0,
-            
+            bool isGrounded = count == 2; // Always have 1 due to ourselves. 2 means we are touching something else.
+            if (isGrounded)
+                Physics.RaycastNonAlloc(m_MoveTransform.position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
+                                        float.PositiveInfinity, m_GroundMask);
             bool withinAngleLimit = isGrounded && Vector3.Angle(m_CachedGroundHits[0].normal, Vector3.up) < m_Controller.slopeLimit;
             if (withinAngleLimit && endingVelocity.y < 0.0f) // Stick to ground. Only on way down, if done on way up it negates jump
             {
                 float distance = m_CachedGroundHits[0].distance;
                 endingVelocity.y = DefaultDownSpeed;
-                if (!inputs.GetInput(PlayerInput.Jump)) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
+                if (!inputs.GetInput(PlayerInput.Jump) && distance < m_MaxStickDistance) m_Controller.Move(new Vector3 {y = -distance - 0.06f});
             }
+            
             Vector3 wishDirection =
                 inputs.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * m_MoveTransform.forward +
                 inputs.GetAxis(PlayerInput.Right, PlayerInput.Left) * m_SideSpeed * m_MoveTransform.right;

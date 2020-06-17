@@ -52,11 +52,11 @@ namespace Swihoni.Sessions.Modes
             if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive && hitPlayer.With<ServerTag>())
             {
                 var damage = checked((byte) (weapon.Damage * hitbox.DamageMultiplier));
-                InflictDamage(session, inflictingPlayerId, inflictingPlayer, hitPlayer, hitPlayerId, damage);
+                InflictDamage(session, inflictingPlayerId, inflictingPlayer, hitPlayer, hitPlayerId, damage, weapon.itemName);
             }
         }
 
-        public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage)
+        public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName)
         {
             checked
             {
@@ -78,11 +78,12 @@ namespace Swihoni.Sessions.Modes
                     if (session.GetLatestSession().Without(out KillFeedElement killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)
                     {
-                        // Find empty kill
                         if (kill.elapsedUs > 0u) continue;
+                        // Empty kill found
                         kill.elapsedUs.Value = 2_000_000u;
-                        kill.killedPlayerId.Value = (byte) hitPlayerId;
                         kill.killingPlayerId.Value = (byte) inflictingPlayerId;
+                        kill.killedPlayerId.Value = (byte) hitPlayerId;
+                        kill.weaponName.SetString(builder => builder.Append(weaponName));
                         break;
                     }
                 }

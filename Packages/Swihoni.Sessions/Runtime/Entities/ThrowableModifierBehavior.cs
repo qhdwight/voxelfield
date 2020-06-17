@@ -26,6 +26,7 @@ namespace Swihoni.Sessions.Entities
         private uint m_LastElapsedUs;
         private CollisionType m_LastCollision;
 
+        public string Name { get; set; }
         public Rigidbody Rigidbody { get; private set; }
         public int ThrowerId { get; set; }
         public bool PopQueued { get; set; }
@@ -105,13 +106,13 @@ namespace Swihoni.Sessions.Entities
                 Container hitPlayer = session.GetPlayerFromId(hitPlayerId);
                 if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive)
                 {
-                    byte damage = DamagePlayer(hitPlayer, durationUs);
-                    session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage);
+                    byte damage = CalculateDamage(hitPlayer, durationUs);
+                    session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage, Name);
                 }
             }
         }
 
-        private byte DamagePlayer(Container hitPlayer, uint durationUs)
+        private byte CalculateDamage(Container hitPlayer, uint durationUs)
         {
             float distance = Vector3.Distance(hitPlayer.Require<MoveComponent>().position, transform.position);
             float ratio = (m_MinimumDamageRatio - 1.0f) * Mathf.Clamp01(distance / m_Radius) + 1.0f;

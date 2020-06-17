@@ -13,6 +13,8 @@ namespace Swihoni.Collections
 
         public int Remaining => m_Pool.Count;
 
+        public IEnumerable<T> InUse => m_InUse;
+
         public Pool(int capacity, Func<T> constructor, Action<T, bool> usageChanged = null)
         {
             m_Constructor = constructor;

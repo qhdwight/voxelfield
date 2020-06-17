@@ -108,14 +108,9 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class KillFeedComponent : ComponentBase
     {
-        public ByteProperty killingPlayerId, killedPlayerId;
         public UIntProperty elapsedUs;
-    }
-
-    [Serializable]
-    public class FeedComponent : ComponentBase
-    {
-        public StringElement feed;
+        public ByteProperty killingPlayerId, killedPlayerId;
+        public StringElement weaponName = new StringElement(12);
     }
 
     [Serializable]
@@ -123,12 +118,6 @@ namespace Swihoni.Sessions.Components
     {
         public KillFeedElement() : base(5) { }
     }
-
-    // [Serializable]
-    // public class PingCheckComponent : ComponentBase
-    // {
-    //     public UIntProperty tick;
-    // }
 
     [Serializable]
     public class TickRateProperty : ByteProperty
@@ -138,6 +127,8 @@ namespace Swihoni.Sessions.Components
         public uint TickIntervalUs => TimeConversions.GetUsFromSecond(TickInterval);
 
         public uint PlayerRenderIntervalUs => TickIntervalUs * 3;
+
+        public override string ToString() => $"Seconds: {TickInterval}, Microseconds: {TickIntervalUs}";
     }
 
     [Serializable]
@@ -150,7 +141,13 @@ namespace Swihoni.Sessions.Components
     {
         public UIntProperty tick, timeUs, durationUs;
 
-        public override string ToString() { return $"Tick: {tick}, Time: {timeUs}, Duration: {durationUs}"; }
+        public override string ToString() => $"Tick: {tick}, Time: {timeUs}, Duration: {durationUs}";
+    }
+
+    [Serializable]
+    public class UsernameElement : StringElement
+    {
+        public UsernameElement() : base(32) { }
     }
 
     [Serializable]

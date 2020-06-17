@@ -18,9 +18,9 @@ namespace Swihoni.Sessions.Interfaces
             bool isVisible = kill.elapsedUs > 0u;
             if (isVisible)
                 m_Text.BuildText(builder => builder
-                                           .Append(kill.killingPlayerId.Value)
-                                           .Append(" [").Append("TEST").Append("] ")
-                                           .Append(kill.killedPlayerId.Value));
+                                           .Append(kill.killingPlayerId)
+                                           .Append(" [").Append(kill.weaponName).Append("] ")
+                                           .Append(kill.killedPlayerId));
             SetInterfaceActive(isVisible);
         }
     }
