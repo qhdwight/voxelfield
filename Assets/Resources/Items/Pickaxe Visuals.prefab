@@ -106,7 +106,7 @@ MonoBehaviour:
   - animationClip: {fileID: 7400000, guid: 1d9dc74a5dec67d4a864d17fbca4b550, type: 2}
     animationEvents: []
     isReverseAnimation: 1
-  - animationClip: {fileID: 7400000, guid: 95ad9751f5bd5e24e9dbb0d5791e8d8f, type: 2}
+  - animationClip: {fileID: 7400000, guid: 67fb5316f4043944394dd664e2f84175, type: 2}
     animationEvents: []
     isReverseAnimation: 0
   - animationClip: {fileID: 7400000, guid: 95ad9751f5bd5e24e9dbb0d5791e8d8f, type: 2}
@@ -116,14 +116,16 @@ MonoBehaviour:
   - animationClip: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
     animationEvents: []
     isReverseAnimation: 1
-  - animationClip: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
+  - animationClip: {fileID: 7400000, guid: b923479c548733f4289aa653e57d02f9, type: 2}
     animationEvents: []
     isReverseAnimation: 0
   m_IkL: {fileID: 7274393323389952820}
   m_IkR: {fileID: 7274393322790326777}
   m_FpvOffset: {x: 0.027, y: -0.344, z: 0.213}
   m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
-  m_ChildBehaviors: []
+  m_ChildBehaviors:
+  - {fileID: 8594671410555395737}
+  - {fileID: 1040415276500994336}
   m_Crosshair: {fileID: 0}
 --- !u!1 &7274393323389952821
 GameObject:
@@ -134,6 +136,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7274393323389952820}
+  - component: {fileID: 1040415276500994336}
   m_Layer: 0
   m_Name: IK.L
   m_TagString: Untagged
@@ -155,6 +158,31 @@ Transform:
   m_Father: {fileID: 7274393323216527676}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1040415276500994336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7274393323389952821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  positionAtRest: {x: 0, y: 0, z: 0}
+  rotationAtRest: {x: 0, y: 0, z: 0}
+  weight: 0
+  m_ParentOne:
+    transform: {fileID: 7274393322790326777}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    weight: 0
+  m_ParentTwo:
+    transform: {fileID: 0}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    weight: 0
 --- !u!1001 &7274393324499895201
 PrefabInstance:
   m_ObjectHideFlags: 0

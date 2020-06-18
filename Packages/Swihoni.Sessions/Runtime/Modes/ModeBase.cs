@@ -11,7 +11,7 @@ namespace Swihoni.Sessions.Modes
     {
         public byte id;
 
-        internal abstract void SpawnPlayer(Container player);
+        internal abstract void SpawnPlayer(SessionBase session, Container player);
 
         internal virtual void KillPlayer(Container player)
         {
@@ -20,7 +20,7 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
         }
 
-        internal virtual void Modify(Container session, Container playerToModify, Container commands, uint durationUs)
+        internal virtual void Modify(SessionBase sesh, Container session, Container playerToModify, Container commands, uint durationUs)
         {
             if (playerToModify.Without(out HealthProperty health) || health.WithoutValue) return;
 

@@ -238,14 +238,14 @@ namespace Swihoni.Sessions
                         uint serverTick = receivedServerSession.Require<ServerStampComponent>().tick;
                         UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
                         ServerSessionContainer serverSession;
+                        var isMostRecent = true;
                         if (previousServerTick.WithValue)
                         {
                             var delta = checked((int) (serverTick - (long) previousServerTick));
                             if (delta > 0)
                             {
-                                // We skipped tick(s). Reserve spaces to fill later
                                 m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick;
-                                for (var i = 0; i < delta - 1; i++)
+                                for (var i = 0; i < delta - 1; i++) // We skipped tick(s). Reserve spaces to fill later
                                 {
                                     ServerSessionContainer reserved = m_SessionHistory.ClaimNext();
                                     reserved.CopyFrom(previousServerSession);
@@ -257,6 +257,7 @@ namespace Swihoni.Sessions
                                 // We received an old tick. Fill in history
                                 serverSession = m_SessionHistory.Get(delta);
                                 Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
+                                isMostRecent = false;
                             }
                         }
                         else serverSession = m_SessionHistory.ClaimNext();
@@ -266,6 +267,8 @@ namespace Swihoni.Sessions
                         Profiler.EndSample();
 
                         m_Injector.OnReceive(serverSession);
+
+                        if (!isMostRecent) return;
 
                         {
                             // TODO:refactor make class

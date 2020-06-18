@@ -139,7 +139,6 @@ namespace Swihoni.Sessions.Player.Modifiers
             Physics.RaycastNonAlloc(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
                                     float.PositiveInfinity, m_GroundMask);
             bool isGrounded = m_Controller.isGrounded || count == 2; // Always have 1 due to ourselves. 2 means we are touching something else
-            Debug.Log(count);
             bool withinAngleLimit = isGrounded && Vector3.Angle(m_ControllerListener.CachedControllerHit.normal, Vector3.up) < m_Controller.slopeLimit;
             if (endingVelocity.y < 0.0f && withinAngleLimit) // Stick to ground. Only on way down, if done on way up it negates jump
             {

@@ -10,13 +10,13 @@ namespace Swihoni.Sessions.Modes
     [CreateAssetMenu(fileName = "Deathmatch", menuName = "Session/Mode/Deathmatch", order = 0)]
     public class DeathmatchMode : ModeBase
     {
-        internal override void SpawnPlayer(Container player)
+        internal override void SpawnPlayer(SessionBase session, Container player)
         {
             // TODO:refactor zeroing
             if (player.With(out MoveComponent move))
             {
                 move.Zero();
-                move.position.Value = new Vector3 {y = 10.0f};
+                move.position.Value = session.Injector.GetSpawnPosition();
             }
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health))
@@ -45,9 +45,9 @@ namespace Swihoni.Sessions.Modes
                 respawnTimer.Value = 2_000_000u;
         }
 
-        internal override void Modify(Container session, Container playerToModify, Container commands, uint durationUs)
+        internal override void Modify(SessionBase sesh, Container session, Container playerToModify, Container commands, uint durationUs)
         {
-            base.Modify(session, playerToModify, commands, durationUs);
+            base.Modify(sesh, session, playerToModify, commands, durationUs);
 
             if (commands.Without(out InputFlagProperty inputs) || playerToModify.Without(out HealthProperty health) || health.WithoutValue)
                 return;
@@ -60,7 +60,7 @@ namespace Swihoni.Sessions.Modes
                 else
                 {
                     respawn.Value = 0u;
-                    SpawnPlayer(playerToModify);
+                    SpawnPlayer(sesh, playerToModify);
                 }
             }
         }

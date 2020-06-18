@@ -64,8 +64,10 @@ namespace Swihoni.Sessions
         protected internal virtual void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
 
         protected internal virtual void OnHandleNewConnection(ConnectionRequest request) => request.Accept();
-        
+
         protected internal virtual void Stop() { }
+        
+        protected internal virtual Vector3 GetSpawnPosition() => new Vector3 {y = 10.0f};
     }
 
     public abstract class SessionBase : IDisposable

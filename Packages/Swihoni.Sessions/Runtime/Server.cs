@@ -233,7 +233,7 @@ namespace Swihoni.Sessions
                         ModeBase mode = GetMode(serverSession);
                         serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
                         m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
-                        mode.Modify(serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);
+                        mode.Modify(this, serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
                 }
@@ -243,7 +243,7 @@ namespace Swihoni.Sessions
 
         protected void SetupNewPlayer(Container session, Container player)
         {
-            GetMode(session).SpawnPlayer(player);
+            GetMode(session).SpawnPlayer(this, player);
             // TODO:refactor zeroing
 
             player.ZeroIfWith<StatsComponent>();

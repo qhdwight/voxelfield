@@ -2,6 +2,7 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using Swihoni.Sessions;
 using Swihoni.Util.Math;
+using UnityEngine;
 using Voxel;
 using Voxel.Map;
 
@@ -28,5 +29,23 @@ namespace Compound.Session
         }
 
         protected override void Stop() => MapManager.Singleton.SetMap("Menu");
+
+        protected override Vector3 GetSpawnPosition()
+        {
+            int chunkSize = ChunkManager.Singleton.ChunkSize;
+            Dimension dimension = MapManager.Singleton.Map.Dimension;
+            var position = new Vector3
+            {
+                x = Random.Range(dimension.lowerBound.x * chunkSize, dimension.upperBound.x * chunkSize),
+                y = 1000.0f,
+                z = Random.Range(dimension.lowerBound.x * chunkSize, dimension.upperBound.x * chunkSize)
+            };
+            for (var _ = 0; _ < 32; _++)
+            {
+                if (Physics.Raycast(position, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
+                    return hit.point + new Vector3 {y = 0.1f};
+            }
+            return new Vector3 {y = 8.0f};
+        }
     }
 }
