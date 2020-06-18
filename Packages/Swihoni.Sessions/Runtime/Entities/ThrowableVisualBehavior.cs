@@ -1,3 +1,4 @@
+using Swihoni.Components;
 using Swihoni.Util;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace Swihoni.Sessions.Entities
         private ParticleSystem[] m_Particles;
         private uint m_LastThrownElapsedUs, m_LastContactElapsedUs;
 
-        internal override void Setup(EntityManager manager)
+        internal override void Setup(IBehaviorManager manager)
         {
             base.Setup(manager);
             m_Particles = GetComponentsInChildren<ParticleSystem>();
@@ -21,7 +22,7 @@ namespace Swihoni.Sessions.Entities
             m_LastContactElapsedUs = 0u;
         }
 
-        public override void Render(EntityContainer entity)
+        public override void Render(Container entity)
         {
             base.Render(entity);
 
@@ -49,7 +50,7 @@ namespace Swihoni.Sessions.Entities
             m_LastContactElapsedUs = throwable.contactElapsedUs;
         }
 
-        public override bool IsVisible(EntityContainer entity)
+        public override bool IsVisible(Container entity)
         {
             var throwable = entity.Require<ThrowableComponent>();
             return throwable.thrownElapsedUs < throwable.popTimeUs;

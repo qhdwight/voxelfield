@@ -10,33 +10,6 @@ namespace Swihoni.Sessions.Modes
     [CreateAssetMenu(fileName = "Deathmatch", menuName = "Session/Mode/Deathmatch", order = 0)]
     public class DeathmatchMode : ModeBase
     {
-        internal override void SpawnPlayer(SessionBase session, Container player)
-        {
-            // TODO:refactor zeroing
-            if (player.With(out MoveComponent move))
-            {
-                move.Zero();
-                move.position.Value = session.Injector.GetSpawnPosition();
-            }
-            player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health))
-                health.Value = 100;
-            player.ZeroIfWith<RespawnTimerProperty>();
-            player.ZeroIfWith<HitMarkerComponent>();
-            player.ZeroIfWith<DamageNotifierComponent>();
-            if (player.With(out InventoryComponent inventory))
-            {
-                inventory.Zero();
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.TestingRifle, 2);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shotgun, 3);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 4);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Grenade, 5);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Molotov, 6);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.C4, 7);
-            }
-        }
-
         internal override void KillPlayer(Container player)
         {
             base.KillPlayer(player);

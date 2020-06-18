@@ -3,6 +3,7 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Modes
@@ -11,7 +12,32 @@ namespace Swihoni.Sessions.Modes
     {
         public byte id;
 
-        internal abstract void SpawnPlayer(SessionBase session, Container player);
+        internal virtual void SpawnPlayer(SessionBase session, Container player)
+        {
+            // TODO:refactor zeroing
+            if (player.With(out MoveComponent move))
+            {
+                move.Zero();
+                move.position.Value = session.Injector.GetSpawnPosition();
+            }
+            player.ZeroIfWith<CameraComponent>();
+            if (player.With(out HealthProperty health))
+                health.Value = 100;
+            player.ZeroIfWith<RespawnTimerProperty>();
+            player.ZeroIfWith<HitMarkerComponent>();
+            player.ZeroIfWith<DamageNotifierComponent>();
+            if (player.With(out InventoryComponent inventory))
+            {
+                inventory.Zero();
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.TestingRifle, 2);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shotgun, 3);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 4);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Grenade, 5);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Molotov, 6);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.C4, 7);
+            }
+        }
 
         internal virtual void KillPlayer(Container player)
         {

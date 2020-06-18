@@ -81,6 +81,11 @@ namespace Swihoni.Components
     }
 
     [Serializable]
+    public class IdProperty : ByteProperty
+    {
+    }
+
+    [Serializable]
     public class BoolProperty : PropertyBase<bool>
     {
         public override bool ValueEquals(PropertyBase<bool> other) => other.Value == Value;

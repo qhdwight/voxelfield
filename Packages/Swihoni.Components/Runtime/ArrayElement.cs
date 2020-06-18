@@ -13,7 +13,7 @@ namespace Swihoni.Components
 
         public abstract Type GetElementType { get; }
 
-        public abstract object GetValue(int index);
+        public abstract ElementBase GetValue(int index);
     }
 
     [Serializable]
@@ -47,7 +47,7 @@ namespace Swihoni.Components
 
         IEnumerator IEnumerable.GetEnumerator() => m_Values.GetEnumerator();
 
-        public override object GetValue(int index) => this[index];
+        public override ElementBase GetValue(int index) => this[index];
 
         public override Type GetElementType => typeof(T);
     }

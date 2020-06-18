@@ -59,11 +59,11 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual void Release(SessionBase session, int playerId)
         {
-            Container player = session.GetPlayerFromId(playerId);
+            Container player = session.GetPlayerFromId(playerId); 
             if (player.Without<ServerTag>()) return;
 
             Ray ray = SessionBase.GetRayForPlayer(player);
-            EntityModifierBehavior modifier = session.EntityManager.ObtainModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
+            var modifier = (EntityModifierBehavior) session.EntityManager.ObtainModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
             if (modifier is ThrowableModifierBehavior throwableModifier)
             {
                 throwableModifier.Name = itemName;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using LiteNetLib;
+using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
@@ -66,14 +67,14 @@ namespace Swihoni.Sessions
         protected internal virtual void OnHandleNewConnection(ConnectionRequest request) => request.Accept();
 
         protected internal virtual void Stop() { }
-        
+
         protected internal virtual Vector3 GetSpawnPosition() => new Vector3 {y = 10.0f};
     }
 
     public abstract class SessionBase : IDisposable
     {
         internal const int MaxPlayers = 4;
-
+        
         private readonly GameObject m_PlayerVisualsPrefab;
         protected readonly SessionElements m_SessionElements;
         protected readonly SessionInjectorBase m_Injector;
@@ -82,12 +83,12 @@ namespace Swihoni.Sessions
         private long m_FixedUpdateTicks, m_RenderTicks;
         protected PlayerModifierDispatcherBehavior[] m_Modifier;
         protected IPlayerContainerRenderer[] m_Visuals;
-        internal EntityManager EntityManager { get; } = new EntityManager();
         private uint m_Tick;
         private Stopwatch m_Stopwatch;
         public bool ShouldInterruptCommands { get; private set; }
 
         public SessionInjectorBase Injector => m_Injector;
+        public EntityManager EntityManager { get; private set; }
         protected bool IsDisposed { get; private set; }
         public bool ShouldRender { get; set; } = true;
         public GameObject PlayerModifierPrefab { get; }
@@ -132,7 +133,9 @@ namespace Swihoni.Sessions
             m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, (_, visuals) => visuals.Setup(this));
             m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, (i, modifier) => modifier.Setup(this, i));
 
-            EntityManager.Setup(this);
+            EntityManager = EntityManager.Pool.Obtain();
+            EntityManager.Setup(this, EntityArrayElement.Count, "Entities");
+
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(true));
         }
 
@@ -291,6 +294,7 @@ namespace Swihoni.Sessions
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
+            EntityManager.Pool.Return(EntityManager);
             m_Injector.Stop();
             m_Stopwatch.Stop();
         }

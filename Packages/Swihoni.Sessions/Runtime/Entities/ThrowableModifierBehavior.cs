@@ -49,11 +49,11 @@ namespace Swihoni.Sessions.Entities
             m_LastElapsedUs = 0u;
         }
 
-        public override void Modify(SessionBase session, EntityContainer entity, uint timeUs, uint durationUs)
+        public override void Modify(SessionBase session, Container container, uint timeUs, uint durationUs)
         {
-            base.Modify(session, entity, timeUs, durationUs);
+            base.Modify(session, container, timeUs, durationUs);
 
-            var throwable = entity.Require<ThrowableComponent>();
+            var throwable = container.Require<ThrowableComponent>();
             throwable.thrownElapsedUs.Value += durationUs;
 
             bool poppedFromTime = throwable.thrownElapsedUs >= m_PopTimeUs && m_LastElapsedUs < throwable.popTimeUs;
@@ -92,7 +92,7 @@ namespace Swihoni.Sessions.Entities
             throwable.rotation.Value = t.rotation;
 
             if (throwable.popTimeUs != uint.MaxValue && throwable.thrownElapsedUs - throwable.popTimeUs > m_PopDurationUs)
-                entity.Zero();
+                container.Zero();
         }
 
         private void HurtNearby(SessionBase session, uint durationUs)

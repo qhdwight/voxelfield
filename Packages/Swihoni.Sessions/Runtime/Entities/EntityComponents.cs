@@ -6,7 +6,9 @@ namespace Swihoni.Sessions.Entities
     [Serializable]
     public class EntityArrayElement : ArrayElement<EntityContainer>
     {
-        public EntityArrayElement() : base(10) { }
+        public const int Count = 10;
+        
+        public EntityArrayElement() : base(Count) { }
     }
 
     [Serializable]
@@ -15,11 +17,10 @@ namespace Swihoni.Sessions.Entities
         public EntityContainer() { }
         public EntityContainer(params Type[] types) : base(types) { }
 
-        public EntityId id;
+        public IdProperty id;
     }
 
-    [Serializable]
-    public class EntityId : ByteProperty
+    public static class EntityId
     {
         public const byte None = 0, Grenade = None + 1, Molotov = Grenade + 1;
     }
