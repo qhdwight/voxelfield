@@ -15,7 +15,6 @@ namespace Compound.Session
 {
     public class SessionManager : SingletonBehavior<SessionManager>
     {
-        [SerializeField] private SessionGameObjectLinker m_LinkerReference;
         [SerializeField] private int m_ServerPort = 7777;
 
         private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);

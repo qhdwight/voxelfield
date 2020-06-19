@@ -41,17 +41,16 @@ namespace Swihoni.Sessions.Entities
     {
         private const byte None = 0;
 
-        private VisualBehaviorBase[] m_Visuals;
-        private Pool<ModifierBehaviorBase>[] m_ModifiersPool;
-        private Pool<VisualBehaviorBase>[] m_VisualsPool;
-        private ModifierBehaviorBase[] m_ModifierPrefabs;
+        protected readonly VisualBehaviorBase[] m_Visuals;
+        protected readonly ModifierBehaviorBase[] m_ModifierPrefabs;
+        private readonly Pool<VisualBehaviorBase>[] m_VisualsPool;
+        private readonly Pool<ModifierBehaviorBase>[] m_ModifiersPool;
         private SessionBase m_Session;
 
-        public ModifierBehaviorBase[] Modifiers { get; private set; }
+        public ModifierBehaviorBase[] Modifiers { get; }
 
-        public void Setup(SessionBase session, int count, string resourceFolder)
+        protected BehaviorManagerBase(int count, string resourceFolder)
         {
-            m_Session = session;
             m_ModifierPrefabs = Resources.LoadAll<ModifierBehaviorBase>(resourceFolder)
                                          .OrderBy(modifier => modifier.id).ToArray();
             m_ModifiersPool = m_ModifierPrefabs
@@ -71,6 +70,11 @@ namespace Swihoni.Sessions.Entities
                                       })).ToArray();
             m_Visuals = new VisualBehaviorBase[count];
             Modifiers = new ModifierBehaviorBase[count];
+        }
+        
+        public void Setup(SessionBase session)
+        {
+            m_Session = session;
         }
 
         private void ObtainVisual(int id, int index)
@@ -141,7 +145,7 @@ namespace Swihoni.Sessions.Entities
             for (var index = 0; index < elements.Length; index++)
             {
                 var container = (Container) elements.GetValue(index);
-                byte id = container.Require<IdProperty>();
+                var id = container.Require<IdProperty>();
                 if (id == None)
                     continue;
                 Modifiers[index].Modify(m_Session, container, timeUs, durationUs);

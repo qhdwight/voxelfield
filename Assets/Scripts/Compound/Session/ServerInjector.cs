@@ -32,7 +32,7 @@ namespace Compound.Session
             changedVoxels.SetTo(m_MasterChanges);
         }
 
-        protected override void OnSettingsTick(Container serverSession) => MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
+        protected override void OnSettingsTick(Container serverSession) => MapManager.Singleton.SetMap(DebugBehavior.Singleton.MapName);
 
         protected override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
     }

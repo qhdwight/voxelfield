@@ -20,16 +20,16 @@ namespace Swihoni.Sessions.Player
             m_ItemAnimator.Setup();
         }
 
-        public virtual void Evaluate(int playerId, Container player)
+        public virtual void Evaluate(SessionBase session, int playerId, Container player)
         {
             PlayerId = playerId;
-            if (m_BodyAnimator) m_BodyAnimator.Render(player, false);
+            if (m_BodyAnimator) m_BodyAnimator.Render(session, player, false);
             if (m_ItemAnimator) m_ItemAnimator.Render(player, false);
         }
 
         public void Dispose()
         {
-            m_BodyAnimator.Dispose();
+            m_BodyAnimator.SetActive(TODO);
             m_ItemAnimator.Dispose();
         }
     }

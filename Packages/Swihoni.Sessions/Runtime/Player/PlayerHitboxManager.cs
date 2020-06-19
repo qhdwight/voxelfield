@@ -15,10 +15,10 @@ namespace Swihoni.Sessions.Player
                 hitbox.Setup(this);
         }
 
-        public override void Evaluate(int playerId, Container player)
+        public override void Evaluate(SessionBase session, int playerId, Container player)
         {
             CurrentPlayer = player;
-            base.Evaluate(playerId, player);
+            base.Evaluate(session, playerId, player);
         }
     }
 }

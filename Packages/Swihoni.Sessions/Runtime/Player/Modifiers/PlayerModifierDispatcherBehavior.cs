@@ -1,10 +1,11 @@
 using System;
 using Swihoni.Components;
+using Swihoni.Sessions.Entities;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Modifiers
 {
-    public class PlayerModifierDispatcherBehavior : MonoBehaviour, IDisposable
+    public class PlayerModifierDispatcherBehavior : ModifierBehaviorBase, IDisposable
     {
         private PlayerModifierBehaviorBase[] m_Modifiers;
         private PlayerHitboxManager m_HitboxManager;
@@ -45,7 +46,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
         }
 
-        public void EvaluateHitboxes(int playerId, Container player) => m_HitboxManager.Evaluate(playerId, player);
+        public void EvaluateHitboxes(SessionBase session, int playerId, Container player) => m_HitboxManager.Evaluate(session, playerId, player);
 
         public void Dispose()
         {

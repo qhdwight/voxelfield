@@ -20,6 +20,7 @@ namespace Swihoni.Sessions.Modes
                 move.Zero();
                 move.position.Value = session.Injector.GetSpawnPosition();
             }
+            player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health))
                 health.Value = 100;

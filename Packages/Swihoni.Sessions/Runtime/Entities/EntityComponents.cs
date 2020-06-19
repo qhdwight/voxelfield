@@ -20,11 +20,6 @@ namespace Swihoni.Sessions.Entities
         public IdProperty id;
     }
 
-    public static class EntityId
-    {
-        public const byte None = 0, Grenade = None + 1, Molotov = Grenade + 1;
-    }
-
     [Serializable]
     public class ThrowableComponent : ComponentBase
     {

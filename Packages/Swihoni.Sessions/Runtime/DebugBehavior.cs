@@ -1,3 +1,4 @@
+using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -9,27 +10,31 @@ namespace Swihoni.Sessions
 {
     public class DebugBehavior : SingletonBehavior<DebugBehavior>
     {
-        public bool isDebugMode;
+        private static GameObject _visualizerPrefab;
 
         private StrictPool<PlayerVisualizerBehavior> m_Pool;
 
+        public bool isDebugMode;
         public UIntProperty RollbackOverrideUs;
-
         public TickRateProperty TickRate;
-
         public ModeIdProperty ModeId;
+        public string MapName;
 
-        public string mapName;
+        [RuntimeInitializeOnLoadMethod]
+        private static void Initialize() =>
+            _visualizerPrefab = Resources.LoadAll<GameObject>("Players").First(gameObject => gameObject.GetComponent<PlayerVisualizerBehavior>() != null);
 
         private static StrictPool<PlayerVisualizerBehavior> CreatePool() =>
             new StrictPool<PlayerVisualizerBehavior>(16, () =>
             {
-                GameObject instance = Instantiate(SessionGameObjectLinker.Singleton.GetPlayerVisualizerPrefab());
+                GameObject instance = Instantiate(_visualizerPrefab);
                 var visualizer = instance.GetComponent<PlayerVisualizerBehavior>();
                 visualizer.Setup();
                 instance.SetActive(false);
                 return visualizer;
             });
+
+        protected override void Awake() { base.Awake(); }
 
         private void OnApplicationQuit()
         {
@@ -46,7 +51,7 @@ namespace Swihoni.Sessions
             PlayerVisualizerBehavior visualizer = m_Pool.Obtain();
             visualizer.gameObject.SetActive(true);
             visualizer.Setup(session);
-            visualizer.Evaluate(playerId, player);
+            visualizer.Evaluate(session, playerId, player);
             visualizer.Renderer.material.color = color;
         }
     }

@@ -9,6 +9,7 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
+using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Interface;
@@ -32,7 +33,7 @@ namespace Swihoni.Sessions
             },
             playerElements = new List<Type>
             {
-                typeof(HealthProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent), typeof(RespawnTimerProperty),
+                typeof(HealthProperty), typeof(IdProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent), typeof(RespawnTimerProperty),
                 typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameElement)
             },
             commandElements = new List<Type>
@@ -47,7 +48,7 @@ namespace Swihoni.Sessions
         void Setup(SessionBase session);
 
         // TODO:refactor is local player should use If construct
-        void Render(int playerId, Container player, bool isLocalPlayer);
+        void Render(SessionBase session, int playerId, Container player, bool isLocalPlayer);
 
         Container GetRecentPlayer();
     }
@@ -74,42 +75,33 @@ namespace Swihoni.Sessions
     public abstract class SessionBase : IDisposable
     {
         internal const int MaxPlayers = 4;
-        
-        private readonly GameObject m_PlayerVisualsPrefab;
-        protected readonly SessionElements m_SessionElements;
+
         protected readonly SessionInjectorBase m_Injector;
         protected readonly DefaultPlayerHud m_PlayerHud;
         protected readonly InterfaceBehaviorBase[] m_Interfaces;
         private long m_FixedUpdateTicks, m_RenderTicks;
-        protected PlayerModifierDispatcherBehavior[] m_Modifier;
-        protected IPlayerContainerRenderer[] m_Visuals;
         private uint m_Tick;
         private Stopwatch m_Stopwatch;
         public bool ShouldInterruptCommands { get; private set; }
 
         public SessionInjectorBase Injector => m_Injector;
+        public PlayerManager PlayerManager { get; private set; }
         public EntityManager EntityManager { get; private set; }
         protected bool IsDisposed { get; private set; }
         public bool ShouldRender { get; set; } = true;
-        public GameObject PlayerModifierPrefab { get; }
 
         protected SessionBase(SessionElements sessionElements, SessionInjectorBase injector)
         {
-            m_SessionElements = sessionElements;
             m_Injector = injector;
             m_Injector.Manager = this;
-            PlayerModifierPrefab = SessionGameObjectLinker.Singleton.GetPlayerModifierPrefab();
-            m_PlayerVisualsPrefab = SessionGameObjectLinker.Singleton.GetPlayerVisualsPrefab();
             m_PlayerHud = UnityObject.FindObjectOfType<DefaultPlayerHud>();
             m_Interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
         }
 
         public void SetApplicationPauseState(bool isPaused)
         {
-            if (isPaused)
-                m_Stopwatch.Stop();
-            else
-                m_Stopwatch.Start();
+            if (isPaused) m_Stopwatch.Stop();
+            else m_Stopwatch.Start();
         }
 
         private T[] Instantiate<T>(GameObject prefab, int length, Action<int, T> setup)
@@ -130,11 +122,11 @@ namespace Swihoni.Sessions
 
             m_Stopwatch = Stopwatch.StartNew();
 
-            m_Visuals = Instantiate<IPlayerContainerRenderer>(m_PlayerVisualsPrefab, MaxPlayers, (_, visuals) => visuals.Setup(this));
-            m_Modifier = Instantiate<PlayerModifierDispatcherBehavior>(PlayerModifierPrefab, MaxPlayers, (i, modifier) => modifier.Setup(this, i));
+            PlayerManager = PlayerManager.Pool.Obtain();
+            PlayerManager.Setup(this);
 
             EntityManager = EntityManager.Pool.Obtain();
-            EntityManager.Setup(this, EntityArrayElement.Count, "Entities");
+            EntityManager.Setup(this);
 
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(true));
         }
@@ -289,8 +281,7 @@ namespace Swihoni.Sessions
         public virtual void Dispose()
         {
             IsDisposed = true;
-            foreach (PlayerModifierDispatcherBehavior modifier in m_Modifier) modifier.Dispose();
-            foreach (IPlayerContainerRenderer visual in m_Visuals) visual.Dispose();
+            PlayerManager.Pool.Return(PlayerManager);
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;

@@ -13,7 +13,7 @@ namespace Compound.Session
         private readonly Pool<VoxelChangeTransaction> m_Transactions = new Pool<VoxelChangeTransaction>(1, () => new VoxelChangeTransaction());
         private readonly UIntProperty m_Pointer = new UIntProperty();
 
-        protected override void OnSettingsTick(Container session) => MapManager.Singleton.SetMap(DebugBehavior.Singleton.mapName);
+        protected override void OnSettingsTick(Container session) => MapManager.Singleton.SetMap(DebugBehavior.Singleton.MapName);
 
         protected internal override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true) { }
 

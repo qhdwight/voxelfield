@@ -2,6 +2,7 @@ using System.Linq;
 using System.Net;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Swihoni.Sessions
@@ -26,7 +27,7 @@ namespace Swihoni.Sessions
             m_HostCommands.Require<ServerStampComponent>().Reset();
         }
 
-        private void ReadLocalInputs(Container commandsToFill) => m_Modifier[HostPlayerId].ModifyCommands(this, commandsToFill);
+        private void ReadLocalInputs(Container commandsToFill) => PlayerManager.GetModifier(HostPlayerId).ModifyCommands(this, commandsToFill);
 
         protected override void Input(uint timeUs, uint deltaUs)
         {
@@ -35,8 +36,9 @@ namespace Swihoni.Sessions
                 return;
 
             ReadLocalInputs(m_HostCommands);
-            m_Modifier[HostPlayerId].ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
-            m_Modifier[HostPlayerId].ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+            PlayerModifierDispatcherBehavior hostModifier = PlayerManager.GetModifier(HostPlayerId);
+            hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+            hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
             GetMode(session).Modify(this, session, m_HostCommands, m_HostCommands, deltaUs);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.timeUs.Value = timeUs;
@@ -69,7 +71,7 @@ namespace Swihoni.Sessions
                     uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
                     RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayers[playerId], m_SessionHistory.Size, GetInHistory);
                 }
-                m_Visuals[playerId].Render(playerId, renderPlayers[playerId], playerId == localPlayer);
+                PlayerManager.GetVisuals(playerId).Render(this, playerId, renderPlayers[playerId], playerId == localPlayer);
             }
             m_PlayerHud.Render(renderPlayers[HostPlayerId]);
             RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
@@ -88,8 +90,8 @@ namespace Swihoni.Sessions
         {
             if (playerId == HostPlayerId)
             {
-                for (var i = 0; i < m_Modifier.Length; i++)
-                    m_Modifier[i].EvaluateHitboxes(i, m_Visuals[i].GetRecentPlayer());
+                for (var i = 0; i < PlayerManager.Modifiers.Length; i++)
+                    PlayerManager.GetModifier(i).EvaluateHitboxes(this, i, PlayerManager.GetVisuals(i).GetRecentPlayer());
             }
             else base.RollbackHitboxes(playerId);
         }

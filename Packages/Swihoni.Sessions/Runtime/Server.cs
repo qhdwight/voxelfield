@@ -232,7 +232,7 @@ namespace Swihoni.Sessions
                         }
                         ModeBase mode = GetMode(serverSession);
                         serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
-                        m_Modifier[clientId].ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
+                        PlayerManager.GetModifier(clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
                         mode.Modify(this, serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
@@ -258,7 +258,7 @@ namespace Swihoni.Sessions
         protected override void RollbackHitboxes(int playerId)
         {
             uint latencyUs = GetPlayerFromId(playerId).Require<ServerPingComponent>().latencyUs;
-            for (var i = 0; i < m_Modifier.Length; i++)
+            for (var i = 0; i < PlayerManager.Modifiers.Length; i++)
             {
                 int modifierId = i; // Copy for use in lambda
                 Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(modifierId);
@@ -276,7 +276,7 @@ namespace Swihoni.Sessions
                     RenderInterpolatedPlayer<ServerStampComponent>(timeUs - rollbackUs, rollbackPlayer,
                                                                    m_SessionHistory.Size, GetPlayerInHistory);
                 }
-                m_Modifier[modifierId].EvaluateHitboxes(modifierId, rollbackPlayer);
+                PlayerManager.GetModifier(modifierId).EvaluateHitboxes(this, modifierId, rollbackPlayer);
 
                 if (modifierId == 0) DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }

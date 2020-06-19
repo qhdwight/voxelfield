@@ -58,7 +58,7 @@ namespace Swihoni.Sessions
             Dispose();
         }
 
-        private void UpdateInputs(int localPlayerId) => m_Modifier[localPlayerId].ModifyCommands(this, m_CommandHistory.Peek());
+        private void UpdateInputs(int localPlayerId) => PlayerManager.GetModifier(localPlayerId).ModifyCommands(this, m_CommandHistory.Peek());
 
         protected override void Input(uint timeUs, uint deltaUs)
         {
@@ -66,7 +66,7 @@ namespace Swihoni.Sessions
                 return;
 
             UpdateInputs(localPlayerId);
-            m_Modifier[localPlayerId].ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), m_CommandHistory.Peek(), deltaUs);
+            PlayerManager.GetModifier(localPlayerId).ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), m_CommandHistory.Peek(), deltaUs);
         }
 
         protected override void Render(uint renderTimeUs)
@@ -99,7 +99,7 @@ namespace Swihoni.Sessions
                     uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
                     RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
-                m_Visuals[playerId].Render(playerId, renderPlayer, isLocalPlayer);
+                PlayerManager.GetVisuals(playerId).Render(this, playerId, renderPlayer, isLocalPlayer);
                 if (isLocalPlayer) m_PlayerHud.Render(renderPlayers[localPlayerId]);
             }
             RenderEntities<LocalizedClientStampComponent>(renderTimeUs, tickRate.TickIntervalUs * 2u);
@@ -159,7 +159,7 @@ namespace Swihoni.Sessions
                 commands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
                 predictedPlayer.MergeFrom(commands);
                 if (predictedStamp.durationUs.WithValue)
-                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.durationUs);
+                    PlayerManager.GetModifier(localPlayerId).ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.durationUs);
             }
         }
 
@@ -218,7 +218,7 @@ namespace Swihoni.Sessions
                     ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
                     pastPredictedPlayer.CopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
                     pastPredictedPlayer.Require<ClientStampComponent>().CopyFrom(stamp);
-                    m_Modifier[localPlayerId].ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().durationUs);
+                    PlayerManager.GetModifier(localPlayerId).ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().durationUs);
                 }
                 break;
             }
@@ -304,7 +304,7 @@ namespace Swihoni.Sessions
                             else localizedServerTimeUs.Value = timeUs;
 
                             GetLocalPlayerId(serverSession, out int localPlayerId);
-                            if (playerId != localPlayerId) m_Modifier[playerId].Synchronize(serverPlayer);
+                            if (playerId != localPlayerId) PlayerManager.GetModifier(playerId).Synchronize(serverPlayer);
 
                             long delta = localizedServerTimeUs.Value - (long) timeUs;
                             if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
@@ -356,7 +356,7 @@ namespace Swihoni.Sessions
         protected override void RollbackHitboxes(int playerId)
         {
             if (!DebugBehavior.Singleton.isDebugMode) return;
-            for (var i = 0; i < m_Modifier.Length; i++)
+            for (var i = 0; i < PlayerManager.Modifiers.Length; i++)
             {
                 // int copiedPlayerId = i;
                 // Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(copiedPlayerId);
@@ -369,7 +369,7 @@ namespace Swihoni.Sessions
                 // PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
                 // modifier.EvaluateHitboxes(i, render);
 
-                Container recentPlayer = m_Visuals[i].GetRecentPlayer();
+                Container recentPlayer = PlayerManager.GetVisuals(i).GetRecentPlayer();
 
                 if (i == 0 && recentPlayer != null) SendDebug(recentPlayer);
             }

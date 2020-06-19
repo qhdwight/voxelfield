@@ -1,4 +1,3 @@
-using System;
 using Input;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
@@ -38,13 +37,13 @@ namespace Swihoni.Sessions.Player.Modifiers
         [SerializeField] private float m_WalkStateDuration = 1.0f, m_CrouchDuration = 0.3f;
         [SerializeField] private LayerMask m_GroundMask = default;
 
-        private CharacterController m_Controller, m_PrefabController;
+        private CharacterController m_Controller;
         private CharacterControllerListener m_ControllerListener;
+        private float m_ControllerHeight;
+        private Vector3 m_ControllerCenter;
 
         public LayerMask GroundMask => m_GroundMask;
         public float MaxSpeed => m_RunSpeed * m_SprintMultiplier;
-        public float WalkStateDuration => m_WalkStateDuration;
-        public float CrouchDuration => m_CrouchDuration;
 
         internal override void Setup(SessionBase session)
         {
@@ -52,7 +51,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_Controller = m_MoveTransform.GetComponent<CharacterController>();
             m_ControllerListener = m_MoveTransform.GetComponent<CharacterControllerListener>();
             m_Controller.enabled = false;
-            m_PrefabController = session.PlayerModifierPrefab.GetComponentInChildren<CharacterController>();
+            m_ControllerHeight = m_Controller.height;
+            m_ControllerCenter = m_Controller.center;
         }
 
         internal override void SynchronizeBehavior(Container player)
@@ -63,8 +63,8 @@ namespace Swihoni.Sessions.Player.Modifiers
                 m_MoveTransform.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
             m_Controller.enabled = player.Without(out HealthProperty health) || health.WithValue && health.IsAlive;
             float weight = Mathf.Lerp(0.7f, 1.0f, 1.0f - move.normalizedCrouch);
-            m_Controller.height = m_PrefabController.height * weight;
-            m_Controller.center = m_PrefabController.center * weight;
+            m_Controller.height = m_ControllerHeight * weight;
+            m_Controller.center = m_ControllerCenter * weight;
         }
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)

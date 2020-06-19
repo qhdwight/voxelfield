@@ -1,26 +1,26 @@
 using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Visualization
 {
-    public abstract class PlayerVisualsBehaviorBase : MonoBehaviour, IDisposable
+    public abstract class PlayerVisualsBehaviorBase : MonoBehaviour
     {
         internal virtual void Setup(SessionBase session) { }
 
         public virtual void Dispose() { }
 
-        public abstract void Render(Container player, bool isLocalPlayer);
+        public abstract void Render(SessionBase session, Container player, bool isLocalPlayer);
     }
 
     [SelectionBase]
-    public class PlayerVisualsDispatcherBehavior : MonoBehaviour, IPlayerContainerRenderer
+    public class PlayerVisualsDispatcherBehavior : VisualBehaviorBase, IPlayerContainerRenderer
     {
         [SerializeField] private float m_UprightCameraHeight = 1.8f, m_CrouchedCameraHeight = 1.26f;
         [SerializeField] private AudioSource m_DamageNotifierSource = default;
-        private float m_LastDamageNotifierElapsed;
 
         private AudioListener m_AudioListener;
         private Camera m_Camera;
@@ -39,7 +39,7 @@ namespace Swihoni.Sessions.Player.Visualization
             SetVisible(false, false);
         }
 
-        public void Render(int playerId, Container player, bool isLocalPlayer)
+        public void Render(SessionBase session, int playerId, Container player, bool isLocalPlayer)
         {
             bool usesHealth = player.With(out HealthProperty health),
                  usesDamageNotifier = player.With(out DamageNotifierComponent damageNotifier),
@@ -61,13 +61,12 @@ namespace Swihoni.Sessions.Player.Visualization
                         //     m_DamageNotifierSource.PlayOneShot(m_DamageNotifierSource.clip);
                     }
                     else m_DamageNotifierSource.Stop();
-                    m_LastDamageNotifierElapsed = damageNotifier.elapsedUs;
                 }
             }
 
             SetVisible(isVisible, isLocalPlayer);
 
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(player, isLocalPlayer);
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(session, player, isLocalPlayer);
 
             m_RecentRender = player;
         }

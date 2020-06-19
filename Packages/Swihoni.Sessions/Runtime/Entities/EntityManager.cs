@@ -9,10 +9,11 @@ namespace Swihoni.Sessions.Entities
 
         private static void UsageChanged(EntityManager manager, bool isActive)
         {
-            if (!isActive)
-                manager.SetAllInactive();
+            if (!isActive) manager.SetAllInactive();
         }
 
+        private EntityManager() : base(EntityArrayElement.Count, "Entities") { }
+        
         public override ArrayElementBase ExtractArray(Container session) => session.Require<EntityArrayElement>();
     }
 }

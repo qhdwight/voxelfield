@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Swihoni.Components;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util;
@@ -34,7 +35,6 @@ namespace Swihoni.Sessions.Player.Visualization
         private PlayableGraph m_Graph;
         private AnimationClipPlayable[] m_Animations;
         private AnimationMixerPlayable m_Mixer;
-        private PlayerMovement m_PrefabPlayerMovement;
         private float m_LastNormalizedTime;
 
         internal override void Setup(SessionBase session)
@@ -43,7 +43,6 @@ namespace Swihoni.Sessions.Player.Visualization
 
             base.Setup(session);
 
-            m_PrefabPlayerMovement = session.PlayerModifierPrefab.GetComponent<PlayerMovement>();
             m_Graph = PlayableGraph.Create("Body Animator");
             m_Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
 
@@ -64,8 +63,13 @@ namespace Swihoni.Sessions.Player.Visualization
             m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();
         }
 
-        public override void Render(Container player, bool isLocalPlayer)
+        private PlayerMovement m_PrefabPlayerMovement; // TODO:refactor make parameter
+
+        public override void Render(SessionBase session, Container player, bool isLocalPlayer)
         {
+            ModifierBehaviorBase modifierPrefab = session.PlayerManager.GetModifierPrefab(player.Require<IdProperty>());
+            m_PrefabPlayerMovement = modifierPrefab.GetComponentInChildren<PlayerMovement>();
+
             bool usesHealth = player.With(out HealthProperty health),
                  isVisible = !usesHealth || health.WithValue;
 
@@ -186,9 +190,9 @@ namespace Swihoni.Sessions.Player.Visualization
             m_LastNormalizedTime = move.normalizedMove;
         }
 
-        public override void Dispose()
+        public override void SetActive(bool isActive)
         {
-            base.Dispose();
+            base.SetActive(isActive);
             if (m_Graph.IsValid()) m_Graph.Destroy();
         }
     }
