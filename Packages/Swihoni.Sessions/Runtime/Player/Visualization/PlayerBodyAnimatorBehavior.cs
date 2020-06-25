@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Swihoni.Components;
-using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util;
@@ -22,7 +21,7 @@ namespace Swihoni.Sessions.Player.Visualization
     public class PlayerBodyAnimatorBehavior : PlayerVisualsBehaviorBase
     {
         [SerializeField] private Transform m_Head = default;
-        [SerializeField] private Renderer[] m_FpvRenders = default;
+        [SerializeField] private Renderer[] m_TpvRenders = default;
         [SerializeField] private PlayerVisualBodyState[] m_StatusVisualProperties = default;
         [SerializeField] private AudioSource m_FootstepSource = default;
         [SerializeField] private AudioClip[] m_BrushClips = default;
@@ -37,11 +36,11 @@ namespace Swihoni.Sessions.Player.Visualization
         private AnimationMixerPlayable m_Mixer;
         private float m_LastNormalizedTime;
 
-        internal override void Setup(SessionBase session)
+        internal override void Setup()
         {
             if (m_Graph.IsValid()) return;
 
-            base.Setup(session);
+            base.Setup();
 
             m_Graph = PlayableGraph.Create("Body Animator");
             m_Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
@@ -75,7 +74,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
             bool isInFpv = isLocalPlayer && (!usesHealth || health.WithValue && health.IsAlive);
 
-            foreach (Renderer render in m_FpvRenders)
+            foreach (Renderer render in m_TpvRenders)
             {
                 render.enabled = isVisible;
                 render.shadowCastingMode = isInFpv ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
@@ -104,6 +103,14 @@ namespace Swihoni.Sessions.Player.Visualization
             }
 
             m_Animator.enabled = isAnimatorEnabled;
+        }
+
+        public override void SetActive(bool isActive)
+        {
+            if (!isActive)
+            {
+                foreach (Renderer render in m_TpvRenders) render.enabled = false;
+            }
         }
 
         private void SetRagdollEnabled(bool isActive)

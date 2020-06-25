@@ -432,6 +432,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af05f6cc30ae4a76af4492c6fae6676d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: 1
   m_UprightCameraHeight: 1.8
   m_CrouchedCameraHeight: 1.26
   m_DamageNotifierSource: {fileID: 680046085491398468}

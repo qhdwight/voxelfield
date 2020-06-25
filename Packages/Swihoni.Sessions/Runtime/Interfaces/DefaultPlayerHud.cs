@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace Swihoni.Sessions.Interfaces
 {
-    public abstract class DefaultPlayerHud : InterfaceBehaviorBase
+    public abstract class DefaultPlayerHud : SessionInterfaceBehavior
     {
         [SerializeField] private BufferedTextGui m_HealthText = default, m_AmmoText = default;
         [SerializeField] private Image m_Crosshair = default, m_HitMarker = default;
@@ -31,6 +31,8 @@ namespace Swihoni.Sessions.Interfaces
             m_DefaultHitMarkerColor = m_HitMarker.color;
             m_DefaultCrosshair = m_Crosshair.sprite;
         }
+
+        public override void Render(SessionBase session, Container sessionContainer) { }
 
         public void Render(Container localPlayer)
         {

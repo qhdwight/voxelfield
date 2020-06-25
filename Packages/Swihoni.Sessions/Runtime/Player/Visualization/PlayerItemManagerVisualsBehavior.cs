@@ -7,7 +7,7 @@ namespace Swihoni.Sessions.Player.Visualization
     {
         private PlayerItemAnimatorBehavior[] m_ItemAnimators;
 
-        internal override void Setup(SessionBase session)
+        internal override void Setup()
         {
             m_ItemAnimators = GetComponentsInChildren<PlayerItemAnimatorBehavior>(true);
             ForEachItemAnimator(animator => animator.Setup());
@@ -16,6 +16,8 @@ namespace Swihoni.Sessions.Player.Visualization
         public override void Render(SessionBase session, Container player, bool isLocalPlayer) => ForEachItemAnimator(animator => animator.Render(player, isLocalPlayer));
 
         public override void Dispose() => ForEachItemAnimator(animator => animator.Dispose());
+
+        public override void SetActive(bool isActive) => ForEachItemAnimator(animator => animator.SetActive(isActive));
 
         private void ForEachItemAnimator(Action<PlayerItemAnimatorBehavior> action)
         {

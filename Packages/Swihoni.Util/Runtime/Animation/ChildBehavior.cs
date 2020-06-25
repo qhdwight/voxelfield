@@ -9,9 +9,11 @@ namespace Swihoni.Util.Animation
         [Serializable]
         private struct Parent
         {
+#pragma warning disable 0649
             public Transform transform;
             public Vector3 positionOffset, rotationOffset;
             public float weight;
+#pragma warning restore 0649
 
             public Quaternion QuaternionRotationOffset => Quaternion.Euler(rotationOffset);
         }

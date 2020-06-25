@@ -44,7 +44,7 @@ namespace Compound.Session
         }
 
         public override bool Equals(PropertyBase other) => throw new NotImplementedException();
-        
+
         public override void Clear() => m_ChangeMap.Clear();
         public override void Zero() => m_ChangeMap.Clear();
         public override void SetFromIfWith(PropertyBase other) => SetTo(other);

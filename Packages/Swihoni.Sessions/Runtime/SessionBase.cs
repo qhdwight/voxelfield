@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using LiteNetLib;
-using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
@@ -12,6 +11,7 @@ using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
+using Swihoni.Sessions.Player.Visualization;
 using Swihoni.Util.Interface;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -43,16 +43,6 @@ namespace Swihoni.Sessions
         };
     }
 
-    public interface IPlayerContainerRenderer : IDisposable
-    {
-        void Setup(SessionBase session);
-
-        // TODO:refactor is local player should use If construct
-        void Render(SessionBase session, int playerId, Container player, bool isLocalPlayer);
-
-        Container GetRecentPlayer();
-    }
-
     public class SessionInjectorBase
     {
         protected internal SessionBase Manager { get; set; }
@@ -74,7 +64,7 @@ namespace Swihoni.Sessions
 
     public abstract class SessionBase : IDisposable
     {
-        internal const int MaxPlayers = 4;
+        public const int MaxPlayers = 4;
 
         protected readonly SessionInjectorBase m_Injector;
         protected readonly DefaultPlayerHud m_PlayerHud;
@@ -122,14 +112,23 @@ namespace Swihoni.Sessions
 
             m_Stopwatch = Stopwatch.StartNew();
 
-            PlayerManager = PlayerManager.Pool.Obtain();
+            PlayerManager = PlayerManager.pool.Obtain();
             PlayerManager.Setup(this);
 
-            EntityManager = EntityManager.Pool.Obtain();
+            EntityManager = EntityManager.pool.Obtain();
             EntityManager.Setup(this);
 
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(true));
         }
+
+        protected PlayerModifierDispatcherBehavior GetPlayerModifier(Container player, int index)
+        {
+            var modifier = (PlayerModifierDispatcherBehavior) PlayerManager.GetModifierAtIndex(player, index, out bool isNewlyObtained);
+            if (isNewlyObtained) modifier.Setup(this, index);
+            return modifier;
+        }
+
+        protected PlayerVisualsDispatcherBehavior GetPlayerVisuals(Container player, int index) => (PlayerVisualsDispatcherBehavior) PlayerManager.GetVisualAtIndex(player, index);
 
         private void CheckDisposed()
         {
@@ -269,7 +268,7 @@ namespace Swihoni.Sessions
             return ray;
         }
 
-        public virtual Container GetPlayerFromId(int playerId) { throw new NotImplementedException(); }
+        public virtual Container GetPlayerFromId(int playerId, Container session = null) { throw new NotImplementedException(); }
 
         protected void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)
         {
@@ -281,11 +280,11 @@ namespace Swihoni.Sessions
         public virtual void Dispose()
         {
             IsDisposed = true;
-            PlayerManager.Pool.Return(PlayerManager);
+            PlayerManager.pool.Return(PlayerManager);
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
-            EntityManager.Pool.Return(EntityManager);
+            EntityManager.pool.Return(EntityManager);
             m_Injector.Stop();
             m_Stopwatch.Stop();
         }

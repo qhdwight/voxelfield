@@ -1,11 +1,22 @@
 using Swihoni.Collections;
 using Swihoni.Components;
+using UnityEngine;
 
 namespace Swihoni.Sessions.Entities
 {
     public class EntityManager : BehaviorManagerBase
     {
-        internal static readonly Pool<EntityManager> Pool = new Pool<EntityManager>(1, () => new EntityManager(), UsageChanged);
+        internal static Pool<EntityManager> pool;
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void Initialize()
+        {
+            pool = new Pool<EntityManager>(1, () => new EntityManager(), UsageChanged);
+            Application.quitting -= Cleanup;
+            Application.quitting += Cleanup;
+        }
+
+        private static void Cleanup() => pool.Dispose();
 
         private static void UsageChanged(EntityManager manager, bool isActive)
         {
@@ -13,7 +24,7 @@ namespace Swihoni.Sessions.Entities
         }
 
         private EntityManager() : base(EntityArrayElement.Count, "Entities") { }
-        
+
         public override ArrayElementBase ExtractArray(Container session) => session.Require<EntityArrayElement>();
     }
 }

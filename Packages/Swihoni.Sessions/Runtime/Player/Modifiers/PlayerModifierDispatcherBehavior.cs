@@ -1,6 +1,5 @@
 using System;
 using Swihoni.Components;
-using Swihoni.Sessions.Entities;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Modifiers
@@ -32,6 +31,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public void ModifyTrusted(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs)
         {
             if (session.IsPaused) return;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.T)) playerToModify.Require<IdProperty>().Value = 0;
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(session, playerId, playerToModify, commands, durationUs);
         }
 
@@ -42,7 +42,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public void ModifyCommands(SessionBase session, Container commandsToModify)
         {
-            if (m_Session.ShouldInterruptCommands) return;
+            if (session.ShouldInterruptCommands) return;
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
         }
 

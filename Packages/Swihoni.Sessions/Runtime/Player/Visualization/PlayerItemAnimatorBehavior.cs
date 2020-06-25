@@ -185,5 +185,14 @@ namespace Swihoni.Sessions.Player.Visualization
         }
 
         public void Dispose() => m_Graph.Destroy();
+
+        public void SetActive(bool isActive)
+        {
+            if (!isActive)
+            {
+                if (m_FpvArmsRenderer) m_FpvArmsRenderer.enabled = false;
+                if (m_ItemVisual) m_ItemVisual.SetRenderingMode(false);
+            }
+        }
     }
 }

@@ -8,6 +8,8 @@ using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Modifiers;
+using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -58,18 +60,16 @@ namespace Swihoni.Sessions
             Dispose();
         }
 
-        private void UpdateInputs(int localPlayerId)
-        {
-            PlayerManager.GetModifier(localPlayerId).ModifyCommands(this, m_CommandHistory.Peek());
-        }
+        private void UpdateInputs(Container player, int localPlayerId) => GetPlayerModifier(player, localPlayerId).ModifyCommands(this, m_CommandHistory.Peek());
 
         protected override void Input(uint timeUs, uint deltaUs)
         {
-            if (!GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
+            Container latestSession = GetLatestSession();
+            if (!GetLocalPlayerId(latestSession, out int localPlayerId))
                 return;
-
-            UpdateInputs(localPlayerId);
-            PlayerManager.GetModifier(localPlayerId).ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), m_CommandHistory.Peek(), deltaUs);
+            Container player = GetPlayerFromId(localPlayerId, latestSession);
+            UpdateInputs(player, localPlayerId);
+            GetPlayerModifier(player, localPlayerId).ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), m_CommandHistory.Peek(), deltaUs);
         }
 
         protected override void Render(uint renderTimeUs)
@@ -102,7 +102,8 @@ namespace Swihoni.Sessions
                     uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
                     RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
-                PlayerManager.GetVisuals(playerId).Render(this, playerId, renderPlayer, isLocalPlayer);
+                PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
+                if (visuals) visuals.Render(this, playerId, renderPlayer, isLocalPlayer);
                 if (isLocalPlayer) m_PlayerHud.Render(renderPlayers[localPlayerId]);
             }
             RenderEntities<LocalizedClientStampComponent>(renderTimeUs, tickRate.TickIntervalUs * 2u);
@@ -115,7 +116,7 @@ namespace Swihoni.Sessions
             if (GetLocalPlayerId(latestSession, out int localPlayerId))
             {
                 m_Injector.OnSettingsTick(latestSession);
-                UpdateInputs(localPlayerId);
+                UpdateInputs(GetPlayerFromId(localPlayerId, latestSession), localPlayerId);
                 Predict(tick, timeUs, localPlayerId);
             }
             Profiler.EndSample();
@@ -162,7 +163,10 @@ namespace Swihoni.Sessions
                 commands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
                 predictedPlayer.MergeFrom(commands);
                 if (predictedStamp.durationUs.WithValue)
-                    PlayerManager.GetModifier(localPlayerId).ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.durationUs);
+                {
+                    PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
+                    if (modifier) modifier.ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.durationUs);
+                }
             }
         }
 
@@ -221,7 +225,15 @@ namespace Swihoni.Sessions
                     ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
                     pastPredictedPlayer.CopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
                     pastPredictedPlayer.Require<ClientStampComponent>().CopyFrom(stamp);
-                    PlayerManager.GetModifier(localPlayerId).ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().durationUs);
+                    PlayerModifierDispatcherBehavior localPlayerModifier = GetPlayerModifier(pastPredictedPlayer, localPlayerId);
+                    if (commands.Require<ClientStampComponent>().durationUs.WithValue)
+                    {
+                        localPlayerModifier.ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().durationUs);
+                    }
+                    else
+                    {
+                        Debug.LogError("Should not happen");
+                    }
                 }
                 break;
             }
@@ -271,7 +283,11 @@ namespace Swihoni.Sessions
 
                         m_Injector.OnReceive(serverSession);
 
-                        if (!isMostRecent) return;
+                        if (!isMostRecent)
+                        {
+                            Debug.LogWarning("Is not most recent!");
+                            return;
+                        }
 
                         {
                             // TODO:refactor make class
@@ -296,18 +312,24 @@ namespace Swihoni.Sessions
                         {
                             Container serverPlayer = serverPlayers[playerId];
                             var healthProperty = serverPlayer.Require<HealthProperty>();
-                            if (healthProperty.WithoutValue || healthProperty.IsDead) continue;
+                            UIntProperty localizedServerTimeUs = serverPlayer.Require<LocalizedClientStampComponent>().timeUs;
+                            if (healthProperty.WithoutValue)
+                                localizedServerTimeUs.Clear(); // Is something a client only has so we have to clear it
+                            if (healthProperty.WithoutValue || healthProperty.IsDead)
+                                continue;
                             /* Valid player */
 
-                            UIntProperty serverTimeUs = serverPlayer.Require<ServerStampComponent>().timeUs,
-                                         localizedServerTimeUs = serverPlayer.Require<LocalizedClientStampComponent>().timeUs;
+                            UIntProperty serverTimeUs = serverPlayer.Require<ServerStampComponent>().timeUs;
 
                             if (localizedServerTimeUs.WithValue)
-                                localizedServerTimeUs.Value += checked(serverTimeUs - previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs);
+                            {
+                                uint previousTimeUs = previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs;
+                                localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
+                            }
                             else localizedServerTimeUs.Value = timeUs;
 
                             GetLocalPlayerId(serverSession, out int localPlayerId);
-                            if (playerId != localPlayerId) PlayerManager.GetModifier(playerId).Synchronize(serverPlayer);
+                            if (playerId != localPlayerId) GetPlayerModifier(serverPlayer, playerId).Synchronize(serverPlayer);
 
                             long delta = localizedServerTimeUs.Value - (long) timeUs;
                             if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
@@ -359,7 +381,7 @@ namespace Swihoni.Sessions
         protected override void RollbackHitboxes(int playerId)
         {
             if (!DebugBehavior.Singleton.isDebugMode) return;
-            for (var i = 0; i < PlayerManager.Modifiers.Length; i++)
+            for (var i = 0; i < MaxPlayers; i++)
             {
                 // int copiedPlayerId = i;
                 // Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(copiedPlayerId);
@@ -372,7 +394,7 @@ namespace Swihoni.Sessions
                 // PlayerModifierDispatcherBehavior modifier = m_Modifier[i];
                 // modifier.EvaluateHitboxes(i, render);
 
-                Container recentPlayer = PlayerManager.GetVisuals(i).GetRecentPlayer();
+                Container recentPlayer = ((PlayerVisualsDispatcherBehavior) PlayerManager.UnsafeVisuals[i]).GetRecentPlayer();
 
                 if (i == 0 && recentPlayer != null) SendDebug(recentPlayer);
             }

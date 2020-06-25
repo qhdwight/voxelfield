@@ -3,6 +3,7 @@ using System.Net;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Modifiers;
+using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
 
 namespace Swihoni.Sessions
@@ -27,18 +28,19 @@ namespace Swihoni.Sessions
             m_HostCommands.Require<ServerStampComponent>().Reset();
         }
 
-        private void ReadLocalInputs(Container commandsToFill) => PlayerManager.GetModifier(HostPlayerId).ModifyCommands(this, commandsToFill);
-
         protected override void Input(uint timeUs, uint deltaUs)
         {
             Container session = GetLatestSession();
             if (session.Without(out ServerStampComponent serverStamp) || serverStamp.tick.WithoutValue)
                 return;
 
-            ReadLocalInputs(m_HostCommands);
-            PlayerModifierDispatcherBehavior hostModifier = PlayerManager.GetModifier(HostPlayerId);
-            hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
-            hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+            PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(GetPlayerFromId(HostPlayerId, session), HostPlayerId);
+            if (hostModifier)
+            {
+                hostModifier.ModifyCommands(this, m_HostCommands);
+                hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+                hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+            }
             GetMode(session).Modify(this, session, m_HostCommands, m_HostCommands, deltaUs);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.timeUs.Value = timeUs;
@@ -58,10 +60,11 @@ namespace Swihoni.Sessions
 
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
+                Container renderPlayer = renderPlayers[playerId];
                 if (playerId == localPlayer)
                 {
                     // Inject host player component
-                    renderPlayers[playerId].CopyFrom(m_HostCommands);
+                    renderPlayer.CopyFrom(m_HostCommands);
                 }
                 else
                 {
@@ -69,9 +72,10 @@ namespace Swihoni.Sessions
                     Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId];
 
                     uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
-                    RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayers[playerId], m_SessionHistory.Size, GetInHistory);
+                    RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
-                PlayerManager.GetVisuals(playerId).Render(this, playerId, renderPlayers[playerId], playerId == localPlayer);
+                PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
+                if (visuals) visuals.Render(this, playerId, renderPlayer, playerId == localPlayer);
             }
             m_PlayerHud.Render(renderPlayers[HostPlayerId]);
             RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
@@ -90,14 +94,19 @@ namespace Swihoni.Sessions
         {
             if (playerId == HostPlayerId)
             {
-                for (var i = 0; i < PlayerManager.Modifiers.Length; i++)
-                    PlayerManager.GetModifier(i).EvaluateHitboxes(this, i, PlayerManager.GetVisuals(i).GetRecentPlayer());
+                for (var i = 0; i < MaxPlayers; i++)
+                {
+                    var visuals = (PlayerVisualsDispatcherBehavior) PlayerManager.UnsafeVisuals[i];
+                    if (!visuals) continue;
+                    Container player = visuals.GetRecentPlayer();
+                    GetPlayerModifier(player, i).EvaluateHitboxes(this, i, player);
+                }
             }
             else base.RollbackHitboxes(playerId);
         }
 
         // TODO:refactor bad
-        public override Container GetPlayerFromId(int playerId) => playerId == HostPlayerId ? m_HostCommands : base.GetPlayerFromId(playerId);
+        public override Container GetPlayerFromId(int playerId, Container session = null) => playerId == HostPlayerId ? m_HostCommands : base.GetPlayerFromId(playerId);
 
         public override Ray GetRayForPlayerId(int playerId) => playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
     }

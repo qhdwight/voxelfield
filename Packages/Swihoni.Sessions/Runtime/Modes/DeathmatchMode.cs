@@ -1,8 +1,5 @@
 using Swihoni.Components;
-using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Modes

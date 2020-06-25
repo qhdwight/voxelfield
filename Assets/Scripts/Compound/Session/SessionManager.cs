@@ -9,6 +9,7 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+
 #endif
 
 namespace Compound.Session
@@ -41,7 +42,7 @@ namespace Compound.Session
                 Debug.Log($"Started client at {client.IpEndPoint}");
             });
             ConsoleCommandExecutor.RegisterCommand("disconnect", args => DisconnectAll());
-            
+
             if (Application.isBatchMode)
             {
                 IPEndPoint endPoint = NetUtils.MakeEndPoint(NetUtils.GetLocalIp(LocalAddrType.IPv4), m_ServerPort);
@@ -49,7 +50,7 @@ namespace Compound.Session
                 Debug.Log($"Starting headless server at {endPoint}...");
             }
             ConsoleCommandExecutor.RegisterCommand("r", args => { DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]); });
-            
+
             Debug.Log("Started session manager");
         }
 
@@ -199,11 +200,10 @@ namespace Compound.Session
                     Debug.Log("Server Linux build failed");
                     break;
             }
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.IL2CPP);
         }
 
-        [MenuItem("Build/Build Windows Player")]
-        public static void BuildWindowsPlayer()
+        [MenuItem("Build/Build Windows IL2CPP Player")]
+        public static void BuildWindowsIl2CppPlayer()
         {
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.IL2CPP);
             var buildPlayerOptions = new BuildPlayerOptions
@@ -218,10 +218,34 @@ namespace Compound.Session
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"Windows player build succeeded: {summary.totalSize} bytes");
+                    Debug.Log($"Windows IL2CPP player build succeeded: {summary.totalSize} bytes");
                     break;
                 case BuildResult.Failed:
-                    Debug.Log("Windows player build failed");
+                    Debug.Log("Windows IL2CPP player build failed");
+                    break;
+            }
+        }
+
+        [MenuItem("Build/Build Windows Mono Player")]
+        public static void BuildWindowsMonoPlayer()
+        {
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
+            var buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = new[] {"Assets/Scenes/Base.unity"},
+                locationPathName = "C:/Users/qhdwi/Desktop/Voxelfield/Voxelfield.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.AutoRunPlayer,
+            };
+
+            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            BuildSummary summary = report.summary;
+
+            switch (summary.result)
+            {
+                case BuildResult.Succeeded:
+                    Debug.Log($"Windows Mono player build succeeded: {summary.totalSize} bytes");
+                    break;
+                case BuildResult.Failed:
+                    Debug.Log("Windows Mono player build failed");
                     break;
             }
         }

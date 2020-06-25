@@ -16,7 +16,7 @@ namespace Swihoni.Sessions.Player
         {
             m_BodyAnimator = GetComponent<PlayerBodyAnimatorBehavior>();
             m_ItemAnimator = GetComponentInChildren<PlayerItemAnimatorBehavior>();
-            m_BodyAnimator.Setup(session);
+            m_BodyAnimator.Setup();
             m_ItemAnimator.Setup();
         }
 

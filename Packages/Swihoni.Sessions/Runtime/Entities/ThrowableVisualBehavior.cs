@@ -19,7 +19,14 @@ namespace Swihoni.Sessions.Entities
             m_AudioSource = GetComponent<AudioSource>();
             m_Modifier = (ThrowableModifierBehavior) m_Manager.GetModifierPrefab(id);
             foreach (ParticleSystem particle in m_Particles) particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
-            m_LastContactElapsedUs = 0u;
+        }
+
+        public override void SetActive(bool isActive)
+        {
+            if (isActive)
+            {
+                m_LastContactElapsedUs = 0u;
+            }
         }
 
         public override void Render(Container entity)

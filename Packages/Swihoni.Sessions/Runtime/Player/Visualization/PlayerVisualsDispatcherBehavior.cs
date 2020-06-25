@@ -1,7 +1,6 @@
 using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -9,15 +8,17 @@ namespace Swihoni.Sessions.Player.Visualization
 {
     public abstract class PlayerVisualsBehaviorBase : MonoBehaviour, IDisposable
     {
-        internal virtual void Setup(SessionBase session) { }
+        internal virtual void Setup() { }
 
         public virtual void Dispose() { }
 
         public abstract void Render(SessionBase session, Container player, bool isLocalPlayer);
+
+        public virtual void SetActive(bool isActive) { }
     }
 
     [SelectionBase]
-    public class PlayerVisualsDispatcherBehavior : VisualBehaviorBase, IPlayerContainerRenderer
+    public class PlayerVisualsDispatcherBehavior : VisualBehaviorBase, IDisposable
     {
         [SerializeField] private float m_UprightCameraHeight = 1.8f, m_CrouchedCameraHeight = 1.26f;
         [SerializeField] private AudioSource m_DamageNotifierSource = default;
@@ -30,13 +31,13 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public Container GetRecentPlayer() => m_RecentRender;
 
-        public void Setup(SessionBase session)
+        internal override void Setup(IBehaviorManager manager)
         {
+            base.Setup(manager);
             m_Visuals = GetComponents<PlayerVisualsBehaviorBase>();
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup(session);
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup();
             m_Camera = GetComponentInChildren<Camera>();
             m_AudioListener = GetComponentInChildren<AudioListener>();
-            SetVisible(false, false);
         }
 
         public void Render(SessionBase session, int playerId, Container player, bool isLocalPlayer)
@@ -75,8 +76,14 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             m_AudioListener.enabled = isCameraEnabled;
             m_Camera.enabled = isCameraEnabled;
+        }
 
-            gameObject.hideFlags = isVisible ? HideFlags.None : HideFlags.HideInHierarchy;
+        public override void SetActive(bool isActive)
+        {
+            if (!isActive) SetVisible(false, false);
+            if (m_Visuals != null)
+                foreach (PlayerVisualsBehaviorBase visual in m_Visuals)
+                    visual.SetActive(isActive);
         }
 
         public void Dispose()

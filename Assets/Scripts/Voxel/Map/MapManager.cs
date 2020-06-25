@@ -123,7 +123,7 @@ namespace Voxel.Map
             SaveMapSave(testMap);
         }
 
-        public void SetMap(string mapName) { m_WantedMap = mapName; }
+        public void SetMap(string mapName) => m_WantedMap = mapName;
 
         private static IEnumerator LoadMapSave(MapSave save)
         {

@@ -31,7 +31,7 @@ namespace Compound.Session
             {
                 VoxelChangeTransaction transaction = m_Transactions.Obtain();
                 foreach ((Position3Int position, VoxelChangeData change) in changed)
-                    transaction.AddChange(position, change);   
+                    transaction.AddChange(position, change);
             }
 
             if (m_Pointer.WithoutValue || serverTick - m_Pointer == 1)

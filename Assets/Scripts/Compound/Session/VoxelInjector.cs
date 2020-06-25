@@ -16,16 +16,20 @@ namespace Compound.Session
         protected internal virtual void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, ChangedVoxelsProperty changedVoxels = null)
             => ChunkManager.Singleton.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, changedVoxels);
 
+        private readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
+        
         protected override void OnHandleNewConnection(ConnectionRequest request)
         {
-            if (request.Data.TryGetString(out string result) && result == Version.String)
-                request.Accept();
-            else
+            void Reject(string message)
             {
-                var writer = new NetDataWriter();
-                writer.Put("Your version does not match that of the server.");
-                request.Reject(writer);
+                m_RejectionWriter.Reset();
+                m_RejectionWriter.Put(message);
+                request.Reject(m_RejectionWriter);
             }
+            int nextPeerId = ((NetworkedSessionBase) Manager).Socket.NetworkManager.PeekNextId();
+            if (nextPeerId >= SessionBase.MaxPlayers - 1) Reject("Too many players are already connected to the server!");
+            else if (request.Data.TryGetString(out string result) && result != Version.String) Reject("Your version does not match that of the server.");
+            else request.Accept();
         }
 
         protected override void Stop() => MapManager.Singleton.SetMap("Menu");

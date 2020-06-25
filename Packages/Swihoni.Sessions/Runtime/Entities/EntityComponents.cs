@@ -7,7 +7,7 @@ namespace Swihoni.Sessions.Entities
     public class EntityArrayElement : ArrayElement<EntityContainer>
     {
         public const int Count = 10;
-        
+
         public EntityArrayElement() : base(Count) { }
     }
 

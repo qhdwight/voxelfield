@@ -4,14 +4,12 @@ using System.Collections.Generic;
 
 namespace Swihoni.Collections
 {
-    public class Pool<T> : IEnumerable<T> where T : class
+    public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     {
         private readonly Stack<T> m_Pool;
         protected readonly LinkedList<T> m_InUse;
         private readonly Func<T> m_Constructor;
         private readonly Action<T, bool> m_UsageChanged;
-
-        public int Remaining => m_Pool.Count;
 
         public IEnumerable<T> InUse => m_InUse;
 
@@ -55,5 +53,13 @@ namespace Swihoni.Collections
         public IEnumerator<T> GetEnumerator() => m_Pool.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => m_Pool.GetEnumerator();
+
+        public void Dispose()
+        {
+            foreach (T pool in m_Pool)
+            {
+                if (pool is IDisposable disposable) disposable.Dispose();
+            }
+        }
     }
 }

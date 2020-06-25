@@ -9,6 +9,7 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -53,7 +54,9 @@ namespace Swihoni.Sessions
         {
             int playerId = peer.GetPlayerId();
             Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
-            GetPlayerFromId(playerId).Reset();
+            Container player = GetPlayerFromId(playerId);
+            player.Reset();
+            GetPlayerModifier(player, playerId);
         }
 
         protected virtual void PreTick(Container tickSession) { }
@@ -134,8 +137,11 @@ namespace Swihoni.Sessions
                 }
             });
             Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
-            EntityManager.ModifyAll(serverSession, (modifer, _, entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs));
+
+            void IterateEntity(ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs);
+            EntityManager.ModifyAll(serverSession, IterateEntity);
             GetMode(serverSession).Modify(serverSession, durationUs);
+
             SendServerSession(tick, serverSession);
         }
 
@@ -145,39 +151,41 @@ namespace Swihoni.Sessions
         {
             m_Socket.NetworkManager.GetPeersNonAlloc(m_ConnectedPeers, ConnectionState.Connected);
             foreach (NetPeer peer in m_ConnectedPeers)
-            {
-                var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
-                int playerId = peer.GetPlayerId();
-                localPlayerProperty.Value = (byte) playerId;
                 SendPeerLatestSession(tick, peer, serverSession);
-            }
         }
 
         protected void SendPeerLatestSession(uint tick, NetPeer peer, Container serverSession)
         {
-            Container player = GetPlayerFromId(peer.GetPlayerId());
+            Container player = GetPlayerFromId(peer.GetPlayerId(), serverSession);
 
-            // uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
-            // var rollback = checked((int) (tick - lastServerTickAcknowledged));
-            // if (lastServerTickAcknowledged == 0u)
-            //     m_SendSession.CopyFrom(serverSession);
-            // else
-            //     // TODO:per  formance serialize and compress at the same time
-            //     CompressSession(serverSession, rollback);
-
-            m_SendSession.CopyFrom(serverSession);
-
-            if (player.Require<ClientStampComponent>().tick.WithValue)
+            if (player.Require<HealthProperty>().WithValue)
             {
-                BoolProperty hasSentInitialData = player.Require<HasSentInitialData>();
-                if (!hasSentInitialData)
-                {
-                    m_Injector.OnSendInitialData(peer, serverSession, m_SendSession);
-                    hasSentInitialData.Value = true;
-                }
-            }
+                var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
+                int playerId = peer.GetPlayerId();
+                localPlayerProperty.Value = (byte) playerId;
 
-            m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
+                // uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
+                // var rollback = checked((int) (tick - lastServerTickAcknowledged));
+                // if (lastServerTickAcknowledged == 0u)
+                //     m_SendSession.CopyFrom(serverSession);
+                // else
+                //     // TODO:performance serialize and compress at the same time
+                //     CompressSession(serverSession, rollback);
+
+                m_SendSession.CopyFrom(serverSession);
+
+                if (player.Require<ClientStampComponent>().tick.WithValue)
+                {
+                    BoolProperty hasSentInitialData = player.Require<HasSentInitialData>();
+                    if (!hasSentInitialData)
+                    {
+                        m_Injector.OnSendInitialData(peer, serverSession, m_SendSession);
+                        hasSentInitialData.Value = true;
+                    }
+                }
+
+                m_Socket.Send(m_SendSession, peer, DeliveryMethod.ReliableUnordered);
+            }
         }
 
         // Not working, prediction errors on ground tick and position
@@ -233,13 +241,16 @@ namespace Swihoni.Sessions
                         }
                         ModeBase mode = GetMode(serverSession);
                         serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
-                        PlayerManager.GetModifier(clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
+                        GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
                         mode.Modify(this, serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
                 }
             }
-            else serverPlayerTimeUs.Value = serverStamp.timeUs;
+            else
+            {
+                serverPlayerTimeUs.Value = serverStamp.timeUs;
+            }
         }
 
         protected void SetupNewPlayer(Container session, Container player)
@@ -259,7 +270,7 @@ namespace Swihoni.Sessions
         protected override void RollbackHitboxes(int playerId)
         {
             uint latencyUs = GetPlayerFromId(playerId).Require<ServerPingComponent>().latencyUs;
-            for (var i = 0; i < PlayerManager.Modifiers.Length; i++)
+            for (var i = 0; i < MaxPlayers; i++)
             {
                 int modifierId = i; // Copy for use in lambda
                 Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(modifierId);
@@ -277,7 +288,8 @@ namespace Swihoni.Sessions
                     RenderInterpolatedPlayer<ServerStampComponent>(timeUs - rollbackUs, rollbackPlayer,
                                                                    m_SessionHistory.Size, GetPlayerInHistory);
                 }
-                PlayerManager.GetModifier(modifierId).EvaluateHitboxes(this, modifierId, rollbackPlayer);
+                PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(rollbackPlayer, modifierId);
+                if (modifier) modifier.EvaluateHitboxes(this, modifierId, rollbackPlayer);
 
                 if (modifierId == 0) DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }

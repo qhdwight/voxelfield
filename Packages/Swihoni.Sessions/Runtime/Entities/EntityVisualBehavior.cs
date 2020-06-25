@@ -5,14 +5,6 @@ namespace Swihoni.Sessions.Entities
 {
     public class EntityVisualBehavior : VisualBehaviorBase
     {
-        protected IBehaviorManager m_Manager;
-
-        internal override void Setup(IBehaviorManager manager)
-        {
-            base.Setup(manager);
-            m_Manager = manager;
-        }
-
         public virtual void Render(Container entity)
         {
             if (entity.Without(out ThrowableComponent throwable)) return;

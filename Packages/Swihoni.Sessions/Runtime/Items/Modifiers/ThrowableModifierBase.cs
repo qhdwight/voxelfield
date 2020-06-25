@@ -48,7 +48,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             for (var index = 0; index < entities.Length; index++)
             {
                 EntityContainer entity = entities[index];
-                if (session.EntityManager.Modifiers[index] is ThrowableModifierBehavior throwableModifier && throwableModifier.ThrowerId == playerId)
+                if (session.EntityManager.UnsafeModifiers[index] is ThrowableModifierBehavior throwableModifier && throwableModifier.ThrowerId == playerId)
                 {
                     var throwable = entity.Require<ThrowableComponent>();
                     if (throwable.popTimeUs > throwable.thrownElapsedUs)
@@ -59,7 +59,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual void Release(SessionBase session, int playerId)
         {
-            Container player = session.GetPlayerFromId(playerId); 
+            Container player = session.GetPlayerFromId(playerId);
             if (player.Without<ServerTag>()) return;
 
             Ray ray = SessionBase.GetRayForPlayer(player);

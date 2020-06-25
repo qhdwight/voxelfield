@@ -1,21 +1,29 @@
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Entities;
-using Swihoni.Sessions.Player.Modifiers;
-using Swihoni.Sessions.Player.Visualization;
+using UnityEngine;
 
 namespace Swihoni.Sessions.Player
 {
     public class PlayerManager : BehaviorManagerBase
     {
-        internal static readonly Pool<PlayerManager> Pool = new Pool<PlayerManager>(1, () => new PlayerManager(), UsageChanged);
+        internal static Pool<PlayerManager> pool;
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void Initialize()
+        {
+            pool = new Pool<PlayerManager>(1, () => new PlayerManager(), UsageChanged);
+            Application.quitting -= Cleanup;
+            Application.quitting += Cleanup;
+        }
+
+        private static void Cleanup() => pool.Dispose();
 
         private static void UsageChanged(PlayerManager manager, bool isActive)
         {
             if (!isActive) manager.SetAllInactive();
         }
-        
+
         public PlayerManager() : base(SessionBase.MaxPlayers, "Players") { }
 
         public override ArrayElementBase ExtractArray(Container session) => session.Require<PlayerContainerArrayElement>();

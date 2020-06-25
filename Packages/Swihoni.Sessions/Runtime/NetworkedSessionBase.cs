@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
@@ -75,7 +74,7 @@ namespace Swihoni.Sessions
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public override ModeBase GetMode(Container session = null) => ModeManager.GetMode((session ?? GetLatestSession()).Require<ModeIdProperty>());
 
-        public override Container GetPlayerFromId(int playerId) => GetLatestSession().GetPlayer(playerId);
+        public override Container GetPlayerFromId(int playerId, Container session = null) => (session ?? GetLatestSession()).GetPlayer(playerId);
 
         public override Container GetLatestSession() => m_SessionHistory.Peek();
 
