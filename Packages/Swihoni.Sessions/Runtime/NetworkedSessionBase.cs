@@ -96,7 +96,7 @@ namespace Swihoni.Sessions
                                    h => m_SessionHistory.Get(-h).Require<TStampComponent>(),
                                    h => m_SessionHistory.Get(-h).Require<EntityArrayElement>()[index]);
             }
-            EntityManager.Render(renderEntities);
+            EntityManager.RenderAll(renderEntities, (visual, entity) => ((EntityVisualBehavior) visual).Render(entity));
         }
 
         protected abstract void RollbackHitboxes(int playerId);

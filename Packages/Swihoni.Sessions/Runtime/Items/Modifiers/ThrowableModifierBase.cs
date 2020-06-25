@@ -63,7 +63,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (player.Without<ServerTag>()) return;
 
             Ray ray = SessionBase.GetRayForPlayer(player);
-            var modifier = (EntityModifierBehavior) session.EntityManager.ObtainModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
+            var modifier = (EntityModifierBehavior) session.EntityManager.ObtainNextModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
             if (modifier is ThrowableModifierBehavior throwableModifier)
             {
                 throwableModifier.Name = itemName;

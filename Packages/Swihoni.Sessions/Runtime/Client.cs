@@ -58,7 +58,10 @@ namespace Swihoni.Sessions
             Dispose();
         }
 
-        private void UpdateInputs(int localPlayerId) => PlayerManager.GetModifier(localPlayerId).ModifyCommands(this, m_CommandHistory.Peek());
+        private void UpdateInputs(int localPlayerId)
+        {
+            PlayerManager.GetModifier(localPlayerId).ModifyCommands(this, m_CommandHistory.Peek());
+        }
 
         protected override void Input(uint timeUs, uint deltaUs)
         {

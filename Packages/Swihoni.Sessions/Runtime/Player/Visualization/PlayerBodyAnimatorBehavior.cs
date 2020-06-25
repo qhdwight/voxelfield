@@ -190,9 +190,8 @@ namespace Swihoni.Sessions.Player.Visualization
             m_LastNormalizedTime = move.normalizedMove;
         }
 
-        public override void SetActive(bool isActive)
+        public override void Dispose()
         {
-            base.SetActive(isActive);
             if (m_Graph.IsValid()) m_Graph.Destroy();
         }
     }

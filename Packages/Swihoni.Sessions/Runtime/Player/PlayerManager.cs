@@ -20,10 +20,8 @@ namespace Swihoni.Sessions.Player
 
         public override ArrayElementBase ExtractArray(Container session) => session.Require<PlayerContainerArrayElement>();
 
-        public PlayerModifierDispatcherBehavior GetModifier(int playerId) => (PlayerModifierDispatcherBehavior) Modifiers[playerId];
+        // public PlayerModifierDispatcherBehavior GetModifier(int playerId) => (PlayerModifierDispatcherBehavior) Modifiers[playerId];
 
-        public PlayerVisualsDispatcherBehavior GetVisuals(int playerId) => (PlayerVisualsDispatcherBehavior) m_Visuals[playerId];
-        
-        
+        // public PlayerVisualsDispatcherBehavior GetVisuals(int playerId) => (PlayerVisualsDispatcherBehavior) m_Visuals[playerId];
     }
 }

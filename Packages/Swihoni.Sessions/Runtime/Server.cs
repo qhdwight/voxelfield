@@ -6,6 +6,7 @@ using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
@@ -133,7 +134,7 @@ namespace Swihoni.Sessions
                 }
             });
             Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
-            EntityManager.Modify(serverSession, timeUs, durationUs);
+            EntityManager.ModifyAll(serverSession, (modifer, _, entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs));
             GetMode(serverSession).Modify(serverSession, durationUs);
             SendServerSession(tick, serverSession);
         }

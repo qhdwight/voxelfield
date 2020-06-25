@@ -13,7 +13,7 @@ namespace Swihoni.Sessions.Entities
             m_Manager = manager;
         }
 
-        public override void Render(Container entity)
+        public virtual void Render(Container entity)
         {
             if (entity.Without(out ThrowableComponent throwable)) return;
             SetVisible(IsVisible(entity));

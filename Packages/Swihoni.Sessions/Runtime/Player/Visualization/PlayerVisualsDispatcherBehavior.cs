@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Visualization
 {
-    public abstract class PlayerVisualsBehaviorBase : MonoBehaviour
+    public abstract class PlayerVisualsBehaviorBase : MonoBehaviour, IDisposable
     {
         internal virtual void Setup(SessionBase session) { }
 

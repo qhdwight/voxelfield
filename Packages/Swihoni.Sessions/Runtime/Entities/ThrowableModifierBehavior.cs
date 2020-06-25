@@ -39,12 +39,12 @@ namespace Swihoni.Sessions.Entities
             m_LastCollision = isInMask ? CollisionType.Player : CollisionType.World;
         }
 
-        public override void SetActive(bool isEnabled)
+        public override void SetActive(bool isActive)
         {
-            base.SetActive(isEnabled);
+            base.SetActive(isActive);
             Rigidbody.velocity = Vector3.zero;
             Rigidbody.angularVelocity = Vector3.zero;
-            Rigidbody.constraints = isEnabled ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;
+            Rigidbody.constraints = isActive ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;
             PopQueued = false;
             m_LastElapsedUs = 0u;
         }

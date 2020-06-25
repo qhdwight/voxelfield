@@ -15,7 +15,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public override void Render(SessionBase session, Container player, bool isLocalPlayer) => ForEachItemAnimator(animator => animator.Render(player, isLocalPlayer));
 
-        public override void SetActive(bool isActive) => ForEachItemAnimator(animator => animator.Dispose());
+        public override void Dispose() => ForEachItemAnimator(animator => animator.Dispose());
 
         private void ForEachItemAnimator(Action<PlayerItemAnimatorBehavior> action)
         {

@@ -29,7 +29,7 @@ namespace Swihoni.Sessions.Player
 
         public void Dispose()
         {
-            m_BodyAnimator.SetActive(TODO);
+            m_BodyAnimator.Dispose();
             m_ItemAnimator.Dispose();
         }
     }
