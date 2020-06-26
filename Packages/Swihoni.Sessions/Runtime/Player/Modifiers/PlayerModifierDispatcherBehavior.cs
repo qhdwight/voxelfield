@@ -10,13 +10,25 @@ namespace Swihoni.Sessions.Player.Modifiers
         private PlayerHitboxManager m_HitboxManager;
         private PlayerTrigger m_Trigger;
         private SessionBase m_Session;
+        
+        private PlayerMovement m_Movement;
+        public PlayerMovement Movement
+        {
+            get
+            {
+                if (m_Movement == null)
+                    m_Movement = GetComponentInChildren<PlayerMovement>();
+                return m_Movement;
+            }
+        }
 
         internal void Setup(SessionBase session, int playerId)
         {
             m_Session = session;
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
             m_HitboxManager = GetComponent<PlayerHitboxManager>();
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup(session);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers)
+                modifier.Setup(session);
             if (m_HitboxManager) m_HitboxManager.Setup(session);
             m_Trigger = GetComponentInChildren<PlayerTrigger>();
             if (m_Trigger) m_Trigger.Setup(playerId);

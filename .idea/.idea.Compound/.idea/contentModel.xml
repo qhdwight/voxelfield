@@ -264,13 +264,13 @@
             <e p="Math" t="Include">
               <e p="Dimension.cs" t="Include" />
               <e p="Position3Int.cs" t="Include" />
+              <e p="SMath.cs" t="Include" />
             </e>
             <e p="MeshData.cs" t="Include" />
             <e p="SingletonBehavior.cs" t="Include" />
             <e p="SteamManager.cs" t="Include" />
             <e p="Swihoni.Util.asmdef" t="Include" />
             <e p="TimeConversions.cs" t="Include" />
-            <e p="VectorMath.cs" t="Include" />
           </e>
         </e>
       </e>

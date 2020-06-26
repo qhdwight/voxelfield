@@ -74,12 +74,14 @@ namespace Swihoni.Components
             m_Builder.Clear();
             foreach (CharProperty character in m_Values)
             {
-                if (character.WithoutValue)
+                if (character.WithoutValue || character == '\0')
                     break;
                 m_Builder.Append(character);
             }
             return m_Builder;
         }
+
+        public void SetString(string @string) => SetString(builder => builder.Append(@string));
 
         /// <summary>
         /// Modifies internal character array via a string builder.
@@ -89,7 +91,7 @@ namespace Swihoni.Components
         {
             m_Builder.Clear();
             action(m_Builder);
-            for (var i = 0; i < m_Builder.Capacity; i++)
+            for (var i = 0; i < m_Values.Length; i++)
             {
                 if (i < m_Builder.Length)
                     m_Values[i].Value = m_Builder[i];

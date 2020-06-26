@@ -2,6 +2,7 @@ using Input;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
+using Swihoni.Util.Math;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Modifiers
@@ -113,7 +114,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                     move.normalizedCrouch.Value = 0.0f;
             }
 
-            if (VectorMath.LateralMagnitude(move.velocity) < 1e-2f)
+            if (SMath.LateralMagnitude(move.velocity) < 1e-2f)
                 move.normalizedMove.Value = 0.0f;
             else
             {
@@ -130,7 +131,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)
         {
             Vector3 initialVelocity = move.velocity, endingVelocity = initialVelocity;
-            float lateralSpeed = VectorMath.LateralMagnitude(endingVelocity);
+            float lateralSpeed = SMath.LateralMagnitude(endingVelocity);
 
             Vector3 position = m_MoveTransform.position;
             float radius = m_Controller.radius - 0.01f;
@@ -181,7 +182,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 if (wishSpeed > m_AirSpeedCap) wishSpeed = m_AirSpeedCap;
                 Accelerate(wishDirection, wishSpeed, m_AirAcceleration, duration, ref endingVelocity);
                 endingVelocity.y -= m_GravityFactor * duration;
-                float lateralAirSpeed = VectorMath.LateralMagnitude(endingVelocity);
+                float lateralAirSpeed = SMath.LateralMagnitude(endingVelocity);
                 if (lateralAirSpeed > m_MaxAirSpeed)
                 {
                     endingVelocity.x *= m_MaxAirSpeed / lateralAirSpeed;

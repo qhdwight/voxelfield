@@ -8,18 +8,18 @@ namespace Swihoni.Sessions.Interfaces
 {
     public abstract class ElementInterfaceBase<TElement> : InterfaceBehaviorBase
     {
-        public abstract void Render(TElement element);
+        public abstract void Render(Container session, TElement element);
     }
 
-    public abstract class ArrayViewerInterfaceBase<TComponent, TArray, TElement> : SessionInterfaceBehavior
-        where TComponent : ElementInterfaceBase<TElement>
+    public abstract class ArrayViewerInterfaceBase<TInterface, TArray, TElement> : SessionInterfaceBehavior
+        where TInterface : ElementInterfaceBase<TElement>
         where TArray : ArrayElement<TElement>
         where TElement : ElementBase, new()
     {
         [SerializeField] private GameObject m_EntryPrefab = default;
         [SerializeField] private Transform m_EntryHolder = default;
 
-        private TComponent[] m_Entries;
+        private TInterface[] m_Entries;
 
         protected override void Awake()
         {
@@ -27,13 +27,13 @@ namespace Swihoni.Sessions.Interfaces
             Cleanup();
         }
 
-        private TComponent[] GetEntries(TArray array)
+        private TInterface[] GetEntries(TArray array)
         {
             if (m_Entries == null)
                 m_Entries = Enumerable.Range(0, array.Length).Select(i =>
                 {
                     GameObject instance = Instantiate(m_EntryPrefab, m_EntryHolder);
-                    var entry = instance.GetComponent<TComponent>();
+                    var entry = instance.GetComponent<TInterface>();
                     return entry;
                 }).ToArray();
             return m_Entries;
@@ -57,13 +57,13 @@ namespace Swihoni.Sessions.Interfaces
         {
             if (sessionContainer.Without(out TArray array)) return;
 
-            TComponent[] entries = GetEntries(array);
+            TInterface[] entries = GetEntries(array);
 
             for (var i = 0; i < array.Length; i++)
             {
                 TElement element = array[i];
-                TComponent entry = entries[i];
-                entry.Render(element);
+                TInterface entry = entries[i];
+                entry.Render(sessionContainer, element);
             }
 
             SortEntries(array);

@@ -21,6 +21,7 @@ namespace Swihoni.Sessions.Modes
                 move.position.Value = session.Injector.GetSpawnPosition();
             }
             player.Require<IdProperty>().Value = 1;
+            player.Require<UsernameElement>().SetString("Default");
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health))
                 health.Value = 100;
@@ -78,10 +79,13 @@ namespace Swihoni.Sessions.Modes
                       inflictingPlayer = session.GetPlayerFromId(inflictingPlayerId);
             if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive && hitPlayer.With<ServerTag>())
             {
-                var damage = checked((byte) (weapon.Damage * hitbox.DamageMultiplier));
+                var damage = checked((byte) CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon));
                 InflictDamage(session, inflictingPlayerId, inflictingPlayer, hitPlayer, hitPlayerId, damage, weapon.itemName);
             }
         }
+
+        protected virtual float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon)
+            => weapon.Damage * hitbox.DamageMultiplier;
 
         public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName)
         {
@@ -110,7 +114,7 @@ namespace Swihoni.Sessions.Modes
                         kill.elapsedUs.Value = 2_000_000u;
                         kill.killingPlayerId.Value = (byte) inflictingPlayerId;
                         kill.killedPlayerId.Value = (byte) hitPlayerId;
-                        kill.weaponName.SetString(builder => builder.Append(weaponName));
+                        kill.weaponName.SetString(weaponName);
                         break;
                     }
                 }
