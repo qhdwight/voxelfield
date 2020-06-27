@@ -135,7 +135,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         private void RenderState(int baseIndex, MoveComponent move, float weight)
         {
-            bool isStationary = SMath.LateralMagnitude(move.velocity) < 1e-2f,
+            bool isStationary = ExtraMath.LateralMagnitude(move.velocity) < 1e-2f,
                  isGrounded = move.groundTick >= 1;
 
             const int idleOffset = 0, moveOffset = 1, inAirOffset = 2;
@@ -149,7 +149,7 @@ namespace Swihoni.Sessions.Player.Visualization
             {
                 if (isGrounded)
                 {
-                    float normalizedSpeed = Mathf.Clamp01(SMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed);
+                    float normalizedSpeed = Mathf.Clamp01(ExtraMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed);
                     for (var i = 0; i < 3; i++)
                     {
                         // TODO:refactor confusing
@@ -182,7 +182,7 @@ namespace Swihoni.Sessions.Player.Visualization
         // TODO:refactor magic numbers
         private void Footsteps(MoveComponent move)
         {
-            float normalizedSpeed = Mathf.Clamp01(SMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed);
+            float normalizedSpeed = Mathf.Clamp01(ExtraMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed);
 
             if (normalizedSpeed > 0.5f)
             {

@@ -28,7 +28,7 @@ namespace Swihoni.Sessions
             elements = new List<Type>
             {
                 typeof(TickRateProperty), typeof(ModeIdProperty),
-                typeof(PlayerContainerArrayElement), typeof(LocalPlayerProperty), typeof(EntityArrayElement),
+                typeof(PlayerContainerArrayElement), typeof(LocalPlayerId), typeof(EntityArrayElement),
                 typeof(StampComponent), typeof(KillFeedElement)
             },
             playerElements = new List<Type>

@@ -74,12 +74,15 @@ namespace Swihoni.Sessions
 
         protected override void Render(uint renderTimeUs)
         {
-            if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers) || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
+            if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
+             || m_RenderSession.Without(out LocalPlayerId localPlayer)
+             || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
                 return;
 
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (tickRate.WithoutValue) return;
 
+            localPlayer.Value = (byte) localPlayerId;
             base.Render(renderTimeUs);
 
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
@@ -103,8 +106,8 @@ namespace Swihoni.Sessions
                     RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
-                if (visuals) visuals.Render(this, playerId, renderPlayer, isLocalPlayer);
-                if (isLocalPlayer) m_PlayerHud.Render(renderPlayers[localPlayerId]);
+                if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isLocalPlayer);
+                if (isLocalPlayer) m_PlayerHud.Render(m_RenderSession, localPlayerId, renderPlayers[localPlayerId]);
             }
             RenderEntities<LocalizedClientStampComponent>(renderTimeUs, tickRate.TickIntervalUs * 2u);
         }
@@ -367,7 +370,7 @@ namespace Swihoni.Sessions
 
         private static bool GetLocalPlayerId(Container session, out int localPlayerId)
         {
-            if (session.With(out LocalPlayerProperty localPlayerProperty) && localPlayerProperty.WithValue)
+            if (session.With(out LocalPlayerId localPlayerProperty) && localPlayerProperty.WithValue)
             {
                 localPlayerId = localPlayerProperty;
                 return true;

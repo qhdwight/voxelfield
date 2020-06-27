@@ -11,15 +11,15 @@ namespace Swihoni.Sessions.Interfaces
         public abstract void Render(Container session, TElement element);
     }
 
-    public abstract class ArrayViewerInterfaceBase<TInterface, TArray, TElement> : SessionInterfaceBehavior
-        where TInterface : ElementInterfaceBase<TElement>
+    public abstract class ArrayViewerInterfaceBase<TEntry, TArray, TElement> : SessionInterfaceBehavior
+        where TEntry : ElementInterfaceBase<TElement>
         where TArray : ArrayElement<TElement>
         where TElement : ElementBase, new()
     {
         [SerializeField] private GameObject m_EntryPrefab = default;
         [SerializeField] private Transform m_EntryHolder = default;
 
-        private TInterface[] m_Entries;
+        private TEntry[] m_Entries;
 
         protected override void Awake()
         {
@@ -27,13 +27,13 @@ namespace Swihoni.Sessions.Interfaces
             Cleanup();
         }
 
-        private TInterface[] GetEntries(TArray array)
+        private TEntry[] GetEntries(TArray array)
         {
             if (m_Entries == null)
                 m_Entries = Enumerable.Range(0, array.Length).Select(i =>
                 {
                     GameObject instance = Instantiate(m_EntryPrefab, m_EntryHolder);
-                    var entry = instance.GetComponent<TInterface>();
+                    var entry = instance.GetComponent<TEntry>();
                     return entry;
                 }).ToArray();
             return m_Entries;
@@ -57,12 +57,12 @@ namespace Swihoni.Sessions.Interfaces
         {
             if (sessionContainer.Without(out TArray array)) return;
 
-            TInterface[] entries = GetEntries(array);
+            TEntry[] entries = GetEntries(array);
 
             for (var i = 0; i < array.Length; i++)
             {
                 TElement element = array[i];
-                TInterface entry = entries[i];
+                TEntry entry = entries[i];
                 entry.Render(sessionContainer, element);
             }
 

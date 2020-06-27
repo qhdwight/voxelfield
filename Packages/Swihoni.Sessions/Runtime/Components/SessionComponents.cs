@@ -97,6 +97,7 @@ namespace Swihoni.Sessions.Components
     public class DamageNotifierComponent : ComponentBase
     {
         public UIntProperty elapsedUs;
+        public ByteProperty damage, inflictingPlayerId;
     }
 
     [Serializable]
@@ -151,7 +152,7 @@ namespace Swihoni.Sessions.Components
     }
 
     [Serializable]
-    public class LocalPlayerProperty : ByteProperty
+    public class LocalPlayerId : ByteProperty
     {
     }
 

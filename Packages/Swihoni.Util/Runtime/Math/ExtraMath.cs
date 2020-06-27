@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Swihoni.Util.Math
 {
-    public static class SMath
+    public static class ExtraMath
     {
         public static float LateralMagnitude(this Vector3 v) => Mathf.Sqrt(v.x * v.x + v.z * v.z);
 

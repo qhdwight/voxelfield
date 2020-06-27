@@ -160,7 +160,7 @@ namespace Swihoni.Sessions
 
             if (player.Require<HealthProperty>().WithValue)
             {
-                var localPlayerProperty = serverSession.Require<LocalPlayerProperty>();
+                var localPlayerProperty = serverSession.Require<LocalPlayerId>();
                 int playerId = peer.GetPlayerId();
                 localPlayerProperty.Value = (byte) playerId;
 

@@ -1,3 +1,5 @@
+using System;
+using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
@@ -5,6 +7,7 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,21 +23,24 @@ namespace Swihoni.Sessions.Interfaces
         private Sprite m_DefaultCrosshair;
         private Color m_DefaultHitMarkerColor;
 
+        // private Pool<TextMeshPro> m_DamageTextPool;
+
         // private bool Changed<TElement>(Container container, out TElement component) where TElement : ElementBase
         // {
         //     return container.Has(out component) && (m_Previous == null || !Equals(component, m_Previous.Require<TElement>()));
         // }
-
+        
         protected override void Awake()
         {
             base.Awake();
+            // m_DamageTextPool = new Pool<TextMeshPro>(0, () => Instantiate(m_DamagePrefab), (text, isActive) => text.enabled = isActive);
             m_DefaultHitMarkerColor = m_HitMarker.color;
             m_DefaultCrosshair = m_Crosshair.sprite;
         }
-
+        
         public override void Render(SessionBase session, Container sessionContainer) { }
 
-        public void Render(Container localPlayer)
+        public void Render(Container session, int localPlayerId, Container localPlayer)
         {
             bool isVisible = localPlayer.Without(out HealthProperty health) || health.WithValue && health.IsAlive;
             if (isVisible)
@@ -93,7 +99,7 @@ namespace Swihoni.Sessions.Interfaces
                     foreach (Image notifierImage in m_DamageNotifiers)
                     {
                         Color color = notifierImage.color;
-                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 1_000_000f);
+                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 2_000_000f);
                         notifierImage.color = color;
                     }
                 }

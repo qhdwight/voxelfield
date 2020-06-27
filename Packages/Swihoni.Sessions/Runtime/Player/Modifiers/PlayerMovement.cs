@@ -114,7 +114,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                     move.normalizedCrouch.Value = 0.0f;
             }
 
-            if (SMath.LateralMagnitude(move.velocity) < 1e-2f)
+            if (ExtraMath.LateralMagnitude(move.velocity) < 1e-2f)
                 move.normalizedMove.Value = 0.0f;
             else
             {
@@ -131,7 +131,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)
         {
             Vector3 initialVelocity = move.velocity, endingVelocity = initialVelocity;
-            float lateralSpeed = SMath.LateralMagnitude(endingVelocity);
+            float lateralSpeed = endingVelocity.LateralMagnitude();
 
             Vector3 position = m_MoveTransform.position;
             float radius = m_Controller.radius - 0.01f;
@@ -182,7 +182,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 if (wishSpeed > m_AirSpeedCap) wishSpeed = m_AirSpeedCap;
                 Accelerate(wishDirection, wishSpeed, m_AirAcceleration, duration, ref endingVelocity);
                 endingVelocity.y -= m_GravityFactor * duration;
-                float lateralAirSpeed = SMath.LateralMagnitude(endingVelocity);
+                float lateralAirSpeed = endingVelocity.LateralMagnitude();
                 if (lateralAirSpeed > m_MaxAirSpeed)
                 {
                     endingVelocity.x *= m_MaxAirSpeed / lateralAirSpeed;

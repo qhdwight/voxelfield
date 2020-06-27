@@ -50,7 +50,7 @@ namespace Swihoni.Sessions
         protected override void Render(uint renderTimeUs)
         {
             if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
-             || m_RenderSession.Without(out LocalPlayerProperty localPlayer)) return;
+             || m_RenderSession.Without(out LocalPlayerId localPlayer)) return;
 
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (!tickRate.WithValue) return;
@@ -75,9 +75,9 @@ namespace Swihoni.Sessions
                     RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
-                if (visuals) visuals.Render(this, playerId, renderPlayer, playerId == localPlayer);
+                if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, playerId == localPlayer);
             }
-            m_PlayerHud.Render(renderPlayers[HostPlayerId]);
+            m_PlayerHud.Render(m_RenderSession, HostPlayerId, renderPlayers[HostPlayerId]);
             RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
         }
 

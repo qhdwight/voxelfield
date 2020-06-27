@@ -2,6 +2,7 @@ using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using TMPro;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Visualization
@@ -22,6 +23,7 @@ namespace Swihoni.Sessions.Player.Visualization
     {
         [SerializeField] private float m_UprightCameraHeight = 1.8f, m_CrouchedCameraHeight = 1.26f;
         [SerializeField] private AudioSource m_DamageNotifierSource = default;
+        [SerializeField] private TextMeshPro m_DamageText = default;
 
         private AudioListener m_AudioListener;
         private Camera m_Camera;
@@ -40,7 +42,7 @@ namespace Swihoni.Sessions.Player.Visualization
             m_AudioListener = GetComponentInChildren<AudioListener>();
         }
 
-        public void Render(SessionBase session, int playerId, Container player, bool isLocalPlayer)
+        public void Render(SessionBase session, Container container, int playerId, Container player, bool isLocalPlayer)
         {
             bool usesHealth = player.With(out HealthProperty health),
                  usesDamageNotifier = player.With(out DamageNotifierComponent damageNotifier),
@@ -55,13 +57,28 @@ namespace Swihoni.Sessions.Player.Visualization
                 if (usesDamageNotifier)
                 {
                     // TODO:refactor remove magic number, relying on internal state of audio source here... BAD!
-                    if (damageNotifier.elapsedUs > 900_000u)
+                    if (damageNotifier.elapsedUs > 1_900_000u)
                     {
                         if (!m_DamageNotifierSource.isPlaying) m_DamageNotifierSource.Play();
                         // if (m_LastDamageNotifierElapsed < Mathf.Epsilon)
                         //     m_DamageNotifierSource.PlayOneShot(m_DamageNotifierSource.clip);
                     }
                     else m_DamageNotifierSource.Stop();
+
+                    if (m_DamageText)
+                    {
+                        Color color = Color.Lerp(Color.green, Color.red, damageNotifier.damage / 100f);
+                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 2_000_000f);
+                        m_DamageText.color = color;
+
+                        if (damageNotifier.elapsedUs > 0u)
+                        {
+                            m_DamageText.SetText(damageNotifier.damage.ToString());
+                            Vector3 GetPosition(int i) => container.Require<PlayerContainerArrayElement>()[i].Require<MoveComponent>().position;
+                            m_DamageText.transform.position = GetPosition(playerId) + new Vector3 {y = 2.4f};
+                            m_DamageText.transform.LookAt(GetPosition(container.Require<LocalPlayerId>()));    
+                        }
+                    }
                 }
             }
 

@@ -263,8 +263,8 @@
             <e p="LayerAttribute.cs" t="Include" />
             <e p="Math" t="Include">
               <e p="Dimension.cs" t="Include" />
+              <e p="ExtraMath.cs" t="Include" />
               <e p="Position3Int.cs" t="Include" />
-              <e p="SMath.cs" t="Include" />
             </e>
             <e p="MeshData.cs" t="Include" />
             <e p="SingletonBehavior.cs" t="Include" />

@@ -37,6 +37,30 @@ MonoBehaviour:
   m_PlayerMask:
     serializedVersion: 2
     m_Bits: 2048
+  m_DropOff:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 4
+      value: 1
+      inSlope: Infinity
+      outSlope: -0.33566618
+      tangentMode: 7
+      weightedMode: 3
+      inWeight: 0
+      outWeight: 0.017119823
+    - serializedVersion: 3
+      time: 200
+      value: 0.1
+      inSlope: -0.0003005537
+      outSlope: 0
+      tangentMode: 1
+      weightedMode: 3
+      inWeight: 0.8674187
+      outWeight: 0.46777794
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   m_MagSize: 6
   m_StartingAmmoInReserve: 24
   m_AdsModifierProperties:

@@ -79,13 +79,13 @@ namespace Swihoni.Sessions.Modes
                       inflictingPlayer = session.GetPlayerFromId(inflictingPlayerId);
             if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive && hitPlayer.With<ServerTag>())
             {
-                var damage = checked((byte) CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon));
+                var damage = checked((byte) CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit));
                 InflictDamage(session, inflictingPlayerId, inflictingPlayer, hitPlayer, hitPlayerId, damage, weapon.itemName);
             }
         }
 
-        protected virtual float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon)
-            => weapon.Damage * hitbox.DamageMultiplier;
+        protected virtual float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
+            => weapon.GetDamage(hit.distance) * hitbox.DamageMultiplier;
 
         public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName)
         {
@@ -95,7 +95,12 @@ namespace Swihoni.Sessions.Modes
                      usesNotifier = hitPlayer.With(out DamageNotifierComponent damageNotifier);
                 const uint notifierDuration = 1_000_000u;
                 if (usesHitMarker) hitMarker.elapsedUs.Value = notifierDuration;
-                if (usesNotifier) damageNotifier.elapsedUs.Value = notifierDuration;
+                if (usesNotifier)
+                {
+                    damageNotifier.elapsedUs.Value = 2_000_000u;
+                    damageNotifier.inflictingPlayerId.Value = (byte) inflictingPlayerId;
+                    damageNotifier.damage.Value = damage;
+                }
                 var health = hitPlayer.Require<HealthProperty>();
                 if (damage >= health)
                 {
