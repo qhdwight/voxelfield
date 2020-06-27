@@ -8,7 +8,7 @@ using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
 
-namespace Compound.Session
+namespace Compound.Session.Mode
 {
     [CreateAssetMenu(fileName = "Showdown", menuName = "Session/Mode/Showdown", order = 0)]
     public class ShowdownMode : DeathmatchMode

@@ -17,9 +17,16 @@ namespace Swihoni.Sessions.Player.Components
         public override string ToString() => $"Yaw: {yaw}, Pitch: {pitch}";
     }
 
+    [Serializable]
+    public class MoveType : ByteProperty
+    {
+        public const byte Grounded = 0, Flying = 1;
+    }
+
     [Serializable, ClientChecked]
     public class MoveComponent : ComponentBase
     {
+        public MoveType type;
         [PredictionTolerance(0.01f), InterpolateRange(2.0f)]
         public VectorProperty position, velocity;
         public ByteProperty groundTick;

@@ -35,7 +35,8 @@ namespace Input
         OpenScoreboard,
         AutocompleteConsole,
         PreviousConsoleCommand,
-        NextConsoleCommand
+        NextConsoleCommand,
+        Fly
     }
 
     public enum MouseMovement
@@ -84,6 +85,7 @@ namespace Input
                     [InputType.AutocompleteConsole] = KeyCode.Tab,
                     [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
                     [InputType.NextConsoleCommand] = KeyCode.DownArrow,
+                    [InputType.Fly] = KeyCode.F
                 }
             };
     }

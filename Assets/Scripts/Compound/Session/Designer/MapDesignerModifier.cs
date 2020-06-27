@@ -1,11 +1,13 @@
 using Input;
+using Swihoni.Sessions;
 using Swihoni.Util.Math;
 using UnityEngine;
+using Voxel;
 
-namespace Voxel.Map.Designer
+namespace Compound.Session.Designer
 {
     [RequireComponent(typeof(CharacterController))]
-    public class MapDesignerGod : MonoBehaviour
+    public class MapDesignerModifier : ModifierBehaviorBase
     {
         private enum MoveMode
         {
@@ -78,7 +80,7 @@ namespace Voxel.Map.Designer
             if (!wantsBreak && !wantsPlace) return;
             if (!GetVoxel(out RaycastHit hit)) return;
             var position = (Position3Int) (hit.point + hit.normal / 2 * (wantsPlace ? 1.0f : -1.0f));
-            Voxel? voxel = ChunkManager.Singleton.GetVoxel(position);
+            Voxel.Voxel? voxel = ChunkManager.Singleton.GetVoxel(position);
             if (wantsPlace)
             {
                 ChunkManager.Singleton.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = VoxelTexture.Stone});

@@ -115,6 +115,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             inputs.SetInput(PlayerInput.UseOne, inputProvider.GetInput(InputType.UseOne));
             inputs.SetInput(PlayerInput.UseTwo, inputProvider.GetInput(InputType.UseTwo));
             inputs.SetInput(PlayerInput.Reload, inputProvider.GetInput(InputType.Reload));
+            inputs.SetInput(PlayerInput.Fly, inputProvider.GetInput(InputType.Fly));
             inputs.SetInput(PlayerInput.Ads, inputProvider.GetInput(InputType.Ads));
             if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
             if (inputProvider.GetInput(InputType.ItemOne)) itemIndex.Value = 1;

@@ -1,9 +1,10 @@
 {
-    "name": "Voxel.Map.Designer",
+    "name": "Compound.Session.Designer",
     "references": [
         "GUID:74cc9c6f527046c2833c6ee4c17ae7a2",
         "GUID:675b7d67bbbe3ea41b2c0d6e53daebc9",
-        "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7"
+        "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7",
+        "GUID:70d0ab44ec86f354e892f6445447b475"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -15,9 +15,9 @@ namespace Swihoni.Sessions.Modes
                 respawnTimer.Value = 2_000_000u;
         }
 
-        internal override void Modify(SessionBase sesh, Container session, Container playerToModify, Container commands, uint durationUs)
+        internal override void Modify(SessionBase session, Container container, Container playerToModify, Container commands, uint durationUs)
         {
-            base.Modify(sesh, session, playerToModify, commands, durationUs);
+            base.Modify(session, container, playerToModify, commands, durationUs);
 
             if (commands.Without(out InputFlagProperty inputs) || playerToModify.Without(out HealthProperty health) || health.WithoutValue)
                 return;
@@ -30,7 +30,7 @@ namespace Swihoni.Sessions.Modes
                 else
                 {
                     respawn.Value = 0u;
-                    SpawnPlayer(sesh, playerToModify);
+                    SpawnPlayer(session, playerToModify);
                 }
             }
         }

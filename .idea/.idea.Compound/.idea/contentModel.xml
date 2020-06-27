@@ -19,12 +19,19 @@
             <e p="Session" t="Include">
               <e p="ClientInjector.cs" t="Include" />
               <e p="Components.cs" t="Include" />
+              <e p="Designer" t="Include">
+                <e p="Compound.Session.Designer.asmdef" t="Include" />
+                <e p="MapDesignerModifier.cs" t="Include" />
+              </e>
+              <e p="Mode" t="Include">
+                <e p="DesignerMode.cs" t="Include" />
+                <e p="ShowdownMode.cs" t="Include" />
+                <e p="WarmupMode.cs" t="Include" />
+              </e>
               <e p="PlayerHud.cs" t="Include" />
               <e p="ServerInjector.cs" t="Include" />
               <e p="SessionManager.cs" t="Include" />
-              <e p="ShowdownMode.cs" t="Include" />
               <e p="VoxelInjector.cs" t="Include" />
-              <e p="WarmupMode.cs" t="Include" />
             </e>
             <e p="Version.cs" t="Include" />
           </e>
@@ -44,10 +51,6 @@
             <e p="Chunk.cs" t="Include" />
             <e p="ChunkManager.cs" t="Include" />
             <e p="Map" t="Include">
-              <e p="Designer" t="Include">
-                <e p="MapDesignerGod.cs" t="Include" />
-                <e p="Voxel.Map.Designer.asmdef" t="Include" />
-              </e>
               <e p="MapManager.cs" t="Include" />
               <e p="MapSave.cs" t="Include" />
               <e p="ModelManager.cs" t="Include" />
@@ -63,6 +66,7 @@
         </e>
       </e>
       <e p="Compound.csproj" t="IncludeRecursive" />
+      <e p="Compound.Session.Designer.csproj" t="IncludeRecursive" />
       <e p="Compound.sln" t="IncludeFlat" />
       <e p="Console.csproj" t="IncludeRecursive" />
       <e p="Input.csproj" t="IncludeRecursive" />
@@ -283,7 +287,6 @@
       <e p="Swihoni.Util.Editor.csproj" t="IncludeRecursive" />
       <e p="Temp\Bin" t="ExcludeRecursive" />
       <e p="Voxel.csproj" t="IncludeRecursive" />
-      <e p="Voxel.Map.Designer.csproj" t="IncludeRecursive" />
     </e>
   </component>
 </project>

@@ -19,7 +19,7 @@ namespace Swihoni.Sessions.Player.Components
                           UseTwo = 11,
                           Ads = 12,
                           Reload = 13,
-                          Last = Reload;
+                          Fly = 14;
     }
 
     [Serializable, NoSerialization]

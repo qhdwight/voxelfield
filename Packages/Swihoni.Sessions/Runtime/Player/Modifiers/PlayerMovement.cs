@@ -34,7 +34,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_ForwardSpeed = 30.0f,
             m_SideSpeed = 30.0f,
             m_GravityFactor = 23.0f,
-            m_MaxStickDistance = 0.25f;
+            m_MaxStickDistance = 0.25f,
+            m_FlySpeed = 5.0f;
         [SerializeField] private float m_WalkStateDuration = 1.0f, m_CrouchDuration = 0.3f;
         [SerializeField] private LayerMask m_GroundMask = default;
 
@@ -68,6 +69,9 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_Controller.center = m_ControllerCenter * weight;
         }
 
+        // TODO:refactor bad
+        private bool m_LastFlyInput;
+
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
         {
             if (player.Without(out MoveComponent move)
@@ -76,8 +80,30 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             base.ModifyChecked(session, playerId, player, commands, durationUs);
             float duration = durationUs * TimeConversions.MicrosecondToSecond;
-            FullMove(move, inputs, duration);
+
+            bool flyInput = inputs.GetInput(PlayerInput.Fly);
+            if (flyInput && !m_LastFlyInput) move.type.Value = move.type == MoveType.Grounded ? MoveType.Flying : MoveType.Grounded;
+            m_LastFlyInput = flyInput;
+            if (move.type == MoveType.Grounded) FullMove(move, inputs, duration);
+            else FlyMove(move, inputs, duration);
+            
             ModifyStatus(move, inputs, duration);
+        }
+
+        private void FlyMove(MoveComponent move, InputFlagProperty inputs, float duration)
+        {
+            float forwards = inputs.GetAxis(PlayerInput.Forward, PlayerInput.Backward),
+                  right = inputs.GetAxis(PlayerInput.Right, PlayerInput.Left),
+                  up = inputs.GetAxis(PlayerInput.Jump, PlayerInput.Crouch),
+                  speedMultiplier = 1.0f;
+            
+            if (inputs.GetInput(PlayerInput.Walk)) speedMultiplier *= m_WalkMultiplier;
+            if (inputs.GetInput(PlayerInput.Sprint)) speedMultiplier *= m_SprintMultiplier;
+            
+            m_MoveTransform.Translate(duration * speedMultiplier * m_FlySpeed * new Vector3 {x = right, y = up, z = forwards});
+            move.position.Value = m_MoveTransform.position;
+            move.velocity.Value = Vector3.zero;
+            move.groundTick.Value = byte.MaxValue;
         }
 
         public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs) { }

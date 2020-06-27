@@ -12,7 +12,7 @@ namespace Voxel.Map
 
         public GameObject[] Models => m_Models;
 
-        public void LoadInModel(int modelId, Vector3 position, Quaternion rotation)
+        public void LoadInModel(int modelId, in Vector3 position, in Quaternion rotation)
         {
             GameObject model = Instantiate(m_Models[modelId], position, rotation);
             m_ActiveModels.Add(model);
