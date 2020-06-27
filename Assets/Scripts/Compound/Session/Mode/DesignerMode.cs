@@ -1,8 +1,10 @@
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Compound.Session.Mode
@@ -10,13 +12,15 @@ namespace Compound.Session.Mode
     [CreateAssetMenu(fileName = "Designer", menuName = "Session/Mode/Designer", order = 0)]
     public class DesignerMode : ModeBase
     {
-        public override void SpawnPlayer(SessionBase session, Container player)
+        protected override void SpawnPlayer(SessionBase session, Container player)
         {
+            Debug.Log("Spawn Player");
             // TODO:refactor zeroing
             if (player.With(out MoveComponent move))
             {
                 move.Zero();
                 move.position.Value = new Vector3 {y = 10.0f};
+                move.type.Value = MoveType.Flying;
             }
             player.Require<IdProperty>().Value = 1;
             player.Require<UsernameElement>().SetString("Designer");
@@ -26,7 +30,16 @@ namespace Compound.Session.Mode
             player.ZeroIfWith<RespawnTimerProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();
-            player.ZeroIfWith<InventoryComponent>();
+            if (player.With(out InventoryComponent inventory))
+            {
+                inventory.Zero();
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
+            }
+        }
+
+        public override void SetupNewPlayer(SessionBase session, Container player)
+        {
+            SpawnPlayer(session, player);
         }
     }
 }

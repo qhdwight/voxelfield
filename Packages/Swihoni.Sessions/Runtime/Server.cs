@@ -255,7 +255,7 @@ namespace Swihoni.Sessions
 
         protected void SetupNewPlayer(Container session, Container player)
         {
-            GetMode(session).SpawnPlayer(this, player);
+            GetMode(session).SetupNewPlayer(this, player);
             // TODO:refactor zeroing
 
             player.ZeroIfWith<StatsComponent>();

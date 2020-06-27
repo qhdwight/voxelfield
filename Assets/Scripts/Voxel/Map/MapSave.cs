@@ -31,28 +31,14 @@ namespace Voxel.Map
 
     public class MapSave
     {
-        public MapSave(string name, int terrainHeight = 0, Dimension dimension = new Dimension(), Dictionary<Position3Int, BrushStroke> brushStrokes = null,
-                       Dictionary<Position3Int, VoxelChangeData> changedVoxels = null, bool dynamicChunkLoading = false, NoiseData? terrainGenerationData = null,
-                       Dictionary<Position3Int, ModelData> models = null)
-        {
-            Name = name;
-            TerrainHeight = terrainHeight;
-            Dimension = dimension;
-            BrushStrokes = brushStrokes;
-            ChangedVoxels = changedVoxels;
-            DynamicChunkLoading = dynamicChunkLoading;
-            TerrainGenerationData = terrainGenerationData;
-            Models = models;
-        }
-
-        public string Name { get; }
-        public int TerrainHeight { get; }
+        public string Name { get; set; }
+        public int TerrainHeight { get; set; }
         public Dimension Dimension { get; set; }
-        public Dictionary<Position3Int, BrushStroke> BrushStrokes { get; }
-        public Dictionary<Position3Int, VoxelChangeData> ChangedVoxels { get; }
-        public Dictionary<Position3Int, ModelData> Models { get; }
-        public bool DynamicChunkLoading { get; }
-        public NoiseData? TerrainGenerationData { get; }
+        public Dictionary<Position3Int, BrushStroke> BrushStrokes { get; set; } = new Dictionary<Position3Int, BrushStroke>();
+        public Dictionary<Position3Int, VoxelChangeData> ChangedVoxels { get; set; } = new Dictionary<Position3Int, VoxelChangeData>();
+        public Dictionary<Position3Int, ModelData> Models { get; set; } = new Dictionary<Position3Int, ModelData>();
+        public bool DynamicChunkLoading { get; set; }
+        public NoiseData? TerrainGenerationData { get; set; }
 
         public static void Serialize(MapSave save, NetDataWriter writer)
         {
@@ -88,28 +74,29 @@ namespace Voxel.Map
 
         public static MapSave Deserialize(NetDataReader reader)
         {
-            string name = reader.GetString();
-            int terrainHeight = reader.GetInt();
-            Dimension dimension = Dimension.Deserialize(reader);
-            bool dynamic = reader.GetBool();
+            var mapSave = new MapSave
+            {
+                Name = reader.GetString(),
+                TerrainHeight = reader.GetInt(),
+                Dimension = Dimension.Deserialize(reader),
+                DynamicChunkLoading = reader.GetBool()
+            };
             // Noise data
             bool hasTerrainGenerationData = reader.GetBool();
             NoiseData? data = hasTerrainGenerationData ? (NoiseData?) NoiseData.Deserialize(reader) : null;
+            mapSave.TerrainGenerationData = data;
             // Brush strokes
             int brushStrokeCount = reader.GetInt();
-            var strokes = new Dictionary<Position3Int, BrushStroke>(brushStrokeCount);
             for (var _ = 0; _ < brushStrokeCount; _++)
-                strokes.Add(Position3Int.Deserialize(reader), BrushStroke.Deserialize(reader));
+                mapSave.BrushStrokes.Add(Position3Int.Deserialize(reader), BrushStroke.Deserialize(reader));
             // Changed voxels
             int voxelChangeCount = reader.GetInt();
-            var changeData = new Dictionary<Position3Int, VoxelChangeData>(voxelChangeCount);
             for (var _ = 0; _ < voxelChangeCount; _++)
-                changeData.Add(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
+                mapSave.ChangedVoxels.Add(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
             int modelCount = reader.GetInt();
-            var models = new Dictionary<Position3Int, ModelData>(modelCount);
             for (var _ = 0; _ < modelCount; _++)
-                models.Add(Position3Int.Deserialize(reader), ModelData.Deserialize(reader));
-            return new MapSave(name, terrainHeight, dimension, strokes, changeData, dynamic, data, models);
+                mapSave.Models.Add(Position3Int.Deserialize(reader), ModelData.Deserialize(reader));
+            return mapSave;
         }
     }
 }

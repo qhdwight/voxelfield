@@ -15,7 +15,7 @@ namespace Swihoni.Sessions.Modes
                 respawnTimer.Value = 2_000_000u;
         }
 
-        internal override void Modify(SessionBase session, Container container, Container playerToModify, Container commands, uint durationUs)
+        public override void Modify(SessionBase session, Container container, Container playerToModify, Container commands, uint durationUs)
         {
             base.Modify(session, container, playerToModify, commands, durationUs);
 

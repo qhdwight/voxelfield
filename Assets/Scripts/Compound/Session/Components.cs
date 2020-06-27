@@ -21,9 +21,9 @@ namespace Compound.Session
     {
         private Dictionary<Position3Int, VoxelChangeData> m_ChangeMap = new Dictionary<Position3Int, VoxelChangeData>();
 
-        public int Count => m_ChangeMap.Count;
+        public Dictionary<Position3Int, VoxelChangeData> Unsafe => m_ChangeMap;
 
-        public bool IsMaster { get; set; }
+        public int Count => m_ChangeMap.Count;
 
         public override void Serialize(NetDataWriter writer)
         {

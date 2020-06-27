@@ -83,11 +83,19 @@ namespace Swihoni.Sessions
 
         protected override void PreTick(Container tickSession)
         {
-            Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
-            // Inject our current player component before normal update cycle
-            hostPlayer.MergeFrom(m_HostCommands);
             // Set up new player component data
-            if (tickSession.Require<ServerStampComponent>().tick == 0u) SetupNewPlayer(tickSession, hostPlayer);
+            Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
+            if (tickSession.Require<ServerStampComponent>().tick == 0u)
+            {
+                // Set up new player component data
+                SetupNewPlayer(tickSession, hostPlayer);
+                m_HostCommands.MergeFrom(hostPlayer);
+            }
+            else
+            {
+                // Inject our current player component before normal update cycle
+                hostPlayer.MergeFrom(m_HostCommands);
+            }
         }
 
         protected override void RollbackHitboxes(int playerId)
@@ -106,7 +114,7 @@ namespace Swihoni.Sessions
         }
 
         // TODO:refactor bad
-        public override Container GetPlayerFromId(int playerId, Container session = null) => playerId == HostPlayerId ? m_HostCommands : base.GetPlayerFromId(playerId);
+        public override Container GetPlayerFromId(int playerId, Container session = null) => playerId == HostPlayerId ? m_HostCommands : base.GetPlayerFromId(playerId, session);
 
         public override Ray GetRayForPlayerId(int playerId) => playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
     }

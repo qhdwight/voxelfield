@@ -6,6 +6,7 @@ using LiteNetLib;
 using Swihoni.Sessions;
 using Swihoni.Util;
 using UnityEngine;
+using Voxel.Map;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -27,6 +28,8 @@ namespace Compound.Session
             Application.targetFrameRate = 200;
             AudioListener.volume = 0.5f;
             ConsoleCommandExecutor.RegisterCommand("host", args => StartHost());
+            ConsoleCommandExecutor.RegisterCommand("edit", args => StartEdit(args[1]));
+            ConsoleCommandExecutor.RegisterCommand("save", args => MapManager.Singleton.SaveCurrentMap());
             ConsoleCommandExecutor.RegisterCommand("serve", args => StartServer(m_LocalHost));
             ConsoleCommandExecutor.RegisterCommand("connect", args =>
             {
@@ -69,56 +72,46 @@ namespace Compound.Session
 #endif
         }
 
+        public Host StartEdit(string mapName)
+        {
+            StandaloneDisconnectAll();
+            var edit = new Host(VoxelfieldComponents.SessionElements, m_LocalHost, new ServerInjector());
+            return AddSession(edit);
+        }
+
         public Host StartHost()
         {
             StandaloneDisconnectAll();
             var host = new Host(VoxelfieldComponents.SessionElements, m_LocalHost, new ServerInjector());
-            try
-            {
-                host.Start();
-                m_Sessions.Add(host);
-                return host;
-            }
-            catch (Exception exception)
-            {
-                Debug.LogError(exception);
-                host.Disconnect();
-                return null;
-            }
+            return AddSession(host);
         }
 
         public Server StartServer(IPEndPoint ipEndPoint)
         {
             StandaloneDisconnectAll();
             var server = new Server(VoxelfieldComponents.SessionElements, ipEndPoint, new ServerInjector());
-            try
-            {
-                server.Start();
-                m_Sessions.Add(server);
-                return server;
-            }
-            catch (Exception exception)
-            {
-                Debug.LogError(exception);
-                server.Disconnect();
-                return null;
-            }
+            return AddSession(server);
         }
 
         public Client StartClient(IPEndPoint ipEndPoint)
         {
             StandaloneDisconnectAll();
             var client = new Client(VoxelfieldComponents.SessionElements, ipEndPoint, Version.String, new ClientInjector());
+            return AddSession(client);
+        }
+
+        private T AddSession<T>(T session) where T : NetworkedSessionBase
+        {
             try
             {
-                client.Start();
-                m_Sessions.Add(client);
-                return client;
+                session.Start();
+                m_Sessions.Add(session);
+                return session;
             }
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                client.Disconnect();
+                session.Disconnect();
                 return null;
             }
         }

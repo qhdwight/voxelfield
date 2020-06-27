@@ -44,9 +44,9 @@ namespace Console
             };
         }
 
-        public static void RegisterCommand(string commandName, Action<string[]> command) { _commands.Add(commandName, command); }
+        public static void RegisterCommand(string commandName, Action<string[]> command) => _commands.Add(commandName, command);
 
-        public static string GetAutocomplete(string stub) { return _commands.Keys.FirstOrDefault(command => command.StartsWith(stub)); }
+        public static string GetAutocomplete(string stub) => _commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
 
         public static void ExecuteCommand(string fullCommand)
         {

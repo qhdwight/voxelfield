@@ -12,7 +12,7 @@ namespace Swihoni.Sessions.Modes
     {
         public byte id;
 
-        public virtual void SpawnPlayer(SessionBase session, Container player)
+        protected virtual void SpawnPlayer(SessionBase session, Container player)
         {
             // TODO:refactor zeroing
             if (player.With(out MoveComponent move))
@@ -49,7 +49,7 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
         }
 
-        internal virtual void Modify(SessionBase session, Container container, Container playerToModify, Container commands, uint durationUs)
+        public virtual void Modify(SessionBase session, Container container, Container playerToModify, Container commands, uint durationUs)
         {
             if (playerToModify.Without(out HealthProperty health) || health.WithoutValue) return;
 
@@ -132,5 +132,7 @@ namespace Swihoni.Sessions.Modes
                 }
             }
         }
+
+        public virtual void SetupNewPlayer(SessionBase session, Container player) { }
     }
 }

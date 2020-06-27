@@ -81,6 +81,12 @@ namespace Swihoni.Sessions.Interfaces
                         }
                     });
                 }
+                else
+                {
+                    m_AmmoText.SetText(string.Empty);
+                    m_HealthText.SetText(string.Empty);
+                    m_InventoryText.SetText(string.Empty);
+                }
                 // TODO:refactor different durations for hit marker and damage notifier
                 if (localPlayer.With(out HitMarkerComponent hitMarker))
                 {

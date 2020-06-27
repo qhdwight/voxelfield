@@ -1265,10 +1265,10 @@ MonoBehaviour:
     m_Value: 0
   TickRate:
     m_Flags: 1
-    m_Value: 60
+    m_Value: 5
   ModeId:
     m_Flags: 1
-    m_Value: 1
+    m_Value: 2
   MapName: Test
 --- !u!850595691 &607889173
 LightingSettings:
@@ -2315,7 +2315,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b8d3a3271a54457aec8d83ec5d4f448, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Models: []
+  m_Models:
+  - {fileID: 3771953934437046790, guid: cc3a534403c7e2a45a276feac28d3b86, type: 3}
 --- !u!1 &889244215
 GameObject:
   m_ObjectHideFlags: 0
@@ -3417,7 +3418,7 @@ MonoBehaviour:
   m_MaxMessages: 100
   m_ConsoleText: {fileID: 388534042}
   m_ConsoleInput: {fileID: 1133061150}
-  m_AutocompleteColor: {r: 0.6901961, g: 0.6901961, b: 0.6901961, a: 0}
+  m_AutocompleteColor: {r: 0.6901961, g: 0.6901961, b: 0.6901961, a: 0.7176471}
 --- !u!225 &1234335078
 CanvasGroup:
   m_ObjectHideFlags: 0
