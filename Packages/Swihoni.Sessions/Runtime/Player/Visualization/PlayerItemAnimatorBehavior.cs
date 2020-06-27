@@ -154,7 +154,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 Vector3 adsPosition = targetRotation * -t.InverseTransformPoint(gunVisuals.AdsTarget.position);
                 t.localPosition = Vector3.Slerp(m_ItemVisual.FpvOffset, adsPosition, adsInterpolation);
 
-                m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView / 2, adsInterpolation);
+                m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView * m_ItemVisual.FovMultiplier, adsInterpolation);
             }
             else
             {
@@ -173,8 +173,8 @@ namespace Swihoni.Sessions.Player.Visualization
                 case AdsStatusId.ExitingAds:
                 case AdsStatusId.EnteringAds:
                     var gunModifier = (GunModifierBase) ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
-                    uint duration = gunModifier.GetAdsStatusModifierProperties(adsStatus.id).durationUs;
-                    aimInterpolation = (float) (adsStatus.elapsedUs / (decimal) duration);
+                    uint durationUs = gunModifier.GetAdsStatusModifierProperties(adsStatus.id).durationUs;
+                    aimInterpolation = (float) (adsStatus.elapsedUs / (decimal) durationUs);
                     break;
                 case AdsStatusId.Ads:
                     aimInterpolation = 1.0f;

@@ -1,5 +1,3 @@
-using System;
-using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
@@ -7,7 +5,6 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,7 +26,7 @@ namespace Swihoni.Sessions.Interfaces
         // {
         //     return container.Has(out component) && (m_Previous == null || !Equals(component, m_Previous.Require<TElement>()));
         // }
-        
+
         protected override void Awake()
         {
             base.Awake();
@@ -37,7 +34,7 @@ namespace Swihoni.Sessions.Interfaces
             m_DefaultHitMarkerColor = m_HitMarker.color;
             m_DefaultCrosshair = m_Crosshair.sprite;
         }
-        
+
         public override void Render(SessionBase session, Container sessionContainer) { }
 
         public void Render(Container session, int localPlayerId, Container localPlayer)
@@ -66,7 +63,7 @@ namespace Swihoni.Sessions.Interfaces
                     // Color crosshairColor = m_Crosshair.color;
                     // crosshairColor.a = inventory.adsStatus.id.Else(AdsStatusId.HipAiming) == AdsStatusId.Ads ? 0.0f : 1.0f;
                     // m_Crosshair.color = crosshairColor;
-                    ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisuals(equippedItem.id);
+                    ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisualPrefab(equippedItem.id);
                     bool isDefaultCrosshair = visualPrefab.Crosshair == null;
                     m_Crosshair.sprite = isDefaultCrosshair ? m_DefaultCrosshair : visualPrefab.Crosshair;
                     m_Crosshair.rectTransform.sizeDelta = Vector2.one * (isDefaultCrosshair ? 32.0f : 48.0f);

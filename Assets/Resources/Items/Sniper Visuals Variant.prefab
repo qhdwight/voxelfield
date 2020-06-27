@@ -1,43 +1,37 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &7961966941756700308
+--- !u!1001 &7160064975647960249
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3047713977906850833, guid: c68544406b7baff40a29df41b5183514,
+    - target: {fileID: 1464115003832491034, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.031999946
+      propertyPath: m_LocalPosition.z
+      value: 0.889
       objectReference: {fileID: 0}
-    - target: {fileID: 3047713979342681190, guid: c68544406b7baff40a29df41b5183514,
+    - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.29
+      propertyPath: m_Id
+      value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: m_FovMultiplier
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: m_StatusVisualProperties.Array.data[1].animationClip
+      value: 
+      objectReference: {fileID: 7400000, guid: d3f8cc55f9434cd429f8c8840dbb0822, type: 2}
     - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
       propertyPath: m_StatusVisualProperties.Array.data[1].animationEvents.Array.data[0].audioSource
       value: 
-      objectReference: {fileID: 8300000, guid: bd51211f33447e048904fad5a5398bf0, type: 3}
-    - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
-        type: 3}
-      propertyPath: m_Id
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
-        type: 3}
-      propertyPath: m_Crosshair
-      value: 
-      objectReference: {fileID: 21300000, guid: 9dba4a28b5e95d5458306b575f9721a7,
-        type: 3}
-    - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
-        type: 3}
-      propertyPath: m_FovMultiplier
-      value: 0.4
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8300000, guid: 904ae5919470088429560ed2be6a8ccc, type: 3}
     - target: {fileID: 3047713979344524743, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -96,44 +90,24 @@ PrefabInstance:
     - target: {fileID: 3047713979344524760, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
       propertyPath: m_Name
-      value: Shotgun Visuals Variant
+      value: Sniper Visuals Variant
       objectReference: {fileID: 0}
     - target: {fileID: 3402936330214810779, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 3814378201483603881, guid: f5c9bf965b4ef6546bf64cba075fc475,
+      objectReference: {fileID: -8310518740751045040, guid: e75ded3698ef534468f9b07fe0a844df,
         type: 3}
-    - target: {fileID: 4030869189799941847, guid: c68544406b7baff40a29df41b5183514,
-        type: 3}
-      propertyPath: m_ParentOne.positionOffset.y
-      value: 0.29
-      objectReference: {fileID: 0}
-    - target: {fileID: 5065591227717801977, guid: c68544406b7baff40a29df41b5183514,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.083000064
-      objectReference: {fileID: 0}
-    - target: {fileID: 5463473252016881896, guid: c68544406b7baff40a29df41b5183514,
-        type: 3}
-      propertyPath: m_Id
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 5463473252016881999, guid: c68544406b7baff40a29df41b5183514,
-        type: 3}
-      propertyPath: m_Name
-      value: Shotgun Visuals Variant
-      objectReference: {fileID: 0}
     - target: {fileID: 6414251066945379187, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: -6318658350936181802, guid: f5c9bf965b4ef6546bf64cba075fc475,
+      objectReference: {fileID: -6318658350936181802, guid: e75ded3698ef534468f9b07fe0a844df,
         type: 3}
-    - target: {fileID: 8343731253669802441, guid: c68544406b7baff40a29df41b5183514,
+    - target: {fileID: 6513729010317658784, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.083000064
+      propertyPath: m_Materials.Array.size
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c68544406b7baff40a29df41b5183514, type: 3}

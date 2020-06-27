@@ -76,7 +76,7 @@ namespace Swihoni.Sessions.Player.Visualization
                             m_DamageText.SetText(damageNotifier.damage.ToString());
                             Vector3 GetPosition(int i) => container.Require<PlayerContainerArrayElement>()[i].Require<MoveComponent>().position;
                             m_DamageText.transform.position = GetPosition(playerId) + new Vector3 {y = 2.4f};
-                            m_DamageText.transform.LookAt(GetPosition(container.Require<LocalPlayerId>()));    
+                            m_DamageText.transform.LookAt(GetPosition(container.Require<LocalPlayerId>()));
                         }
                     }
                 }

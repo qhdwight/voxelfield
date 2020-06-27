@@ -39,6 +39,7 @@ namespace Swihoni.Sessions.Items.Visuals
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;
         [SerializeField] private ChildBehavior[] m_ChildBehaviors = default;
         [SerializeField] private Sprite m_Crosshair = default;
+        [SerializeField] private float m_FovMultiplier = 1.0f;
 
         private AudioSource m_AudioSource;
         private AnimationClipPlayable[] m_Animations;
@@ -54,6 +55,7 @@ namespace Swihoni.Sessions.Items.Visuals
         public Sprite Crosshair => m_Crosshair;
 
         public ItemModifierBase ModiferProperties { get; private set; }
+        public float FovMultiplier => m_FovMultiplier;
 
         internal void SetupForPlayerAnimation(PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {

@@ -17,7 +17,7 @@ namespace Compound.Session
             => ChunkManager.Singleton.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, changedVoxels);
 
         private readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
-        
+
         protected override void OnHandleNewConnection(ConnectionRequest request)
         {
             void Reject(string message)

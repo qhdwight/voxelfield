@@ -69,7 +69,7 @@ namespace Swihoni.Sessions
                 return;
             Container player = GetPlayerFromId(localPlayerId, latestSession);
             UpdateInputs(player, localPlayerId);
-            GetPlayerModifier(player, localPlayerId).ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), m_CommandHistory.Peek(), deltaUs);
+            GetPlayerModifier(player, localPlayerId).ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), player, m_CommandHistory.Peek(), deltaUs);
         }
 
         protected override void Render(uint renderTimeUs)

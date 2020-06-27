@@ -51,6 +51,6 @@ namespace Swihoni.Sessions.Items
 
         public static ItemModifierBase GetModifier(byte itemId) => _itemModifiers[itemId - 1];
 
-        public static ItemVisualBehavior GetVisuals(byte itemId) => _itemVisualPrefabs[itemId - 1];
+        public static ItemVisualBehavior GetVisualPrefab(byte itemId) => _itemVisualPrefabs[itemId - 1];
     }
 }

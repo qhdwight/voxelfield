@@ -80,7 +80,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             ModifyStatus(move, inputs, duration);
         }
 
-        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, uint durationUs) { }
+        public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs) { }
 
         public override void ModifyCommands(SessionBase session, Container commands)
         {

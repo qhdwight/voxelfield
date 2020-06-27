@@ -25,7 +25,7 @@ namespace Swihoni.Components.Tests
             var destination = new OuterComponent();
             destination.CopyFrom(source);
             Assert.IsTrue(destination.EqualTo(source));
-            
+
             var s1 = new StringElement(16);
             s1.SetString("Hi");
             var s2 = new StringElement(16);

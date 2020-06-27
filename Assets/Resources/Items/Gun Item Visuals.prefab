@@ -53,7 +53,7 @@ MonoBehaviour:
     isReverseAnimation: 0
   - animationClip: {fileID: 7400000, guid: f2fa5c02a6b349a4a971678ee5f5ae9c, type: 2}
     animationEvents:
-    - time: 0
+    - timeUs: 0
       audioSource: {fileID: 8300000, guid: 14eea82f549388a4789326b600a6fe28, type: 3}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}
@@ -67,14 +67,14 @@ MonoBehaviour:
   m_EquipStatusVisualProperties:
   - animationClip: {fileID: 7400000, guid: a1f87a57559906843a17bc632108d04a, type: 2}
     animationEvents:
-    - time: 0
+    - timeUs: 0
       audioSource: {fileID: 8300000, guid: fba73e8c764fdf441a3dd094d7122cbd, type: 3}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}
     isReverseAnimation: 1
   - animationClip: {fileID: 7400000, guid: a1f87a57559906843a17bc632108d04a, type: 2}
     animationEvents:
-    - time: 0
+    - timeUs: 0
       audioSource: {fileID: 8300000, guid: 6c1002d19619de140aa5bc40398e9eaf, type: 3}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}
@@ -83,6 +83,9 @@ MonoBehaviour:
   m_IkR: {fileID: 7032793369469315942}
   m_FpvOffset: {x: 0.183, y: -0.256, z: 0.213}
   m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
+  m_ChildBehaviors: []
+  m_Crosshair: {fileID: 0}
+  m_FovMultiplier: 0.5
   m_AdsTarget: {fileID: 7032793368327812526}
 --- !u!1 &7032793368327812527
 GameObject:

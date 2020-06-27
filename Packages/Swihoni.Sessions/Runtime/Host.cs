@@ -38,7 +38,7 @@ namespace Swihoni.Sessions
             if (hostModifier)
             {
                 hostModifier.ModifyCommands(this, m_HostCommands);
-                hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+                hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
                 hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
             }
             GetMode(session).Modify(this, session, m_HostCommands, m_HostCommands, deltaUs);

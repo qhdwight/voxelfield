@@ -10,30 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c3fbf3b763934424afec26d7f2800659, type: 3}
-  m_Name: Shotgun
+  m_Name: Sniper
   m_EditorClassIdentifier: 
-  id: 4
-  itemName: Shotgun
+  id: 8
+  itemName: Sniper
   movementFactor: 1
   m_StatusModiferProperties:
   - durationUs: 2000000
     isPersistent: 0
-  - durationUs: 500000
+  - durationUs: 1000000
     isPersistent: 0
   - durationUs: 0
     isPersistent: 0
   - durationUs: 2000000
     isPersistent: 0
   m_EquipStatusModiferProperties:
-  - durationUs: 100000
+  - durationUs: 150000
     isPersistent: 0
-  - durationUs: 100000
-    isPersistent: 0
-  - durationUs: 4294967295
+  - durationUs: 150000
     isPersistent: 0
   - durationUs: 4294967295
     isPersistent: 0
-  m_Damage: 50
+  - durationUs: 4294967295
+    isPersistent: 0
+  m_Damage: 90
   m_PlayerMask:
     serializedVersion: 2
     m_Bits: 2048
@@ -41,28 +41,28 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 4
+      time: 60
       value: 1
       inSlope: Infinity
-      outSlope: -0.04598209
-      tangentMode: 7
+      outSlope: -0.0007142859
+      tangentMode: 71
       weightedMode: 3
       inWeight: 0
-      outWeight: 0.110645734
+      outWeight: 0
     - serializedVersion: 3
       time: 200
-      value: 0.1
-      inSlope: -0.0003005537
+      value: 0.9
+      inSlope: -0.0007142859
       outSlope: 0
-      tangentMode: 1
+      tangentMode: 69
       weightedMode: 3
-      inWeight: 0.8674187
+      inWeight: 0.5285432
       outWeight: 0.46777794
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_MagSize: 6
-  m_StartingAmmoInReserve: 24
+  m_MagSize: 10
+  m_StartingAmmoInReserve: 30
   m_AdsModifierProperties:
   - durationUs: 4294967295
     isPersistent: 0

@@ -10,7 +10,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         private PlayerHitboxManager m_HitboxManager;
         private PlayerTrigger m_Trigger;
         private SessionBase m_Session;
-        
+
         private PlayerMovement m_Movement;
         public PlayerMovement Movement
         {
@@ -40,11 +40,11 @@ namespace Swihoni.Sessions.Player.Modifiers
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs);
         }
 
-        public void ModifyTrusted(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs)
+        public void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)
         {
             if (session.IsPaused) return;
-            if (UnityEngine.Input.GetKeyDown(KeyCode.T)) playerToModify.Require<IdProperty>().Value = 0;
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(session, playerId, playerToModify, commands, durationUs);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.T)) trustedPlayer.Require<IdProperty>().Value = 0;
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(session, playerId, trustedPlayer, verifiedPlayer, commands, durationUs);
         }
 
         public void Synchronize(Container player)
@@ -80,7 +80,8 @@ namespace Swihoni.Sessions.Player.Modifiers
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>
-        public virtual void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, uint durationUs) => SynchronizeBehavior(player);
+        public virtual void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container player, Container commands, uint durationUs) =>
+            SynchronizeBehavior(trustedPlayer);
 
         public virtual void ModifyCommands(SessionBase session, Container commands) { }
 

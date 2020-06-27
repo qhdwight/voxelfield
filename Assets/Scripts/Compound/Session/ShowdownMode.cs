@@ -13,7 +13,8 @@ namespace Compound.Session
     [CreateAssetMenu(fileName = "Showdown", menuName = "Session/Mode/Showdown", order = 0)]
     public class ShowdownMode : DeathmatchMode
     {
-        protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
+        protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
+                                                       in RaycastHit hit)
         {
             float baseDamage = base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit);
             if (weapon is MeleeModifier) return baseDamage;

@@ -204,7 +204,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1571494958}
   m_HandleRect: {fileID: 1571494957}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -3282,8 +3282,6 @@ MonoBehaviour:
   - {fileID: 1857887974}
   m_KillHitMarkerColor: {r: 1, g: 0, b: 0, a: 1}
   m_InventoryText: {fileID: 2003006667}
-  m_DamagePrefab: {fileID: 5493088330142503384, guid: 97b064cfaf325df47ab4517f914a1bc5,
-    type: 3}
 --- !u!225 &1145067614
 CanvasGroup:
   m_ObjectHideFlags: 0

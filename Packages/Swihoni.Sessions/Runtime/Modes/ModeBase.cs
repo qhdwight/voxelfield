@@ -34,10 +34,11 @@ namespace Swihoni.Sessions.Modes
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.TestingRifle, 2);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shotgun, 3);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 4);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Grenade, 5);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Molotov, 6);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.C4, 7);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Sniper, 4);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 5);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Grenade, 6);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Molotov, 7);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.C4, 8);
             }
         }
 
@@ -84,7 +85,8 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        protected virtual float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
+        protected virtual float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
+                                                      in RaycastHit hit)
             => weapon.GetDamage(hit.distance) * hitbox.DamageMultiplier;
 
         public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName)

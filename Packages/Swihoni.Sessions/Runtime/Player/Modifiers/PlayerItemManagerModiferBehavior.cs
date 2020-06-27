@@ -30,7 +30,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             itemModifier.ModifyChecked(session, playerId, equippedItemComponent, inventoryComponent, inputProperty, durationUs);
         }
 
-        public override void ModifyTrusted(SessionBase session, int playerId, Container player, Container commands, uint durationUs) { }
+        public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs) { }
 
         private static void ModifyEquipStatus(SessionBase session, int playerId, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex, uint durationUs)
         {
