@@ -25,8 +25,7 @@ namespace Compound.Session.Mode
             player.Require<IdProperty>().Value = 1;
             player.Require<UsernameElement>().SetString("Designer");
             player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health))
-                health.Value = 100;
+            if (player.With(out HealthProperty health)) health.Value = 100;
             player.ZeroIfWith<RespawnTimerProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();

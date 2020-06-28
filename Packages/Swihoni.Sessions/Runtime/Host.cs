@@ -41,7 +41,7 @@ namespace Swihoni.Sessions
                 hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
                 hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
             }
-            GetMode(session).Modify(this, session, m_HostCommands, m_HostCommands, deltaUs);
+            GetMode(session).ModifyPlayer(this, session, m_HostCommands, m_HostCommands, deltaUs);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.timeUs.Value = timeUs;
             stamp.tick.Value = serverStamp.tick;

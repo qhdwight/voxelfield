@@ -1265,10 +1265,10 @@ MonoBehaviour:
     m_Value: 0
   TickRate:
     m_Flags: 1
-    m_Value: 5
+    m_Value: 60
   ModeId:
     m_Flags: 1
-    m_Value: 2
+    m_Value: 1
   MapName: Test
 --- !u!850595691 &607889173
 LightingSettings:
@@ -2317,6 +2317,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Models:
   - {fileID: 3771953934437046790, guid: cc3a534403c7e2a45a276feac28d3b86, type: 3}
+  - {fileID: 6272800595086761121, guid: 0dced749076666a4b8f742bef2ec4e09, type: 3}
 --- !u!1 &889244215
 GameObject:
   m_ObjectHideFlags: 0

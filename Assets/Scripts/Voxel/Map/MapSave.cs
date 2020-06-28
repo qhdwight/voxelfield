@@ -9,6 +9,7 @@ namespace Voxel.Map
     {
         public ushort modelId;
         public Quaternion rotation;
+        public byte? spawnTeam;
 
         public static void Serialize(NetDataWriter writer, ModelData model)
         {
@@ -17,15 +18,19 @@ namespace Voxel.Map
             writer.Put(model.rotation.y);
             writer.Put(model.rotation.z);
             writer.Put(model.rotation.w);
+            writer.Put(model.spawnTeam.HasValue);
+            if (model.spawnTeam is byte team) writer.Put(team);
         }
 
         public static ModelData Deserialize(NetDataReader reader)
         {
-            return new ModelData
+            var modelData = new ModelData
             {
                 modelId = reader.GetUShort(),
-                rotation = new Quaternion(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat())
+                rotation = new Quaternion(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat()),
             };
+            if (reader.GetBool()) modelData.spawnTeam = reader.GetByte();
+            return modelData;
         }
     }
 

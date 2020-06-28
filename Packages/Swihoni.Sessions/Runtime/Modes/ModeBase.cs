@@ -14,6 +14,7 @@ namespace Swihoni.Sessions.Modes
 
         protected virtual void SpawnPlayer(SessionBase session, Container player)
         {
+            Debug.Log("Spawning player");
             // TODO:refactor zeroing
             if (player.With(out MoveComponent move))
             {
@@ -21,7 +22,6 @@ namespace Swihoni.Sessions.Modes
                 move.position.Value = session.Injector.GetSpawnPosition();
             }
             player.Require<IdProperty>().Value = 1;
-            player.Require<UsernameElement>().SetString("Default");
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health))
                 health.Value = 100;
@@ -42,30 +42,37 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        internal virtual void KillPlayer(Container player)
+        protected virtual void KillPlayer(Container player)
         {
             player.ZeroIfWith<HealthProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
         }
 
-        public virtual void Modify(SessionBase session, Container container, Container playerToModify, Container commands, uint durationUs)
+        public virtual void ModifyPlayer(SessionBase session, Container container, Container player, Container commands, uint durationUs)
         {
-            if (playerToModify.Without(out HealthProperty health) || health.WithoutValue) return;
+            if (player.Without(out HealthProperty health) || health.WithoutValue) return;
 
-            if (playerToModify.With(out HitMarkerComponent hitMarker))
+            if (player.With(out HitMarkerComponent hitMarker))
                 if (hitMarker.elapsedUs.Value > durationUs) hitMarker.elapsedUs.Value -= durationUs;
                 else hitMarker.elapsedUs.Value = 0u;
-            if (playerToModify.With(out DamageNotifierComponent damageNotifier))
+            if (player.With(out DamageNotifierComponent damageNotifier))
                 if (damageNotifier.elapsedUs.Value > durationUs) damageNotifier.elapsedUs.Value -= durationUs;
                 else damageNotifier.elapsedUs.Value = 0u;
-            if (playerToModify.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
-                KillPlayer(playerToModify);
+            if (player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
+                KillPlayer(player);
+
+            if (commands.With(out WantedTeamProperty wantedTeam) && AllowTeamSwap(container, player))
+            {
+                player.Require<TeamProperty>().Value = wantedTeam;
+            }
         }
 
-        public void Modify(Container session, uint durationUs)
+        public virtual bool AllowTeamSwap(Container container, Container player) => true;
+
+        public virtual void Modify(SessionBase session, Container container, uint durationUs)
         {
-            if (session.With(out KillFeedElement killFeed))
+            if (container.With(out KillFeedElement killFeed))
             {
                 foreach (KillFeedComponent kill in killFeed)
                     if (kill.elapsedUs > durationUs) kill.elapsedUs.Value -= durationUs;
@@ -85,8 +92,8 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        protected virtual float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
-                                                      in RaycastHit hit)
+        protected virtual float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer,
+                                                      PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
             => weapon.GetDamage(hit.distance) * hitbox.DamageMultiplier;
 
         public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName)
@@ -133,6 +140,6 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void SetupNewPlayer(SessionBase session, Container player) { }
+        public virtual void SetupNewPlayer(SessionBase session, Container player) => SpawnPlayer(session, player);
     }
 }

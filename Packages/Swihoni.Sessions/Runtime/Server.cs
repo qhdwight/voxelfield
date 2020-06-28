@@ -13,6 +13,7 @@ using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Profiling;
+using Random = UnityEngine.Random;
 
 namespace Swihoni.Sessions
 {
@@ -33,6 +34,7 @@ namespace Swihoni.Sessions
         public override void Start()
         {
             base.Start();
+            Random.InitState(Environment.TickCount);
             m_Socket = new ComponentServerSocket(IpEndPoint, m_Injector.OnHandleNewConnection);
             m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
             m_Socket.Listener.NetworkLatencyUpdateEvent += OnLatencyUpdated;
@@ -140,7 +142,7 @@ namespace Swihoni.Sessions
 
             void IterateEntity(ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs);
             EntityManager.ModifyAll(serverSession, IterateEntity);
-            GetMode(serverSession).Modify(serverSession, durationUs);
+            GetMode(serverSession).Modify(this, serverSession, durationUs);
 
             SendServerSession(tick, serverSession);
         }
@@ -242,7 +244,7 @@ namespace Swihoni.Sessions
                         ModeBase mode = GetMode(serverSession);
                         serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
                         GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
-                        mode.Modify(this, serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);
+                        mode.ModifyPlayer(this, serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
                 }

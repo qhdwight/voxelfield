@@ -57,16 +57,13 @@ namespace Swihoni.Sessions.Player.Components
     }
 
     [Serializable, OnlyServerTrusted]
-    public class TeamProperty : PropertyBase<TeamProperty.Id>
+    public class TeamProperty : ByteProperty
     {
-        public enum Id : byte
-        {
-            None
-        }
+    }
 
-        public override bool ValueEquals(PropertyBase<Id> other) => other.Value == Value;
-        public override void SerializeValue(NetDataWriter writer) => writer.Put((byte) Value);
-        public override void DeserializeValue(NetDataReader reader) => Value = (Id) reader.GetByte();
+    [Serializable]
+    public class WantedTeamProperty : ByteProperty
+    {
     }
 
     [Serializable]

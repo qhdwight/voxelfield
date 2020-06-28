@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Swihoni.Components
 {
@@ -13,6 +14,8 @@ namespace Swihoni.Components
     {
         public static bool IsElement(this Type type) => type.IsSubclassOf(typeof(ElementBase));
 
+        public static void AppendAll<T>(this List<T> enumerable, params T[] elements) => enumerable.AddRange(elements);
+        
         /// <summary>
         /// Un-sets with value flag.
         /// If you instead want to zero, see <see cref="Zero{T}"/>

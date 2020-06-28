@@ -318,10 +318,10 @@ namespace Voxel
         /// <returns>Position of chunk in respect to chunks dictionary</returns>
         private Position3Int WorldToChunk(in Vector3 worldPosition)
         {
-            float multiple = m_ChunkSize;
-            return new Position3Int(Mathf.FloorToInt(worldPosition.x / multiple),
-                                    Mathf.FloorToInt(worldPosition.y / multiple),
-                                    Mathf.FloorToInt(worldPosition.z / multiple));
+            float chunkSize = m_ChunkSize;
+            return new Position3Int(Mathf.FloorToInt(worldPosition.x / chunkSize),
+                                    Mathf.FloorToInt(worldPosition.y / chunkSize),
+                                    Mathf.FloorToInt(worldPosition.z / chunkSize));
         }
     }
 }

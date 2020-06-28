@@ -5,11 +5,14 @@ using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using Voxel;
 
 namespace Compound.Session
 {
+    /* Session */
+    
     [Serializable]
     public class VoxelMapNameElement : StringElement
     {
@@ -86,6 +89,26 @@ namespace Compound.Session
         public override string ToString() => $"Count: {m_ChangeMap.Count}";
     }
 
+    [Serializable]
+    public class ShowdownSessionComponent : ComponentBase
+    {
+        public ByteProperty number;
+        public UIntProperty remainingUs;
+    }
+
+    /* Player */
+
+    [Serializable]
+    public class ShowdownPlayerComponent : ComponentBase
+    {
+        public ByteProperty cured;
+    }
+    
+    [Serializable]
+    public class MoneyProperty : UShortProperty
+    {
+    }
+
     public static class VoxelfieldComponents
     {
         public static readonly SessionElements SessionElements;
@@ -93,7 +116,9 @@ namespace Compound.Session
         static VoxelfieldComponents()
         {
             SessionElements = SessionElements.NewStandardSessionElements();
-            SessionElements.elements.AddRange(new[] {typeof(VoxelMapNameElement), typeof(ChangedVoxelsProperty)});
+            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(MoneyProperty));
+            // SessionElements.commandElements.AppendAll(typeof(TeamProperty));
+            SessionElements.elements.AppendAll(typeof(VoxelMapNameElement), typeof(ChangedVoxelsProperty), typeof(ShowdownSessionComponent));
         }
     }
 }

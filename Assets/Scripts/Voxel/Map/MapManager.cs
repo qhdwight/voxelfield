@@ -85,7 +85,12 @@ namespace Voxel.Map
             foreach (KeyValuePair<Position3Int, ModelData> model in mapSave.Models)
                 ModelManager.Singleton.LoadInModel(model.Value.modelId, model.Key, model.Value.rotation);
 
-            if (Application.isEditor) mapSave.Dimension = new Dimension(new Position3Int(-1, 0, -1), new Position3Int(0, 0, 0));
+            if (Application.isEditor)
+            {
+                mapSave.Dimension = new Dimension(new Position3Int(-1, 0, -1), new Position3Int(0, 0, 0));
+            }
+            mapSave.Models.Add(new Position3Int {x = 10, y = 20}, new ModelData {modelId = 1, spawnTeam = 0, rotation = Quaternion.identity});
+            mapSave.Models.Add(new Position3Int {z = 10, y = 20}, new ModelData {modelId = 1, spawnTeam = 1, rotation = Quaternion.identity});
 
             yield return LoadMapSave(mapSave);
 
