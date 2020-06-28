@@ -27,6 +27,15 @@ namespace Compound.Session
             m_MasterChanges.AddAllFrom(changed);
         }
 
+        protected internal override void VoxelTransaction(VoxelChangeTransaction uncommitted)
+        {
+            var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();
+            foreach ((Position3Int position, VoxelChangeData change) in uncommitted)
+                changed.SetVoxel(position, change);
+            m_MasterChanges.AddAllFrom(changed);
+            base.VoxelTransaction(uncommitted); // Commit
+        }
+
         protected override void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession)
         {
             var changedVoxels = sendSession.Require<ChangedVoxelsProperty>();
@@ -35,8 +44,9 @@ namespace Compound.Session
 
         protected override void OnSettingsTick(Container serverSession)
         {
+            base.OnSettingsTick(serverSession);
             MapManager manager = MapManager.Singleton;
-            manager.SetMap(DebugBehavior.Singleton.MapName);
+            manager.SetMap(DebugBehavior.Singleton.MapNameProperty);
             if (manager.Map != null) manager.Map.ChangedVoxels = m_MasterChanges.Unsafe;
         }
 

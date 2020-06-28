@@ -131,7 +131,7 @@ CharacterController:
   serializedVersion: 2
   m_Height: 2
   m_Radius: 0.35
-  m_SlopeLimit: 70
+  m_SlopeLimit: 85
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
@@ -241,6 +241,7 @@ MonoBehaviour:
   m_SideSpeed: 30
   m_GravityFactor: 23
   m_MaxStickDistance: 0.25
+  m_FlySpeed: 5
   m_WalkStateDuration: 0.5
   m_CrouchDuration: 0.1
   m_GroundMask:
@@ -283,7 +284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Head: {fileID: 4341770902972035209}
-  m_FpvRenders: []
+  m_TpvRenders: []
   m_StatusVisualProperties:
   - clip: {fileID: 7400000, guid: d758aa32307fd8147a7680f5f51e8464, type: 2}
   - clip: {fileID: 7400000, guid: 533156bd8f27a1b43a8c9f830bbca24c, type: 2}

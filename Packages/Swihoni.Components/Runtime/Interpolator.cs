@@ -97,7 +97,7 @@ namespace Swihoni.Components
                     }
                     case ComponentBase c1 when _e2 is ComponentBase c2 && _ed is ComponentBase cd:
                         cd.InterpolateFrom(c1, c2, interpolation);
-                        if (c1.GetType().IsDefined(typeof(CustomInterpolationAttribute)))
+                        if (c1.WithAttribute<CustomInterpolationAttribute>())
                             return Navigation.SkipDescendents;
                         break;
                 }

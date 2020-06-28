@@ -61,46 +61,107 @@ namespace Swihoni.Components
     }
 
     [Serializable]
-    public class StringElement : ArrayElement<CharProperty>
+    public class StringProperty : PropertyBase
     {
-        private StringBuilder m_Builder;
+        private readonly int m_MaxSize;
+        private const int DefaultSize = 255;
 
-        public StringElement(int size) : base(size) => m_Builder = new StringBuilder(size);
+        public StringBuilder Builder { get; }
 
-        public bool WithValue => m_Values[0].WithValue;
+        public StringProperty() : this(DefaultSize) { }
 
-        public StringBuilder GetString()
+        public StringProperty(int maxSize)
         {
-            m_Builder.Clear();
-            foreach (CharProperty character in m_Values)
-            {
-                if (character.WithoutValue || character == '\0')
-                    break;
-                m_Builder.Append(character);
-            }
-            return m_Builder;
+            m_MaxSize = maxSize;
+            Builder = new StringBuilder(maxSize);
         }
 
-        public void SetString(string @string) => SetString(builder => builder.Append(@string));
+        public StringProperty(string @string, int maxSize = DefaultSize) : this(maxSize) => SetTo(@string);
 
-        /// <summary>
-        /// Modifies internal character array via a string builder.
-        /// </summary>
-        /// <param name="action">Use append methods on string builder to chain.</param>
-        public void SetString(Action<StringBuilder> action)
+        private void ThrowIfOverMaxSize() => ThrowIfOverMaxSize(Builder.Length);
+
+        private void ThrowIfOverMaxSize(int size)
         {
-            m_Builder.Clear();
-            action(m_Builder);
-            for (var i = 0; i < m_Values.Length; i++)
+            if (size > m_MaxSize) throw new Exception($"String was over max size! Size: {size} Max: {m_MaxSize}");
+        }
+
+        public override void Serialize(NetDataWriter writer)
+        {
+            writer.Put((byte) Builder.Length);
+            for (var i = 0; i < Builder.Length; i++)
+                writer.Put(Builder[i]);
+        }
+
+        public override void Deserialize(NetDataReader reader)
+        {
+            int size = reader.GetByte();
+            ThrowIfOverMaxSize(size);
+            Zero();
+            for (var _ = 0; _ < size; _++)
+                Builder.Append(reader.GetChar());
+            WithValue = true;
+        }
+        
+        public override int GetHashCode()
+        {
+            unchecked
             {
-                if (i < m_Builder.Length)
-                    m_Values[i].Value = m_Builder[i];
-                else
-                {
-                    m_Values[i].Clear();
-                    break;
-                }
+                int hashCode = base.GetHashCode();
+                hashCode = (hashCode * 397) ^ m_MaxSize;
+                hashCode = (hashCode * 397) ^ (Builder != null ? Builder.GetHashCode() : 0);
+                return hashCode;
             }
         }
+
+        public override bool Equals(object other) => this == (StringProperty) other;
+
+        public override bool Equals(PropertyBase other) => this == (StringProperty) other;
+
+        public static bool operator ==(StringProperty s1, StringProperty s2)
+        {
+            if (s1.Builder.Length != s2.Builder.Length) return false;
+            for (var i = 0; i < s1.Builder.Length; i++)
+                if (s1.Builder[i] != s2.Builder[i])
+                    return false;
+            return true;
+        }
+
+        public static bool operator !=(StringProperty s1, StringProperty s2) => !(s1 == s2);
+
+        public override void Zero() => Builder.Clear();
+
+        public override void SetFromIfWith(PropertyBase other)
+        {
+            if (other.WithValue) SetTo(other);
+        }
+
+        public override void SetTo(PropertyBase other)
+        {
+            if (!(other is StringProperty otherString)) throw new ArgumentException("Other property is not a string!");
+            ThrowIfOverMaxSize(otherString.Builder.Length);
+            Zero();
+            Builder.Append(otherString.Builder);
+            WithValue = true;
+        }
+
+        public void SetTo(string @string)
+        {
+            ThrowIfOverMaxSize(@string.Length);
+            Zero();
+            Builder.Append(@string);
+            WithValue = true;
+        }
+
+        public void SetTo(Action<StringBuilder> action)
+        {
+            Zero();
+            action(Builder);
+            ThrowIfOverMaxSize();
+            WithValue = true;
+        }
+
+        public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => SetTo(p2);
+
+        public override string ToString() => Builder.ToString();
     }
 }

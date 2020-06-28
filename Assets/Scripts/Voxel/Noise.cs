@@ -102,17 +102,17 @@ namespace Voxel
             return 45.23065f * (n0 + n1 + n2);
         }
 
-        public static float Simplex(float x, float y, NoiseData noiseData)
+        public static float Simplex(float x, float y, NoiseComponent noise)
         {
             float output = 0.0f, denominator = 0.0f, frequency = 1.0f, amplitude = 1.0f;
-            for (var i = 0; i < noiseData.octaves; i++)
+            for (var i = 0; i < noise.octaves; i++)
             {
-                output += amplitude * RawSimplex(x * frequency / noiseData.lateralScale, y * frequency / noiseData.lateralScale);
+                output += amplitude * RawSimplex(x * frequency / noise.lateralScale, y * frequency / noise.lateralScale);
                 denominator += amplitude;
-                frequency *= noiseData.lacunarity;
-                amplitude *= noiseData.persistance;
+                frequency *= noise.lacunarity;
+                amplitude *= noise.persistance;
             }
-            return output / denominator * noiseData.verticalScale;
+            return output / denominator * noise.verticalScale;
         }
     }
 }

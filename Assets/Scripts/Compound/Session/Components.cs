@@ -5,18 +5,17 @@ using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using Voxel;
 
 namespace Compound.Session
 {
     /* Session */
-    
+
     [Serializable]
-    public class VoxelMapNameElement : StringElement
+    public class VoxelMapNameProperty : StringProperty
     {
-        public VoxelMapNameElement() : base(16) { }
+        public VoxelMapNameProperty() : base(16) { }
     }
 
     [Serializable, Additive]
@@ -48,9 +47,16 @@ namespace Compound.Session
 
         public override bool Equals(PropertyBase other) => throw new NotImplementedException();
 
-        public override void Clear() => m_ChangeMap.Clear();
-        public override void Zero() => m_ChangeMap.Clear();
-        public override void SetFromIfWith(PropertyBase other) => SetTo(other);
+        public override void Zero()
+        {
+            WithValue = false;
+            m_ChangeMap.Clear();
+        }
+
+        public override void SetFromIfWith(PropertyBase other)
+        {
+            if (other.WithValue) SetTo(other);
+        }
 
         public override void SetTo(PropertyBase other)
         {
@@ -103,7 +109,22 @@ namespace Compound.Session
     {
         public ByteProperty cured;
     }
-    
+
+    [Serializable]
+    public class Position3IntProperty : PropertyBase<Position3Int>
+    {
+        public override bool ValueEquals(PropertyBase<Position3Int> other) => other.Value == Value;
+        public override void SerializeValue(NetDataWriter writer) => Position3Int.Serialize(Value, writer);
+        public override void DeserializeValue(NetDataReader reader) => Position3Int.Deserialize(reader);
+    }
+
+    [Serializable]
+    public class DesignerPlayerComponent : ComponentBase
+    {
+        public Position3IntProperty positionOne, positionTwo;
+        public ByteProperty selectedBlockId;
+    }
+
     [Serializable]
     public class MoneyProperty : UShortProperty
     {
@@ -116,9 +137,9 @@ namespace Compound.Session
         static VoxelfieldComponents()
         {
             SessionElements = SessionElements.NewStandardSessionElements();
-            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(MoneyProperty));
+            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(MoneyProperty));
             // SessionElements.commandElements.AppendAll(typeof(TeamProperty));
-            SessionElements.elements.AppendAll(typeof(VoxelMapNameElement), typeof(ChangedVoxelsProperty), typeof(ShowdownSessionComponent));
+            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty), typeof(ShowdownSessionComponent));
         }
     }
 }

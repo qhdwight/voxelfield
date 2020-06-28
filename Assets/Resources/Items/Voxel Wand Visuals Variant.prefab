@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &8312774794150705047
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1148115767801638516, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1148115767801638516, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 6084272789430859715, guid: 6afe4ecb9dc47204c8b313643b96b995,
+        type: 3}
+    - target: {fileID: 1148115767801638516, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 6970638441199997890, guid: 6afe4ecb9dc47204c8b313643b96b995,
+        type: 3}
+    - target: {fileID: 1716499526149561000, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Name
+      value: Wand
+      objectReference: {fileID: 0}
+    - target: {fileID: 6688518753503449741, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -8369894381874301590, guid: 6afe4ecb9dc47204c8b313643b96b995,
+        type: 3}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527676, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527677, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Name
+      value: Wand Visuals Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527679, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Id
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527679, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_StatusVisualProperties.Array.data[1].animationClip
+      value: 
+      objectReference: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b145cb9d7211a794fbcb8dde5c61741d, type: 3}

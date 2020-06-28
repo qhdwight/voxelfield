@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
@@ -21,6 +22,8 @@ namespace Compound.Session.Mode
     {
         private const int TeamCount = 5, PlayersPerTeam = 3, TotalPlayers = TeamCount * PlayersPerTeam;
 
+        public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
+
         public override void Modify(SessionBase session, Container container, uint durationUs)
         {
             base.Modify(session, container, durationUs);
@@ -36,11 +39,15 @@ namespace Compound.Session.Mode
             }
             if (stage.number.WithValue)
             {
+                if (stage.remainingUs > durationUs) stage.remainingUs.Value -= durationUs;
+                else stage.remainingUs.Value = 0u;
+                ForEachActivePlayer(session, container, (playerId, player) => player.Require<FrozenProperty>().Value = stage.remainingUs > FightTimeUs);
             }
         }
 
-        protected override void HandleRespawn(SessionBase session, Container player, HealthProperty health, uint durationUs)
+        protected override void HandleRespawn(SessionBase session, Container container, Container player, HealthProperty health, uint durationUs)
         {
+            if (InWarmup(container)) base.HandleRespawn(session, container, player, health, durationUs);
         }
 
         private static void FirstStageSpawn(Container session, int playerId, Container player, TeamSpawns spawns)
@@ -53,7 +60,7 @@ namespace Compound.Session.Mode
             (Vector3 position, Quaternion _) = spawns[player.Require<TeamProperty>()].Dequeue();
             move.position.Value = position;
             player.ZeroIfWith<CameraComponent>();
-            player.Require<IdProperty>().Value = 1;
+            player.Require<MoneyProperty>().Value = 800;
             if (player.With(out HealthProperty health)) health.Value = 100;
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();
@@ -67,18 +74,15 @@ namespace Compound.Session.Mode
 
         private static void StartFirstStage(SessionBase session, Container container, ShowdownSessionComponent stage)
         {
-            TeamSpawns spawns = MapManager.Singleton.Map.Models
-                                          .Where(pair => pair.Value.spawnTeam.HasValue)
-                                          .GroupBy(pair => pair.Value.spawnTeam.Value)
-                                          .Select(group => new Queue<(Position3Int, Quaternion)>(group.Select(pair => (pair.Key, pair.Value.rotation))))
-                                          .ToArray();
+            // TeamSpawns spawns = MapManager.Singleton.Map.Models
+            //                               .Where(pair => pair.Value.spawnTeam.HasValue)
+            //                               .GroupBy(pair => pair.Value.spawnTeam.Value)
+            //                               .Select(group => new Queue<(Position3Int, Quaternion)>(group.Select(pair => (pair.Key, pair.Value.rotation))))
+            //                               .ToArray();
+            TeamSpawns spawns = null;
             stage.number.Value = 0;
-            for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
-            {
-                Container player = session.GetPlayerFromId(playerId, container);
-                if (player.Require<HealthProperty>().WithValue)
-                    FirstStageSpawn(container, playerId, player, spawns);
-            }
+            stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
+            ForEachActivePlayer(session, container, (playerId, player) => FirstStageSpawn(container, playerId, player, spawns));
         }
 
         // TODO:performance LINQ creates too much garbage?

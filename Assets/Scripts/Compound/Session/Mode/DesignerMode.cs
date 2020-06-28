@@ -6,6 +6,7 @@ using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
+using Voxel;
 
 namespace Compound.Session.Mode
 {
@@ -23,7 +24,6 @@ namespace Compound.Session.Mode
                 move.type.Value = MoveType.Flying;
             }
             player.Require<IdProperty>().Value = 1;
-            player.Require<UsernameElement>().SetString("Designer");
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health)) health.Value = 100;
             player.ZeroIfWith<RespawnTimerProperty>();
@@ -33,12 +33,17 @@ namespace Compound.Session.Mode
             {
                 inventory.Zero();
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.VoxelWand, 2);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.ModelWand, 3);
             }
         }
 
         public override void SetupNewPlayer(SessionBase session, Container player)
         {
             SpawnPlayer(session, player);
+            var designer = player.Require<DesignerPlayerComponent>();
+            designer.Reset();
+            designer.selectedBlockId.Value = VoxelId.Stone;
         }
     }
 }

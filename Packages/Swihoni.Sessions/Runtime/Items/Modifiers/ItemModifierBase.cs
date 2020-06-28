@@ -1,4 +1,5 @@
 using System;
+using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -23,14 +24,16 @@ namespace Swihoni.Sessions.Items.Modifiers
     public static class ItemId
     {
         public const byte None = 0,
-                          TestingRifle = 1,
+                          Rifle = 1,
                           Grenade = 2,
                           Molotov = 3,
                           Shotgun = 4,
                           C4 = 5,
                           Shovel = 6,
                           Pistol = 7,
-                          Sniper = 8;
+                          Sniper = 8,
+                          VoxelWand = 9,
+                          ModelWand = 10;
     }
 
     [Serializable]
@@ -51,9 +54,11 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
 
-        public virtual void ModifyChecked(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputProperty, uint durationUs)
+        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory,
+                                          InputFlagProperty inputProperty, uint durationUs)
         {
-            if (CanUse(item, inventory))
+            // TODO:refactor move frozen into CanUse
+            if (CanUse(item, inventory) && (player.Without(out FrozenProperty frozen) || frozen.WithoutValue || !frozen))
             {
                 if (inputProperty.GetInput(PlayerInput.UseOne))
                     StartStatus(session, playerId, item, GetUseStatus(inputProperty), durationUs);

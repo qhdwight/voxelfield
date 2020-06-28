@@ -83,7 +83,7 @@ namespace Compound.Session.Designer
             Voxel.Voxel? voxel = ChunkManager.Singleton.GetVoxel(position);
             if (wantsPlace)
             {
-                ChunkManager.Singleton.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = VoxelTexture.Stone});
+                ChunkManager.Singleton.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = VoxelId.Stone});
             }
             else if (voxel.HasValue)
             {

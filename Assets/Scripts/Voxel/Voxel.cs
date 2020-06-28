@@ -2,7 +2,7 @@
 
 namespace Voxel
 {
-    public static class VoxelTexture
+    public static class VoxelId
     {
         public const byte None = 0, Dirt = 1, Grass = 2, Stone = 3;
     }
@@ -47,13 +47,13 @@ namespace Voxel
             switch (texture)
             {
                 default:
-                case VoxelTexture.Stone:
+                case VoxelId.Stone:
                     tile = new Vector2Int(0, 0);
                     break;
-                case VoxelTexture.Dirt:
+                case VoxelId.Dirt:
                     tile = new Vector2Int(3, 0);
                     break;
-                case VoxelTexture.Grass:
+                case VoxelId.Grass:
                     tile = new Vector2Int(1, 0);
                     break;
             }

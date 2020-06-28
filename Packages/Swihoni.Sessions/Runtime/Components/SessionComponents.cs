@@ -111,7 +111,7 @@ namespace Swihoni.Sessions.Components
     {
         public UIntProperty elapsedUs;
         public ByteProperty killingPlayerId, killedPlayerId;
-        public StringElement weaponName = new StringElement(12);
+        public StringProperty weaponName = new StringProperty(12);
     }
 
     [Serializable]
@@ -145,10 +145,10 @@ namespace Swihoni.Sessions.Components
         public override string ToString() => $"Tick: {tick}, Time: {timeUs}, Duration: {durationUs}";
     }
 
-    [Serializable]
-    public class UsernameElement : StringElement
+    [Serializable, ClientTrusted]
+    public class UsernameProperty : StringProperty
     {
-        public UsernameElement() : base(32) { }
+        public UsernameProperty() : base(32) { }
     }
 
     [Serializable]

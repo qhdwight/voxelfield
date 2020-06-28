@@ -35,11 +35,18 @@ namespace Swihoni.Sessions.Interfaces
             m_DefaultCrosshair = m_Crosshair.sprite;
         }
 
-        public override void Render(SessionBase session, Container sessionContainer) { }
-
-        public void Render(Container session, int localPlayerId, Container localPlayer)
+        public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isVisible = localPlayer.Without(out HealthProperty health) || health.WithValue && health.IsAlive;
+            bool IsVisible(out Container sessionLocalPlayer, out HealthProperty localHealth)
+            {
+                sessionLocalPlayer = default;
+                localHealth = default;
+                var localPlayerId = sessionContainer.Require<LocalPlayerId>();
+                if (localPlayerId.WithoutValue) return false;
+                sessionLocalPlayer = session.GetPlayerFromId(localPlayerId);
+                return sessionLocalPlayer.Without(out localHealth) || localHealth.WithValue && localHealth.IsAlive;
+            }
+            bool isVisible = IsVisible(out Container localPlayer, out HealthProperty health);
             if (isVisible)
             {
                 if (localPlayer.With<HealthProperty>())

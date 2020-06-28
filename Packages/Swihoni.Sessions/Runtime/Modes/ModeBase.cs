@@ -1,3 +1,4 @@
+using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
@@ -21,10 +22,10 @@ namespace Swihoni.Sessions.Modes
                 move.Zero();
                 move.position.Value = session.Injector.GetSpawnPosition();
             }
+            player.ZeroIfWith<FrozenProperty>();
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health))
-                health.Value = 100;
+            if (player.With(out HealthProperty health)) health.Value = 100;
             player.ZeroIfWith<RespawnTimerProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();
@@ -32,7 +33,7 @@ namespace Swihoni.Sessions.Modes
             {
                 inventory.Zero();
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.TestingRifle, 2);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Rifle, 2);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shotgun, 3);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Sniper, 4);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 5);
@@ -128,7 +129,7 @@ namespace Swihoni.Sessions.Modes
                         kill.elapsedUs.Value = 2_000_000u;
                         kill.killingPlayerId.Value = (byte) inflictingPlayerId;
                         kill.killedPlayerId.Value = (byte) hitPlayerId;
-                        kill.weaponName.SetString(weaponName);
+                        kill.weaponName.SetTo(weaponName);
                         break;
                     }
                 }
@@ -141,5 +142,15 @@ namespace Swihoni.Sessions.Modes
         }
 
         public virtual void SetupNewPlayer(SessionBase session, Container player) => SpawnPlayer(session, player);
+
+        protected static void ForEachActivePlayer(SessionBase session, Container container, Action<int, Container> action)
+        {
+            for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
+            {
+                Container player = session.GetPlayerFromId(playerId, container);
+                if (player.Require<HealthProperty>().WithValue)
+                    action(playerId, player);
+            }
+        }
     }
 }

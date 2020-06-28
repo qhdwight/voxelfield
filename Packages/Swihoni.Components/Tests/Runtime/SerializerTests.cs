@@ -23,17 +23,16 @@ namespace Swihoni.Components.Tests
         [Test]
         public void TestString()
         {
-            var arbitrary = new StringElement(16);
-            arbitrary.SetString(builder => builder.Append("Test"));
+            var arbitrary = new StringProperty("Test");
             var writer = new NetDataWriter();
             arbitrary.Serialize(writer);
 
-            var deserialized = new StringElement(16);
+            var deserialized = new StringProperty(4);
             var reader = new NetDataReader(writer.Data);
             deserialized.Deserialize(reader);
 
-            Assert.AreEqual("Test", arbitrary.GetString().ToString());
-            Assert.AreEqual("Test", deserialized.GetString().ToString());
+            Assert.AreEqual("Test", arbitrary.Builder.ToString());
+            Assert.AreEqual("Test", deserialized.Builder.ToString());
         }
     }
 }

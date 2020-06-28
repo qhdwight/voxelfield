@@ -99,22 +99,22 @@ namespace Voxel
 
         public Voxel GetVoxelNoCheck(in Position3Int position) { return m_Voxels[position.x, position.y, position.z]; }
 
-        private VoxelChangeData GetChangeDataFromSave(in Position3Int position, MapSave save)
+        private VoxelChangeData GetChangeDataFromSave(in Position3Int position, MapContainer save)
         {
             float
                 noiseHeight = Noise.Simplex(m_Position.x * m_ChunkSize + position.x,
-                                            m_Position.z * m_ChunkSize + position.z, save.TerrainGenerationData.Value),
-                height = noiseHeight + save.TerrainHeight - position.y - m_Position.y * m_ChunkSize,
+                                            m_Position.z * m_ChunkSize + position.z, save.noise),
+                height = noiseHeight + save.terrainHeight - position.y - m_Position.y * m_ChunkSize,
                 floatDensity = Mathf.Clamp(height, 0.0f, 2.0f);
             var density = (byte) (floatDensity * byte.MaxValue / 2.0f);
             return new VoxelChangeData
             {
-                texture = height > 5.0f ? VoxelTexture.Stone : VoxelTexture.Grass,
+                texture = height > 5.0f ? VoxelId.Stone : VoxelId.Grass,
                 renderType = VoxelRenderType.Smooth, density = density, breakable = true, orientation = Orientation.None, natural = true
             };
         }
 
-        public void CreateTerrainFromSave(MapSave save)
+        public void CreateTerrainFromSave(MapContainer save)
         {
             m_Generating = true;
 //            foreach (BrushStroke stroke in save.BrushStrokes)
@@ -146,7 +146,7 @@ namespace Voxel
             m_Generating = false;
         }
 
-        public VoxelChangeData RevertToMapSave(in Position3Int position, MapSave save)
+        public VoxelChangeData RevertToMapSave(in Position3Int position, MapContainer save)
         {
             VoxelChangeData changeData = GetChangeDataFromSave(position, save);
             SetVoxelDataNoCheck(position, changeData);

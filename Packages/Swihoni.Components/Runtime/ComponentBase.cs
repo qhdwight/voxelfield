@@ -7,6 +7,8 @@ namespace Swihoni.Components
 {
     public abstract class ElementBase
     {
+        public FieldInfo Field { get; set; }
+
         private bool Equals(ElementBase other) { return this.EqualTo(other); }
 
         public override bool Equals(object other)
@@ -17,6 +19,19 @@ namespace Swihoni.Components
         }
 
         public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
+        
+        public bool WithAttribute<T>() => GetType().IsDefined(typeof(T)) || Field != null && Field.IsDefined(typeof(T));
+
+        public bool TryAttribute<T>(out T attribute) where T : Attribute
+        {
+            if (WithAttribute<T>())
+            {
+                attribute = Field.GetCustomAttribute<T>();
+                return true;
+            }
+            attribute = null;
+            return false;
+        }
     }
 
     /// <summary>
@@ -66,7 +81,7 @@ namespace Swihoni.Components
                 if (!isElement || fieldType.IsAbstract || field.GetValue(this) != null) continue;
 
                 object instance = Activator.CreateInstance(fieldType);
-                if (instance is PropertyBase propertyInstance) propertyInstance.Field = field;
+                if (instance is ElementBase elementInstance) elementInstance.Field = field;
                 field.SetValue(this, instance);
             }
         }

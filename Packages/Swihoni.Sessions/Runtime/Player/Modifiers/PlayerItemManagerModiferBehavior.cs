@@ -27,7 +27,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             // Modify equipped item component
             ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
             ItemModifierBase itemModifier = ItemAssetLink.GetModifier(equippedItemComponent.id);
-            itemModifier.ModifyChecked(session, playerId, equippedItemComponent, inventoryComponent, inputProperty, durationUs);
+            itemModifier.ModifyChecked(session, playerId, player, equippedItemComponent, inventoryComponent, inputProperty, durationUs);
         }
 
         public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs) { }

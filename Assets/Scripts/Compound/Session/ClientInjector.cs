@@ -13,13 +13,19 @@ namespace Compound.Session
         private readonly Pool<VoxelChangeTransaction> m_Transactions = new Pool<VoxelChangeTransaction>(1, () => new VoxelChangeTransaction());
         private readonly UIntProperty m_Pointer = new UIntProperty();
 
-        protected override void OnSettingsTick(Container session) => MapManager.Singleton.SetMap(DebugBehavior.Singleton.MapName);
+        protected override void OnSettingsTick(Container session)
+        {
+            base.OnSettingsTick(session);
+            MapManager.Singleton.SetMap(DebugBehavior.Singleton.MapNameProperty);
+        } 
 
         protected internal override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true) { }
 
         protected internal override void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, ChangedVoxelsProperty changedVoxels = null)
         {
         }
+
+        protected internal override void VoxelTransaction(VoxelChangeTransaction uncommitted) { }
 
         protected override void OnReceive(ServerSessionContainer serverSession)
         {

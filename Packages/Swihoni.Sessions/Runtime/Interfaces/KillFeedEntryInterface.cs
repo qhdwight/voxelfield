@@ -16,7 +16,7 @@ namespace Swihoni.Sessions.Interfaces
         }
 
         private static StringBuilder GetName(int playerId, Container session)
-            => session.Require<PlayerContainerArrayElement>()[playerId].Require<UsernameElement>().GetString();
+            => session.Require<PlayerContainerArrayElement>()[playerId].Require<UsernameProperty>().Builder;
 
         // private static StringBuilder GetName(int playerId, Container session) => new StringBuilder("ok");
 
@@ -27,7 +27,7 @@ namespace Swihoni.Sessions.Interfaces
             {
                 void Build(StringBuilder builder) => builder.Append(GetName(feed.killingPlayerId, session))
                                                             .Append(" [")
-                                                            .Append(feed.weaponName.GetString())
+                                                            .Append(feed.weaponName.Builder)
                                                             .Append("] ")
                                                             .Append(GetName(feed.killedPlayerId, session));
                 m_Text.BuildText(Build);

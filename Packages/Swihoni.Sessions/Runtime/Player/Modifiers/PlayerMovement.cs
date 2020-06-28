@@ -75,6 +75,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
         {
             if (player.Without(out MoveComponent move)
+             || player.WithPropertyWithValue(out FrozenProperty frozen) && frozen
              || player.With(out HealthProperty health) && health.IsDead
              || commands.Without(out InputFlagProperty inputs)) return;
 
@@ -86,7 +87,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_LastFlyInput = flyInput;
             if (move.type == MoveType.Grounded) FullMove(move, inputs, duration);
             else FlyMove(move, inputs, duration);
-            
+
             ModifyStatus(move, inputs, duration);
         }
 
@@ -96,10 +97,10 @@ namespace Swihoni.Sessions.Player.Modifiers
                   right = inputs.GetAxis(PlayerInput.Right, PlayerInput.Left),
                   up = inputs.GetAxis(PlayerInput.Jump, PlayerInput.Crouch),
                   speedMultiplier = 1.0f;
-            
+
             if (inputs.GetInput(PlayerInput.Walk)) speedMultiplier *= m_WalkMultiplier;
             if (inputs.GetInput(PlayerInput.Sprint)) speedMultiplier *= m_SprintMultiplier;
-            
+
             m_MoveTransform.Translate(duration * speedMultiplier * m_FlySpeed * new Vector3 {x = right, y = up, z = forwards});
             move.position.Value = m_MoveTransform.position;
             move.velocity.Value = Vector3.zero;
@@ -165,15 +166,10 @@ namespace Swihoni.Sessions.Player.Modifiers
                                                        m_CachedContactColliders, m_GroundMask);
             Physics.RaycastNonAlloc(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
                                     float.PositiveInfinity, m_GroundMask);
-            bool isGrounded = m_Controller.isGrounded || count == 2; // Always have 1 due to ourselves. 2 means we are touching something else
-            bool withinAngleLimit = isGrounded && Vector3.Angle(m_ControllerListener.CachedControllerHit.normal, Vector3.up) < m_Controller.slopeLimit;
-            if (endingVelocity.y < 0.0f && withinAngleLimit) // Stick to ground. Only on way down, if done on way up it negates jump
-            {
-                float distance = m_CachedGroundHits[0].distance;
-                endingVelocity.y = DefaultDownSpeed;
-                if (!inputs.GetInput(PlayerInput.Jump) && distance < m_MaxStickDistance + RaycastOffset)
-                    m_Controller.Move(new Vector3 {y = -distance - RaycastOffset});
-            }
+            float slopeAngle = Vector3.Angle(m_ControllerListener.CachedControllerHit.normal, Vector3.up);
+            bool isGrounded = m_Controller.isGrounded || count == 2, // Always have 1 due to ourselves. 2 means we are touching something else
+                 withinAngleLimit = isGrounded && slopeAngle < m_Controller.slopeLimit,
+                 applyStick = endingVelocity.y < 0.0f && withinAngleLimit; // Only on way down, if done on way up it negates jump
 
             Vector3 wishDirection =
                 inputs.GetAxis(PlayerInput.Forward, PlayerInput.Backward) * m_ForwardSpeed * m_MoveTransform.forward +
@@ -184,6 +180,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             float maxSpeed = inputs.GetInput(PlayerInput.Crouch) ? m_CrouchSpeed : m_RunSpeed;
             if (inputs.GetInput(PlayerInput.Walk)) maxSpeed *= m_WalkMultiplier;
             if (inputs.GetInput(PlayerInput.Sprint)) maxSpeed *= m_SprintMultiplier;
+            float slopeMultiplier = 0.3f + 0.7f * (1.0f - Mathf.Clamp01(slopeAngle / m_Controller.slopeLimit));
+            maxSpeed *= slopeMultiplier;
 
             if (wishSpeed > maxSpeed) wishSpeed = maxSpeed;
             if (isGrounded && withinAngleLimit)
@@ -215,7 +213,16 @@ namespace Swihoni.Sessions.Player.Modifiers
                     endingVelocity.z *= m_MaxAirSpeed / lateralAirSpeed;
                 }
             }
-            m_Controller.Move((initialVelocity + endingVelocity) / 2.0f * duration);
+            Vector3 motion = (initialVelocity + endingVelocity) / 2.0f * duration;
+            if (applyStick)
+            {
+                float distance = m_CachedGroundHits[0].distance;
+                // endingVelocity.y = DefaultDownSpeed;
+                if (!inputs.GetInput(PlayerInput.Jump) && distance < m_MaxStickDistance + RaycastOffset)
+                    // m_Controller.Move(new Vector3 {y = -distance - RaycastOffset});
+                    motion.y = -distance - RaycastOffset;
+            }
+            m_Controller.Move(motion);
             move.position.Value = m_MoveTransform.position;
             move.velocity.Value = endingVelocity;
         }

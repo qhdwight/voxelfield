@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a037573af44d407daceca5e0bdb1f820, type: 3}
+  m_Name: Model Wand
+  m_EditorClassIdentifier: 
+  id: 10
+  itemName: Model Wand
+  movementFactor: 1
+  m_StatusModiferProperties:
+  - durationUs: 2000000
+    isPersistent: 0
+  - durationUs: 300000
+    isPersistent: 0
+  - durationUs: 500000
+    isPersistent: 0
+  m_EquipStatusModiferProperties:
+  - durationUs: 100000
+    isPersistent: 0
+  - durationUs: 400000
+    isPersistent: 0
+  - durationUs: 4294967295
+    isPersistent: 0
+  - durationUs: 4294967295
+    isPersistent: 0
+  m_Damage: 50
+  m_PlayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  m_DropOff:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1000
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_Distance: 2
+  m_EditDistance: 5
+  m_DestroyRadius: 1.7
+  m_ChunkMask:
+    serializedVersion: 2
+    m_Bits: 32768

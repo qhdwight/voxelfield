@@ -33,8 +33,9 @@ namespace Swihoni.Sessions
             },
             playerElements = new List<Type>
             {
-                typeof(HealthProperty), typeof(IdProperty), typeof(MoveComponent), typeof(InventoryComponent), typeof(CameraComponent), typeof(RespawnTimerProperty),
-                typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameElement)
+                typeof(HealthProperty), typeof(IdProperty), typeof(MoveComponent), typeof(FrozenProperty), typeof(InventoryComponent),
+                typeof(CameraComponent), typeof(RespawnTimerProperty),
+                typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameProperty)
             },
             commandElements = new List<Type>
             {
@@ -67,7 +68,6 @@ namespace Swihoni.Sessions
         public const int MaxPlayers = 4;
 
         protected readonly SessionInjectorBase m_Injector;
-        protected readonly DefaultPlayerHud m_PlayerHud;
         protected readonly InterfaceBehaviorBase[] m_Interfaces;
         private long m_FixedUpdateTicks, m_RenderTicks;
         private uint m_Tick;
@@ -84,7 +84,6 @@ namespace Swihoni.Sessions
         {
             m_Injector = injector;
             m_Injector.Manager = this;
-            m_PlayerHud = UnityObject.FindObjectOfType<DefaultPlayerHud>();
             m_Interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
         }
 
@@ -267,7 +266,7 @@ namespace Swihoni.Sessions
             Debug.DrawLine(position, position + direction * 10.0f, Color.blue, 5.0f);
             return ray;
         }
-
+        
         public virtual Container GetPlayerFromId(int playerId, Container session = null) { throw new NotImplementedException(); }
 
         protected void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)

@@ -55,8 +55,8 @@ namespace Swihoni.Sessions
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (!tickRate.WithValue) return;
 
+            m_RenderSession.CopyFrom(GetLatestSession());
             localPlayer.Value = HostPlayerId;
-            base.Render(renderTimeUs);
 
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
@@ -77,7 +77,7 @@ namespace Swihoni.Sessions
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, playerId == localPlayer);
             }
-            m_PlayerHud.Render(m_RenderSession, HostPlayerId, renderPlayers[HostPlayerId]);
+            RenderInterfaces(m_RenderSession);
             RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
         }
 
@@ -89,7 +89,7 @@ namespace Swihoni.Sessions
             {
                 // Set up new player component data
                 SetupNewPlayer(tickSession, hostPlayer);
-                m_HostCommands.MergeFrom(hostPlayer);
+                m_HostCommands.CopyFrom(hostPlayer);
             }
             else
             {

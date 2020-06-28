@@ -82,8 +82,8 @@ namespace Swihoni.Sessions
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (tickRate.WithoutValue) return;
 
+            m_RenderSession.CopyFrom(GetLatestSession());
             localPlayer.Value = (byte) localPlayerId;
-            base.Render(renderTimeUs);
 
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
@@ -107,8 +107,8 @@ namespace Swihoni.Sessions
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isLocalPlayer);
-                if (isLocalPlayer) m_PlayerHud.Render(m_RenderSession, localPlayerId, renderPlayers[localPlayerId]);
             }
+            RenderInterfaces(m_RenderSession);
             RenderEntities<LocalizedClientStampComponent>(renderTimeUs, tickRate.TickIntervalUs * 2u);
         }
 
@@ -194,13 +194,12 @@ namespace Swihoni.Sessions
                 Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
                 ElementExtensions.NavigateZipped((_predicted, _latestPredicted, _server) =>
                 {
-                    Type type = _predicted.GetType();
-                    if (type.IsDefined(typeof(OnlyServerTrustedAttribute)))
+                    if (_predicted.WithAttribute<OnlyServerTrustedAttribute>())
                     {
                         _latestPredicted.MergeFrom(_server);
                         return Navigation.SkipDescendents;
                     }
-                    if (type.IsDefined(typeof(ClientTrustedAttribute)))
+                    if (_predicted.WithAttribute<ClientTrustedAttribute>())
                         return Navigation.SkipDescendents;
                     switch (_predicted)
                     {
@@ -361,7 +360,7 @@ namespace Swihoni.Sessions
             {
                 if (_current is PropertyBase _currentProperty && _received is PropertyBase _receivedProperty)
                 {
-                    if (_current.GetType().IsDefined(typeof(AdditiveAttribute)) || !_receivedProperty.WasSame)
+                    if (_current.WithAttribute<AdditiveAttribute>() || !_receivedProperty.WasSame)
                         _currentProperty.SetTo(_receivedProperty);
                 }
                 return Navigation.Continue;
@@ -383,7 +382,7 @@ namespace Swihoni.Sessions
 
         protected override void RollbackHitboxes(int playerId)
         {
-            if (!DebugBehavior.Singleton.isDebugMode) return;
+            if (!DebugBehavior.Singleton.IsDebugMode) return;
             for (var i = 0; i < MaxPlayers; i++)
             {
                 // int copiedPlayerId = i;

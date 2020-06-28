@@ -450,7 +450,7 @@ namespace Voxel
                                         solidMesh.vertices.Add(CachedVertList[TriangleTable[cubeIndex][i + j]] - Offset);
                                         solidMesh.triangleIndices.Add(index);
                                     }
-                                    if (voxel.texture == VoxelTexture.Grass && voxel.natural)
+                                    if (voxel.texture == VoxelId.Grass && voxel.natural)
                                     {
                                         Vector3 normal = Vector3.Cross(solidMesh.vertices.FromEnd(2) - solidMesh.vertices.FromEnd(0),
                                                                        solidMesh.vertices.FromEnd(1) - solidMesh.vertices.FromEnd(0));

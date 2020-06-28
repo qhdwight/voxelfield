@@ -47,9 +47,9 @@ namespace Swihoni.Util.Math
                                                                                          reader.GetInt(),
                                                                                          reader.GetInt());
 
-        public bool InsideDimension(Dimension dimension) =>
-            x >= dimension.lowerBound.x && y >= dimension.lowerBound.y && z >= dimension.lowerBound.z
-         && x <= dimension.upperBound.x && y <= dimension.upperBound.y && z <= dimension.upperBound.z;
+        // public bool InsideDimension(Dimension dimension) =>
+        //     x >= dimension.lowerBound.x && y >= dimension.lowerBound.y && z >= dimension.lowerBound.z
+        //  && x <= dimension.upperBound.x && y <= dimension.upperBound.y && z <= dimension.upperBound.z;
 
         public static float Distance(Position3Int p1, Position3Int p2) => Mathf.Sqrt(DistanceSquared(p1, p2));
 

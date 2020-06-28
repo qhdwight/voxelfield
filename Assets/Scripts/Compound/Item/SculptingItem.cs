@@ -17,13 +17,11 @@ namespace Compound.Item
 
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
-            base.Swing(session, playerId, item, durationUs);
-            if (session.GetPlayerFromId(playerId).Without<ServerTag>() || !GetVoxelRaycast(session, playerId, out RaycastHit hit)) return;
-            var position = (Position3Int) (hit.point - hit.normal * 0.5f);
-            Voxel.Voxel? voxel = ChunkManager.Singleton.GetVoxel(position);
-            if (!voxel.HasValue) return;
+            base.Swing(session, playerId, item, durationUs); // Melee damage
+            if (WithoutServerHit(session, playerId, out RaycastHit hit)
+             || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
             var voxelInjector = (VoxelInjector) session.Injector;
-            switch (voxel.Value.renderType)
+            switch (voxel.renderType)
             {
                 case VoxelRenderType.Block:
                     voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth});
@@ -34,10 +32,23 @@ namespace Compound.Item
             }
         }
 
-        protected bool GetVoxelRaycast(SessionBase session, int playerId, out RaycastHit hit)
+        protected static bool WithoutInnerVoxel(RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
+            position = (Position3Int) (hit.point - hit.normal * 0.5f);
+            Voxel.Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
+            voxel = optionalVoxel ?? default;
+            return !optionalVoxel.HasValue;
+        }
+
+        protected bool WithoutServerHit(SessionBase session, int playerId, out RaycastHit hit)
+        {
+            if (session.GetPlayerFromId(playerId).Without<ServerTag>())
+            {
+                hit = default;
+                return true;
+            }
             Ray ray = session.GetRayForPlayerId(playerId);
-            return Physics.Raycast(ray, out hit, m_EditDistance, m_ChunkMask);
+            return !Physics.Raycast(ray, out hit, m_EditDistance, m_ChunkMask);
         }
 
         protected override bool HasSecondaryUse() => true;
@@ -45,11 +56,10 @@ namespace Compound.Item
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
             // TODO:feature add client side prediction for placing blocks
-            if (session.GetPlayerFromId(playerId).Without<ServerTag>()) return;
-            if (!GetVoxelRaycast(session, playerId, out RaycastHit hit)) return;
+            if (WithoutServerHit(session, playerId, out RaycastHit hit)) return;
             Vector3 position = hit.point + hit.normal * 0.5f;
             var voxelInjector = (VoxelInjector) session.Injector;
-            voxelInjector.SetVoxelData((Position3Int) position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = VoxelTexture.Stone});
+            voxelInjector.SetVoxelData((Position3Int) position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = VoxelId.Stone});
         }
     }
 }

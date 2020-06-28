@@ -28,9 +28,7 @@ namespace Swihoni.Components
             get => (sbyte) m_Flags;
             set => m_Flags = (ElementFlags) value;
         }
-
-        public FieldInfo Field { get; set; }
-
+        
         public bool WithValue
         {
             get => (m_Flags & ElementFlags.WithValue) == ElementFlags.WithValue;
@@ -64,27 +62,14 @@ namespace Swihoni.Components
             }
         }
 
-        public bool HasAttribute<T>() => Field != null && Field.IsDefined(typeof(T));
-
-        public bool TryAttribute<T>(out T attribute) where T : Attribute
-        {
-            if (HasAttribute<T>())
-            {
-                attribute = Field.GetCustomAttribute<T>();
-                return true;
-            }
-            attribute = null;
-            return false;
-        }
-
         public abstract void Serialize(NetDataWriter writer);
         public abstract void Deserialize(NetDataReader reader);
         public abstract bool Equals(PropertyBase other);
-        public abstract void Clear();
         public abstract void Zero();
         public abstract void SetFromIfWith(PropertyBase other);
         public abstract void SetTo(PropertyBase other);
         public abstract void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation);
+        public virtual void Clear() => WithValue = false;
     }
 
     public class WithoutValueException : Exception
@@ -138,16 +123,12 @@ namespace Swihoni.Components
 
         public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
 
-        public override bool Equals(object other)
-        {
-            if (ReferenceEquals(this, other)) return true;
-            var otherProperty = (PropertyBase) other;
-            return Equals(otherProperty);
-        }
+        public override bool Equals(object other) => this == (PropertyBase<T>) other;
 
         public static implicit operator T(PropertyBase<T> property) => property.Value;
 
-        public static bool operator ==(PropertyBase<T> p1, PropertyBase<T> p2) => p1.Equals(p2);
+        public static bool operator ==(PropertyBase<T> p1, PropertyBase<T> p2) => p1.WithValue && p2.WithValue && p1.ValueEquals(p2)
+                                                                               || p1.WithoutValue && p2.WithoutValue;
 
         public static bool operator !=(PropertyBase<T> p1, PropertyBase<T> p2) => !(p1 == p2);
 
@@ -157,23 +138,12 @@ namespace Swihoni.Components
             return this;
         }
 
-        public override void Clear()
-        {
-            WithValue = false;
-            m_Value = default;
-        }
-
         public override void Zero() => Value = default;
 
         public T Else(T @default) => WithValue ? m_Value : @default;
 
         /// <returns>False if types are different. Equal if both values are the same, or if both do not have values.</returns>
-        public sealed override bool Equals(PropertyBase other)
-        {
-            return other.GetType() == GetType()
-                && WithValue && other.WithValue && ValueEquals((PropertyBase<T>) other)
-                || WithoutValue && other.WithoutValue;
-        }
+        public sealed override bool Equals(PropertyBase other) => this == (PropertyBase<T>) other;
 
         /// <summary>Use on two properties that are known to have values.</summary>
         /// <returns>False if types are different. Equal if both values are the same.</returns>
@@ -217,12 +187,12 @@ namespace Swihoni.Components
         }
 
         /// <summary>Interpolates into this from two properties that are known to have values.</summary>
-        /// <exception cref="WithoutValueException1">If <see cref="p1"/> or <see cref="p2"/> is without a value.</exception>
+        /// <exception cref="WithoutValueException">If <see cref="p1"/> or <see cref="p2"/> is without a value.</exception>
         public virtual void ValueInterpolateFrom(PropertyBase<T> p1, PropertyBase<T> p2, float interpolation) => SetFromIfWith(p2);
 
         public sealed override void Serialize(NetDataWriter writer)
         {
-            if (DontSerialize || HasAttribute<NoSerialization>()) return;
+            if (DontSerialize) return;
             writer.Put(RawFlags);
             if (WithoutValue) return;
             SerializeValue(writer);
@@ -230,7 +200,7 @@ namespace Swihoni.Components
 
         public sealed override void Deserialize(NetDataReader reader)
         {
-            if (DontSerialize || HasAttribute<NoSerialization>()) return;
+            if (DontSerialize) return;
             RawFlags = reader.GetSByte();
             if (WithoutValue) return;
             DeserializeValue(reader);

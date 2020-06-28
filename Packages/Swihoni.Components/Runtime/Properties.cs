@@ -133,7 +133,7 @@ namespace Swihoni.Components
         public override void ValueInterpolateFrom(PropertyBase<float> p1, PropertyBase<float> p2, float interpolation)
         {
             float f1 = p1, f2 = p2;
-            if (HasAttribute<AngleAttribute>())
+            if (WithAttribute<AngleAttribute>())
             {
                 Value = Mathf.LerpAngle(f1, f2, interpolation);
                 return;

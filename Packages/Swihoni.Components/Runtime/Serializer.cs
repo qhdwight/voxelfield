@@ -18,7 +18,7 @@ namespace Swihoni.Components
         {
             element.Navigate(_element =>
             {
-                if (_element.GetType().IsDefined(typeof(NoSerialization))) return Navigation.SkipDescendents;
+                if (_element.WithAttribute<NoSerialization>()) return Navigation.SkipDescendents;
                 if (_element is PropertyBase property) property.Serialize(writer);
                 return Navigation.Continue;
             });
@@ -29,16 +29,13 @@ namespace Swihoni.Components
         /// </summary>
         public static void Deserialize(this ElementBase element, NetDataReader reader)
         {
-            element.Navigate(_e =>
+            element.Navigate(_element =>
             {
-                switch (_e)
+                if (_element.WithAttribute<NoSerialization>()) return Navigation.SkipDescendents;
+                if (_element is PropertyBase property)
                 {
-                    case ComponentBase _ when _e.GetType().IsDefined(typeof(NoSerialization)):
-                        return Navigation.SkipDescendents;
-                    case PropertyBase property:
-                        property.Clear();
-                        property.Deserialize(reader);
-                        break;
+                    property.Clear();
+                    property.Deserialize(reader);
                 }
                 return Navigation.Continue;
             });

@@ -23,6 +23,11 @@ namespace Swihoni.Sessions.Player.Components
         public const byte Grounded = 0, Flying = 1;
     }
 
+    [Serializable, OnlyServerTrusted]
+    public class FrozenProperty : BoolProperty
+    {
+    }
+
     [Serializable, ClientChecked]
     public class MoveComponent : ComponentBase
     {

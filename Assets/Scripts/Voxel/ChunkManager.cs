@@ -46,9 +46,9 @@ namespace Voxel
         private int m_PoolSize;
 
         public int ChunkSize => m_ChunkSize;
-        public MapSave Map { get; private set; }
+        public MapContainer Map { get; private set; }
         public Dictionary<Position3Int, Chunk> Chunks { get; } = new Dictionary<Position3Int, Chunk>();
-        private MapProgressInfo m_Progress;
+        private MapProgressInfo m_Progress = new MapProgressInfo {stage = MapLoadingStage.Completed};
         public MapProgressInfo ProgressInfo
         {
             get => m_Progress;
@@ -61,20 +61,20 @@ namespace Voxel
 
         public MapProgressCallback ProgressCallback { get; set; }
 
-        public IEnumerator LoadMap(MapSave map)
+        public IEnumerator LoadMap(MapContainer map)
         {
             Map = map;
             SetPoolSize(map);
             // Decommission all current chunks
             yield return DecommissionAllChunks();
-            if (!map.TerrainGenerationData.HasValue) yield break;
+            if (map.terrainHeight.WithoutValue) yield break;
             yield return ManagePoolSize();
-            if (!map.DynamicChunkLoading)
-            {
-                yield return ChunkActionForAllStaticMapChunks(map, ChunkActionType.Commission);
-                yield return ChunkActionForAllStaticMapChunks(map, ChunkActionType.Generate);
-                yield return ChunkActionForAllStaticMapChunks(map, ChunkActionType.UpdateMesh);
-            }
+            // if (!map.DynamicChunkLoading)
+            // {
+            yield return ChunkActionForAllStaticMapChunks(map, ChunkActionType.Commission);
+            yield return ChunkActionForAllStaticMapChunks(map, ChunkActionType.Generate);
+            yield return ChunkActionForAllStaticMapChunks(map, ChunkActionType.UpdateMesh);
+            // }
             ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Completed};
         }
 
@@ -93,14 +93,14 @@ namespace Voxel
             }
         }
 
-        private IEnumerator ChunkActionForAllStaticMapChunks(MapSave map, ChunkActionType actionType)
+        private IEnumerator ChunkActionForAllStaticMapChunks(MapContainer map, ChunkActionType actionType)
         {
             var progress = 0.0f;
-            for (int x = map.Dimension.lowerBound.x; x <= map.Dimension.upperBound.x; x++)
+            for (int x = map.dimension.lowerBound.x; x <= map.dimension.upperBound.x; x++)
             {
-                for (int y = map.Dimension.lowerBound.y; y <= map.Dimension.upperBound.y; y++)
+                for (int y = map.dimension.lowerBound.y; y <= map.dimension.upperBound.y; y++)
                 {
-                    for (int z = map.Dimension.lowerBound.z; z <= map.Dimension.upperBound.z; z++)
+                    for (int z = map.dimension.lowerBound.z; z <= map.dimension.upperBound.z; z++)
                     {
                         var chunkPosition = new Position3Int(x, y, z);
                         progress += 1.0f / m_PoolSize;
@@ -254,12 +254,12 @@ namespace Voxel
             return containerChunk;
         }
 
-        private void SetPoolSize(MapSave save)
+        private void SetPoolSize(MapContainer save)
         {
-            Dimension dimension = save.Dimension;
-            m_PoolSize = (dimension.upperBound.x - dimension.lowerBound.x + 1) *
-                         (dimension.upperBound.y - dimension.lowerBound.y + 1) *
-                         (dimension.upperBound.z - dimension.lowerBound.z + 1);
+            DimensionComponent d = save.dimension;
+            m_PoolSize = (d.upperBound.x - d.lowerBound.x + 1) *
+                         (d.upperBound.y - d.lowerBound.y + 1) *
+                         (d.upperBound.z - d.lowerBound.z + 1);
         }
 
         private void CommissionChunkFromPoolIntoPosition(in Position3Int newChunkPosition)
@@ -300,7 +300,7 @@ namespace Voxel
                              currentDensity = voxel.Value.density;
                         if (newDensity >= currentDensity) continue;
                         var changeData = new VoxelChangeData {density = newDensity};
-                        if (replaceGrassWithDirt && voxel.Value.texture == VoxelTexture.Grass) changeData.texture = VoxelTexture.Dirt;
+                        if (replaceGrassWithDirt && voxel.Value.texture == VoxelId.Grass) changeData.texture = VoxelId.Dirt;
                         changedVoxels?.SetVoxel(voxelWorldPosition, changeData);
                         if (!Transaction.HasChangeAt(voxelWorldPosition)) Transaction.AddChange(voxelWorldPosition, changeData);
                     }

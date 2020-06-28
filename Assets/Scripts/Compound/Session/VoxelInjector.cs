@@ -1,10 +1,13 @@
+using System;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
 using Voxel.Map;
+using Random = UnityEngine.Random;
 
 namespace Compound.Session
 {
@@ -12,6 +15,8 @@ namespace Compound.Session
     {
         protected internal virtual void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true)
             => ChunkManager.Singleton.SetVoxelData(worldPosition, change, chunk, updateMesh);
+
+        protected internal virtual void VoxelTransaction(VoxelChangeTransaction uncommitted) => uncommitted.Commit();
 
         protected internal virtual void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, ChangedVoxelsProperty changedVoxels = null)
             => ChunkManager.Singleton.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, changedVoxels);
@@ -32,12 +37,12 @@ namespace Compound.Session
             else request.Accept();
         }
 
-        protected override void Stop() => MapManager.Singleton.SetMap("Menu");
+        protected override void Stop() => MapManager.Singleton.UnloadMap();
 
         protected override Vector3 GetSpawnPosition()
         {
             int chunkSize = ChunkManager.Singleton.ChunkSize;
-            Dimension dimension = MapManager.Singleton.Map.Dimension;
+            DimensionComponent dimension = MapManager.Singleton.Map.dimension;
             var position = new Vector3
             {
                 x = Random.Range(dimension.lowerBound.x * chunkSize, dimension.upperBound.x * chunkSize),
@@ -50,6 +55,20 @@ namespace Compound.Session
                     return hit.point + new Vector3 {y = 0.1f};
             }
             return new Vector3 {y = 8.0f};
+        }
+
+        protected override void OnSettingsTick(Container session)
+        {
+        }
+
+        public void Serialize(NetDataWriter writer)
+        {
+            
+        }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            
         }
     }
 }
