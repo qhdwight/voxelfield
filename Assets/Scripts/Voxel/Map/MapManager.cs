@@ -38,7 +38,6 @@ namespace Voxel.Map
 
         private void Start()
         {
-            SaveTestMap();
             m_ManageActionsRoutine = ManageActionsRoutine();
             StartCoroutine(m_ManageActionsRoutine);
             SetMap(EmptyMapName);
@@ -72,7 +71,7 @@ namespace Voxel.Map
             return map;
         }
 
-        private static bool SaveMapSave(MapContainer map)
+        public static bool SaveMapSave(MapContainer map)
         {
             string mapPath = GetMapPath(map.name);
 #if UNITY_EDITOR
@@ -95,10 +94,6 @@ namespace Voxel.Map
             {
                 map.dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, 0, -1), upperBound = new Position3IntProperty(0, 0, 0)};
             }
-            // mapSave.Models.Add(new Position3Int {x = -10, y = 20}, new ModelData {modelId = ModelData.Spawn, spawnTeam = 0, rotation = Quaternion.identity});
-            // mapSave.Models.Add(new Position3Int {y = 20}, new ModelData {modelId = ModelData.Spawn, spawnTeam = 1, rotation = Quaternion.identity});
-            // mapSave.Models.Add(new Position3Int {x = 10, y = 20}, new ModelData {modelId = ModelData.Spawn, spawnTeam = 2, rotation = Quaternion.identity});
-            // mapSave.Models.Add(new Position3Int {x = 20, y = 20}, new ModelData {modelId = ModelData.Spawn, spawnTeam = 3, rotation = Quaternion.identity});
 
             yield return LoadMapSave(map);
 
@@ -135,27 +130,7 @@ namespace Voxel.Map
         //         SaveMapSave(mapSave);
         //     }
         // }
-
-        [Conditional("UNITY_EDITOR")]
-        private static void SaveTestMap()
-        {
-            var testMap = new MapContainer
-            {
-                name = new StringProperty("Test"),
-                terrainHeight = new IntProperty(4),
-                dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, -1, -1), upperBound = new Position3IntProperty(1, 1, 1)},
-                noise = new NoiseComponent
-                {
-                    seed = new IntProperty(0),
-                    octaves = new ByteProperty(4),
-                    lateralScale = new FloatProperty(35.0f),
-                    verticalScale = new FloatProperty(3.5f),
-                    persistance = new FloatProperty(0.5f),
-                    lacunarity = new FloatProperty(0.5f)
-                }
-            };
-            SaveMapSave(testMap);
-        }
+        
 
         public void SetMap(StringProperty mapName) => m_WantedMapName = mapName;
 

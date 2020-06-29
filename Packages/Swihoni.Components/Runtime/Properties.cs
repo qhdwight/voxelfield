@@ -94,6 +94,8 @@ namespace Swihoni.Components
     [Serializable]
     public class IdProperty : ByteProperty
     {
+        public IdProperty(byte value) : base(value) { }
+        public IdProperty() { }
     }
 
     [Serializable]

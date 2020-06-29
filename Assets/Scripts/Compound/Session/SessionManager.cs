@@ -1,12 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using Console;
 using LiteNetLib;
+using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
+using Swihoni.Util.Math;
 using UnityEngine;
+using Voxel;
 using Voxel.Map;
+using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -21,6 +27,12 @@ namespace Compound.Session
 
         private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);
         private readonly IPEndPoint m_LocalHost = new IPEndPoint(IPAddress.Loopback, 7777);
+
+        protected override void Awake()
+        {
+            base.Awake();
+            SaveTestMap();
+        }
 
         private void Start()
         {
@@ -169,6 +181,34 @@ namespace Compound.Session
         }
 
         private void OnApplicationQuit() => DisconnectAll();
+
+        [Conditional("UNITY_EDITOR")]
+        private static void SaveTestMap()
+        {
+            var models = new ModelsProperty();
+            void AddSpawn(Position3Int position, byte team) => models.Add(position, new Container(new ModelIdProperty(ModelsProperty.Spawn), new TeamProperty(team)));
+            AddSpawn(new Position3Int {x = -10, y = 20}, 0);
+            AddSpawn(new Position3Int {y = 20}, 1);
+            AddSpawn(new Position3Int {x = 10, y = 20}, 2);
+            AddSpawn(new Position3Int {x = 20, y = 20}, 3);
+            var testMap = new MapContainer
+            {
+                name = new StringProperty("Test"),
+                terrainHeight = new IntProperty(4),
+                dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, -1, -1), upperBound = new Position3IntProperty(1, 1, 1)},
+                noise = new NoiseComponent
+                {
+                    seed = new IntProperty(0),
+                    octaves = new ByteProperty(4),
+                    lateralScale = new FloatProperty(35.0f),
+                    verticalScale = new FloatProperty(3.5f),
+                    persistance = new FloatProperty(0.5f),
+                    lacunarity = new FloatProperty(0.5f)
+                },
+                models = models
+            };
+            MapManager.SaveMapSave(testMap);
+        }
 
 #if UNITY_EDITOR
         [MenuItem("Build/Build Linux Server")]

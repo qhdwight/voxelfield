@@ -55,10 +55,13 @@
             <e p="ChangedVoxelsProperty.cs" t="Include" />
             <e p="Chunk.cs" t="Include" />
             <e p="ChunkManager.cs" t="Include" />
+            <e p="DictionaryPropertyBase.cs" t="Include" />
             <e p="Map" t="Include">
+              <e p="DimensionComponent.cs" t="Include" />
               <e p="MapContainer.cs" t="Include" />
               <e p="MapManager.cs" t="Include" />
               <e p="MapSpawn.cs" t="Include" />
+              <e p="ModelsProperty.cs" t="Include" />
             </e>
             <e p="Noise.cs" t="Include" />
             <e p="NoiseComponent.cs" t="Include" />
@@ -144,6 +147,7 @@
             </e>
             <e p="Properties.cs" t="Include" />
             <e p="PropertyBase.cs" t="Include" />
+            <e p="SerializationRegistrar.cs" t="Include" />
             <e p="Serializer.cs" t="Include" />
             <e p="StringProperty.cs" t="Include" />
             <e p="Swihoni.Components.asmdef" t="Include" />

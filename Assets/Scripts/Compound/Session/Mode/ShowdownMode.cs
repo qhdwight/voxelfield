@@ -15,7 +15,7 @@ using Voxel.Map;
 
 namespace Compound.Session.Mode
 {
-    using TeamSpawns = IReadOnlyList<Queue<(Position3Int, Quaternion)>>;
+    using TeamSpawns = IReadOnlyList<Queue<(Position3Int, Container)>>;
 
     [CreateAssetMenu(fileName = "Showdown", menuName = "Session/Mode/Showdown", order = 0)]
     public class ShowdownMode : DeathmatchMode
@@ -31,7 +31,7 @@ namespace Compound.Session.Mode
             if (stage.number.WithoutValue)
             {
                 int playerCount = GetPlayerCount(container);
-                if (playerCount == 2)
+                if (playerCount == 1)
                     // if (playerCount == TotalPlayers)
                 {
                     StartFirstStage(session, container, stage);
@@ -57,7 +57,7 @@ namespace Compound.Session.Mode
             var move = player.Require<MoveComponent>();
             move.Zero();
             // TODO:refactor use rotation
-            (Vector3 position, Quaternion _) = spawns[player.Require<TeamProperty>()].Dequeue();
+            (Vector3 position, Container _) = spawns[player.Require<TeamProperty>()].Dequeue();
             move.position.Value = position;
             player.ZeroIfWith<CameraComponent>();
             player.Require<MoneyProperty>().Value = 800;
@@ -72,17 +72,19 @@ namespace Compound.Session.Mode
             }
         }
 
-        private static void StartFirstStage(SessionBase session, Container container, ShowdownSessionComponent stage)
+        private static void StartFirstStage(SessionBase session, Container sessionContainer, ShowdownSessionComponent stage)
         {
             // TeamSpawns spawns = MapManager.Singleton.Map.Models
             //                               .Where(pair => pair.Value.spawnTeam.HasValue)
             //                               .GroupBy(pair => pair.Value.spawnTeam.Value)
             //                               .Select(group => new Queue<(Position3Int, Quaternion)>(group.Select(pair => (pair.Key, pair.Value.rotation))))
             //                               .ToArray();
-            TeamSpawns spawns = null;
+            TeamSpawns spawns = MapManager.Singleton.Map.models.GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
+                                          .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
+                                          .ToArray();
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
-            ForEachActivePlayer(session, container, (playerId, player) => FirstStageSpawn(container, playerId, player, spawns));
+            ForEachActivePlayer(session, sessionContainer, (playerId, player) => FirstStageSpawn(sessionContainer, playerId, player, spawns));
         }
 
         // TODO:performance LINQ creates too much garbage?

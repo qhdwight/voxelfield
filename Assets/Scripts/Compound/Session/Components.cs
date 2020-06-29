@@ -2,7 +2,10 @@ using System;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Player.Components;
+using UnityEngine;
 using Voxel;
+using Voxel.Map;
 
 namespace Compound.Session
 {
@@ -43,6 +46,9 @@ namespace Compound.Session
 
     public static class VoxelfieldComponents
     {
+        [RuntimeInitializeOnLoadMethod]
+        public static void Initialize() => SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(TeamProperty), typeof(VectorProperty));
+
         public static readonly SessionElements SessionElements;
 
         static VoxelfieldComponents()

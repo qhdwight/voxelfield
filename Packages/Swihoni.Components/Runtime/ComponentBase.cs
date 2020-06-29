@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -44,7 +45,7 @@ namespace Swihoni.Components
     /// A conscious choice was made to use classes instead of structs, so proper responsibility has to be taken.
     /// What this means in practice is, unless you know exactly what you are doing, once you <see cref="Append"/>
     /// </summary>
-    public abstract class ComponentBase : ElementBase
+    public abstract class ComponentBase : ElementBase, IEnumerable<ElementBase>
     {
         private List<ElementBase> m_Elements;
 
@@ -96,7 +97,7 @@ namespace Swihoni.Components
         /// For registering an element with a component, you wil need to remember the index.
         /// </summary>
         /// <returns>Index of element</returns>
-        protected virtual int Append(ElementBase element)
+        public virtual int Append(ElementBase element)
         {
             VerifyFieldsRegistered();
             m_Elements.Add(element);
@@ -107,5 +108,9 @@ namespace Swihoni.Components
         /// Called during interpolation. Use to add custom behavior.
         /// </summary>
         public virtual void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation) { }
+
+        public IEnumerator<ElementBase> GetEnumerator() => m_Elements.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Swihoni.Components
 {
@@ -9,32 +8,41 @@ namespace Swihoni.Components
     /// Fields come first in elements, and then dynamically added elements.
     /// </summary>
     [Serializable]
-    public class Container : ComponentBase
+    public class Container : ComponentBase, IEnumerable<(Type, ElementBase)>
     {
-        private Dictionary<Type, int> m_TypeToId = new Dictionary<Type, int>();
+        private Dictionary<Type, int> m_TypeToIndex = new Dictionary<Type, int>();
 
-        public IEnumerable<Type> ElementTypes => m_TypeToId.Keys;
+        public IEnumerable<Type> ElementTypes => m_TypeToIndex.Keys;
 
         public Container() { }
 
-        public Container(IEnumerable<Type> types) : this(types.ToArray()) { }
+        public Container(IEnumerable<Type> types) => RegisterAppend(types);
 
         /// <summary>
         /// Order of types determines serialization, so server and client must have the same order.
         /// </summary>
-        public Container(params Type[] types) => RegisterAppend(types);
+        public Container(params Type[] types) : this((IEnumerable<Type>) types) { }
 
-        protected override int Append(ElementBase element)
+        public Container(IEnumerable<ElementBase> elements) => Append(elements);
+
+        public Container(params ElementBase[] elements) : this((IEnumerable<ElementBase>) elements) { }
+
+        public override int Append(ElementBase element)
         {
             int index = base.Append(element);
             Type type = element.GetType();
-            if (m_TypeToId.ContainsKey(type))
+            if (m_TypeToIndex.ContainsKey(type))
                 throw new ArgumentException("Containers can only have one of each type! Make a subclass if necessary");
-            m_TypeToId[type] = m_TypeToId.Count;
+            m_TypeToIndex[type] = m_TypeToIndex.Count;
             return index;
         }
 
-        public ElementBase TryGet(Type type) => m_TypeToId.TryGetValue(type, out int index) ? Elements[index] : null;
+        public void Append(IEnumerable<ElementBase> elements)
+        {
+            foreach (ElementBase element in elements) Append(element);
+        }
+
+        public ElementBase TryGet(Type type) => m_TypeToIndex.TryGetValue(type, out int index) ? Elements[index] : null;
 
         /// <summary><see cref="RegisterAppend(System.Collections.Generic.IEnumerable{System.Type})"/></summary>
         public void RegisterAppend(IEnumerable<Type> types)
@@ -64,7 +72,7 @@ namespace Swihoni.Components
         /// </summary>
         public void TakeElementTypes(Container other)
         {
-            m_TypeToId.Clear();
+            m_TypeToIndex.Clear();
             ClearRegistered();
             foreach (ElementBase element in other.Elements)
                 RegisterAppend(element.GetType());
@@ -78,7 +86,7 @@ namespace Swihoni.Components
 
         public bool With<TElement>(out TElement component) where TElement : ElementBase
         {
-            bool withComponent = m_TypeToId.TryGetValue(typeof(TElement), out int index);
+            bool withComponent = m_TypeToIndex.TryGetValue(typeof(TElement), out int index);
             if (withComponent)
             {
                 component = (TElement) Elements[index];
@@ -93,19 +101,25 @@ namespace Swihoni.Components
             if (With(out TElement element)) element.Zero();
         }
 
-        public bool With<TElement>() => m_TypeToId.ContainsKey(typeof(TElement));
+        public bool With<TElement>() => m_TypeToIndex.ContainsKey(typeof(TElement));
 
         public TElement Require<TElement>()
         {
             try
             {
-                object child = Elements[m_TypeToId[typeof(TElement)]];
+                object child = Elements[m_TypeToIndex[typeof(TElement)]];
                 return (TElement) child;
             }
             catch (KeyNotFoundException exception)
             {
                 throw new ArgumentException($"Container does not have {typeof(TElement).Name}", exception);
             }
+        }
+
+        public new IEnumerator<(Type, ElementBase)> GetEnumerator()
+        {
+            foreach (ElementBase element in Elements)
+                yield return (element.GetType(), element);
         }
     }
 }

@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Util.Math;
@@ -8,15 +6,11 @@ using Swihoni.Util.Math;
 namespace Voxel
 {
     [Serializable, Additive]
-    public class ChangedVoxelsProperty : PropertyBase, IVoxelChanges, IEnumerable<(Position3Int, VoxelChangeData)>
+    public class ChangedVoxelsProperty : DictionaryPropertyBase<Position3Int, VoxelChangeData>, IVoxelChanges
     {
-        private Dictionary<Position3Int, VoxelChangeData> m_ChangeMap = new Dictionary<Position3Int, VoxelChangeData>();
-
-        public int Count => m_ChangeMap.Count;
-
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(m_ChangeMap.Count);
+            writer.Put(m_Map.Count);
             foreach ((Position3Int position, VoxelChangeData change) in this)
             {
                 Position3Int.Serialize(position, writer);
@@ -28,24 +22,9 @@ namespace Voxel
         {
             Clear();
             int count = reader.GetInt();
-            for (var i = 0; i < count; i++)
-                m_ChangeMap.Add(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
+            for (var _ = 0; _ < count; _++)
+                m_Map.Add(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
             WithValue = true;
-        }
-
-        public override bool Equals(PropertyBase other) => throw new NotImplementedException();
-
-        public override void Clear()
-        {
-            Zero();
-            base.Clear();
-        }
-
-        public override void Zero() => m_ChangeMap.Clear();
-
-        public override void SetFromIfWith(PropertyBase other)
-        {
-            if (other.WithValue) SetTo(other);
         }
 
         public override void SetTo(PropertyBase other)
@@ -64,27 +43,14 @@ namespace Voxel
 
         public void SetVoxel(in Position3Int position, VoxelChangeData change)
         {
-            if (m_ChangeMap.TryGetValue(position, out VoxelChangeData existingChange))
+            if (m_Map.TryGetValue(position, out VoxelChangeData existingChange))
             {
                 existingChange.Merge(change);
-                m_ChangeMap.Remove(position);
+                m_Map.Remove(position);
                 change = existingChange;
             }
-            m_ChangeMap.Add(position, change);
+            m_Map.Add(position, change);
             WithValue = true;
         }
-
-        public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => throw new Exception("Cannot interpolate changed voxels");
-
-        public IEnumerator<(Position3Int, VoxelChangeData)> GetEnumerator()
-        {
-            foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in m_ChangeMap)
-                yield return (pair.Key, pair.Value);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public override string ToString() => $"Count: {m_ChangeMap.Count}";
     }
-
 }

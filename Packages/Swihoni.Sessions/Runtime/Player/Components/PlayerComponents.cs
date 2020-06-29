@@ -63,6 +63,8 @@ namespace Swihoni.Sessions.Player.Components
     [Serializable, OnlyServerTrusted]
     public class TeamProperty : ByteProperty
     {
+        public TeamProperty(byte value) : base(value) { }
+        public TeamProperty() { }
     }
 
     [Serializable]
