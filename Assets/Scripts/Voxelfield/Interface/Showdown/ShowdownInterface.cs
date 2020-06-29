@@ -1,13 +1,13 @@
 using System.Text;
-using Compound.Session;
-using Compound.Session.Mode;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Util.Interface;
 using UnityEngine;
+using Voxelfield.Session;
+using Voxelfield.Session.Mode;
 
-namespace Compound.Interface
+namespace Voxelfield.Interface.Showdown
 {
     public class ShowdownInterface : SessionInterfaceBehavior
     {
@@ -15,8 +15,8 @@ namespace Compound.Interface
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isShowdown = session.GetMode(sessionContainer) is ShowdownMode;
-            if (isShowdown)
+            bool isVisible = session.GetMode(sessionContainer) is ShowdownMode;
+            if (isVisible)
             {
                 var showdown = sessionContainer.Require<ShowdownSessionComponent>();
                 if (showdown.number.WithValue)
@@ -38,7 +38,7 @@ namespace Compound.Interface
                     m_UpperText.SetText("Warmup. Waiting for more players...");
                 }
             }
-            SetInterfaceActive(isShowdown);
+            SetInterfaceActive(isVisible);
         }
     }
 }

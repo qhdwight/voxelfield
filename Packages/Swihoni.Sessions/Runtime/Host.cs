@@ -42,6 +42,7 @@ namespace Swihoni.Sessions
                 if (hostModifier)
                 {
                     hostModifier.ModifyCommands(this, m_HostCommands);
+                    ForEachSessionInterface(@interface => @interface.ModifyLocalCommands(HostPlayerId, this, m_HostCommands));
                     hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
                     hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
                 }

@@ -1,6 +1,6 @@
 using Swihoni.Sessions.Interfaces;
 
-namespace Compound.Session
+namespace Voxelfield.Session
 {
     public class PlayerHud : DefaultPlayerHud
     {

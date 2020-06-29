@@ -1,4 +1,3 @@
-using Compound.Session;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
@@ -6,8 +5,9 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
+using Voxelfield.Session;
 
-namespace Compound.Item
+namespace Voxelfield.Item
 {
     [CreateAssetMenu(fileName = "Sculpting", menuName = "Item/Sculpting", order = 0)]
     public class SculptingItem : MeleeModifier

@@ -5,7 +5,7 @@ using Swihoni.Util.Math;
 using Voxel;
 using Voxel.Map;
 
-namespace Compound.Session
+namespace Voxelfield.Session
 {
     public class ServerInjector : VoxelInjector
     {

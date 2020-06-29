@@ -76,7 +76,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             if (player.Without(out MoveComponent move)) return;
             
-            base.ModifyChecked(session, playerId, player, commands, durationUs);
+            base.ModifyChecked(session, playerId, player, commands, durationUs); // Synchronize game object
 
             if (player.WithPropertyWithValue(out FrozenProperty frozen) && frozen
              || player.With(out HealthProperty health) && health.IsDead

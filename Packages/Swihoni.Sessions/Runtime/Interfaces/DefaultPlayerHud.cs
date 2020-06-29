@@ -46,8 +46,8 @@ namespace Swihoni.Sessions.Interfaces
                 sessionLocalPlayer = session.GetPlayerFromId(localPlayerId);
                 return sessionLocalPlayer.Without(out localHealth) || localHealth.WithValue && localHealth.IsAlive;
             }
-            bool isVisible = IsVisible(out Container localPlayer, out HealthProperty health);
-            if (isVisible)
+            bool isActive = IsVisible(out Container localPlayer, out HealthProperty health);
+            if (isActive)
             {
                 if (localPlayer.With<HealthProperty>())
                     m_HealthText.BuildText(builder => builder.Append("Health: ").Append(health.Value));
@@ -65,6 +65,8 @@ namespace Swihoni.Sessions.Interfaces
                                .Append(gunModifier.MagSize)
                                .Append(" x")
                                .Append(equippedItem.gunStatus.ammoInReserve);
+                        else
+                            builder.Append("∞");
                     });
 
                     // Color crosshairColor = m_Crosshair.color;
@@ -115,7 +117,7 @@ namespace Swihoni.Sessions.Interfaces
                 }
             }
 
-            SetInterfaceActive(isVisible);
+            SetInterfaceActive(isActive);
         }
     }
 }

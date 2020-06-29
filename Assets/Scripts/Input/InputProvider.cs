@@ -36,7 +36,8 @@ namespace Input
         AutocompleteConsole,
         PreviousConsoleCommand,
         NextConsoleCommand,
-        Fly
+        Fly,
+        Buy
     }
 
     public enum MouseMovement
@@ -85,7 +86,8 @@ namespace Input
                     [InputType.AutocompleteConsole] = KeyCode.Tab,
                     [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
                     [InputType.NextConsoleCommand] = KeyCode.DownArrow,
-                    [InputType.Fly] = KeyCode.F
+                    [InputType.Fly] = KeyCode.F,
+                    [InputType.Buy] = KeyCode.B,
                 }
             };
     }

@@ -8,7 +8,7 @@ using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 using Voxel;
 
-namespace Compound.Session.Mode
+namespace Voxelfield.Session.Mode
 {
     [CreateAssetMenu(fileName = "Designer", menuName = "Session/Mode/Designer", order = 0)]
     public class DesignerMode : ModeBase

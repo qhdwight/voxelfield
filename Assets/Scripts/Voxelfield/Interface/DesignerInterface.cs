@@ -1,14 +1,14 @@
 using System.Text;
-using Compound.Session;
-using Compound.Session.Mode;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Util.Interface;
 using UnityEngine;
+using Voxelfield.Session;
+using Voxelfield.Session.Mode;
 
-namespace Compound.Interface
+namespace Voxelfield.Interface
 {
     public class DesignerInterface : SessionInterfaceBehavior
     {

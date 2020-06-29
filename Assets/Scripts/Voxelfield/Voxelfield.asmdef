@@ -1,5 +1,5 @@
 {
-    "name": "Compound",
+    "name": "Voxelfield",
     "references": [
         "GUID:70d0ab44ec86f354e892f6445447b475",
         "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7",
@@ -8,7 +8,8 @@
         "GUID:74cc9c6f527046c2833c6ee4c17ae7a2",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:41ae8d015f0f51041807bae5ccc13017",
-        "GUID:0973fa815d434514e9ad7174c0d75ca9"
+        "GUID:0973fa815d434514e9ad7174c0d75ca9",
+        "GUID:675b7d67bbbe3ea41b2c0d6e53daebc9"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

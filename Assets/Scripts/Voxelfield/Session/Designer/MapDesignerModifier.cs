@@ -4,7 +4,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
 
-namespace Compound.Session.Designer
+namespace Voxelfield.Session.Designer
 {
     [RequireComponent(typeof(CharacterController))]
     public class MapDesignerModifier : ModifierBehaviorBase

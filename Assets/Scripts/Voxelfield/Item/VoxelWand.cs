@@ -1,12 +1,12 @@
 using System;
-using Compound.Session;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
+using Voxelfield.Session;
 
-namespace Compound.Item
+namespace Voxelfield.Item
 {
     public class VoxelWand : SculptingItem
     {

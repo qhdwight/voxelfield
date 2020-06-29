@@ -1,4 +1,4 @@
-namespace Compound
+namespace Voxelfield
 {
     public static class Version
     {

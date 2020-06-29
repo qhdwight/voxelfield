@@ -33,8 +33,9 @@ namespace Swihoni.Sessions
             // TODO:refactor zeroing
             ZeroCommand(m_CommandHistory.Peek());
             m_PlayerPredictionHistory = new CyclicArray<Container>(HistoryCount, () => new Container(elements.playerElements.Append(typeof(ClientStampComponent))));
-            m_PlayerPredictionHistory.Peek().Zero();
-            m_PlayerPredictionHistory.Peek().Require<ClientStampComponent>().Reset();
+            Container firstPrediction = m_PlayerPredictionHistory.Peek();
+            firstPrediction.Zero();
+            firstPrediction.Require<ClientStampComponent>().Reset();
 
             foreach (ServerSessionContainer session in m_SessionHistory)
             {
@@ -59,7 +60,12 @@ namespace Swihoni.Sessions
             Dispose();
         }
 
-        private void UpdateInputs(Container player, int localPlayerId) => GetPlayerModifier(player, localPlayerId).ModifyCommands(this, m_CommandHistory.Peek());
+        private void UpdateInputs(Container player, int localPlayerId)
+        {
+            ClientCommandsContainer commands = m_CommandHistory.Peek();
+            GetPlayerModifier(player, localPlayerId).ModifyCommands(this, commands);
+            ForEachSessionInterface(@interface => @interface.ModifyLocalCommands(localPlayerId, this, commands));
+        }
 
         protected override void Input(uint timeUs, uint deltaUs)
         {
@@ -359,7 +365,7 @@ namespace Swihoni.Sessions
             {
                 if (_current is PropertyBase _currentProperty && _received is PropertyBase _receivedProperty)
                 {
-                    if (_current.WithAttribute<AdditiveAttribute>() || !_receivedProperty.WasSame)
+                    if (_current.WithAttribute<ClearAfterTick>() || !_receivedProperty.WasSame)
                         _currentProperty.SetTo(_receivedProperty);
                 }
                 return Navigation.Continue;

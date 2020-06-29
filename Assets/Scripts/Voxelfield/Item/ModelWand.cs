@@ -4,7 +4,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
 
-namespace Compound.Item
+namespace Voxelfield.Item
 {
     public class ModelWand : SculptingItem
     {

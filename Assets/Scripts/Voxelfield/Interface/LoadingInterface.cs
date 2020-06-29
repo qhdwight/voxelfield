@@ -5,7 +5,7 @@ using Swihoni.Util.Interface;
 using UnityEngine.UI;
 using Voxel;
 
-namespace Compound.Interface
+namespace Voxelfield.Interface
 {
     public class LoadingInterface : SessionInterfaceBehavior
     {

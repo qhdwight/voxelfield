@@ -7,38 +7,6 @@
     <e p="C:\Users\qhdwi\Projects\Programming\Unity\Compound" t="IncludeRecursive">
       <e p="Assets" t="Include">
         <e p="Scripts" t="Include">
-          <e p="Compound" t="Include">
-            <e p="Compound.asmdef" t="Include" />
-            <e p="Interface" t="Include">
-              <e p="DesignerInterface.cs" t="Include" />
-              <e p="LoadingInterface.cs" t="Include" />
-              <e p="ShowdownInterface.cs" t="Include" />
-              <e p="VersionInterface.cs" t="Include" />
-            </e>
-            <e p="Item" t="Include">
-              <e p="ModelWand.cs" t="Include" />
-              <e p="SculptingItem.cs" t="Include" />
-              <e p="VoxelWand.cs" t="Include" />
-            </e>
-            <e p="Session" t="Include">
-              <e p="ClientInjector.cs" t="Include" />
-              <e p="Components.cs" t="Include" />
-              <e p="Designer" t="Include">
-                <e p="Compound.Session.Designer.asmdef" t="Include" />
-                <e p="MapDesignerModifier.cs" t="Include" />
-              </e>
-              <e p="Mode" t="Include">
-                <e p="DesignerMode.cs" t="Include" />
-                <e p="ShowdownMode.cs" t="Include" />
-                <e p="WarmupMode.cs" t="Include" />
-              </e>
-              <e p="PlayerHud.cs" t="Include" />
-              <e p="ServerInjector.cs" t="Include" />
-              <e p="SessionManager.cs" t="Include" />
-              <e p="VoxelInjector.cs" t="Include" />
-            </e>
-            <e p="Version.cs" t="Include" />
-          </e>
           <e p="Console" t="Include">
             <e p="Console.asmdef" t="Include" />
             <e p="ConsoleCommandExecutor.cs" t="Include" />
@@ -71,9 +39,44 @@
             <e p="VoxelChangeTransaction.cs" t="Include" />
             <e p="VoxelRenderer.cs" t="Include" />
           </e>
+          <e p="Voxelfield" t="Include">
+            <e p="Interface" t="Include">
+              <e p="DesignerInterface.cs" t="Include" />
+              <e p="LoadingInterface.cs" t="Include" />
+              <e p="Showdown" t="Include">
+                <e p="BuyMenuButton.cs" t="Include" />
+                <e p="BuyMenuInterface.cs" t="Include" />
+                <e p="ShowdownInterface.cs" t="Include" />
+              </e>
+              <e p="VersionInterface.cs" t="Include" />
+            </e>
+            <e p="Item" t="Include">
+              <e p="ModelWand.cs" t="Include" />
+              <e p="SculptingItem.cs" t="Include" />
+              <e p="VoxelWand.cs" t="Include" />
+            </e>
+            <e p="Session" t="Include">
+              <e p="ClientInjector.cs" t="Include" />
+              <e p="Components.cs" t="Include" />
+              <e p="Designer" t="Include">
+                <e p="Compound.Session.Designer.asmdef" t="Include" />
+                <e p="MapDesignerModifier.cs" t="Include" />
+              </e>
+              <e p="Mode" t="Include">
+                <e p="DesignerMode.cs" t="Include" />
+                <e p="ShowdownMode.cs" t="Include" />
+                <e p="WarmupMode.cs" t="Include" />
+              </e>
+              <e p="PlayerHud.cs" t="Include" />
+              <e p="ServerInjector.cs" t="Include" />
+              <e p="SessionManager.cs" t="Include" />
+              <e p="VoxelInjector.cs" t="Include" />
+            </e>
+            <e p="Version.cs" t="Include" />
+            <e p="Voxelfield.asmdef" t="Include" />
+          </e>
         </e>
       </e>
-      <e p="Compound.csproj" t="IncludeRecursive" />
       <e p="Compound.Session.Designer.csproj" t="IncludeRecursive" />
       <e p="Compound.sln" t="IncludeFlat" />
       <e p="Console.csproj" t="IncludeRecursive" />
@@ -296,6 +299,7 @@
       <e p="Swihoni.Util.Editor.csproj" t="IncludeRecursive" />
       <e p="Temp\Bin" t="ExcludeRecursive" />
       <e p="Voxel.csproj" t="IncludeRecursive" />
+      <e p="Voxelfield.csproj" t="IncludeRecursive" />
     </e>
   </component>
 </project>

@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace Compound.Interface
+namespace Voxelfield.Interface
 {
     public class VersionInterface : MonoBehaviour
     {

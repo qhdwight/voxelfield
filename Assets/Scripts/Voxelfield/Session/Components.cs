@@ -7,7 +7,7 @@ using UnityEngine;
 using Voxel;
 using Voxel.Map;
 
-namespace Compound.Session
+namespace Voxelfield.Session
 {
     /* Session */
 
@@ -39,9 +39,11 @@ namespace Compound.Session
         public ByteProperty selectedBlockId;
     }
 
-    [Serializable, OnlyServerTrusted]
-    public class MoneyProperty : UShortProperty
+    [Serializable]
+    public class MoneyComponent : ComponentBase
     {
+        [OnlyServerTrusted] public UShortProperty count;
+        [ClientTrusted] public ByteProperty wantedBuyItemId;
     }
 
     public static class VoxelfieldComponents
@@ -54,7 +56,7 @@ namespace Compound.Session
         static VoxelfieldComponents()
         {
             SessionElements = SessionElements.NewStandardSessionElements();
-            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(MoneyProperty));
+            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(MoneyComponent));
             // SessionElements.commandElements.AppendAll(typeof(TeamProperty));
             SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty), typeof(ShowdownSessionComponent));
         }

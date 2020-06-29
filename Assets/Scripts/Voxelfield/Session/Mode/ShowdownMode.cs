@@ -13,7 +13,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
 
-namespace Compound.Session.Mode
+namespace Voxelfield.Session.Mode
 {
     using TeamSpawns = IReadOnlyList<Queue<(Position3Int, Container)>>;
 
@@ -60,7 +60,7 @@ namespace Compound.Session.Mode
             (Vector3 position, Container _) = spawns[player.Require<TeamProperty>()].Dequeue();
             move.position.Value = position;
             player.ZeroIfWith<CameraComponent>();
-            player.Require<MoneyProperty>().Value = 800;
+            player.Require<MoneyComponent>().count.Value = 800;
             if (player.With(out HealthProperty health)) health.Value = 100;
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();
@@ -74,17 +74,13 @@ namespace Compound.Session.Mode
 
         private static void StartFirstStage(SessionBase session, Container sessionContainer, ShowdownSessionComponent stage)
         {
-            // TeamSpawns spawns = MapManager.Singleton.Map.Models
-            //                               .Where(pair => pair.Value.spawnTeam.HasValue)
-            //                               .GroupBy(pair => pair.Value.spawnTeam.Value)
-            //                               .Select(group => new Queue<(Position3Int, Quaternion)>(group.Select(pair => (pair.Key, pair.Value.rotation))))
-            //                               .ToArray();
             TeamSpawns spawns = MapManager.Singleton.Map.models.GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
                                           .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
                                           .ToArray();
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
             ForEachActivePlayer(session, sessionContainer, (playerId, player) => FirstStageSpawn(sessionContainer, playerId, player, spawns));
+            Debug.Log("Started first stage");
         }
 
         // TODO:performance LINQ creates too much garbage?

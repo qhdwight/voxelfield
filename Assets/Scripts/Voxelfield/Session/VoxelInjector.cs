@@ -7,7 +7,7 @@ using UnityEngine;
 using Voxel;
 using Voxel.Map;
 
-namespace Compound.Session
+namespace Voxelfield.Session
 {
     public class VoxelInjector : SessionInjectorBase
     {

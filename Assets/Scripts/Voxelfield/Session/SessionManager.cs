@@ -19,7 +19,7 @@ using UnityEditor.Build.Reporting;
 
 #endif
 
-namespace Compound.Session
+namespace Voxelfield.Session
 {
     public class SessionManager : SingletonBehavior<SessionManager>
     {
@@ -27,15 +27,10 @@ namespace Compound.Session
 
         private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);
         private readonly IPEndPoint m_LocalHost = new IPEndPoint(IPAddress.Loopback, 7777);
-
-        protected override void Awake()
-        {
-            base.Awake();
-            SaveTestMap();
-        }
-
+        
         private void Start()
         {
+            SaveTestMap();
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 200;
             AudioListener.volume = 0.5f;
@@ -148,19 +143,19 @@ namespace Compound.Session
                 DisconnectAll();
             }
 
-            if (Input.GetKeyDown(KeyCode.H))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.H))
             {
                 StartHost();
             }
-            if (Input.GetKeyDown(KeyCode.Y))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Y))
             {
                 StartServer(m_LocalHost);
             }
-            if (Input.GetKeyDown(KeyCode.J))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.J))
             {
                 StartClient(m_LocalHost);
             }
-            if (Input.GetKeyDown(KeyCode.K))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.K))
             {
                 DisconnectAll();
             }
@@ -187,10 +182,10 @@ namespace Compound.Session
         {
             var models = new ModelsProperty();
             void AddSpawn(Position3Int position, byte team) => models.Add(position, new Container(new ModelIdProperty(ModelsProperty.Spawn), new TeamProperty(team)));
-            AddSpawn(new Position3Int {x = -10, y = 20}, 0);
-            AddSpawn(new Position3Int {y = 20}, 1);
-            AddSpawn(new Position3Int {x = 10, y = 20}, 2);
-            AddSpawn(new Position3Int {x = 20, y = 20}, 3);
+            AddSpawn(new Position3Int {x = -10, y = 5}, 0);
+            AddSpawn(new Position3Int {y = 5}, 1);
+            AddSpawn(new Position3Int {x = 10, y = 5}, 2);
+            AddSpawn(new Position3Int {x = 20, y = 5}, 3);
             var testMap = new MapContainer
             {
                 name = new StringProperty("Test"),

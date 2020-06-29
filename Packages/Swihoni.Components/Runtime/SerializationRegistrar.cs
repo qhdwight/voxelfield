@@ -4,6 +4,7 @@ using Swihoni.Collections;
 
 namespace Swihoni.Components
 {
+    // TODO:feature add flex container to make more generally avaiable
     public static class SerializationRegistrar
     {
         private static DualDictionary<Type, ushort> _typeToId;

@@ -90,7 +90,7 @@ namespace Swihoni.Sessions
 
             ElementExtensions.NavigateZipped((_previous, _current) =>
             {
-                if (_current.WithAttribute<AdditiveAttribute>() && _current is PropertyBase _currentProperty)
+                if (_current.WithAttribute<ClearAfterTick>() && _current is PropertyBase _currentProperty)
                 {
                     _currentProperty.Clear();
                     return Navigation.SkipDescendents;
@@ -196,7 +196,7 @@ namespace Swihoni.Sessions
             {
                 if (_mostRecent is PropertyBase _mostRecentProperty && _lastAcknowledged is PropertyBase _lastAcknowledgedProperty && _send is PropertyBase _sendProperty)
                 {
-                    if (!_mostRecent.WithAttribute<AdditiveAttribute>() && _mostRecentProperty.Equals(_lastAcknowledgedProperty)
+                    if (!_mostRecent.WithAttribute<ClearAfterTick>() && _mostRecentProperty.Equals(_lastAcknowledgedProperty)
                                                                         && !(_mostRecentProperty is VectorProperty))
                     {
                         _sendProperty.Clear();
@@ -227,7 +227,8 @@ namespace Swihoni.Sessions
                 else
                 {
                     // Make sure this is the newest tick
-                    if (clientStamp.tick > serverPlayerClientStamp.tick)
+                    bool isLatestTick = clientStamp.tick > serverPlayerClientStamp.tick;
+                    if (isLatestTick)
                     {
                         checked
                         {
