@@ -31,19 +31,17 @@ namespace Swihoni.Sessions.Player.Modifiers
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers)
                 modifier.Setup(session);
             if (m_HitboxManager) m_HitboxManager.Setup(session);
-            m_Trigger = GetComponentInChildren<PlayerTrigger>();
+            m_Trigger = GetComponentInChildren<PlayerTrigger>(true);
             if (m_Trigger) m_Trigger.Setup(playerId);
         }
 
         public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs)
         {
-            if (session.IsPaused) return;
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs);
         }
 
         public void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)
         {
-            if (session.IsPaused) return;
             // if (UnityEngine.Input.GetKeyDown(KeyCode.T)) trustedPlayer.Require<IdProperty>().Value = 0;
             if (UnityEngine.Input.GetKeyDown(KeyCode.T)) trustedPlayer.Require<MoveComponent>().type.Value = 1;
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(session, playerId, trustedPlayer, verifiedPlayer, commands, durationUs);

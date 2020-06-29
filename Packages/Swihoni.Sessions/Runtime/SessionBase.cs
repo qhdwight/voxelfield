@@ -48,8 +48,6 @@ namespace Swihoni.Sessions
     {
         protected internal SessionBase Manager { get; set; }
 
-        protected internal virtual bool IsPaused => false;
-
         protected internal virtual void OnSettingsTick(Container session) { }
 
         protected internal virtual void OnReceive(ServerSessionContainer serverSession) { }
@@ -61,6 +59,8 @@ namespace Swihoni.Sessions
         protected internal virtual void Stop() { }
 
         protected internal virtual Vector3 GetSpawnPosition() => new Vector3 {y = 10.0f};
+
+        public virtual bool IsPaused(Container session) => false;
     }
 
     public abstract class SessionBase : IDisposable
@@ -145,7 +145,7 @@ namespace Swihoni.Sessions
                  clockTickDelta = clockTicks - m_RenderTicks;
             m_RenderTicks = clockTicks;
             uint timeUs = GetUsFromTicks(clockTicks);
-            Input(timeUs, GetUsFromTicks(clockTickDelta));
+            if (!IsPaused) Input(timeUs, GetUsFromTicks(clockTickDelta));
             if (ShouldRender) Render(timeUs);
         }
 
@@ -266,7 +266,7 @@ namespace Swihoni.Sessions
             Debug.DrawLine(position, position + direction * 10.0f, Color.blue, 5.0f);
             return ray;
         }
-        
+
         public virtual Container GetPlayerFromId(int playerId, Container session = null) { throw new NotImplementedException(); }
 
         protected void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)
@@ -288,6 +288,6 @@ namespace Swihoni.Sessions
             m_Stopwatch.Stop();
         }
 
-        public virtual bool IsPaused => m_Injector.IsPaused;
+        public virtual bool IsPaused => m_Injector.IsPaused(GetLatestSession());
     }
 }

@@ -16,7 +16,7 @@ namespace Compound.Session
         protected override void OnSettingsTick(Container session)
         {
             base.OnSettingsTick(session);
-            MapManager.Singleton.SetMap(DebugBehavior.Singleton.MapNameProperty);
+            MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
         } 
 
         protected internal override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true) { }
@@ -53,7 +53,5 @@ namespace Compound.Session
                 transaction.Commit();
             m_Transactions.ReturnAll();
         }
-
-        protected override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
     }
 }

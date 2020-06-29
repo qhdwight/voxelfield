@@ -15,7 +15,7 @@ namespace Swihoni.Components
         public static bool IsElement(this Type type) => type.IsSubclassOf(typeof(ElementBase));
 
         public static void AppendAll<T>(this List<T> enumerable, params T[] elements) => enumerable.AddRange(elements);
-        
+
         /// <summary>
         /// Un-sets with value flag.
         /// If you instead want to zero, see <see cref="Zero{T}"/>
@@ -159,7 +159,7 @@ namespace Swihoni.Components
                         for (var j = 0; j < a1.Length; j++)
                         {
                             var zippedElements = new TriArray<ElementBase>();
-                            for (var i = 0; i < size; i++) zippedElements[i] = (ElementBase) ((ArrayElementBase) _zip[i]).GetValue(j);
+                            for (var i = 0; i < size; i++) zippedElements[i] = ((ArrayElementBase) _zip[i]).GetValue(j);
                             NavigateRecursively(zippedElements);
                         }
                         break;

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
@@ -37,7 +36,7 @@ namespace Swihoni.Sessions
                 instance.SetActive(false);
                 return visualizer;
             });
-        
+
         private void OnApplicationQuit()
         {
             if (m_Pool == null) return;

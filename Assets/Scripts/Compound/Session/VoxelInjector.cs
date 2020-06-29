@@ -1,4 +1,3 @@
-using System;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Swihoni.Components;
@@ -7,7 +6,6 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
 using Voxel.Map;
-using Random = UnityEngine.Random;
 
 namespace Compound.Session
 {
@@ -43,11 +41,12 @@ namespace Compound.Session
         {
             int chunkSize = ChunkManager.Singleton.ChunkSize;
             DimensionComponent dimension = MapManager.Singleton.Map.dimension;
+            Position3Int lower = dimension.lowerBound, upper = dimension.upperBound;
             var position = new Vector3
             {
-                x = Random.Range(dimension.lowerBound.x * chunkSize, dimension.upperBound.x * chunkSize),
+                x = Random.Range(lower.x * chunkSize, (upper.x + 1) * chunkSize),
                 y = 1000.0f,
-                z = Random.Range(dimension.lowerBound.x * chunkSize, dimension.upperBound.x * chunkSize)
+                z = Random.Range(lower.z * chunkSize, (upper.z + 1) * chunkSize)
             };
             for (var _ = 0; _ < 32; _++)
             {
@@ -57,18 +56,9 @@ namespace Compound.Session
             return new Vector3 {y = 8.0f};
         }
 
-        protected override void OnSettingsTick(Container session)
-        {
-        }
+        protected override void OnSettingsTick(Container session) { }
 
-        public void Serialize(NetDataWriter writer)
-        {
-            
-        }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            
-        }
+        public override bool IsPaused(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
+                                                         || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
     }
 }

@@ -18,7 +18,7 @@ namespace Voxel
 
         public override string ToString() => $"Texture: {texture}, Render Type: {renderType}, Density: {density}, Orientation: {orientation}, Breakable: {breakable}";
 
-        public static void Serialize(NetDataWriter writer, in VoxelChangeData changeData)
+        public static void Serialize(in VoxelChangeData changeData, NetDataWriter writer)
         {
             byte flags = 0;
             if (changeData.texture.HasValue) FlagUtil.SetFlag(ref flags, TextureFlagIndex);

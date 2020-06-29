@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Steamworks;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
@@ -69,6 +70,7 @@ namespace Swihoni.Sessions
             command.Require<CameraComponent>().Zero();
             command.Require<InputFlagProperty>().Zero();
             command.Require<WantedItemIndexProperty>().Zero();
+            command.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Client");
         }
 
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
@@ -84,10 +86,7 @@ namespace Swihoni.Sessions
             RenderInterfaces(latestSession);
         }
 
-        protected void RenderInterfaces(Container session)
-        {
-            ForEachSessionInterface(sessionInterface => sessionInterface.Render(this, session));
-        }
+        protected void RenderInterfaces(Container session) { ForEachSessionInterface(sessionInterface => sessionInterface.Render(this, session)); }
 
         protected void RenderEntities<TStampComponent>(uint currentRenderTimeUs, uint rollbackUs) where TStampComponent : StampComponent
         {

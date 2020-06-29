@@ -6,6 +6,6 @@ namespace Swihoni.Sessions.Player
     {
         public int PlayerId { get; private set; }
 
-        public void Setup(int playerId) { PlayerId = playerId; }
+        public void Setup(int playerId) => PlayerId = playerId;
     }
 }

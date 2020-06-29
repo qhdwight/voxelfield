@@ -5,6 +5,10 @@ using System.Runtime.CompilerServices;
 
 namespace Swihoni.Components
 {
+    public class AdditiveAttribute : Attribute
+    {
+    }
+
     public abstract class ElementBase
     {
         public FieldInfo Field { get; set; }
@@ -19,7 +23,7 @@ namespace Swihoni.Components
         }
 
         public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
-        
+
         public bool WithAttribute<T>() => GetType().IsDefined(typeof(T)) || Field != null && Field.IsDefined(typeof(T));
 
         public bool TryAttribute<T>(out T attribute) where T : Attribute

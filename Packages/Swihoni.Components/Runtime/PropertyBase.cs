@@ -28,7 +28,7 @@ namespace Swihoni.Components
             get => (sbyte) m_Flags;
             set => m_Flags = (ElementFlags) value;
         }
-        
+
         public bool WithValue
         {
             get => (m_Flags & ElementFlags.WithValue) == ElementFlags.WithValue;

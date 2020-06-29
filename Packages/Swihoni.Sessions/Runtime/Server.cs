@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Reflection;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
@@ -241,10 +240,13 @@ namespace Swihoni.Sessions
                                 serverPlayerTimeUs.Value = serverStamp.timeUs;
                             }
                         }
-                        ModeBase mode = GetMode(serverSession);
-                        serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
-                        GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
-                        mode.ModifyPlayer(this, serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);
+                        if (!IsPaused)
+                        {
+                            ModeBase mode = GetMode(serverSession);
+                            serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
+                            GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
+                            mode.ModifyPlayer(this, serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);   
+                        }
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
                 }

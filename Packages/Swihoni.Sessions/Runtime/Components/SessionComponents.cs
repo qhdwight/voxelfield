@@ -19,10 +19,6 @@ namespace Swihoni.Sessions.Components
     {
     }
 
-    public class AdditiveAttribute : Attribute
-    {
-    }
-
     /* Server */
 
     [Serializable]

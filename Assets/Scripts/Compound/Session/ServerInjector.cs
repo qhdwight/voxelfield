@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions;
@@ -46,10 +45,10 @@ namespace Compound.Session
         {
             base.OnSettingsTick(serverSession);
             MapManager manager = MapManager.Singleton;
-            manager.SetMap(DebugBehavior.Singleton.MapNameProperty);
-            if (manager.Map != null) manager.Map.ChangedVoxels = m_MasterChanges.Unsafe;
+            var mapName = serverSession.Require<VoxelMapNameProperty>();
+            mapName.SetTo(DebugBehavior.Singleton.MapNameProperty);
+            manager.SetMap(mapName);
+            if (manager.Map != null) manager.Map.changedVoxels = m_MasterChanges;
         }
-
-        protected override bool IsPaused => ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
     }
 }

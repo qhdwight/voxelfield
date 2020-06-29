@@ -52,6 +52,7 @@
           </e>
           <e p="Voxel" t="Include">
             <e p="BrushStroke.cs" t="Include" />
+            <e p="ChangedVoxelsProperty.cs" t="Include" />
             <e p="Chunk.cs" t="Include" />
             <e p="ChunkManager.cs" t="Include" />
             <e p="Map" t="Include">
@@ -144,6 +145,7 @@
             <e p="Properties.cs" t="Include" />
             <e p="PropertyBase.cs" t="Include" />
             <e p="Serializer.cs" t="Include" />
+            <e p="StringProperty.cs" t="Include" />
             <e p="Swihoni.Components.asmdef" t="Include" />
           </e>
           <e p="Tests" t="Include">
@@ -270,7 +272,6 @@
             <e p="IntervalAction.cs" t="Include" />
             <e p="LayerAttribute.cs" t="Include" />
             <e p="Math" t="Include">
-              <e p="DimensionComponent.cs" t="Include" />
               <e p="ExtraMath.cs" t="Include" />
               <e p="Position3Int.cs" t="Include" />
             </e>

@@ -1,5 +1,6 @@
 using System;
 using LiteNetLib.Utils;
+using Swihoni.Util.Math;
 using UnityEngine;
 
 namespace Swihoni.Components
@@ -78,6 +79,16 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetByte();
         public override bool ValueEquals(PropertyBase<byte> other) => other.Value == Value;
+    }
+
+    [Serializable]
+    public class Position3IntProperty : PropertyBase<Position3Int>
+    {
+        public Position3IntProperty() { }
+        public Position3IntProperty(int x, int y, int z) => Value = new Position3Int(x, y, z);
+        public override bool ValueEquals(PropertyBase<Position3Int> other) => other.Value == Value;
+        public override void SerializeValue(NetDataWriter writer) => Position3Int.Serialize(Value, writer);
+        public override void DeserializeValue(NetDataReader reader) => Value = Position3Int.Deserialize(reader);
     }
 
     [Serializable]

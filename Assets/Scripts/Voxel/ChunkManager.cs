@@ -96,11 +96,12 @@ namespace Voxel
         private IEnumerator ChunkActionForAllStaticMapChunks(MapContainer map, ChunkActionType actionType)
         {
             var progress = 0.0f;
-            for (int x = map.dimension.lowerBound.x; x <= map.dimension.upperBound.x; x++)
+            Position3Int lower = map.dimension.lowerBound, upper = map.dimension.upperBound;
+            for (int x = lower.x; x <= upper.x; x++)
             {
-                for (int y = map.dimension.lowerBound.y; y <= map.dimension.upperBound.y; y++)
+                for (int y = lower.y; y <= upper.y; y++)
                 {
-                    for (int z = map.dimension.lowerBound.z; z <= map.dimension.upperBound.z; z++)
+                    for (int z = lower.z; z <= upper.z; z++)
                     {
                         var chunkPosition = new Position3Int(x, y, z);
                         progress += 1.0f / m_PoolSize;
@@ -256,10 +257,10 @@ namespace Voxel
 
         private void SetPoolSize(MapContainer save)
         {
-            DimensionComponent d = save.dimension;
-            m_PoolSize = (d.upperBound.x - d.lowerBound.x + 1) *
-                         (d.upperBound.y - d.lowerBound.y + 1) *
-                         (d.upperBound.z - d.lowerBound.z + 1);
+            Position3Int upper = save.dimension.upperBound, lower = save.dimension.lowerBound;
+            m_PoolSize = (upper.x - lower.x + 1) *
+                         (upper.y - lower.y + 1) *
+                         (upper.z - lower.z + 1);
         }
 
         private void CommissionChunkFromPoolIntoPosition(in Position3Int newChunkPosition)

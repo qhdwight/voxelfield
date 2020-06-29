@@ -1,5 +1,4 @@
 using Swihoni.Components;
-using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -25,14 +24,14 @@ namespace Swihoni.Sessions.Modes
 
             if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive)
                 KillPlayer(player);
-            
+
             HandleRespawn(session, container, player, health, durationUs);
         }
 
         protected virtual void HandleRespawn(SessionBase session, Container container, Container player, HealthProperty health, uint durationUs)
         {
             if (health.IsAlive || player.Without(out RespawnTimerProperty respawn)) return;
-            
+
             if (respawn.Value > durationUs) respawn.Value -= durationUs;
             else
             {

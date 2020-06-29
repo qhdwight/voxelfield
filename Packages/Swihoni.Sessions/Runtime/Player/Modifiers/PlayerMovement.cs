@@ -52,7 +52,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             base.Setup(session);
             m_Controller = m_MoveTransform.GetComponent<CharacterController>();
             m_ControllerListener = m_MoveTransform.GetComponent<CharacterControllerListener>();
-            m_Controller.enabled = false;
+            m_Controller.gameObject.SetActive(false);
             m_ControllerHeight = m_Controller.height;
             m_ControllerCenter = m_Controller.center;
         }
@@ -63,7 +63,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_MoveTransform.position = move.position;
             if (player.With(out CameraComponent playerCamera))
                 m_MoveTransform.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
-            m_Controller.enabled = player.Without(out HealthProperty health) || health.WithValue && health.IsAlive;
+            m_Controller.gameObject.SetActive(player.Without(out HealthProperty health) || health.WithValue && health.IsAlive);
             float weight = Mathf.Lerp(0.7f, 1.0f, 1.0f - move.normalizedCrouch);
             m_Controller.height = m_ControllerHeight * weight;
             m_Controller.center = m_ControllerCenter * weight;
@@ -74,12 +74,14 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
         {
-            if (player.Without(out MoveComponent move)
-             || player.WithPropertyWithValue(out FrozenProperty frozen) && frozen
+            if (player.Without(out MoveComponent move)) return;
+            
+            base.ModifyChecked(session, playerId, player, commands, durationUs);
+
+            if (player.WithPropertyWithValue(out FrozenProperty frozen) && frozen
              || player.With(out HealthProperty health) && health.IsDead
              || commands.Without(out InputFlagProperty inputs)) return;
 
-            base.ModifyChecked(session, playerId, player, commands, durationUs);
             float duration = durationUs * TimeConversions.MicrosecondToSecond;
 
             bool flyInput = inputs.GetInput(PlayerInput.Fly);

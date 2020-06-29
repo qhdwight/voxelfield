@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using LiteNetLib;
 using Swihoni.Collections;
 using Swihoni.Components;
@@ -165,7 +164,7 @@ namespace Swihoni.Sessions
                 // Inject trusted component
                 commands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
                 predictedPlayer.MergeFrom(commands);
-                if (predictedStamp.durationUs.WithValue)
+                if (!IsPaused && predictedStamp.durationUs.WithValue)
                 {
                     PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
                     if (modifier) modifier.ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.durationUs);

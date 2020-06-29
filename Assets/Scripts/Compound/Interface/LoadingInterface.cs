@@ -25,16 +25,16 @@ namespace Compound.Interface
             switch (progressInfo.stage)
             {
                 case MapLoadingStage.CleaningUp:
-                    m_Text.BuildText(builder => builder.Append("Cleaning up nonsense beforehand..."));
+                    m_Text.SetText("Cleaning up nonsense beforehand...");
                     break;
                 case MapLoadingStage.SettingUp:
-                    m_Text.BuildText(builder => builder.Append("Setting up..."));
+                    m_Text.SetText("Setting up...");
                     break;
                 case MapLoadingStage.Generating:
-                    m_Text.BuildText(builder => builder.Append("Generating from noise n' stuff..."));
+                    m_Text.SetText("Generating from noise n' stuff...");
                     break;
                 case MapLoadingStage.UpdatingMesh:
-                    m_Text.BuildText(builder => builder.Append("Putting triangles together in meaningful ways..."));
+                    m_Text.SetText("Putting triangles together in meaningful ways...");
                     break;
             }
             m_ProgressBar.value = progressInfo.progress;

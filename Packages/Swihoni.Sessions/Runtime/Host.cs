@@ -1,7 +1,9 @@
 using System.Linq;
 using System.Net;
+using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
@@ -34,14 +36,17 @@ namespace Swihoni.Sessions
             if (session.Without(out ServerStampComponent serverStamp) || serverStamp.tick.WithoutValue)
                 return;
 
-            PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(GetPlayerFromId(HostPlayerId, session), HostPlayerId);
-            if (hostModifier)
+            if (!IsPaused)
             {
-                hostModifier.ModifyCommands(this, m_HostCommands);
-                hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
-                hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+                PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(GetPlayerFromId(HostPlayerId, session), HostPlayerId);
+                if (hostModifier)
+                {
+                    hostModifier.ModifyCommands(this, m_HostCommands);
+                    hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
+                    hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+                }
+                GetMode(session).ModifyPlayer(this, session, m_HostCommands, m_HostCommands, deltaUs);
             }
-            GetMode(session).ModifyPlayer(this, session, m_HostCommands, m_HostCommands, deltaUs);
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.timeUs.Value = timeUs;
             stamp.tick.Value = serverStamp.tick;
@@ -84,18 +89,24 @@ namespace Swihoni.Sessions
         protected override void PreTick(Container tickSession)
         {
             // Set up new player component data
+            if (IsPaused) return;
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
-            if (tickSession.Require<ServerStampComponent>().tick == 0u)
-            {
-                // Set up new player component data
-                SetupNewPlayer(tickSession, hostPlayer);
-                m_HostCommands.CopyFrom(hostPlayer);
-            }
-            else
+            if (hostPlayer.Require<HealthProperty>().WithValue)
             {
                 // Inject our current player component before normal update cycle
                 hostPlayer.MergeFrom(m_HostCommands);
             }
+        }
+
+        protected override void PostTick(Container tickSession)
+        {
+            if (IsPaused) return;
+            Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
+            if (hostPlayer.Require<HealthProperty>().WithValue) return;
+            // Set up new player component data
+            SetupNewPlayer(tickSession, hostPlayer);
+            m_HostCommands.CopyFrom(hostPlayer);
+            m_HostCommands.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Host");
         }
 
         protected override void RollbackHitboxes(int playerId)

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using LiteNetLib.Utils;
@@ -7,6 +8,7 @@ using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Voxel.Map
 {
@@ -19,6 +21,7 @@ namespace Voxel.Map
         private static readonly MapContainer EmptyMap = new MapContainer().Zero();
 
         private StringProperty m_WantedMapName = EmptyMapName;
+        private IEnumerator m_ManageActionsRoutine;
 
         public MapContainer Map { get; private set; } = new MapContainer();
 
@@ -36,7 +39,8 @@ namespace Voxel.Map
         private void Start()
         {
             SaveTestMap();
-            StartCoroutine(ManageActionsRoutine());
+            m_ManageActionsRoutine = ManageActionsRoutine();
+            StartCoroutine(m_ManageActionsRoutine);
             SetMap(EmptyMapName);
         }
 
@@ -71,7 +75,9 @@ namespace Voxel.Map
         private static bool SaveMapSave(MapContainer map)
         {
             string mapPath = GetMapPath(map.name);
+#if UNITY_EDITOR
             if (map.name == TestMapName && Application.isEditor) mapPath = "Assets/Resources/Maps/Test.bytes";
+#endif
             var writer = new NetDataWriter();
             map.Serialize(writer);
             File.WriteAllBytes(mapPath, writer.CopyData());
@@ -83,26 +89,28 @@ namespace Voxel.Map
         private IEnumerator LoadMap(StringProperty mapName)
         {
             Debug.Log($"Starting to load map: {mapName}");
-            MapContainer mapSave = mapName.WithoutValue ? EmptyMap : ReadMapSave(mapName);
+            MapContainer map = mapName.WithoutValue ? EmptyMap : ReadMapSave(mapName);
 
             if (Application.isEditor)
             {
-                mapSave.dimension = new DimensionComponent {lowerBound = new Position3Int(-1, 0, -1), upperBound = new Position3Int(0, 0, 0)};
+                map.dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, 0, -1), upperBound = new Position3IntProperty(0, 0, 0)};
             }
             // mapSave.Models.Add(new Position3Int {x = -10, y = 20}, new ModelData {modelId = ModelData.Spawn, spawnTeam = 0, rotation = Quaternion.identity});
             // mapSave.Models.Add(new Position3Int {y = 20}, new ModelData {modelId = ModelData.Spawn, spawnTeam = 1, rotation = Quaternion.identity});
             // mapSave.Models.Add(new Position3Int {x = 10, y = 20}, new ModelData {modelId = ModelData.Spawn, spawnTeam = 2, rotation = Quaternion.identity});
             // mapSave.Models.Add(new Position3Int {x = 20, y = 20}, new ModelData {modelId = ModelData.Spawn, spawnTeam = 3, rotation = Quaternion.identity});
 
-            yield return LoadMapSave(mapSave);
+            yield return LoadMapSave(map);
 
-            foreach (KeyValuePair<Position3Int, VoxelChangeData> changed in mapSave.ChangedVoxels)
-                ChunkManager.Singleton.SetVoxelData(changed.Key, changed.Value);
+            var transaction = new VoxelChangeTransaction();
+            foreach ((Position3Int position, VoxelChangeData change) in map.changedVoxels)
+                transaction.AddChange(position, change);
+            transaction.Commit();
 
             // PlaceTrees(mapName, mapSave);
 
             Debug.Log($"Finished loading map: {mapName}");
-            Map = mapSave;
+            Map = map;
         }
 
         // private static void PlaceTrees(string mapName, MapSave mapSave)
@@ -128,13 +136,14 @@ namespace Voxel.Map
         //     }
         // }
 
+        [Conditional("UNITY_EDITOR")]
         private static void SaveTestMap()
         {
             var testMap = new MapContainer
             {
                 name = new StringProperty("Test"),
                 terrainHeight = new IntProperty(4),
-                dimension = new DimensionComponent {lowerBound = new Position3Int(-1, -1, -1), upperBound = new Position3Int(1, 1, 1)},
+                dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, -1, -1), upperBound = new Position3IntProperty(1, 1, 1)},
                 noise = new NoiseComponent
                 {
                     seed = new IntProperty(0),
