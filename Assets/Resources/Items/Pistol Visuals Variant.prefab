@@ -114,6 +114,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1464115003832491034, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.286
+      objectReference: {fileID: 0}
     - target: {fileID: 2248924221105366316, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
       propertyPath: m_ParentOne.positionOffset.x
@@ -326,6 +331,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: -6318658350936181802, guid: d80fb762eca55c247a765c6e66bae818,
         type: 3}
+    - target: {fileID: 6513729010317658784, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c68544406b7baff40a29df41b5183514, type: 3}
 --- !u!114 &464781965198961511 stripped

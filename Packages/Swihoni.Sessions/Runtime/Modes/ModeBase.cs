@@ -32,15 +32,15 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Rifle, 2);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shotgun, 3);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Sniper, 4);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 5);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Grenade, 6);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Molotov, 7);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.C4, 8);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Deagle, 9);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Shovel);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Rifle);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Shotgun);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Sniper);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Pistol);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Grenade);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Molotov);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.C4);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Deagle);
             }
         }
 

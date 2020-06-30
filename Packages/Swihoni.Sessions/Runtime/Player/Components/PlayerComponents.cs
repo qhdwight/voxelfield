@@ -177,6 +177,8 @@ namespace Swihoni.Sessions.Player.Components
                 items[i].InterpolateFrom(i1.items[i], i2.items[i], interpolation);
         }
 
+        public new ItemComponent this[int index] => items[index - 1];
+
         public static uint VisualDuration(ItemStatusModiferProperties m) => m.isPersistent ? uint.MaxValue : m.durationUs;
     }
 }

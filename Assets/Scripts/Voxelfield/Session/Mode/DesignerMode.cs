@@ -32,9 +32,9 @@ namespace Voxelfield.Session.Mode
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.VoxelWand, 2);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.ModelWand, 3);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Shovel);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.VoxelWand);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.ModelWand);
             }
         }
 

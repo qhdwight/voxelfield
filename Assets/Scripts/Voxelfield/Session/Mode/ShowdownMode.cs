@@ -24,7 +24,8 @@ namespace Voxelfield.Session.Mode
         private const int TeamCount = 5, PlayersPerTeam = 3, TotalPlayers = TeamCount * PlayersPerTeam;
 
         // public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
-        public const uint BuyTimeUs = 60_000_000u, FightTimeUs = 300_000_000u;
+        // public const uint BuyTimeUs = 60_000_000u, FightTimeUs = 300_000_000u;
+        public const uint BuyTimeUs = 10_000_000u, FightTimeUs = 300_000_000u;
 
         public override void Modify(SessionBase session, Container container, uint durationUs)
         {
@@ -66,17 +67,14 @@ namespace Voxelfield.Session.Mode
                     if (cost < money)
                     {
                         var inventory = player.Require<InventoryComponent>();
-                        if (PlayerItemManagerModiferBehavior.FindEmpty(inventory, out byte index))
-                        {
-                            PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, wantedBuyItemId, index);
-                        }
+                        PlayerItemManagerModiferBehavior.AddItem(inventory, wantedBuyItemId);
                         money.Value -= cost;
                     }
                 }
             }
         }
 
-        private ushort GetCost(byte itemId)
+        private static ushort GetCost(byte itemId)
         {
             switch (itemId)
             {
@@ -113,15 +111,15 @@ namespace Voxelfield.Session.Mode
             (Vector3 position, Container _) = spawns[player.Require<TeamProperty>()].Dequeue();
             move.position.Value = position;
             player.ZeroIfWith<CameraComponent>();
-            player.Require<MoneyComponent>().count.Value = 800;
+            player.Require<MoneyComponent>().count.Value = ushort.MaxValue;
             if (player.With(out HealthProperty health)) health.Value = 100;
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Shovel, 1);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 2);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Shovel);
+                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Pistol);
             }
         }
 

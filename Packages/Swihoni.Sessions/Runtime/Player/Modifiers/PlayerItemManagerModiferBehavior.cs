@@ -47,7 +47,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             ByteStatusComponent equipStatus = inventory.equipStatus;
             // Unequip current item if desired
             bool
-                hasValidWantedIndex = wantedIndex != NoneIndex && inventory.items[wantedIndex - 1].id != ItemId.None,
+                hasValidWantedIndex = wantedIndex != NoneIndex && inventory[wantedIndex].id != ItemId.None,
                 wantsNewIndex = wantedIndex != inventory.equippedIndex,
                 isAlreadyUnequipping = equipStatus.id == ItemEquipStatusId.Unequipping;
             if (hasValidWantedIndex && wantsNewIndex && !isAlreadyUnequipping)
@@ -138,33 +138,40 @@ namespace Swihoni.Sessions.Player.Modifiers
             else if (inputProvider.GetInput(InputType.ItemNine)) itemIndex.Value = 9;
         }
 
-        public static bool FindEmpty(InventoryComponent inventory, out byte emptyIndex)
+        private static bool FindItem(InventoryComponent inventory, Predicate<ItemComponent> predicate, out byte index)
         {
-            emptyIndex = default;
+            index = default;
             for (byte itemIndex = 1; itemIndex <= inventory.items.Length; itemIndex++)
             {
-                if (inventory.items[itemIndex - 1].id != ItemId.None) continue;
-                emptyIndex = itemIndex;
+                if (!predicate(inventory[itemIndex])) continue;
+                index = itemIndex;
                 return true;
             }
             return false;
         }
+
+        public static bool FindEmpty(InventoryComponent inventory, out byte emptyIndex)
+            => FindItem(inventory, item => item.id == ItemId.None, out emptyIndex);
 
         private static bool FindReplacement(InventoryComponent inventory, out byte replacementIndex)
+            => FindItem(inventory, item => item.id != ItemId.None, out replacementIndex);
+
+        public static void AddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
         {
-            replacementIndex = default;
-            for (byte itemIndex = 1; itemIndex <= inventory.items.Length; itemIndex++)
+            bool isAnOpenSlot;
+            if (ItemAssetLink.GetModifier(itemId) is ThrowableModifierBase && (isAnOpenSlot = FindItem(inventory, item => item.id == ItemId.None || item.id == itemId, out byte index))) // Try to stack throwables if possible
             {
-                if (inventory.items[itemIndex - 1].id == ItemId.None) continue;
-                replacementIndex = itemIndex;
-                return true;
+                ItemComponent itemInIndex = inventory[index];
+                bool addingToExisting = itemInIndex.id == itemId;
+                if (addingToExisting) count += itemInIndex.ammoInReserve;
             }
-            return false;
+            else isAnOpenSlot = FindEmpty(inventory, out index);
+            if (isAnOpenSlot) SetItemAtIndex(inventory, itemId, index, count);
         }
 
-        public static void SetItemAtIndex(InventoryComponent inventory, byte itemId, int index, int count = 1)
+        public static void SetItemAtIndex(InventoryComponent inventory, byte itemId, int index, ushort count = 1)
         {
-            ItemComponent item = inventory.items[index - 1];
+            ItemComponent item = inventory[index];
             item.id.Value = itemId;
             if (itemId == ItemId.None)
             {
@@ -185,7 +192,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
             }
             if (itemModifier is ThrowableModifierBase)
-                item.ammoInReserve.Value = checked((ushort) count);
+                item.ammoInReserve.Value = count;
             if (inventory.HasNoItemEquipped)
             {
                 inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
