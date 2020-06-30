@@ -140,7 +140,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_ParentOne.weight
-    path: Visual/Gun/Base
+    path: Visual/Item/Base
     classID: 114
     script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
   - curve:
@@ -159,7 +159,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: weight
-    path: Visual/Gun/Base
+    path: Visual/Item/Base
     classID: 114
     script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
   - curve:
@@ -178,7 +178,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_ParentOne.weight
-    path: Visual/Gun/Magazine
+    path: Visual/Item/Magazine
     classID: 114
     script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
   - curve:
@@ -197,7 +197,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: weight
-    path: Visual/Gun/Magazine
+    path: Visual/Item/Magazine
     classID: 114
     script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
   m_PPtrCurves: []
@@ -244,28 +244,28 @@ AnimationClip:
       customType: 0
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 1216358736
+      path: 270139123
       attribute: 295817184
       script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
       typeID: 114
       customType: 0
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 1216358736
+      path: 270139123
       attribute: 130897217
       script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
       typeID: 114
       customType: 0
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 2945739632
+      path: 3183417019
       attribute: 295817184
       script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
       typeID: 114
       customType: 0
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 2945739632
+      path: 3183417019
       attribute: 130897217
       script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
       typeID: 114
@@ -534,7 +534,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_ParentOne.weight
-    path: Visual/Gun/Base
+    path: Visual/Item/Base
     classID: 114
     script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
   - curve:
@@ -553,7 +553,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: weight
-    path: Visual/Gun/Base
+    path: Visual/Item/Base
     classID: 114
     script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
   - curve:
@@ -572,7 +572,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_ParentOne.weight
-    path: Visual/Gun/Magazine
+    path: Visual/Item/Magazine
     classID: 114
     script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
   - curve:
@@ -591,7 +591,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: weight
-    path: Visual/Gun/Magazine
+    path: Visual/Item/Magazine
     classID: 114
     script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
   m_EulerEditorCurves:

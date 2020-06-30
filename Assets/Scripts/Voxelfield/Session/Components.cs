@@ -22,14 +22,22 @@ namespace Voxelfield.Session
     {
         public ByteProperty number;
         public UIntTimeProperty remainingUs;
+        public ArrayElement<CurePackageComponent> curePackages = new ArrayElement<CurePackageComponent>(9);
     }
 
     /* Player */
 
+    [Serializable]
+    public class CurePackageComponent : ComponentBase
+    {
+        public BoolProperty isActive;
+        public VectorProperty position;
+    }
+    
     [Serializable, OnlyServerTrusted]
     public class ShowdownPlayerComponent : ComponentBase
     {
-        public ByteProperty cured;
+        public ByteProperty stagesCuredFlags;
     }
 
     [Serializable]
@@ -49,7 +57,7 @@ namespace Voxelfield.Session
     public static class VoxelfieldComponents
     {
         [RuntimeInitializeOnLoadMethod]
-        public static void Initialize() => SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(TeamProperty), typeof(VectorProperty));
+        public static void Initialize() => SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(IdProperty), typeof(TeamProperty), typeof(VectorProperty));
 
         public static readonly SessionElements SessionElements;
 

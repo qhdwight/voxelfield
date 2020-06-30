@@ -84,6 +84,7 @@ namespace Swihoni.Sessions
         {
             Container latestSession = GetLatestSession();
             RenderInterfaces(latestSession);
+            GetMode(m_RenderSession).Render(m_RenderSession);
         }
 
         protected void RenderInterfaces(Container session) => ForEachSessionInterface(sessionInterface => sessionInterface.Render(this, session));

@@ -27,8 +27,29 @@ PrefabInstance:
     - target: {fileID: 1716499526149561000, guid: b145cb9d7211a794fbcb8dde5c61741d,
         type: 3}
       propertyPath: m_Name
-      value: Wand
+      value: Gun
       objectReference: {fileID: 0}
+    - target: {fileID: 6292080215754282077, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6292080215754282077, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[2]
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6292080215754282077, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 6084272789430859715, guid: 6afe4ecb9dc47204c8b313643b96b995,
+        type: 3}
+    - target: {fileID: 6292080215754282077, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 015b5a4aa07b3364daa37a8ae1902a0b, type: 2}
     - target: {fileID: 6688518753503449741, guid: b145cb9d7211a794fbcb8dde5c61741d,
         type: 3}
       propertyPath: m_Mesh
@@ -93,7 +114,7 @@ PrefabInstance:
     - target: {fileID: 7274393323216527677, guid: b145cb9d7211a794fbcb8dde5c61741d,
         type: 3}
       propertyPath: m_Name
-      value: Wand Visuals Variant
+      value: Voxel Wand Visuals Variant
       objectReference: {fileID: 0}
     - target: {fileID: 7274393323216527679, guid: b145cb9d7211a794fbcb8dde5c61741d,
         type: 3}
@@ -105,5 +126,11 @@ PrefabInstance:
       propertyPath: m_StatusVisualProperties.Array.data[1].animationClip
       value: 
       objectReference: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
+    - target: {fileID: 8179706771489379414, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -8369894381874301590, guid: 6afe4ecb9dc47204c8b313643b96b995,
+        type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b145cb9d7211a794fbcb8dde5c61741d, type: 3}

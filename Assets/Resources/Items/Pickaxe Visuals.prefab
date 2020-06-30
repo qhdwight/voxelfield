@@ -1,12 +1,12 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &8594671410555395737
+--- !u!114 &5153054915850384720
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1716499526149561000}
+  m_GameObject: {fileID: 4004432358321145867}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
@@ -124,9 +124,10 @@ MonoBehaviour:
   m_FpvOffset: {x: 0.027, y: -0.344, z: 0.213}
   m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
   m_ChildBehaviors:
-  - {fileID: 8594671410555395737}
+  - {fileID: 5153054915850384720}
   - {fileID: 1040415276500994336}
   m_Crosshair: {fileID: 0}
+  m_FovMultiplier: 1
 --- !u!1 &7274393323389952821
 GameObject:
   m_ObjectHideFlags: 0
@@ -245,22 +246,27 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -3215204904494314582, guid: a6c246911bf974748826fb4178255f84,
+        type: 3}
+      propertyPath: m_Name
+      value: Base
+      objectReference: {fileID: 0}
     - target: {fileID: -927199367670048503, guid: a6c246911bf974748826fb4178255f84,
         type: 3}
       propertyPath: m_Name
-      value: Shovel
+      value: Item
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a6c246911bf974748826fb4178255f84, type: 3}
---- !u!1 &1716499526149561000 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: a6c246911bf974748826fb4178255f84,
-    type: 3}
-  m_PrefabInstance: {fileID: 7274393324499895201}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2416571395427510459 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: a6c246911bf974748826fb4178255f84,
+    type: 3}
+  m_PrefabInstance: {fileID: 7274393324499895201}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4004432358321145867 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -3215204904494314582, guid: a6c246911bf974748826fb4178255f84,
     type: 3}
   m_PrefabInstance: {fileID: 7274393324499895201}
   m_PrefabAsset: {fileID: 0}

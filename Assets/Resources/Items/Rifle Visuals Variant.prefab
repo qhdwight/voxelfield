@@ -132,6 +132,31 @@ MonoBehaviour:
     positionOffset: {x: 0, y: 0, z: 0}
     rotationOffset: {x: 0, y: 0, z: 0}
     weight: 0
+--- !u!114 &6377587322343086054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4092769623063548878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  positionAtRest: {x: -0.12, y: -0.39, z: -0.05}
+  rotationAtRest: {x: 0, y: 0, z: 0}
+  weight: 0
+  m_ParentOne:
+    transform: {fileID: 8343731253669802441}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    weight: 1
+  m_ParentTwo:
+    transform: {fileID: 0}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    weight: 0
 --- !u!82 &5332195290621901028
 AudioSource:
   m_ObjectHideFlags: 0
@@ -246,31 +271,6 @@ MonoBehaviour:
   m_ParentOne:
     transform: {fileID: 3047713978334603950}
     positionOffset: {x: -0.00399971, y: -0.08300006, z: 0.097}
-    rotationOffset: {x: 0, y: 0, z: 0}
-    weight: 1
-  m_ParentTwo:
-    transform: {fileID: 0}
-    positionOffset: {x: 0, y: 0, z: 0}
-    rotationOffset: {x: 0, y: 0, z: 0}
-    weight: 0
---- !u!114 &6377587322343086054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4092769623063548878}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 978dff6e820748f0acf4b7d373d9c0fd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  positionAtRest: {x: -0.12, y: -0.39, z: -0.05}
-  rotationAtRest: {x: 0, y: 0, z: 0}
-  weight: 0
-  m_ParentOne:
-    transform: {fileID: 8343731253669802441}
-    positionOffset: {x: 0, y: 0, z: 0}
     rotationOffset: {x: 0, y: 0, z: 0}
     weight: 1
   m_ParentTwo:
@@ -797,7 +797,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 751bac1698d9a7b43a5c3c9226e4bf83,
         type: 3}
       propertyPath: m_Name
-      value: Gun
+      value: Item
       objectReference: {fileID: 0}
     - target: {fileID: 4042196890279826047, guid: 751bac1698d9a7b43a5c3c9226e4bf83,
         type: 3}

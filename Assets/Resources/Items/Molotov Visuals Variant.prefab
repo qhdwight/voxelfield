@@ -90,7 +90,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 65b92125b13b89e4b9c3774c7004eb24,
         type: 3}
       propertyPath: m_Name
-      value: Molotov
+      value: Item
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 65b92125b13b89e4b9c3774c7004eb24, type: 3}

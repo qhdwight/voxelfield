@@ -4,7 +4,6 @@ using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
@@ -21,11 +20,11 @@ namespace Voxelfield.Session.Mode
     [CreateAssetMenu(fileName = "Showdown", menuName = "Session/Mode/Showdown", order = 0)]
     public class ShowdownMode : DeathmatchMode
     {
-        private const int TeamCount = 5, PlayersPerTeam = 3, TotalPlayers = TeamCount * PlayersPerTeam;
-
         // public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
         // public const uint BuyTimeUs = 60_000_000u, FightTimeUs = 300_000_000u;
         public const uint BuyTimeUs = 10_000_000u, FightTimeUs = 300_000_000u;
+        
+        private const int TeamCount = 5, PlayersPerTeam = 3, TotalPlayers = TeamCount * PlayersPerTeam;
 
         public override void Modify(SessionBase session, Container container, uint durationUs)
         {
@@ -53,7 +52,7 @@ namespace Voxelfield.Session.Mode
 
             var stage = container.Require<ShowdownSessionComponent>();
             if (stage.number.WithoutValue) return;
-            
+
             bool isBuyTime = stage.remainingUs > FightTimeUs;
             player.Require<FrozenProperty>().Value = isBuyTime;
             if (isBuyTime)
@@ -125,11 +124,23 @@ namespace Voxelfield.Session.Mode
 
         private static void StartFirstStage(SessionBase session, Container sessionContainer, ShowdownSessionComponent stage)
         {
-            TeamSpawns spawns = MapManager.Singleton.Map.models.GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
-                                          .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
-                                          .ToArray();
+            ModelsProperty models = MapManager.Singleton.Map.models;
+            TeamSpawns spawns = models.Where(modelTuple => modelTuple.Item2.With<TeamProperty>())
+                                      .GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
+                                      .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
+                                      .ToArray();
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
+            Vector3[] curePositions = models.Where(modelTuple => modelTuple.Item2.Require<ModelIdProperty>() == ModelsProperty.Cure)
+                                            .OrderBy(modelTuple => modelTuple.Item2.Require<IdProperty>().Value)
+                                            .Select(cureTuple => (Vector3) cureTuple.Item1)
+                                            .ToArray();
+            for (var index = 0; index < stage.curePackages.Length; index++)
+            {
+                CurePackageComponent package = stage.curePackages[index];
+                package.isActive.Value = true;
+                package.position.Value = curePositions[index];
+            }
             ForEachActivePlayer(session, sessionContainer, (playerId, player) => FirstStageSpawn(sessionContainer, playerId, player, spawns));
             Debug.Log("Started first stage");
         }

@@ -246,7 +246,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_Enabled
-    path: Visual/HE Grenade
+    path: Visual/Item
     classID: 23
     script: {fileID: 0}
   m_PPtrCurves: []
@@ -286,7 +286,7 @@ AnimationClip:
       customType: 4
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 2322426818
+      path: 1961593932
       attribute: 3305885265
       script: {fileID: 0}
       typeID: 23
@@ -1019,7 +1019,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_Enabled
-    path: Visual/HE Grenade
+    path: Visual/Item
     classID: 23
     script: {fileID: 0}
   m_EulerEditorCurves:

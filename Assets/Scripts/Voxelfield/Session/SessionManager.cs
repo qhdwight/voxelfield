@@ -186,11 +186,13 @@ namespace Voxelfield.Session
             AddSpawn(new Position3Int {y = 5}, 1);
             AddSpawn(new Position3Int {x = 10, y = 5}, 2);
             AddSpawn(new Position3Int {x = 20, y = 5}, 3);
+            for (byte i = 0; i < 9; i++)
+                models.Add(new Position3Int(i + 5, 5, 5), new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i)));
             var testMap = new MapContainer
             {
                 name = new StringProperty("Test"),
                 terrainHeight = new IntProperty(4),
-                dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, -1, -1), upperBound = new Position3IntProperty(1, 1, 1)},
+                dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-2, -1, -2), upperBound = new Position3IntProperty(2, 1, 2)},
                 noise = new NoiseComponent
                 {
                     seed = new IntProperty(0),

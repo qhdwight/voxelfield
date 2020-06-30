@@ -75,7 +75,7 @@ namespace Voxel.Map
         {
             string mapPath = GetMapPath(map.name);
 #if UNITY_EDITOR
-            if (map.name == TestMapName && Application.isEditor) mapPath = "Assets/Resources/Maps/Test.bytes";
+            if (map.name == TestMapName) mapPath = "Assets/Resources/Maps/Test.bytes";
 #endif
             var writer = new NetDataWriter();
             map.Serialize(writer);
@@ -90,10 +90,9 @@ namespace Voxel.Map
             Debug.Log($"Starting to load map: {mapName}");
             MapContainer map = mapName.WithoutValue ? EmptyMap : ReadMapSave(mapName);
 
-            if (Application.isEditor)
-            {
-                map.dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, 0, -1), upperBound = new Position3IntProperty(0, 0, 0)};
-            }
+#if UNITY_EDITOR
+            map.dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, 0, -1), upperBound = new Position3IntProperty(0, 0, 0)};
+#endif
 
             yield return LoadMapSave(map);
 
@@ -130,7 +129,6 @@ namespace Voxel.Map
         //         SaveMapSave(mapSave);
         //     }
         // }
-        
 
         public void SetMap(StringProperty mapName) => m_WantedMapName = mapName;
 

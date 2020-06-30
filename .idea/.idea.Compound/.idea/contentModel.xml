@@ -59,6 +59,7 @@
               <e p="ClientInjector.cs" t="Include" />
               <e p="Components.cs" t="Include" />
               <e p="Mode" t="Include">
+                <e p="CurePackageManager.cs" t="Include" />
                 <e p="DesignerMode.cs" t="Include" />
                 <e p="ShowdownMode.cs" t="Include" />
                 <e p="WarmupMode.cs" t="Include" />

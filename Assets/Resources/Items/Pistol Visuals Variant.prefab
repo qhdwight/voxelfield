@@ -305,6 +305,11 @@ PrefabInstance:
       propertyPath: m_ParentOne.positionOffset.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4103846815844940479, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: m_Name
+      value: Item
+      objectReference: {fileID: 0}
     - target: {fileID: 4365516006193072618, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
       propertyPath: m_ParentOne.positionOffset.x

@@ -51,6 +51,8 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
         }
 
+        public virtual void Render(Container container) { }
+
         public virtual void ModifyPlayer(SessionBase session, Container container, Container player, Container commands, uint durationUs)
         {
             if (player.Without(out HealthProperty health) || health.WithoutValue) return;
