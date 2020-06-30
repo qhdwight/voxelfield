@@ -16,29 +16,43 @@ namespace Voxelfield.Interface.Showdown
         private bool m_PlayerWantsVisible;
         private BuyMenuButton[] m_BuyButtons;
         private int? m_WantedBuyItemId;
+        private AudioSource m_AudioSource;
 
         [SerializeField] private BufferedTextGui m_MoneyText = default;
+        [SerializeField] private AudioClip m_HoverClip = default, m_PressClip = default;
 
         protected override void Awake()
         {
             base.Awake();
             m_BuyButtons = GetComponentsInChildren<BuyMenuButton>();
+            m_AudioSource = GetComponent<AudioSource>();
         }
 
         private void Start()
         {
             foreach (BuyMenuButton button in m_BuyButtons)
-                button.Button.onClick.AddListener(() => OnBuyButtonClicked(button));
+            {
+                button.OnClick.AddListener(() =>
+                {
+                    m_WantedBuyItemId = button.ItemId;
+                    Play(m_PressClip);
+                });
+                button.OnEnter.AddListener(() => Play(m_HoverClip));
+            }
+        }
+
+        private void Play(AudioClip clip)
+        {
+            m_AudioSource.pitch = Random.Range(0.95f, 1.05f);
+            m_AudioSource.PlayOneShot(clip);
         }
 
         public override void SessionStateChange(bool isActive) => m_WantedBuyItemId = null;
 
-        private void OnBuyButtonClicked(BuyMenuButton button) => m_WantedBuyItemId = button.ItemId;
-
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
             if (!m_WantedBuyItemId.HasValue) return;
-            
+
             var itemId = checked((byte) m_WantedBuyItemId.Value);
             commands.Require<MoneyComponent>().wantedBuyItemId.Value = itemId;
             m_WantedBuyItemId = null;
@@ -63,7 +77,7 @@ namespace Voxelfield.Interface.Showdown
         {
             sessionLocalPlayer = default;
             sessionShowdown = default;
-            
+
             var showdownMode = session.GetMode(sessionContainer) as ShowdownMode;
             if (showdownMode == null) return false;
 

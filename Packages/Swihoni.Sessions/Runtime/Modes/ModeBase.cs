@@ -53,7 +53,7 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void Render(Container container) { }
 
-        public virtual void ModifyPlayer(SessionBase session, Container container, Container player, Container commands, uint durationUs)
+        public virtual void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)
         {
             if (player.Without(out HealthProperty health) || health.WithoutValue) return;
 

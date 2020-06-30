@@ -31,13 +31,15 @@ namespace Voxelfield.Session
     public class CurePackageComponent : ComponentBase
     {
         public BoolProperty isActive;
-        public VectorProperty position;
     }
     
     [Serializable, OnlyServerTrusted]
     public class ShowdownPlayerComponent : ComponentBase
     {
         public ByteProperty stagesCuredFlags;
+        public UIntTimeProperty elapsedSecuringUs;
+
+        public bool IsCured(ShowdownSessionComponent showdown) => (stagesCuredFlags & (byte) (1 << showdown.number)) != 0;
     }
 
     [Serializable]

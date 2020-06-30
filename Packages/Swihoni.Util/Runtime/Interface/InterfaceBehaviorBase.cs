@@ -24,13 +24,18 @@ namespace Swihoni.Util.Interface
 
         public void ToggleInterfaceActive() => SetInterfaceActive(!IsActive);
 
-        public virtual void SetInterfaceActive(bool active)
+        public virtual void SetInterfaceActive(bool isActive)
         {
-            if (IsActive == active) return;
-            IsActive = active;
-            m_CanvasGroup.alpha = active ? OpaqueAlpha : InvisibleAlpha;
-            m_CanvasGroup.interactable = active;
-            m_CanvasGroup.blocksRaycasts = active;
+            if (IsActive == isActive) return;
+            IsActive = isActive;
+            SetCanvasGroupActive(m_CanvasGroup, isActive);
+        }
+
+        protected static void SetCanvasGroupActive(CanvasGroup group, bool isActive)
+        {
+            group.alpha = isActive ? OpaqueAlpha : InvisibleAlpha;
+            group.interactable = isActive;
+            group.blocksRaycasts = isActive;
         }
     }
 }

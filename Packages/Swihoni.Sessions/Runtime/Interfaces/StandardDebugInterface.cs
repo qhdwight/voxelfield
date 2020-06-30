@@ -12,7 +12,8 @@ namespace Swihoni.Sessions.Interfaces
                                                  m_DownloadText = default,
                                                  m_ResetErrorText = default,
                                                  m_PredictionErrorText = default,
-                                                 m_PingText = default;
+                                                 m_PingText = default,
+                                                 m_PacketLossText = default;
         [SerializeField] private float m_UpdateRate = 1.0f;
         private float m_LastUpdateTime;
 
@@ -31,6 +32,7 @@ namespace Swihoni.Sessions.Interfaces
                 m_ResetErrorText.BuildText(builder => builder.Append("Reset Errors: ").Append(networkSession.ResetErrors));
                 m_UploadText.BuildText(builder => builder.AppendFormat("Up: {0:F1} kb/s", networkSession.Socket.SendRateKbs));
                 m_DownloadText.BuildText(builder => builder.AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.ReceiveRateKbs));
+                m_PacketLossText.BuildText(builder => builder.AppendFormat("Drop: {0:P1}", networkSession.Socket.PacketLoss));
             }
             m_LastUpdateTime = time;
         }

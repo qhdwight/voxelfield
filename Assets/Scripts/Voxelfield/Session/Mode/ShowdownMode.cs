@@ -15,7 +15,7 @@ using Voxel.Map;
 
 namespace Voxelfield.Session.Mode
 {
-    using TeamSpawns = IReadOnlyList<Queue<(Position3Int, Container)>>;
+    using QueuedTeamSpawns = IReadOnlyList<Queue<(Position3Int, Container)>>;
 
     [CreateAssetMenu(fileName = "Showdown", menuName = "Session/Mode/Showdown", order = 0)]
     public class ShowdownMode : DeathmatchMode
@@ -23,59 +23,13 @@ namespace Voxelfield.Session.Mode
         // public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
         // public const uint BuyTimeUs = 60_000_000u, FightTimeUs = 300_000_000u;
         public const uint BuyTimeUs = 10_000_000u, FightTimeUs = 300_000_000u;
+        public const uint SecureTimeUs = 5_000_000;
 
         private const int TeamCount = 5, PlayersPerTeam = 3, TotalPlayers = TeamCount * PlayersPerTeam;
 
-        [SerializeField] private CurePackageVisuals m_CurePackageVisualPrefab = default;
-
-        private CurePackageVisuals[] m_CurePackageVisuals;
-
-        public override void Modify(SessionBase session, Container container, uint durationUs)
-        {
-            base.Modify(session, container, durationUs);
-            var stage = container.Require<ShowdownSessionComponent>();
-            if (stage.number.WithoutValue) // If in warmup
-            {
-                int playerCount = GetPlayerCount(container);
-                if (playerCount == 1)
-                    // if (playerCount == TotalPlayers)
-                {
-                    StartFirstStage(session, container, stage);
-                }
-            }
-            if (stage.number.WithValue)
-            {
-                if (stage.remainingUs > durationUs) stage.remainingUs.Value -= durationUs;
-                else stage.remainingUs.Value = 0u;
-            }
-        }
-
-        public override void ModifyPlayer(SessionBase session, Container container, Container player, Container commands, uint durationUs)
-        {
-            base.ModifyPlayer(session, container, player, commands, durationUs);
-
-            var stage = container.Require<ShowdownSessionComponent>();
-            if (stage.number.WithoutValue) return;
-
-            bool isBuyTime = stage.remainingUs > FightTimeUs;
-            player.Require<FrozenProperty>().Value = isBuyTime;
-            if (isBuyTime)
-            {
-                ByteProperty wantedBuyItemId = player.Require<MoneyComponent>().wantedBuyItemId;
-                if (wantedBuyItemId.WithValue)
-                {
-                    UShortProperty money = player.Require<MoneyComponent>().count;
-                    Debug.Log($"Trying to buy requested item: {wantedBuyItemId.Value}");
-                    ushort cost = GetCost(wantedBuyItemId);
-                    if (cost < money)
-                    {
-                        var inventory = player.Require<InventoryComponent>();
-                        PlayerItemManagerModiferBehavior.AddItem(inventory, wantedBuyItemId);
-                        money.Value -= cost;
-                    }
-                }
-            }
-        }
+        [SerializeField] private LayerMask m_ModelMask = default;
+        private CurePackageBehavior[] m_CurePackages;
+        private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
 
         private static ushort GetCost(byte itemId)
         {
@@ -99,12 +53,102 @@ namespace Voxelfield.Session.Mode
             throw new ArgumentException("Can't buy this item id");
         }
 
+        public override void Modify(SessionBase session, Container container, uint durationUs)
+        {
+            base.Modify(session, container, durationUs);
+            var stage = container.Require<ShowdownSessionComponent>();
+            if (stage.number.WithoutValue) // If in warmup
+            {
+                int playerCount = GetPlayerCount(container);
+                if (playerCount == 1)
+                    // if (playerCount == TotalPlayers)
+                {
+                    StartFirstStage(session, container, stage);
+                }
+            }
+            if (stage.number.WithValue)
+            {
+                if (stage.remainingUs > durationUs) stage.remainingUs.Value -= durationUs;
+                else stage.remainingUs.Value = 0u;
+            }
+        }
+
+        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)
+        {
+            base.ModifyPlayer(session, container, playerId, player, commands, durationUs);
+
+            var stage = container.Require<ShowdownSessionComponent>();
+            if (stage.number.WithoutValue) return;
+
+            bool isFightTime = stage.remainingUs < FightTimeUs;
+            player.Require<FrozenProperty>().Value = !isFightTime || player.Require<ShowdownPlayerComponent>().IsCured(stage);
+            if (isFightTime)
+            {
+                var showdownPlayer = player.Require<ShowdownPlayerComponent>();
+
+                HandleSecuring(player, commands, showdownPlayer, stage, durationUs);
+            }
+            else
+            {
+                ByteProperty wantedBuyItemId = player.Require<MoneyComponent>().wantedBuyItemId;
+                if (wantedBuyItemId.WithValue)
+                {
+                    UShortProperty money = player.Require<MoneyComponent>().count;
+                    Debug.Log($"Trying to buy requested item: {wantedBuyItemId.Value}");
+                    ushort cost = GetCost(wantedBuyItemId);
+                    if (cost < money)
+                    {
+                        var inventory = player.Require<InventoryComponent>();
+                        PlayerItemManagerModiferBehavior.AddItem(inventory, wantedBuyItemId);
+                        money.Value -= cost;
+                    }
+                }
+            }
+        }
+
+        private void HandleSecuring(Container player, Container commands, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage, uint durationUs)
+        {
+            var isInteracting = false;
+            CurePackageComponent cure = default;
+            if (commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact))
+            {
+                Ray ray = SessionBase.GetRayForPlayer(player);
+                int count = Physics.RaycastNonAlloc(ray, m_CachedHits, 2.0f, m_ModelMask);
+                if (count > 0 && m_CachedHits[0].collider.TryGetComponent(out CurePackageBehavior curePackage))
+                {
+                    cure = stage.curePackages[curePackage.Container.Require<IdProperty>()];
+                    if (cure.isActive.WithValue && cure.isActive) isInteracting = true;
+                }
+            }
+            if (isInteracting)
+            {
+                checked
+                {
+                    showdownPlayer.elapsedSecuringUs.Value += durationUs;
+                    if (showdownPlayer.elapsedSecuringUs > SecureTimeUs)
+                    {
+                        Secure(showdownPlayer, stage, cure);
+                    }
+                }
+            }
+            else
+            {
+                showdownPlayer.elapsedSecuringUs.Value = 0u;
+            }
+        }
+
+        private static void Secure(ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage, CurePackageComponent cure)
+        {
+            showdownPlayer.stagesCuredFlags.Value |= (byte) (1 << stage.number);
+            cure.isActive.Value = false;
+        }
+
         protected override void HandleRespawn(SessionBase session, Container container, Container player, HealthProperty health, uint durationUs)
         {
             if (InWarmup(container)) base.HandleRespawn(session, container, player, health, durationUs); // Random respawn
         }
 
-        private static void FirstStageSpawn(Container session, int playerId, Container player, TeamSpawns spawns)
+        private static void FirstStageSpawn(Container session, int playerId, Container player, QueuedTeamSpawns spawns)
         {
             player.Require<TeamProperty>().Value = (byte) (playerId % PlayersPerTeam);
 
@@ -124,26 +168,22 @@ namespace Voxelfield.Session.Mode
                 PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Shovel);
                 PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Pistol);
             }
+            player.Require<ShowdownPlayerComponent>().Zero();
         }
 
         private static void StartFirstStage(SessionBase session, Container sessionContainer, ShowdownSessionComponent stage)
         {
             ModelsProperty models = MapManager.Singleton.Map.models;
-            TeamSpawns spawns = models.Where(modelTuple => modelTuple.Item2.With<TeamProperty>())
-                                      .GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
-                                      .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
-                                      .ToArray();
+            QueuedTeamSpawns spawns = models.Where(modelTuple => modelTuple.Item2.With<TeamProperty>())
+                                            .GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
+                                            .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
+                                            .ToArray();
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
-            Vector3[] curePositions = models.Where(modelTuple => modelTuple.Item2.Require<ModelIdProperty>() == ModelsProperty.Cure)
-                                            .OrderBy(modelTuple => modelTuple.Item2.Require<IdProperty>().Value)
-                                            .Select(cureTuple => (Vector3) cureTuple.Item1)
-                                            .ToArray();
             for (var index = 0; index < stage.curePackages.Length; index++)
             {
                 CurePackageComponent package = stage.curePackages[index];
-                package.isActive.Value = true;
-                package.position.Value = curePositions[index];
+                package.isActive.Value = index % 2 == 0;
             }
             ForEachActivePlayer(session, sessionContainer, (playerId, player) => FirstStageSpawn(sessionContainer, playerId, player, spawns));
             Debug.Log("Started first stage");
@@ -175,23 +215,15 @@ namespace Voxelfield.Session.Mode
 
         public override void Render(Container container)
         {
+            if (MapManager.Singleton.Models.Count == 0) return;
             ArrayElement<CurePackageComponent> cures = container.Require<ShowdownSessionComponent>().curePackages;
-            if (m_CurePackageVisuals == null)
-                m_CurePackageVisuals = Enumerable.Range(0, 9)
-                                                 .Select(_ => Instantiate(m_CurePackageVisualPrefab))
-                                                 .ToArray();
+            // TODO:performance
+            m_CurePackages = MapManager.Singleton.Models.Values
+                                       .Where(model => model.Container.Require<ModelIdProperty>().Value == ModelsProperty.Cure)
+                                       .Cast<CurePackageBehavior>()
+                                       .ToArray();
             for (var index = 0; index < cures.Length; index++)
-                m_CurePackageVisuals[index].Render(cures[index]);
-        }
-
-        private void OnEnable() => m_CurePackageVisuals = null;
-
-        public override void Dispose()
-        {
-            if (m_CurePackageVisuals != null)
-                foreach (CurePackageVisuals visual in m_CurePackageVisuals)
-                    Destroy(visual.gameObject);
-            m_CurePackageVisuals = null;
+                m_CurePackages[index].Render(cures[index]);
         }
 
         // public override void SetupNewPlayer(SessionBase session, Container player)

@@ -137,7 +137,7 @@ namespace Swihoni.Sessions
             Profiler.BeginSample("Client Receive");
             Receive(timeUs);
             Profiler.EndSample();
-            
+
             ClearSingleTicks(m_CommandHistory.Peek());
 
             base.Tick(tick, timeUs, durationUs);
@@ -190,7 +190,7 @@ namespace Swihoni.Sessions
                 }
             }
         }
-        
+
         private void SendCommand() => m_Socket.SendToServer(m_CommandHistory.Peek(), DeliveryMethod.ReliableUnordered);
 
         private void CheckPrediction(Container serverSession)

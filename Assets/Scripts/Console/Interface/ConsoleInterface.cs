@@ -63,10 +63,10 @@ namespace Console.Interface
 ////            return addedChar == '`' ? '\0' : addedChar;
 //        }
 
-        public override void SetInterfaceActive(bool active)
+        public override void SetInterfaceActive(bool isActive)
         {
-            base.SetInterfaceActive(active);
-            if (active)
+            base.SetInterfaceActive(isActive);
+            if (isActive)
             {
                 m_ConsoleInput.ActivateInputField();
                 m_ConsoleInput.Select();

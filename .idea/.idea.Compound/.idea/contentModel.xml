@@ -29,6 +29,7 @@
               <e p="MapContainer.cs" t="Include" />
               <e p="MapManager.cs" t="Include" />
               <e p="MapSpawn.cs" t="Include" />
+              <e p="ModelBehavior.cs" t="Include" />
               <e p="ModelsProperty.cs" t="Include" />
             </e>
             <e p="Noise.cs" t="Include" />
@@ -59,7 +60,7 @@
               <e p="ClientInjector.cs" t="Include" />
               <e p="Components.cs" t="Include" />
               <e p="Mode" t="Include">
-                <e p="CurePackageVisuals.cs" t="Include" />
+                <e p="CurePackageBehavior.cs" t="Include" />
                 <e p="DesignerMode.cs" t="Include" />
                 <e p="ShowdownMode.cs" t="Include" />
                 <e p="WarmupMode.cs" t="Include" />

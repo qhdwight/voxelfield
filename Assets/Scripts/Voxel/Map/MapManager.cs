@@ -1,14 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using LiteNetLib.Utils;
+using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Voxel.Map
 {
@@ -16,17 +15,25 @@ namespace Voxel.Map
     {
         private const string MapSaveExtension = "vfm", MapSaveFolder = "Maps";
 
-        private static Dictionary<string, TextAsset> _defaultMaps;
         private static readonly StringProperty TestMapName = new StringProperty("Test"), EmptyMapName = new StringProperty();
         private static readonly MapContainer EmptyMap = new MapContainer().Zero();
+        private static Dictionary<string, TextAsset> _defaultMaps;
+        private static ModelBehavior[] _modelPrefabs;
+        private Pool<ModelBehavior>[] m_ModelsPool;
 
         private StringProperty m_WantedMapName = EmptyMapName;
         private IEnumerator m_ManageActionsRoutine;
 
+        public Dictionary<Position3Int, ModelBehavior> Models { get; } = new Dictionary<Position3Int, ModelBehavior>();
         public MapContainer Map { get; private set; } = new MapContainer();
 
         [RuntimeInitializeOnLoadMethod]
-        public static void Initialize() => _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m);
+        public static void Initialize()
+        {
+            _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m);
+            _modelPrefabs = Resources.LoadAll<ModelBehavior>("Models")
+                                     .OrderBy(modifier => modifier.Id).ToArray();
+        }
 
         public static string GetDirectory(string folderName)
         {
@@ -41,7 +48,18 @@ namespace Voxel.Map
             m_ManageActionsRoutine = ManageActionsRoutine();
             StartCoroutine(m_ManageActionsRoutine);
             SetMap(EmptyMapName);
+            SetupModelPool();
         }
+
+        private void SetupModelPool() =>
+            m_ModelsPool = _modelPrefabs
+                          .Select(modelBehaviorPrefab => new Pool<ModelBehavior>(0, () =>
+                           {
+                               ModelBehavior modelInstance = Instantiate(modelBehaviorPrefab);
+                               modelInstance.Setup(this);
+                               modelInstance.name = modelBehaviorPrefab.name;
+                               return modelInstance;
+                           }, (modelBehavior, isActive) => modelBehavior.gameObject.SetActive(isActive))).ToArray();
 
         private IEnumerator ManageActionsRoutine()
         {
@@ -101,10 +119,26 @@ namespace Voxel.Map
                 transaction.AddChange(position, change);
             transaction.Commit();
 
+            LoadModels(map);
+
             // PlaceTrees(mapName, mapSave);
 
             Debug.Log($"Finished loading map: {mapName}");
             Map = map;
+        }
+
+        private void LoadModels(MapContainer map)
+        {
+            Models.Clear();
+            foreach (Pool<ModelBehavior> pool in m_ModelsPool) pool.ReturnAll();
+            foreach ((Position3Int position, Container model) in map.models)
+            {
+                ushort modelId = model.Require<ModelIdProperty>();
+                ModelBehavior modelInstance = m_ModelsPool[modelId].Obtain();
+                modelInstance.SetContainer(model);
+                modelInstance.transform.SetPositionAndRotation(position + new Vector3 {y = 0.5f}, Quaternion.identity);
+                Models.Add(position, modelInstance);
+            }
         }
 
         // private static void PlaceTrees(string mapName, MapSave mapSave)
@@ -115,7 +149,7 @@ namespace Voxel.Map
         //         mapSave.Models = new Dictionary<Position3Int, ModelData>();
         //         for (var i = 0; i < 35; i++)
         //         {
-        //             int chunkSize = ChunkManager.Singleton.ChunkSize;
+        //             int chunkSizme = ChunkManager.Singleton.ChunkSize;
         //             Dimension dimension = mapSave.Dimension;
         //             float x = Random.Range(dimension.lowerBound.x * chunkSize, dimension.upperBound.x * chunkSize),
         //                   z = Random.Range(dimension.lowerBound.x * chunkSize, dimension.upperBound.x * chunkSize);
