@@ -5,7 +5,7 @@ using Swihoni.Util.Math;
 
 namespace Voxel
 {
-    [Serializable, ClearAfterTick]
+    [Serializable, SingleTick]
     public class ChangedVoxelsProperty : DictionaryPropertyBase<Position3Int, VoxelChangeData>, IVoxelChanges
     {
         public override void Serialize(NetDataWriter writer)

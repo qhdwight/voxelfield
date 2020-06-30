@@ -54,7 +54,13 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public void ModifyCommands(SessionBase session, Container commandsToModify)
         {
-            if (session.ShouldInterruptCommands) return;
+            if (session.ShouldInterruptCommands)
+            {
+                // TODO:refactor attribute
+                commandsToModify.Require<MouseComponent>().Zero();
+                commandsToModify.Require<InputFlagProperty>().Zero();
+                return;
+            }
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
         }
 

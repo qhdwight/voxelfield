@@ -125,7 +125,7 @@ namespace Swihoni.Sessions
             {
                 m_Injector.OnSettingsTick(latestSession);
                 UpdateInputs(GetPlayerFromId(localPlayerId, latestSession), localPlayerId);
-                Predict(tick, timeUs, localPlayerId);
+                Predict(tick, timeUs, localPlayerId); // Advances commands
             }
             Profiler.EndSample();
 
@@ -149,7 +149,19 @@ namespace Swihoni.Sessions
             if (predictedPlayer.Without(out ClientStampComponent predictedStamp)) return;
 
             predictedPlayer.CopyFrom(previousPredictedPlayer);
-            commands.CopyFrom(previousCommand);
+            ElementExtensions.NavigateZipped((_destination, _source) =>
+            {
+                if (_destination is PropertyBase _destinationProperty && _source is PropertyBase _sourceProperty)
+                {
+                    if (_destinationProperty.WithAttribute<SingleTick>())
+                    {
+                        _destinationProperty.Clear();
+                        return Navigation.SkipDescendents;
+                    }
+                    _destinationProperty.SetFromIfWith(_sourceProperty);
+                }
+                return Navigation.Continue;
+            }, commands, previousCommand);
 
             if (IsPaused)
             {
@@ -365,7 +377,7 @@ namespace Swihoni.Sessions
             {
                 if (_current is PropertyBase _currentProperty && _received is PropertyBase _receivedProperty)
                 {
-                    if (_current.WithAttribute<ClearAfterTick>() || !_receivedProperty.WasSame)
+                    if (_current.WithAttribute<SingleTick>() || !_receivedProperty.WasSame)
                         _currentProperty.SetTo(_receivedProperty);
                 }
                 return Navigation.Continue;

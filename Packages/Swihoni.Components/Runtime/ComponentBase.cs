@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Swihoni.Components
 {
-    public class ClearAfterTick : Attribute
+    public class SingleTick : Attribute
     {
     }
 

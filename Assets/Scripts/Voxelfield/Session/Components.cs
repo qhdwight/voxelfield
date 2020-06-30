@@ -43,7 +43,7 @@ namespace Voxelfield.Session
     public class MoneyComponent : ComponentBase
     {
         [OnlyServerTrusted] public UShortProperty count;
-        [ClientTrusted] public ByteProperty wantedBuyItemId;
+        [ClientTrusted, SingleTick] public ByteProperty wantedBuyItemId;
     }
 
     public static class VoxelfieldComponents
