@@ -14,10 +14,8 @@ namespace Swihoni.Sessions.Items.Modifiers
     public class ThrowableModifierBase : ItemModifierBase
     {
         [Header("Throwable"), SerializeField] private ushort m_ThrowForce = default;
-        [SerializeField] protected byte m_AmmoCount = default;
         [SerializeField] protected ThrowableModifierBehavior m_ThrowablePrefab = default;
 
-        public byte AmmoCount => m_AmmoCount;
         public ushort ThrowForce => m_ThrowForce;
         public ThrowableModifierBehavior ThrowablePrefab => m_ThrowablePrefab;
 
@@ -29,7 +27,14 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
-            if (item.status.id == ItemStatusId.PrimaryUsing) Release(session, playerId);
+            // TODO:refactor make base class for C4 type objects
+            if (item.status.id == ItemStatusId.PrimaryUsing)
+            {
+                Release(session, playerId, item);
+                if (item.ammoInReserve == 0 && item.id != ItemId.C4) return ItemStatusId.RequestRemoval;
+            }
+            else if (item.status.id == ItemStatusId.SecondaryUsing && item.id == ItemId.C4 && item.ammoInReserve == 0)
+                return ItemStatusId.RequestRemoval;
             return base.FinishStatus(session, playerId, item, inventory, inputs);
         }
 
@@ -58,7 +63,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             }
         }
 
-        protected virtual void Release(SessionBase session, int playerId)
+        protected virtual void Release(SessionBase session, int playerId, ItemComponent item)
         {
             Container player = session.GetPlayerFromId(playerId);
             if (player.Without<ServerTag>()) return;
@@ -74,6 +79,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                 if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;
                 throwableModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
             }
+
+            item.ammoInReserve.Value--;
         }
 
         internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)

@@ -13,21 +13,30 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
         {
-            if (!player.With(out InventoryComponent inventoryComponent) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
+            if (!player.With(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
-            var inputProperty = commands.Require<InputFlagProperty>();
-            var wantedItemIndexProperty = commands.Require<WantedItemIndexProperty>();
+            var input = commands.Require<InputFlagProperty>();
+            var wantedItemIndex = commands.Require<WantedItemIndexProperty>();
 
-            ModifyEquipStatus(session, playerId, inventoryComponent, wantedItemIndexProperty, durationUs);
+            ModifyEquipStatus(session, playerId, inventory, wantedItemIndex, durationUs);
 
-            if (inventoryComponent.HasNoItemEquipped) return;
+            if (inventory.HasNoItemEquipped) return;
+            /* Has Item Equipped */
 
-            ModifyAdsStatus(inventoryComponent, inputProperty, durationUs);
+            ModifyAdsStatus(inventory, input, durationUs);
 
             // Modify equipped item component
-            ItemComponent equippedItemComponent = inventoryComponent.EquippedItemComponent;
-            ItemModifierBase itemModifier = ItemAssetLink.GetModifier(equippedItemComponent.id);
-            itemModifier.ModifyChecked(session, playerId, player, equippedItemComponent, inventoryComponent, inputProperty, durationUs);
+            ItemComponent equippedItem = inventory.EquippedItemComponent;
+            ItemModifierBase itemModifier = ItemAssetLink.GetModifier(equippedItem.id);
+            itemModifier.ModifyChecked(session, playerId, player, equippedItem, inventory, input, durationUs);
+
+            if (equippedItem.status.id == ItemStatusId.RequestRemoval)
+            {
+                equippedItem.id.Value = ItemId.None;
+                inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
+                inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                inventory.equipStatus.elapsedUs.Value = 0u;
+            }
         }
 
         public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs) { }
@@ -153,7 +162,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             return false;
         }
 
-        public static void SetItemAtIndex(InventoryComponent inventory, byte itemId, int index)
+        public static void SetItemAtIndex(InventoryComponent inventory, byte itemId, int index, int count = 1)
         {
             ItemComponent item = inventory.items[index - 1];
             item.id.Value = itemId;
@@ -172,9 +181,11 @@ namespace Swihoni.Sessions.Player.Modifiers
             ItemModifierBase itemModifier = ItemAssetLink.GetModifier(itemId);
             if (itemModifier is GunModifierBase gunModifier)
             {
-                item.gunStatus.ammoInMag.Value = gunModifier.MagSize;
-                item.gunStatus.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
+                item.ammoInMag.Value = gunModifier.MagSize;
+                item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
             }
+            if (itemModifier is ThrowableModifierBase)
+                item.ammoInReserve.Value = checked((ushort) count);
             if (inventory.HasNoItemEquipped)
             {
                 inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;

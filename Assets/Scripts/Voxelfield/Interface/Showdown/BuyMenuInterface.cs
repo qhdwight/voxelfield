@@ -1,3 +1,4 @@
+using System;
 using Input;
 using Swihoni.Components;
 using Swihoni.Sessions;
@@ -23,6 +24,10 @@ namespace Voxelfield.Interface.Showdown
         {
             base.Awake();
             m_BuyButtons = GetComponentsInChildren<BuyMenuButton>();
+        }
+
+        private void Start()
+        {
             foreach (BuyMenuButton button in m_BuyButtons)
                 button.Button.onClick.AddListener(() => OnBuyButtonClicked(button));
         }

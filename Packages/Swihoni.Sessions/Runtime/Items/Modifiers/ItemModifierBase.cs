@@ -10,7 +10,8 @@ namespace Swihoni.Sessions.Items.Modifiers
         public const byte Idle = 0,
                           PrimaryUsing = 1,
                           SecondaryUsing = 2,
-                          Last = 2;
+                          Last = 2,
+                          RequestRemoval = byte.MaxValue;
     }
 
     public static class ItemEquipStatusId
@@ -86,6 +87,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 uint statusElapsedUs = status.elapsedUs;
                 byte? nextStatus = FinishStatus(session, playerId, item, inventory, inputs);
                 StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, durationUs, statusElapsedUs - modifierProperties.durationUs);
+                if (nextStatus == ItemStatusId.RequestRemoval) break;
             }
         }
 

@@ -57,16 +57,24 @@ namespace Swihoni.Sessions.Interfaces
                     ItemModifierBase modifier = ItemAssetLink.GetModifier(equippedItem.id);
                     m_AmmoText.BuildText(builder =>
                     {
-                        if (modifier is GunModifierBase gunModifier)
-                            builder
-                               .Append("Ammo ")
-                               .Append(equippedItem.gunStatus.ammoInMag)
-                               .Append("/")
-                               .Append(gunModifier.MagSize)
-                               .Append(" x")
-                               .Append(equippedItem.gunStatus.ammoInReserve);
-                        else
-                            builder.Append("∞");
+                        switch (modifier)
+                        {
+                            case GunModifierBase gunModifier:
+                                builder
+                                   .Append("Ammo ")
+                                   .Append(equippedItem.ammoInMag)
+                                   .Append("/")
+                                   .Append(gunModifier.MagSize)
+                                   .Append(" x")
+                                   .Append(equippedItem.ammoInReserve);
+                                break;
+                            case ThrowableModifierBase _:
+                                builder.Append("x").Append(equippedItem.ammoInReserve);
+                                break;
+                            default:
+                                builder.Append("∞");
+                                break;
+                        }
                     });
 
                     // Color crosshairColor = m_Crosshair.color;
@@ -79,11 +87,12 @@ namespace Swihoni.Sessions.Interfaces
 
                     m_InventoryText.BuildText(builder =>
                     {
+                        var realizedIndex = 0;
                         for (var index = 0; index < inventory.items.Length; index++)
                         {
-                            if (index != 0) builder.Append("    ");
                             ItemComponent item = inventory.items[index];
                             if (item.id == ItemId.None) continue;
+                            if (realizedIndex++ != 0) builder.Append("    ");
                             string itemName = ItemAssetLink.GetModifier(item.id).itemName;
                             // TODO:feature show key bind instead
                             builder.Append("[").Append(index + 1).Append("] ").Append(itemName);

@@ -36,7 +36,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                                            InputFlagProperty inputProperty, uint durationUs)
         {
             bool reloadInput = inputProperty.GetInput(PlayerInput.Reload);
-            if ((reloadInput || item.gunStatus.ammoInMag == 0) && CanReload(item, inventory) && item.status.id == ItemStatusId.Idle)
+            if ((reloadInput || item.ammoInMag == 0) && CanReload(item, inventory) && item.status.id == ItemStatusId.Idle)
                 StartStatus(session, playerId, item, GunStatusId.Reloading, durationUs);
             base.ModifyChecked(session, playerId, player, item, inventory, inputProperty, durationUs);
         }
@@ -48,7 +48,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 case GunStatusId.Reloading:
                     ReloadAmmo(item);
                     return null;
-                case ItemStatusId.PrimaryUsing when item.gunStatus.ammoInMag == 0 && CanReload(item, inventory):
+                case ItemStatusId.PrimaryUsing when item.ammoInMag == 0 && CanReload(item, inventory):
                     return GunStatusId.Reloading;
             }
             return base.FinishStatus(session, playerId, item, inventory, inputs);
@@ -56,13 +56,13 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual bool CanReload(ItemComponent item, InventoryComponent inventory) =>
             inventory.equipStatus.id == ItemEquipStatusId.Equipped
-         && item.gunStatus.ammoInReserve > 0 && item.gunStatus.ammoInMag < m_MagSize;
+         && item.ammoInReserve > 0 && item.ammoInMag < m_MagSize;
 
         /// <summary>
         /// We want to be able to interrupt reload with firing, and also make sure we can not fire with no ammo
         /// </summary>
         protected override bool CanUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
-            item.gunStatus.ammoInMag > 0 && base.CanUse(item, inventory, justFinishedUse);
+            item.ammoInMag > 0 && base.CanUse(item, inventory, justFinishedUse);
 
         protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) => Fire(playerId, session, item, durationUs);
 
@@ -70,7 +70,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual void Fire(int playerId, SessionBase session, ItemComponent item, uint durationUs)
         {
-            item.gunStatus.ammoInMag.Value--;
+            item.ammoInMag.Value--;
 
             Ray ray = session.GetRayForPlayerId(playerId);
             session.RollbackHitboxesFor(playerId);

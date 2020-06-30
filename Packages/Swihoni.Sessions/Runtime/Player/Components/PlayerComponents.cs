@@ -81,12 +81,6 @@ namespace Swihoni.Sessions.Player.Components
     {
     }
 
-    [Serializable]
-    public class GunStatusComponent : ComponentBase
-    {
-        public UShortProperty ammoInMag, ammoInReserve;
-    }
-
     [Serializable, CustomInterpolation]
     public class ByteStatusComponent : ComponentBase
     {
@@ -130,9 +124,9 @@ namespace Swihoni.Sessions.Player.Components
     [Serializable, CustomInterpolation]
     public class ItemComponent : ComponentBase
     {
-        public GunStatusComponent gunStatus;
         public ByteProperty id;
         public ByteStatusComponent status;
+        public UShortProperty ammoInMag, ammoInReserve;
 
         // Embedded item components are only explicitly interpolated, since usually it only needs to be done on equipped item
         public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
@@ -143,7 +137,8 @@ namespace Swihoni.Sessions.Player.Components
                 return;
             }
             ItemModifierBase modifier = ItemAssetLink.GetModifier(i1.id);
-            Interpolator.InterpolateInto(i1.gunStatus, i2.gunStatus, gunStatus, interpolation);
+            ammoInMag.SetTo(i2.ammoInMag);
+            ammoInReserve.SetTo(i2.ammoInReserve);
             id.Value = i2.id.Value;
             status.InterpolateFrom(i1.status, i2.status, interpolation,
                                    statusId => InventoryComponent.VisualDuration(modifier.GetStatusModifierProperties(statusId)));

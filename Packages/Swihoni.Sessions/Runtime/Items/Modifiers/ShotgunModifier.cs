@@ -8,8 +8,8 @@ namespace Swihoni.Sessions.Items.Modifiers
     {
         protected override void ReloadAmmo(ItemComponent item)
         {
-            item.gunStatus.ammoInMag.Value++;
-            item.gunStatus.ammoInReserve.Value--;
+            item.ammoInMag.Value++;
+            item.ammoInReserve.Value--;
         }
 
         protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)

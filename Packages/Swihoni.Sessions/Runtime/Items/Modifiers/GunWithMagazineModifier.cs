@@ -8,12 +8,11 @@ namespace Swihoni.Sessions.Items.Modifiers
     {
         protected override void ReloadAmmo(ItemComponent item)
         {
-            GunStatusComponent gunStatus = item.gunStatus;
-            var addAmount = (ushort) (m_MagSize - gunStatus.ammoInMag);
-            if (addAmount > gunStatus.ammoInReserve)
-                addAmount = gunStatus.ammoInReserve;
-            gunStatus.ammoInMag.Value += addAmount;
-            gunStatus.ammoInReserve.Value -= addAmount;
+            var addAmount = (ushort) (m_MagSize - item.ammoInMag);
+            if (addAmount > item.ammoInReserve)
+                addAmount = item.ammoInReserve;
+            item.ammoInMag.Value += addAmount;
+            item.ammoInReserve.Value -= addAmount;
         }
     }
 }
