@@ -40,6 +40,7 @@ namespace Swihoni.Sessions.Modes
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Grenade, 6);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Molotov, 7);
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.C4, 8);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Deagle, 9);
             }
         }
 

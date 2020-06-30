@@ -33,7 +33,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           Pistol = 7,
                           Sniper = 8,
                           VoxelWand = 9,
-                          ModelWand = 10;
+                          ModelWand = 10,
+                          Deagle = 11;
     }
 
     [Serializable]
