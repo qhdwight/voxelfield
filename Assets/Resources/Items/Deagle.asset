@@ -72,3 +72,4 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 100000
     isPersistent: 0
+  isPrimary: 0

@@ -64,7 +64,7 @@ namespace Swihoni.Sessions
         {
             ClientCommandsContainer commands = m_CommandHistory.Peek();
             GetPlayerModifier(player, localPlayerId).ModifyCommands(this, commands);
-            ForEachSessionInterface(@interface => @interface.ModifyLocalCommands(localPlayerId, this, commands));
+            ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(localPlayerId, this, commands));
         }
 
         protected override void Input(uint timeUs, uint deltaUs)
@@ -136,8 +136,20 @@ namespace Swihoni.Sessions
             Profiler.BeginSample("Client Receive");
             Receive(timeUs);
             Profiler.EndSample();
+            
+            ClearSingleTicks(m_CommandHistory.Peek());
 
             base.Tick(tick, timeUs, durationUs);
+        }
+
+        public static void ClearSingleTicks(ElementBase commands)
+        {
+            commands.Navigate(_element =>
+            {
+                if (_element is PropertyBase _property && _property.WithAttribute<SingleTick>())
+                    _property.Clear();
+                return Navigation.Continue;
+            });
         }
 
         private void Predict(uint tick, uint timeUs, int localPlayerId)
@@ -149,19 +161,7 @@ namespace Swihoni.Sessions
             if (predictedPlayer.Without(out ClientStampComponent predictedStamp)) return;
 
             predictedPlayer.CopyFrom(previousPredictedPlayer);
-            ElementExtensions.NavigateZipped((_destination, _source) =>
-            {
-                if (_destination is PropertyBase _destinationProperty && _source is PropertyBase _sourceProperty)
-                {
-                    if (_destinationProperty.WithAttribute<SingleTick>())
-                    {
-                        _destinationProperty.Clear();
-                        return Navigation.SkipDescendents;
-                    }
-                    _destinationProperty.SetFromIfWith(_sourceProperty);
-                }
-                return Navigation.Continue;
-            }, commands, previousCommand);
+            commands.CopyFrom(previousCommand);
 
             if (IsPaused)
             {
@@ -189,7 +189,7 @@ namespace Swihoni.Sessions
                 }
             }
         }
-
+        
         private void SendCommand() => m_Socket.SendToServer(m_CommandHistory.Peek(), DeliveryMethod.ReliableUnordered);
 
         private void CheckPrediction(Container serverSession)

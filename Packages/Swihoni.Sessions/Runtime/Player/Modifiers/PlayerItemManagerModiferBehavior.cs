@@ -38,7 +38,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             ByteStatusComponent equipStatus = inventory.equipStatus;
             // Unequip current item if desired
             bool
-                hasValidWantedIndex = wantedIndex != NoneIndex && inventory.itemComponents[wantedIndex - 1].id != ItemId.None,
+                hasValidWantedIndex = wantedIndex != NoneIndex && inventory.items[wantedIndex - 1].id != ItemId.None,
                 wantsNewIndex = wantedIndex != inventory.equippedIndex,
                 isAlreadyUnequipping = equipStatus.id == ItemEquipStatusId.Unequipping;
             if (hasValidWantedIndex && wantsNewIndex && !isAlreadyUnequipping)
@@ -129,38 +129,63 @@ namespace Swihoni.Sessions.Player.Modifiers
             else if (inputProvider.GetInput(InputType.ItemNine)) itemIndex.Value = 9;
         }
 
+        public static bool FindEmpty(InventoryComponent inventory, out byte emptyIndex)
+        {
+            emptyIndex = default;
+            for (byte itemIndex = 1; itemIndex <= inventory.items.Length; itemIndex++)
+            {
+                if (inventory.items[itemIndex - 1].id != ItemId.None) continue;
+                emptyIndex = itemIndex;
+                return true;
+            }
+            return false;
+        }
+
         private static bool FindReplacement(InventoryComponent inventory, out byte replacementIndex)
         {
-            var hasFoundReplacement = false;
-            replacementIndex = 0;
-            for (byte itemIndex = 1; !hasFoundReplacement && itemIndex <= inventory.itemComponents.Length; itemIndex++)
+            replacementIndex = default;
+            for (byte itemIndex = 1; itemIndex <= inventory.items.Length; itemIndex++)
             {
-                if (inventory.itemComponents[itemIndex - 1].id == ItemId.None) continue;
+                if (inventory.items[itemIndex - 1].id == ItemId.None) continue;
                 replacementIndex = itemIndex;
-                hasFoundReplacement = true;
+                return true;
             }
-            return hasFoundReplacement;
+            return false;
         }
 
         public static void SetItemAtIndex(InventoryComponent inventory, byte itemId, int index)
         {
-            if (index <= NoneIndex) throw new ArgumentException("Invalid item index");
-            ItemComponent itemComponent = inventory.itemComponents[index - 1];
-            itemComponent.id.Value = itemId;
-            if (itemId == ItemId.None) return;
-            itemComponent.status.id.Value = ItemStatusId.Idle;
-            itemComponent.status.elapsedUs.Value = 0u;
+            ItemComponent item = inventory.items[index - 1];
+            item.id.Value = itemId;
+            if (itemId == ItemId.None)
+            {
+                if (inventory.equippedIndex == index)
+                {
+                    inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
+                    inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                    inventory.equipStatus.elapsedUs.Value = 0u;
+                }
+                return;
+            }
+            item.status.id.Value = ItemStatusId.Idle;
+            item.status.elapsedUs.Value = 0u;
             ItemModifierBase itemModifier = ItemAssetLink.GetModifier(itemId);
             if (itemModifier is GunModifierBase gunModifier)
             {
-                itemComponent.gunStatus.ammoInMag.Value = gunModifier.MagSize;
-                itemComponent.gunStatus.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
+                item.gunStatus.ammoInMag.Value = gunModifier.MagSize;
+                item.gunStatus.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
             }
-            inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
-            inventory.equipStatus.elapsedUs.Value = 0u;
-            if (inventory.HasItemEquipped && inventory.equippedIndex != index) return;
-            // If this replaces existing equipped item, find new one to equip
-            inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
+            if (inventory.HasNoItemEquipped)
+            {
+                inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
+                inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                inventory.equipStatus.elapsedUs.Value = 0u;
+            }
+            else if (inventory.equippedIndex == index)
+            {
+                inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                inventory.equipStatus.elapsedUs.Value = 0u;
+            }
         }
     }
 }

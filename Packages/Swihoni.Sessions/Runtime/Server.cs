@@ -64,6 +64,8 @@ namespace Swihoni.Sessions
 
         protected virtual void PostTick(Container tickSession) { }
 
+        protected override void Render(uint renderTimeUs) { }
+
         protected sealed override void Tick(uint tick, uint timeUs, uint durationUs)
         {
             Profiler.BeginSample("Server Setup");
@@ -197,7 +199,7 @@ namespace Swihoni.Sessions
                 if (_mostRecent is PropertyBase _mostRecentProperty && _lastAcknowledged is PropertyBase _lastAcknowledgedProperty && _send is PropertyBase _sendProperty)
                 {
                     if (!_mostRecent.WithAttribute<SingleTick>() && _mostRecentProperty.Equals(_lastAcknowledgedProperty)
-                                                                        && !(_mostRecentProperty is VectorProperty))
+                                                                 && !(_mostRecentProperty is VectorProperty))
                     {
                         _sendProperty.Clear();
                         _sendProperty.WasSame = true;
@@ -246,7 +248,7 @@ namespace Swihoni.Sessions
                             ModeBase mode = GetMode(serverSession);
                             serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
                             GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
-                            mode.ModifyPlayer(this, serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);   
+                            mode.ModifyPlayer(this, serverSession, serverPlayer, receivedClientCommands, clientStamp.durationUs);
                         }
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");

@@ -79,10 +79,10 @@ namespace Swihoni.Sessions.Interfaces
 
                     m_InventoryText.BuildText(builder =>
                     {
-                        for (var index = 0; index < inventory.itemComponents.Length; index++)
+                        for (var index = 0; index < inventory.items.Length; index++)
                         {
                             if (index != 0) builder.Append("    ");
-                            ItemComponent item = inventory.itemComponents[index];
+                            ItemComponent item = inventory.items[index];
                             if (item.id == ItemId.None) continue;
                             string itemName = ItemAssetLink.GetModifier(item.id).itemName;
                             // TODO:feature show key bind instead

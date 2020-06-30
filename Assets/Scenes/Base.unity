@@ -1850,6 +1850,11 @@ PrefabInstance:
       propertyPath: m_text
       value: $400
       objectReference: {fileID: 0}
+    - target: {fileID: 7614858620601628803, guid: aff93c3f42f99ad4781d11177f0c509c,
+        type: 3}
+      propertyPath: m_ItemId
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 8989337753146614208, guid: aff93c3f42f99ad4781d11177f0c509c,
         type: 3}
       propertyPath: m_Name
@@ -2183,6 +2188,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_text
       value: $150
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614858620601628803, guid: aff93c3f42f99ad4781d11177f0c509c,
+        type: 3}
+      propertyPath: m_ItemId
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8989337753146614208, guid: aff93c3f42f99ad4781d11177f0c509c,
         type: 3}
@@ -3222,6 +3232,11 @@ PrefabInstance:
       propertyPath: m_text
       value: $700
       objectReference: {fileID: 0}
+    - target: {fileID: 7614858620601628803, guid: aff93c3f42f99ad4781d11177f0c509c,
+        type: 3}
+      propertyPath: m_ItemId
+      value: 11
+      objectReference: {fileID: 0}
     - target: {fileID: 8989337753146614208, guid: aff93c3f42f99ad4781d11177f0c509c,
         type: 3}
       propertyPath: m_Name
@@ -3726,6 +3741,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_text
       value: $600
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614858620601628803, guid: aff93c3f42f99ad4781d11177f0c509c,
+        type: 3}
+      propertyPath: m_ItemId
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8989337753146614208, guid: aff93c3f42f99ad4781d11177f0c509c,
         type: 3}
@@ -5982,6 +6002,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_NeedsCursor: 1
   m_InterruptsCommands: 1
+  m_MoneyText: {fileID: 1139297847}
 --- !u!225 &1668279318
 CanvasGroup:
   m_ObjectHideFlags: 0

@@ -155,9 +155,9 @@ namespace Swihoni.Sessions.Player.Components
     {
         public ByteProperty equippedIndex;
         public ByteStatusComponent equipStatus, adsStatus;
-        public ArrayElement<ItemComponent> itemComponents = new ArrayElement<ItemComponent>(10);
+        public ArrayElement<ItemComponent> items = new ArrayElement<ItemComponent>(10);
 
-        public ItemComponent EquippedItemComponent => itemComponents[equippedIndex - 1];
+        public ItemComponent EquippedItemComponent => items[equippedIndex - 1];
         public bool HasItemEquipped => !HasNoItemEquipped;
         public bool HasNoItemEquipped => equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex;
 
@@ -178,8 +178,8 @@ namespace Swihoni.Sessions.Player.Components
             equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation,
                                         equipStatusId => VisualDuration(m1.GetEquipStatusModifierProperties(equipStatusId)));
             equippedIndex.Value = i1.equippedIndex;
-            for (var i = 0; i < i1.itemComponents.Length; i++)
-                itemComponents[i].InterpolateFrom(i1.itemComponents[i], i2.itemComponents[i], interpolation);
+            for (var i = 0; i < i1.items.Length; i++)
+                items[i].InterpolateFrom(i1.items[i], i2.items[i], interpolation);
         }
 
         public static uint VisualDuration(ItemStatusModiferProperties m) => m.isPersistent ? uint.MaxValue : m.durationUs;

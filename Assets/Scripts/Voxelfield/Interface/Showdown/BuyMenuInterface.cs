@@ -4,6 +4,7 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util.Interface;
 using UnityEngine;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
@@ -15,6 +16,8 @@ namespace Voxelfield.Interface.Showdown
         private bool m_PlayerWantsVisible;
         private BuyMenuButton[] m_BuyButtons;
         private int? m_WantedBuyItemId;
+
+        [SerializeField] private BufferedTextGui m_MoneyText;
 
         protected override void Awake()
         {
@@ -28,7 +31,7 @@ namespace Voxelfield.Interface.Showdown
 
         private void OnBuyButtonClicked(BuyMenuButton button) => m_WantedBuyItemId = button.ItemId;
 
-        public override void ModifyLocalCommands(int localPlayerId, SessionBase session, Container commands)
+        public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
             if (!m_WantedBuyItemId.HasValue) return;
             
@@ -47,6 +50,7 @@ namespace Voxelfield.Interface.Showdown
 
             if (isActive)
             {
+                m_MoneyText.BuildText(builder => builder.Append("$").Append(localPlayer.Require<MoneyComponent>().count));
             }
             SetInterfaceActive(isActive);
         }

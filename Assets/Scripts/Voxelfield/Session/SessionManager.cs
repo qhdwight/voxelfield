@@ -182,7 +182,7 @@ namespace Voxelfield.Session
         {
             var models = new ModelsProperty();
             void AddSpawn(Position3Int position, byte team) => models.Add(position, new Container(new ModelIdProperty(ModelsProperty.Spawn), new TeamProperty(team)));
-            AddSpawn(new Position3Int {x = -10, y = 5}, 0);
+            AddSpawn(new Position3Int {x = -10, y = 2}, 0);
             AddSpawn(new Position3Int {y = 5}, 1);
             AddSpawn(new Position3Int {x = 10, y = 5}, 2);
             AddSpawn(new Position3Int {x = 20, y = 5}, 3);

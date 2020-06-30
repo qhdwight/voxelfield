@@ -58,10 +58,6 @@
             <e p="Session" t="Include">
               <e p="ClientInjector.cs" t="Include" />
               <e p="Components.cs" t="Include" />
-              <e p="Designer" t="Include">
-                <e p="Compound.Session.Designer.asmdef" t="Include" />
-                <e p="MapDesignerModifier.cs" t="Include" />
-              </e>
               <e p="Mode" t="Include">
                 <e p="DesignerMode.cs" t="Include" />
                 <e p="ShowdownMode.cs" t="Include" />
@@ -77,7 +73,6 @@
           </e>
         </e>
       </e>
-      <e p="Compound.Session.Designer.csproj" t="IncludeRecursive" />
       <e p="Compound.sln" t="IncludeFlat" />
       <e p="Console.csproj" t="IncludeRecursive" />
       <e p="Input.csproj" t="IncludeRecursive" />

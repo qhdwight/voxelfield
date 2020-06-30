@@ -11,13 +11,13 @@ namespace Voxelfield.Session
 {
     /* Session */
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable]
     public class VoxelMapNameProperty : StringProperty
     {
         public VoxelMapNameProperty() : base(16) { }
     }
     
-    [Serializable, OnlyServerTrusted]
+    [Serializable]
     public class ShowdownSessionComponent : ComponentBase
     {
         public ByteProperty number;

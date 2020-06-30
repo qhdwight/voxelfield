@@ -4,6 +4,7 @@ using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
@@ -22,13 +23,14 @@ namespace Voxelfield.Session.Mode
     {
         private const int TeamCount = 5, PlayersPerTeam = 3, TotalPlayers = TeamCount * PlayersPerTeam;
 
-        public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
+        // public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
+        public const uint BuyTimeUs = 60_000_000u, FightTimeUs = 300_000_000u;
 
         public override void Modify(SessionBase session, Container container, uint durationUs)
         {
             base.Modify(session, container, durationUs);
             var stage = container.Require<ShowdownSessionComponent>();
-            if (stage.number.WithoutValue)
+            if (stage.number.WithoutValue) // If in warmup
             {
                 int playerCount = GetPlayerCount(container);
                 if (playerCount == 1)
@@ -41,13 +43,64 @@ namespace Voxelfield.Session.Mode
             {
                 if (stage.remainingUs > durationUs) stage.remainingUs.Value -= durationUs;
                 else stage.remainingUs.Value = 0u;
-                ForEachActivePlayer(session, container, (playerId, player) => player.Require<FrozenProperty>().Value = stage.remainingUs > FightTimeUs);
             }
+        }
+
+        public override void ModifyPlayer(SessionBase session, Container container, Container player, Container commands, uint durationUs)
+        {
+            base.ModifyPlayer(session, container, player, commands, durationUs);
+
+            var stage = container.Require<ShowdownSessionComponent>();
+            if (stage.number.WithoutValue) return;
+            
+            bool isBuyTime = stage.remainingUs > FightTimeUs;
+            player.Require<FrozenProperty>().Value = isBuyTime;
+            if (isBuyTime)
+            {
+                ByteProperty wantedBuyItemId = player.Require<MoneyComponent>().wantedBuyItemId;
+                if (wantedBuyItemId.WithValue)
+                {
+                    UShortProperty money = player.Require<MoneyComponent>().count;
+                    Debug.Log($"Trying to buy requested item: {wantedBuyItemId.Value}");
+                    ushort cost = GetCost(wantedBuyItemId);
+                    if (cost < money)
+                    {
+                        var inventory = player.Require<InventoryComponent>();
+                        if (PlayerItemManagerModiferBehavior.FindEmpty(inventory, out byte index))
+                        {
+                            PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, wantedBuyItemId, index);
+                        }
+                        money.Value -= cost;
+                    }
+                }
+            }
+        }
+
+        private ushort GetCost(byte itemId)
+        {
+            switch (itemId)
+            {
+                case ItemId.Rifle:
+                    return 2000;
+                case ItemId.Shotgun:
+                    return 1300;
+                case ItemId.Sniper:
+                    return 5000;
+                case ItemId.Deagle:
+                    return 700;
+                case ItemId.Grenade:
+                    return 150;
+                case ItemId.Molotov:
+                    return 400;
+                case ItemId.C4:
+                    return 600;
+            }
+            throw new ArgumentException("Can't buy this item id");
         }
 
         protected override void HandleRespawn(SessionBase session, Container container, Container player, HealthProperty health, uint durationUs)
         {
-            if (InWarmup(container)) base.HandleRespawn(session, container, player, health, durationUs);
+            if (InWarmup(container)) base.HandleRespawn(session, container, player, health, durationUs); // Random respawn
         }
 
         private static void FirstStageSpawn(Container session, int playerId, Container player, TeamSpawns spawns)
@@ -94,6 +147,7 @@ namespace Voxelfield.Session.Mode
         {
             if (!InWarmup(session.GetLatestSession()) && hitPlayer.Require<TeamProperty>() == inflictingPlayer.Require<TeamProperty>()) return 0.0f;
 
+            // Nerf damage while on the run
             float baseDamage = base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit);
             if (weapon is MeleeModifier) return baseDamage;
             Vector3 velocity = inflictingPlayer.Require<MoveComponent>().velocity;

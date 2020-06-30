@@ -26,6 +26,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         [SerializeField] protected ushort m_MagSize;
         [SerializeField] private ushort m_StartingAmmoInReserve = default;
         [SerializeField] private ItemStatusModiferProperties[] m_AdsModifierProperties = default;
+        public bool isPrimary = true;
 
         public ushort MagSize => m_MagSize;
         public ushort StartingAmmoInReserve => m_StartingAmmoInReserve;

@@ -42,7 +42,7 @@ namespace Swihoni.Sessions
                 if (hostModifier)
                 {
                     hostModifier.ModifyCommands(this, m_HostCommands);
-                    ForEachSessionInterface(@interface => @interface.ModifyLocalCommands(HostPlayerId, this, m_HostCommands));
+                    ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(HostPlayerId, this, m_HostCommands));
                     hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
                     hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
                 }
@@ -51,6 +51,7 @@ namespace Swihoni.Sessions
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.timeUs.Value = timeUs;
             stamp.tick.Value = serverStamp.tick;
+            Client.ClearSingleTicks(m_HostCommands);
         }
 
         protected override void Render(uint renderTimeUs)
