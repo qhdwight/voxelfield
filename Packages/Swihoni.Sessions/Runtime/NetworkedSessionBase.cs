@@ -86,7 +86,7 @@ namespace Swihoni.Sessions
             RenderInterfaces(latestSession);
         }
 
-        protected void RenderInterfaces(Container session) { ForEachSessionInterface(sessionInterface => sessionInterface.Render(this, session)); }
+        protected void RenderInterfaces(Container session) => ForEachSessionInterface(sessionInterface => sessionInterface.Render(this, session));
 
         protected void RenderEntities<TStampComponent>(uint currentRenderTimeUs, uint rollbackUs) where TStampComponent : StampComponent
         {

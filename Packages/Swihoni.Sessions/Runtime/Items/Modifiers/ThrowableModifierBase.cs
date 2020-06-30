@@ -48,7 +48,8 @@ namespace Swihoni.Sessions.Items.Modifiers
             for (var index = 0; index < entities.Length; index++)
             {
                 EntityContainer entity = entities[index];
-                if (session.EntityManager.UnsafeModifiers[index] is ThrowableModifierBehavior throwableModifier && throwableModifier.ThrowerId == playerId)
+                if (session.EntityManager.UnsafeModifiers[index] is ThrowableModifierBehavior throwableModifier
+                 && throwableModifier.CanQueuePop && throwableModifier.ThrowerId == playerId)
                 {
                     var throwable = entity.Require<ThrowableComponent>();
                     if (throwable.popTimeUs > throwable.thrownElapsedUs)
@@ -67,7 +68,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (modifier is ThrowableModifierBehavior throwableModifier)
             {
                 throwableModifier.Name = itemName;
-                modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.identity);
+                modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.LookRotation(ray.direction));
                 throwableModifier.ThrowerId = playerId;
                 Vector3 force = ray.direction * m_ThrowForce;
                 if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;

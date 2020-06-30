@@ -21,7 +21,7 @@ namespace Voxelfield.Session
     public class ShowdownSessionComponent : ComponentBase
     {
         public ByteProperty number;
-        public UIntProperty remainingUs;
+        public UIntTimeProperty remainingUs;
     }
 
     /* Player */

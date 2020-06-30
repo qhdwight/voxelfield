@@ -21,32 +21,53 @@ namespace Swihoni.Sessions.Entities
         [SerializeField] private LayerMask m_Mask = default;
         [SerializeField] private float m_MinimumDamageRatio = 0.2f;
         [SerializeField] private float m_CollisionVelocityMultiplier = 0.5f;
+        [SerializeField] protected bool m_IsSticky;
 
         private readonly Collider[] m_OverlappingColliders = new Collider[8];
         private uint m_LastElapsedUs;
-        private CollisionType m_LastCollision;
+        private bool m_IsFrozen;
+        private (CollisionType, Collision) m_LastCollision;
 
         public string Name { get; set; }
         public Rigidbody Rigidbody { get; private set; }
         public int ThrowerId { get; set; }
         public bool PopQueued { get; set; }
+        public bool CanQueuePop => m_PopTimeUs == uint.MaxValue;
 
         private void Awake() => Rigidbody = GetComponent<Rigidbody>();
 
-        private void OnCollisionEnter(Collision other)
+        private void OnCollisionEnter(Collision collision)
         {
-            bool isInMask = (m_Mask & (1 << other.gameObject.layer)) != 0;
-            m_LastCollision = isInMask ? CollisionType.Player : CollisionType.World;
+            if (m_IsFrozen) return;
+            bool isInMask = (m_Mask & (1 << collision.gameObject.layer)) != 0;
+            m_LastCollision = (isInMask ? CollisionType.Player : CollisionType.World, collision);
+        }
+
+        private void ResetRigidbody(bool canMove)
+        {
+            Rigidbody.velocity = Vector3.zero;
+            Rigidbody.angularVelocity = Vector3.zero;
+            Rigidbody.constraints = canMove ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;
         }
 
         public override void SetActive(bool isActive)
         {
             base.SetActive(isActive);
-            Rigidbody.velocity = Vector3.zero;
-            Rigidbody.angularVelocity = Vector3.zero;
-            Rigidbody.constraints = isActive ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;
+            ResetRigidbody(isActive);
             PopQueued = false;
             m_LastElapsedUs = 0u;
+            m_LastCollision = (CollisionType.None, null);
+            m_IsFrozen = false;
+        }
+
+        private static Vector3 GetSurfaceNormal(Collision collision)
+        {
+            Vector3 point = collision.contacts[0].point,
+                    direction = collision.contacts[0].normal;
+            point += direction;
+            return collision.collider.Raycast(new Ray(point, -direction), out RaycastHit hit, 2.0f)
+                ? hit.normal
+                : Vector3.up;
         }
 
         public override void Modify(SessionBase session, Container container, uint timeUs, uint durationUs)
@@ -64,7 +85,7 @@ namespace Swihoni.Sessions.Entities
             }
 
             bool hasPopped = throwable.thrownElapsedUs >= throwable.popTimeUs;
-            Rigidbody.constraints = hasPopped ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
+            if (hasPopped) m_IsFrozen = true;
             Transform t = transform;
             if (hasPopped)
             {
@@ -78,15 +99,31 @@ namespace Swihoni.Sessions.Entities
             else
             {
                 throwable.contactElapsedUs.Value += durationUs;
-                if (m_LastCollision != CollisionType.None)
+                (CollisionType collisionType, Collision collision) = m_LastCollision;
+                if (collisionType != CollisionType.None)
                 {
-                    if (m_LastCollision == CollisionType.World) Rigidbody.velocity *= m_CollisionVelocityMultiplier;
-                    else if (throwable.thrownElapsedUs > 100_000u) Rigidbody.velocity = Vector3.zero;
+                    if (collisionType == CollisionType.World)
+                    {
+                        if (m_IsSticky)
+                        {
+                            ResetRigidbody(false);
+                            Vector3 surfaceNormal = GetSurfaceNormal(collision);
+                            Rigidbody.transform.SetPositionAndRotation(collision.contacts[0].point,
+                                                                       Quaternion.FromToRotation(Rigidbody.transform.up, surfaceNormal) * Rigidbody.rotation);
+                            m_IsFrozen = true;
+                        }
+                        else
+                        {
+                            Rigidbody.velocity *= m_CollisionVelocityMultiplier;
+                        }
+                    }
+                    else if (throwable.thrownElapsedUs > 100_000u) Rigidbody.velocity = Vector3.zero; // Stop on hitting player. Delay to prevent hitting self
                     throwable.contactElapsedUs.Value = 0u;
                 }
             }
             m_LastElapsedUs = throwable.thrownElapsedUs;
-            m_LastCollision = CollisionType.None;
+            m_LastCollision = (CollisionType.None, null);
+            Rigidbody.constraints = m_IsFrozen ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
 
             throwable.position.Value = t.position;
             throwable.rotation.Value = t.rotation;

@@ -23,7 +23,7 @@ namespace Swihoni.Sessions.Entities
 
         public override void SetActive(bool isActive)
         {
-            if (isActive)
+            if (isActive) 
             {
                 m_LastContactElapsedUs = 0u;
             }
@@ -35,7 +35,7 @@ namespace Swihoni.Sessions.Entities
 
             var throwable = entity.Require<ThrowableComponent>();
 
-            bool hasPopped = throwable.thrownElapsedUs > throwable.popTimeUs;
+            bool hasPopped = throwable.thrownElapsedUs >= throwable.popTimeUs;
 
             if (hasPopped)
             {
@@ -45,12 +45,12 @@ namespace Swihoni.Sessions.Entities
                 foreach (ParticleSystem particle in m_Particles)
                 {
                     particle.time = particleElapsedUs * TimeConversions.MicrosecondToSecond;
-                    if (particle.isStopped) particle.Play(false);
+                    if (particle.isStopped && hasJustPopped) particle.Play(false);
                 }
             }
             else
             {
-                if (throwable.contactElapsedUs < m_LastContactElapsedUs && m_LastContactElapsedUs > 0.1f)
+                if (throwable.contactElapsedUs < m_LastContactElapsedUs)
                     m_AudioSource.PlayOneShot(m_ContactAudioClip, 1.0f);
             }
             m_LastThrownElapsedUs = throwable.thrownElapsedUs;

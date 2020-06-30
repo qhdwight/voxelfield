@@ -26,6 +26,17 @@ namespace Swihoni.Components
         }
     }
 
+    /// <summary>
+    /// Ensures proper interpolation for a time, which is assumed to never decrease.
+    /// This solves issues where the second time represents a "jump" by resetting to a lower value.
+    /// </summary>
+    [Serializable]
+    public class UIntTimeProperty : UIntProperty
+    {
+        public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation)
+            => Value = p2.Value <= p1.Value ? p2.Value : InterpolateUInt(p1.Value, p2.Value, interpolation);
+    }
+
     [Serializable]
     public class IntProperty : PropertyBase<int>
     {

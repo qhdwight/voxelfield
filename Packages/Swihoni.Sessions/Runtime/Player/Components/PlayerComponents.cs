@@ -4,6 +4,7 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Modifiers;
+using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Components
 {
@@ -12,6 +13,14 @@ namespace Swihoni.Sessions.Player.Components
     {
         [Angle] public FloatProperty yaw;
         public FloatProperty pitch;
+
+        public Vector3 GetForward()
+        {
+            float y = yaw * Mathf.Deg2Rad, p = pitch * Mathf.Deg2Rad;
+            var forward = new Vector3(Mathf.Cos(p) * Mathf.Sin(y), -Mathf.Sin(p), Mathf.Cos(p) * Mathf.Cos(y));
+            forward.Normalize();
+            return forward;
+        }
 
         public override string ToString() => $"Yaw: {yaw}, Pitch: {pitch}";
     }

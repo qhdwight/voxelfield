@@ -174,14 +174,10 @@ namespace Swihoni.Components
         {
             if (!(p1 is PropertyBase<T> pt1) || !(p2 is PropertyBase<T> pt2))
                 throw new ArgumentException("Properties are not the proper type!");
-            if (Field != null)
+            if (WithAttribute<TakeSecondForInterpolationAttribute>())
             {
-                if (Field.IsDefined(typeof(CustomInterpolationAttribute))) return;
-                if (Field.IsDefined(typeof(TakeSecondForInterpolationAttribute)))
-                {
-                    SetFromIfWith(p2);
-                    return;
-                }
+                SetFromIfWith(p2);
+                return;
             }
             if (pt1.WithValue && pt2.WithValue) ValueInterpolateFrom(pt1, pt2, interpolation);
         }
