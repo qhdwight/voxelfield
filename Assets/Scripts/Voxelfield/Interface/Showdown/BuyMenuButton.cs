@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,7 +5,7 @@ namespace Voxelfield.Interface.Showdown
 {
     public class BuyMenuButton : MonoBehaviour
     {
-        [SerializeField] private byte m_ItemId;
+        [SerializeField] private byte m_ItemId = default;
         private Button m_Button;
 
         public byte ItemId => m_ItemId;

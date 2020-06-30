@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -72,6 +71,7 @@ namespace Swihoni.Sessions
         private long m_FixedUpdateTicks, m_RenderTicks;
         private uint m_Tick;
         private Stopwatch m_Stopwatch;
+        private ModeBase m_Mode;
         public bool ShouldInterruptCommands { get; private set; }
 
         public SessionInjectorBase Injector => m_Injector;
@@ -91,18 +91,6 @@ namespace Swihoni.Sessions
         {
             if (isPaused) m_Stopwatch.Stop();
             else m_Stopwatch.Start();
-        }
-
-        private T[] Instantiate<T>(GameObject prefab, int length, Action<int, T> setup)
-        {
-            return Enumerable.Range(0, length).Select(i =>
-            {
-                GameObject instance = UnityObject.Instantiate(prefab);
-                instance.name = $"[{GetType().Name}] {prefab.name} ({i})";
-                var component = instance.GetComponent<T>();
-                setup(i, component);
-                return component;
-            }).ToArray();
         }
 
         public virtual void Start()
@@ -247,8 +235,6 @@ namespace Swihoni.Sessions
             Physics.SyncTransforms();
         }
 
-        public abstract ModeBase GetMode(Container session = null);
-
         public abstract Container GetLatestSession();
 
         public static Ray GetRayForPlayer(Container player)
@@ -265,6 +251,14 @@ namespace Swihoni.Sessions
             return ray;
         }
 
+        /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
+        public virtual ModeBase GetMode(Container session = null)
+        {
+            ModeBase mode = ModeManager.GetMode((session ?? GetLatestSession()).Require<ModeIdProperty>());
+            if (m_Mode && m_Mode != mode) m_Mode.Dispose();
+            return m_Mode = mode;
+        }
+
         public virtual Container GetPlayerFromId(int playerId, Container session = null) { throw new NotImplementedException(); }
 
         protected void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)
@@ -274,6 +268,8 @@ namespace Swihoni.Sessions
                     action(sessionInterface);
         }
 
+        public virtual bool IsPaused => m_Injector.IsPaused(GetLatestSession());
+
         public virtual void Dispose()
         {
             IsDisposed = true;
@@ -282,10 +278,9 @@ namespace Swihoni.Sessions
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
             EntityManager.pool.Return(EntityManager);
+            if (m_Mode) m_Mode.Dispose();
             m_Injector.Stop();
             m_Stopwatch.Stop();
         }
-
-        public virtual bool IsPaused => m_Injector.IsPaused(GetLatestSession());
     }
 }

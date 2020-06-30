@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: Showdown
   m_EditorClassIdentifier: 
   id: 1
+  m_CurePackageVisualPrefab: {fileID: -5118100842630433612, guid: 8e8104e1ce590154ea9558d328a5728d,
+    type: 3}

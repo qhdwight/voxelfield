@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Modes
 {
-    public abstract class ModeBase : ScriptableObject
+    public abstract class ModeBase : ScriptableObject, IDisposable
     {
         public byte id;
 
@@ -155,5 +155,7 @@ namespace Swihoni.Sessions.Modes
                     action(playerId, player);
             }
         }
+
+        public virtual void Dispose() { }
     }
 }

@@ -1,4 +1,3 @@
-using System;
 using Input;
 using Swihoni.Components;
 using Swihoni.Sessions;
@@ -18,7 +17,7 @@ namespace Voxelfield.Interface.Showdown
         private BuyMenuButton[] m_BuyButtons;
         private int? m_WantedBuyItemId;
 
-        [SerializeField] private BufferedTextGui m_MoneyText;
+        [SerializeField] private BufferedTextGui m_MoneyText = default;
 
         protected override void Awake()
         {
@@ -48,7 +47,7 @@ namespace Voxelfield.Interface.Showdown
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isActive = IsActive(session, sessionContainer, out Container localPlayer, out ShowdownSessionComponent showdown);
+            bool isActive = ShouldBeActive(session, sessionContainer, out Container localPlayer, out ShowdownSessionComponent showdown);
 
             if (isActive && InputProvider.Singleton.GetInputDown(InputType.Buy)) m_PlayerWantsVisible = !m_PlayerWantsVisible;
             isActive = isActive && m_PlayerWantsVisible;
@@ -60,7 +59,7 @@ namespace Voxelfield.Interface.Showdown
             SetInterfaceActive(isActive);
         }
 
-        private static bool IsActive(SessionBase session, Container sessionContainer, out Container sessionLocalPlayer, out ShowdownSessionComponent sessionShowdown)
+        private static bool ShouldBeActive(SessionBase session, Container sessionContainer, out Container sessionLocalPlayer, out ShowdownSessionComponent sessionShowdown)
         {
             sessionLocalPlayer = default;
             sessionShowdown = default;

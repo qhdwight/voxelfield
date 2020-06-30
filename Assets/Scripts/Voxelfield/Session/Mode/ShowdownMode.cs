@@ -23,8 +23,12 @@ namespace Voxelfield.Session.Mode
         // public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
         // public const uint BuyTimeUs = 60_000_000u, FightTimeUs = 300_000_000u;
         public const uint BuyTimeUs = 10_000_000u, FightTimeUs = 300_000_000u;
-        
+
         private const int TeamCount = 5, PlayersPerTeam = 3, TotalPlayers = TeamCount * PlayersPerTeam;
+
+        [SerializeField] private CurePackageVisuals m_CurePackageVisualPrefab = default;
+
+        private CurePackageVisuals[] m_CurePackageVisuals;
 
         public override void Modify(SessionBase session, Container container, uint durationUs)
         {
@@ -168,6 +172,27 @@ namespace Voxelfield.Session.Mode
         }
 
         public override bool AllowTeamSwap(Container container, Container player) => InWarmup(container);
+
+        public override void Render(Container container)
+        {
+            ArrayElement<CurePackageComponent> cures = container.Require<ShowdownSessionComponent>().curePackages;
+            if (m_CurePackageVisuals == null)
+                m_CurePackageVisuals = Enumerable.Range(0, 9)
+                                                 .Select(_ => Instantiate(m_CurePackageVisualPrefab))
+                                                 .ToArray();
+            for (var index = 0; index < cures.Length; index++)
+                m_CurePackageVisuals[index].Render(cures[index]);
+        }
+
+        private void OnEnable() => m_CurePackageVisuals = null;
+
+        public override void Dispose()
+        {
+            if (m_CurePackageVisuals != null)
+                foreach (CurePackageVisuals visual in m_CurePackageVisuals)
+                    Destroy(visual.gameObject);
+            m_CurePackageVisuals = null;
+        }
 
         // public override void SetupNewPlayer(SessionBase session, Container player)
         // {

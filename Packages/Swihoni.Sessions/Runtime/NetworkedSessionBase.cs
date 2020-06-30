@@ -73,9 +73,6 @@ namespace Swihoni.Sessions
             command.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Client");
         }
 
-        /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
-        public override ModeBase GetMode(Container session = null) => ModeManager.GetMode((session ?? GetLatestSession()).Require<ModeIdProperty>());
-
         public override Container GetPlayerFromId(int playerId, Container session = null) => (session ?? GetLatestSession()).GetPlayer(playerId);
 
         public override Container GetLatestSession() => m_SessionHistory.Peek();
