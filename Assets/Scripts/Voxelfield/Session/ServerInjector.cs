@@ -13,6 +13,7 @@ namespace Voxelfield.Session
 
         protected internal override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true)
         {
+            if (MapManager.Singleton.Models.ContainsKey(worldPosition)) return;
             var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();
             base.SetVoxelData(worldPosition, change, chunk, updateMesh);
             changed.SetVoxel(worldPosition, change);

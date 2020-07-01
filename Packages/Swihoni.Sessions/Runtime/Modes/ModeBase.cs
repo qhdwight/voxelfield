@@ -32,15 +32,15 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Shovel);
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Rifle);
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Shotgun);
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Sniper);
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Pistol);
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Grenade);
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Molotov);
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.C4);
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Deagle);
+                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Shovel,
+                                                          ItemId.Rifle,
+                                                          ItemId.Shotgun,
+                                                          ItemId.Sniper,
+                                                          ItemId.Pistol,
+                                                          ItemId.Grenade,
+                                                          ItemId.Molotov,
+                                                          ItemId.C4,
+                                                          ItemId.Deagle);
             }
         }
 
@@ -157,5 +157,7 @@ namespace Swihoni.Sessions.Modes
         }
 
         public virtual void Dispose() { }
+
+        // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
     }
 }

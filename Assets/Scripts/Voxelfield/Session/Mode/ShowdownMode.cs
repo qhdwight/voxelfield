@@ -12,6 +12,7 @@ using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
+using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
 {
@@ -22,7 +23,7 @@ namespace Voxelfield.Session.Mode
     {
         // public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
         // public const uint BuyTimeUs = 60_000_000u, FightTimeUs = 300_000_000u;
-        public const uint BuyTimeUs = 10_000_000u, FightTimeUs = 300_000_000u;
+        public const uint BuyTimeUs = 2_000_000u, FightTimeUs = 5_000_000u;
         public const uint SecureTimeUs = 5_000_000;
 
         private const int TeamCount = 5, PlayersPerTeam = 3, TotalPlayers = TeamCount * PlayersPerTeam;
@@ -69,7 +70,13 @@ namespace Voxelfield.Session.Mode
             if (stage.number.WithValue)
             {
                 if (stage.remainingUs > durationUs) stage.remainingUs.Value -= durationUs;
-                else stage.remainingUs.Value = 0u;
+                else
+                {
+                    // Advance stage
+                    stage.remainingUs.Value = FightTimeUs + BuyTimeUs;
+                    stage.number.Value++;
+                    SetActiveCures(stage);
+                }
             }
         }
 
@@ -81,12 +88,12 @@ namespace Voxelfield.Session.Mode
             if (stage.number.WithoutValue) return;
 
             bool isFightTime = stage.remainingUs < FightTimeUs;
-            player.Require<FrozenProperty>().Value = !isFightTime || player.Require<ShowdownPlayerComponent>().IsCured(stage);
+            player.Require<FrozenProperty>().Value = !isFightTime;
             if (isFightTime)
             {
                 var showdownPlayer = player.Require<ShowdownPlayerComponent>();
 
-                HandleSecuring(player, commands, showdownPlayer, stage, durationUs);
+                PlayerSecuring(player, commands, showdownPlayer, stage, durationUs);
             }
             else
             {
@@ -106,7 +113,7 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        private void HandleSecuring(Container player, Container commands, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage, uint durationUs)
+        private void PlayerSecuring(Container player, Container commands, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage, uint durationUs)
         {
             var isInteracting = false;
             CurePackageComponent cure = default;
@@ -165,8 +172,7 @@ namespace Voxelfield.Session.Mode
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Shovel);
-                PlayerItemManagerModiferBehavior.AddItem(inventory, ItemId.Pistol);
+                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Shovel, ItemId.Pistol);
             }
             player.Require<ShowdownPlayerComponent>().Zero();
         }
@@ -180,13 +186,35 @@ namespace Voxelfield.Session.Mode
                                             .ToArray();
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
+            SetActiveCures(stage);
+            ForEachActivePlayer(session, sessionContainer, (playerId, player) => FirstStageSpawn(sessionContainer, playerId, player, spawns));
+            Debug.Log("Started first stage");
+        }
+
+        private static void SetActiveCures(ShowdownSessionComponent stage)
+        {
+            if (stage.number == 0)
+            {
+                for (var index = 0; index < stage.curePackages.Length; index++)
+                {
+                    CurePackageComponent package = stage.curePackages[index];
+                    package.isActive.Value = index % 2 == 1;
+                }
+                return;
+            }
+
+            var choseFrom = new List<int>();
             for (var index = 0; index < stage.curePackages.Length; index++)
             {
                 CurePackageComponent package = stage.curePackages[index];
-                package.isActive.Value = index % 2 == 0;
+                if (package.isActive) package.isActive.Value = false;
+                else choseFrom.Add(index);
             }
-            ForEachActivePlayer(session, sessionContainer, (playerId, player) => FirstStageSpawn(sessionContainer, playerId, player, spawns));
-            Debug.Log("Started first stage");
+            choseFrom.RemoveAt(Random.Range(0, choseFrom.Count));
+            foreach (int index in choseFrom)
+            {
+                stage.curePackages[index].isActive.Value = true;
+            }
         }
 
         // TODO:performance LINQ creates too much garbage?

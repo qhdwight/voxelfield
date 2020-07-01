@@ -87,8 +87,11 @@ namespace Swihoni.Sessions.Player.Modifiers
             bool flyInput = inputs.GetInput(PlayerInput.Fly);
             if (flyInput && !m_LastFlyInput) move.type.Value = move.type == MoveType.Grounded ? MoveType.Flying : MoveType.Grounded;
             m_LastFlyInput = flyInput;
+
+            // Vector3 prePosition = move.position;
             if (move.type == MoveType.Grounded) FullMove(move, inputs, duration);
             else FlyMove(move, inputs, duration);
+            // if (session.GetMode().RestrictMovement(prePosition, move.position)) move.position.Value = prePosition;
 
             ModifyStatus(move, inputs, duration);
         }
@@ -133,18 +136,15 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (inputs.GetInput(PlayerInput.Crouch))
             {
                 move.normalizedCrouch.Value += duration / m_CrouchDuration;
-                if (move.normalizedCrouch > 1.0f)
-                    move.normalizedCrouch.Value = 1.0f;
+                if (move.normalizedCrouch > 1.0f) move.normalizedCrouch.Value = 1.0f;
             }
             else
             {
                 move.normalizedCrouch.Value -= duration / m_CrouchDuration;
-                if (move.normalizedCrouch < 0.0f)
-                    move.normalizedCrouch.Value = 0.0f;
+                if (move.normalizedCrouch < 0.0f) move.normalizedCrouch.Value = 0.0f;
             }
 
-            if (ExtraMath.LateralMagnitude(move.velocity) < 1e-2f)
-                move.normalizedMove.Value = 0.0f;
+            if (ExtraMath.LateralMagnitude(move.velocity) < 1e-2f) move.normalizedMove.Value = 0.0f;
             else
             {
                 float stateDuration = m_WalkStateDuration;

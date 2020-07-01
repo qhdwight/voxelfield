@@ -126,6 +126,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             inputs.SetInput(PlayerInput.Reload, inputProvider.GetInput(InputType.Reload));
             inputs.SetInput(PlayerInput.Fly, inputProvider.GetInput(InputType.Fly));
             inputs.SetInput(PlayerInput.Ads, inputProvider.GetInput(InputType.Ads));
+            inputs.SetInput(PlayerInput.Throw, inputProvider.GetInput(InputType.Throw));
             if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
             if (inputProvider.GetInput(InputType.ItemOne)) itemIndex.Value = 1;
             else if (inputProvider.GetInput(InputType.ItemTwo)) itemIndex.Value = 2;
@@ -156,10 +157,16 @@ namespace Swihoni.Sessions.Player.Modifiers
         private static bool FindReplacement(InventoryComponent inventory, out byte replacementIndex)
             => FindItem(inventory, item => item.id != ItemId.None, out replacementIndex);
 
+        public static void AddItems(InventoryComponent inventory, params byte[] itemIds)
+        {
+            foreach (byte itemId in itemIds) AddItem(inventory, itemId);
+        }
+
         public static void AddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
         {
             bool isAnOpenSlot;
-            if (ItemAssetLink.GetModifier(itemId) is ThrowableModifierBase && (isAnOpenSlot = FindItem(inventory, item => item.id == ItemId.None || item.id == itemId, out byte index))) // Try to stack throwables if possible
+            if (ItemAssetLink.GetModifier(itemId) is ThrowableModifierBase &&
+                (isAnOpenSlot = FindItem(inventory, item => item.id == ItemId.None || item.id == itemId, out byte index))) // Try to stack throwables if possible
             {
                 ItemComponent itemInIndex = inventory[index];
                 bool addingToExisting = itemInIndex.id == itemId;

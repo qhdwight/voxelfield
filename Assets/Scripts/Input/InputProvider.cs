@@ -37,7 +37,8 @@ namespace Input
         PreviousConsoleCommand,
         NextConsoleCommand,
         Fly,
-        Buy
+        Buy,
+        Throw,
     }
 
     public enum MouseMovement
@@ -88,6 +89,7 @@ namespace Input
                     [InputType.NextConsoleCommand] = KeyCode.DownArrow,
                     [InputType.Fly] = KeyCode.F,
                     [InputType.Buy] = KeyCode.B,
+                    [InputType.Throw] = KeyCode.G
                 }
             };
     }

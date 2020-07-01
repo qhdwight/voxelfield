@@ -1613,10 +1613,10 @@ MonoBehaviour:
     m_Value: 0
   TickRate:
     m_Flags: 1
-    m_Value: 5
+    m_Value: 20
   ModeId:
     m_Flags: 1
-    m_Value: 1
+    m_Value: 0
 --- !u!850595691 &607889173
 LightingSettings:
   m_ObjectHideFlags: 0
