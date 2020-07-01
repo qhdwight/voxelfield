@@ -16,13 +16,20 @@ namespace Voxelfield.Session
     {
         public VoxelMapNameProperty() : base(16) { }
     }
-    
+
     [Serializable]
     public class ShowdownSessionComponent : ComponentBase
     {
         public ByteProperty number;
         public UIntTimeProperty remainingUs;
         public ArrayElement<CurePackageComponent> curePackages = new ArrayElement<CurePackageComponent>(9);
+    }
+
+    [Serializable]
+    public class CtfComponent : ComponentBase
+    {
+        public ArrayElement<ByteProperty> playerIdWithTeamFlag = new ArrayElement<ByteProperty>(2), teamScores = new ArrayElement<ByteProperty>(2);
+        public ArrayElement<UIntTimeProperty> captureElapsedTeamUs = new ArrayElement<UIntTimeProperty>(2);
     }
 
     /* Player */
@@ -32,7 +39,7 @@ namespace Voxelfield.Session
     {
         public BoolProperty isActive;
     }
-    
+
     [Serializable, OnlyServerTrusted]
     public class ShowdownPlayerComponent : ComponentBase
     {
@@ -68,7 +75,7 @@ namespace Voxelfield.Session
             SessionElements = SessionElements.NewStandardSessionElements();
             SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(MoneyComponent));
             // SessionElements.commandElements.AppendAll(typeof(TeamProperty));
-            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty), typeof(ShowdownSessionComponent));
+            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty), typeof(CtfComponent), typeof(ShowdownSessionComponent));
         }
     }
 }

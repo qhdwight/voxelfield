@@ -19,11 +19,9 @@ namespace Swihoni.Sessions.Modes
         {
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs);
 
-            if (commands.Without(out InputFlagProperty inputs) || player.Without(out HealthProperty health) || health.WithoutValue)
-                return;
+            if (commands.Without(out InputFlagProperty inputs) || player.Without(out HealthProperty health) || health.WithoutValue) return;
 
-            if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive)
-                KillPlayer(player);
+            if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive) KillPlayer(player);
 
             HandleRespawn(session, container, player, health, durationUs);
         }

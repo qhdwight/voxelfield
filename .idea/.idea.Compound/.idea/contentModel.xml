@@ -60,8 +60,10 @@
               <e p="ClientInjector.cs" t="Include" />
               <e p="Components.cs" t="Include" />
               <e p="Mode" t="Include">
+                <e p="CaptureTheFlagMode.cs" t="Include" />
                 <e p="CurePackageBehavior.cs" t="Include" />
                 <e p="DesignerMode.cs" t="Include" />
+                <e p="FlagBehavior.cs" t="Include" />
                 <e p="ShowdownMode.cs" t="Include" />
                 <e p="WarmupMode.cs" t="Include" />
               </e>

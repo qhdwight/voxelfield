@@ -112,20 +112,25 @@ namespace Voxelfield.Session.Mode
                 }
             }
         }
+        
+        public bool IsLookingAt<TBehavior>(Container player, out TBehavior behavior)
+        {
+            Ray ray = SessionBase.GetRayForPlayer(player);
+            int count = Physics.RaycastNonAlloc(ray, m_CachedHits, 2.0f, m_ModelMask);
+            if (count > 0 && m_CachedHits[0].collider.TryGetComponent(out behavior))
+                return true;
+            behavior = default;
+            return false;
+        }
 
         private void PlayerSecuring(Container player, Container commands, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage, uint durationUs)
         {
             var isInteracting = false;
             CurePackageComponent cure = default;
-            if (commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact))
+            if (commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact) && IsLookingAt(player, out CurePackageBehavior curePackage))
             {
-                Ray ray = SessionBase.GetRayForPlayer(player);
-                int count = Physics.RaycastNonAlloc(ray, m_CachedHits, 2.0f, m_ModelMask);
-                if (count > 0 && m_CachedHits[0].collider.TryGetComponent(out CurePackageBehavior curePackage))
-                {
-                    cure = stage.curePackages[curePackage.Container.Require<IdProperty>()];
-                    if (cure.isActive.WithValue && cure.isActive) isInteracting = true;
-                }
+                cure = stage.curePackages[curePackage.Container.Require<IdProperty>()];
+                if (cure.isActive.WithValue && cure.isActive) isInteracting = true;
             }
             if (isInteracting)
             {
@@ -176,7 +181,7 @@ namespace Voxelfield.Session.Mode
             }
             player.Require<ShowdownPlayerComponent>().Zero();
         }
-
+ 
         private static void StartFirstStage(SessionBase session, Container sessionContainer, ShowdownSessionComponent stage)
         {
             ModelsProperty models = MapManager.Singleton.Map.models;
@@ -228,9 +233,14 @@ namespace Voxelfield.Session.Mode
         {
             if (!InWarmup(session.GetLatestSession()) && hitPlayer.Require<TeamProperty>() == inflictingPlayer.Require<TeamProperty>()) return 0.0f;
 
-            // Nerf damage while on the run
             float baseDamage = base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit);
+            return CalculateDamageWithMovement(session, inflictingPlayer, weapon, baseDamage);
+        }
+
+        public static float CalculateDamageWithMovement(SessionBase session, Container inflictingPlayer, WeaponModifierBase weapon, float baseDamage)
+        {
             if (weapon is MeleeModifier) return baseDamage;
+            // Nerf damage while on the run
             Vector3 velocity = inflictingPlayer.Require<MoveComponent>().velocity;
             var modifierPrefab = (PlayerModifierDispatcherBehavior) session.PlayerManager.GetModifierPrefab(inflictingPlayer.Require<IdProperty>());
             float ratio = 1.0f - Mathf.Clamp01(velocity.LateralMagnitude() / modifierPrefab.Movement.MaxSpeed);
@@ -247,7 +257,7 @@ namespace Voxelfield.Session.Mode
             ArrayElement<CurePackageComponent> cures = container.Require<ShowdownSessionComponent>().curePackages;
             // TODO:performance
             m_CurePackages = MapManager.Singleton.Models.Values
-                                       .Where(model => model.Container.Require<ModelIdProperty>().Value == ModelsProperty.Cure)
+                                       .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Cure)
                                        .Cast<CurePackageBehavior>()
                                        .ToArray();
             for (var index = 0; index < cures.Length; index++)
