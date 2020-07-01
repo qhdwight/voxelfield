@@ -255,7 +255,11 @@ namespace Swihoni.Sessions
         public virtual ModeBase GetMode(Container session = null)
         {
             ModeBase mode = ModeManager.GetMode((session ?? GetLatestSession()).Require<ModeIdProperty>());
-            if (m_Mode && m_Mode != mode) m_Mode.Dispose();
+            if (m_Mode && m_Mode != mode)
+            {
+                m_Mode.Dispose();
+                mode.Start(this, session);
+            }
             return m_Mode = mode;
         }
 

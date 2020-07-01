@@ -26,10 +26,23 @@ namespace Voxelfield.Session
     }
 
     [Serializable]
+    public class FlagComponent : ComponentBase
+    {
+        public ByteProperty capturingPlayerId;
+        public UIntTimeProperty captureElapsedTimeUs;
+    }
+
+    [Serializable]
+    public class FlagArrayElement : ArrayElement<FlagComponent>
+    {
+        public FlagArrayElement() : base(2) { }
+    }
+
+    [Serializable]
     public class CtfComponent : ComponentBase
     {
-        public ArrayElement<ByteProperty> playerIdWithTeamFlag = new ArrayElement<ByteProperty>(2), teamScores = new ArrayElement<ByteProperty>(2);
-        public ArrayElement<UIntTimeProperty> captureElapsedTeamUs = new ArrayElement<UIntTimeProperty>(2);
+        public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
+        public ArrayElement<FlagArrayElement> teamFlags = new ArrayElement<FlagArrayElement>(2);
     }
 
     /* Player */

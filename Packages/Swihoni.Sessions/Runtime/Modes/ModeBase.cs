@@ -44,6 +44,8 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
+        public virtual void Start(SessionBase session, Container sessionContainer) { }
+
         protected virtual void KillPlayer(Container player)
         {
             player.ZeroIfWith<HealthProperty>();
