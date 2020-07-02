@@ -115,7 +115,7 @@ namespace Swihoni.Sessions
             }
             RenderInterfaces(m_RenderSession);
             RenderEntities<LocalizedClientStampComponent>(renderTimeUs, tickRate.TickIntervalUs * 2u);
-            GetMode(m_RenderSession).Render(m_RenderSession);
+            GetMode(m_RenderSession).Render(this, m_RenderSession);
         }
 
         protected override void Tick(uint tick, uint timeUs, uint durationUs)

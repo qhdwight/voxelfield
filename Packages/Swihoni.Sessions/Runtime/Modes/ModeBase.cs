@@ -53,7 +53,7 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
         }
 
-        public virtual void Render(Container container) { }
+        public virtual void Render(SessionBase session, Container sessionContainer) { }
 
         public virtual void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)
         {

@@ -251,10 +251,10 @@ namespace Voxelfield.Session.Mode
 
         public override bool AllowTeamSwap(Container container, Container player) => InWarmup(container);
 
-        public override void Render(Container container)
+        public override void Render(SessionBase session, Container sessionContainer)
         {
             if (MapManager.Singleton.Models.Count == 0) return;
-            ArrayElement<CurePackageComponent> cures = container.Require<ShowdownSessionComponent>().curePackages;
+            ArrayElement<CurePackageComponent> cures = sessionContainer.Require<ShowdownSessionComponent>().curePackages;
             // TODO:performance
             m_CurePackages = MapManager.Singleton.Models.Values
                                        .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Cure)

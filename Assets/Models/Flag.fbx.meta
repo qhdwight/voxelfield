@@ -8,12 +8,12 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: No Name
-    second: {fileID: 2100000, guid: 542e69e01b53cb74abd7257a3bd893ff, type: 2}
+    second: {fileID: 2100000, guid: 679bc74aea7e0d4499aaff9d6b264aea, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Wood
-    second: {fileID: 2100000, guid: 679bc74aea7e0d4499aaff9d6b264aea, type: 2}
+    second: {fileID: 2100000, guid: 542e69e01b53cb74abd7257a3bd893ff, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
@@ -41,7 +41,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1

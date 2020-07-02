@@ -40,7 +40,8 @@ namespace Console
                         Application.targetFrameRate = targetFps;
                     else
                         Debug.LogWarning($"Could not parse {args[1]} as target FPS");
-                }
+                },
+                ["quit"] = _ => Application.Quit()
             };
         }
 

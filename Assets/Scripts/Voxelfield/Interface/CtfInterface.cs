@@ -4,6 +4,7 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
+using UnityEngine.UI;
 using Voxelfield.Interface.Showdown;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
@@ -14,18 +15,19 @@ namespace Voxelfield.Interface
     {
         [SerializeField] private ProgressInterface m_TakeProgress = default;
         [SerializeField] private UpperScoreInterface m_ScoreInterface = default;
+        [SerializeField] private Image m_HasFlagSprite = default;
         
         public override void Render(SessionBase session, Container sessionContainer)
         {
             // m_TakeProgress.Set();
             var ctf = sessionContainer.Require<CtfComponent>();
-            RenderTakeProgress(session, sessionContainer, ctf);
+            RenderLocalPlayer(session, sessionContainer, ctf);
             m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], Color.blue, ctf.teamScores[CtfMode.RedTeam], Color.red);
         }
 
-        private void RenderTakeProgress(SessionBase session, Container sessionContainer, CtfComponent ctf)
+        private void RenderLocalPlayer(SessionBase session, Container sessionContainer, CtfComponent ctf)
         {
-            var showTakeProgress = false;
+            bool isTaking = false, hasFlag = false;
             if (ShowdownInterface.IsValidLocalPlayer(session, sessionContainer, out Container localPlayer))
             {
                 ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
@@ -34,15 +36,23 @@ namespace Voxelfield.Interface
                     if (flagTeam == localPlayer.Require<TeamProperty>()) continue; // Can't possibly take a team flag... Unless???
                     foreach (FlagComponent flag in flags[flagTeam])
                     {
-                        if (flag.capturingPlayerId == sessionContainer.Require<LocalPlayerId>() && flag.captureElapsedTimeUs < CtfMode.TakeFlagDurationUs)
+                        if (flag.capturingPlayerId == sessionContainer.Require<LocalPlayerId>())
                         {
-                            showTakeProgress = true;
-                            m_TakeProgress.Set(flag.captureElapsedTimeUs, CtfMode.TakeFlagDurationUs);
+                            if (flag.captureElapsedTimeUs < CtfMode.TakeFlagDurationUs)
+                            {
+                                isTaking = true;
+                                m_TakeProgress.Set(flag.captureElapsedTimeUs, CtfMode.TakeFlagDurationUs);   
+                            }
+                            else
+                            {
+                                hasFlag = true;
+                            }
                         }
                     }
                 }
             }
-            m_TakeProgress.SetInterfaceActive(showTakeProgress);
+            m_HasFlagSprite.enabled = hasFlag;
+            m_TakeProgress.SetInterfaceActive(isTaking);
         }
     }
 }

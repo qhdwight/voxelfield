@@ -86,7 +86,7 @@ namespace Swihoni.Sessions
             }
             RenderInterfaces(m_RenderSession);
             RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
-            GetMode(m_RenderSession).Render(m_RenderSession);
+            GetMode(m_RenderSession).Render(this, m_RenderSession);
         }
 
         protected override void PreTick(Container tickSession)

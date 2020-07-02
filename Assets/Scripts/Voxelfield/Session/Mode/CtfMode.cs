@@ -1,6 +1,7 @@
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
@@ -27,7 +28,7 @@ namespace Voxelfield.Session.Mode
         private void LinkFlagBehaviors()
             => m_FlagBehaviors = MapManager.Singleton.Models.Values
                                            .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Flag)
-                                           .GroupBy(model => model.Container.Require<TeamProperty>())
+                                           .GroupBy(model => model.Container.Require<TeamProperty>().Value)
                                            .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray();
 
         public override void Begin(SessionBase session, Container sessionContainer)
@@ -39,15 +40,15 @@ namespace Voxelfield.Session.Mode
             m_FlagBehaviors = null;
         }
         
-        public override void Render(Container container)
+        public override void Render(SessionBase session, Container sessionContainer)
         {
-            if (m_FlagBehaviors != null)
-            {
-                ArrayElement<FlagArrayElement> flags = container.Require<CtfComponent>().teamFlags;
-                for (var flagTeam = 0; flagTeam < m_FlagBehaviors.Length; flagTeam++)
-                for (var flagId = 0; flagId < m_FlagBehaviors[0].Length; flagId++)
-                    m_FlagBehaviors[flagTeam][flagId].Render(flags[flagTeam][flagId]);
-            }
+            if (m_FlagBehaviors == null && !session.IsPaused) LinkFlagBehaviors();
+            if (m_FlagBehaviors == null) return;
+            
+            ArrayElement<FlagArrayElement> flags = sessionContainer.Require<CtfComponent>().teamFlags;
+            for (var flagTeam = 0; flagTeam < m_FlagBehaviors.Length; flagTeam++)
+            for (var flagId = 0; flagId < m_FlagBehaviors[flagTeam].Length; flagId++)
+                m_FlagBehaviors[flagTeam][flagId].Render(session, sessionContainer, flags[flagTeam][flagId]);
         }
 
         public override void Modify(SessionBase session, Container container, uint durationUs)
@@ -65,6 +66,15 @@ namespace Voxelfield.Session.Mode
                 HandlePlayersNearFlag(session, flag, flagTeam, flagId, ctf);
                 if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += durationUs;
             }
+        }
+
+        protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
+                                                       in RaycastHit hit)
+        {
+            if (hitPlayer.Require<TeamProperty>() == inflictingPlayer.Require<TeamProperty>()) return 0.0f;
+
+            float baseDamage = base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit);
+            return ShowdownMode.CalculateDamageWithMovement(session, inflictingPlayer, weapon, baseDamage);
         }
 
         private void HandlePlayersNearFlag(SessionBase session, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf)
