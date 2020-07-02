@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Swihoni.Sessions.Modes
 {
     [CreateAssetMenu(fileName = "Deathmatch", menuName = "Session/Mode/Deathmatch", order = 0)]
-    public class DeathmatchMode : ModeBase
+    public class DeathmatchModeBase : ModeBase
     {
         protected override void KillPlayer(Container player)
         {

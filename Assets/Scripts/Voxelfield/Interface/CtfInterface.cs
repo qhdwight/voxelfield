@@ -19,10 +19,14 @@ namespace Voxelfield.Interface
         
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            // m_TakeProgress.Set();
-            var ctf = sessionContainer.Require<CtfComponent>();
-            RenderLocalPlayer(session, sessionContainer, ctf);
-            m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], Color.blue, ctf.teamScores[CtfMode.RedTeam], Color.red);
+            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Ctf;
+            if (isVisible)
+            {
+                var ctf = sessionContainer.Require<CtfComponent>();
+                RenderLocalPlayer(session, sessionContainer, ctf);
+                m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], Color.blue, ctf.teamScores[CtfMode.RedTeam], Color.red);   
+            }
+            SetInterfaceActive(isVisible);
         }
 
         private void RenderLocalPlayer(SessionBase session, Container sessionContainer, CtfComponent ctf)

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Voxelfield.Session.Mode
 {
     [CreateAssetMenu(fileName = "Warmup", menuName = "Session/Mode/Warmup", order = 0)]
-    public class WarmupMode : DeathmatchMode
+    public class DeathmatchMode : DeathmatchModeBase
     {
         protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
                                                        in RaycastHit hit)

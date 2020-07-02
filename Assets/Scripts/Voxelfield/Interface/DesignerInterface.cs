@@ -16,7 +16,7 @@ namespace Voxelfield.Interface
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isVisible = session.GetMode(sessionContainer) is DesignerMode
+            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer
                           && sessionContainer.Require<LocalPlayerId>().WithValue;
             if (isVisible)
             {

@@ -35,9 +35,9 @@ namespace Voxelfield.Session.Mode
             if (isFlagTaken)
             {
                 Container capturingPlayer = session.GetPlayerFromId(flag.capturingPlayerId);
-                spritePosition = capturingPlayer.Require<MoveComponent>().position + new Vector3 {y = 2.5f};
+                spritePosition = capturingPlayer.Require<MoveComponent>().position + new Vector3 {y = 2.7f};
             }
-            else spritePosition = transform.position + new Vector3 {y = 2.9f};
+            else spritePosition = transform.position + new Vector3 {y = 3.1f};
 
             var isIconVisible = true;
             if (ShowdownInterface.IsValidLocalPlayer(session, sessionContainer, out Container localPlayer))
@@ -50,8 +50,11 @@ namespace Voxelfield.Session.Mode
             m_SpriteRenderer.transform.position = spritePosition;
             
             Color color = Container.Require<TeamProperty>() == CtfMode.BlueTeam ? Color.blue : Color.red;
-            color.a = Mathf.Cos(flag.captureElapsedTimeUs.Else(0u) * TimeConversions.MicrosecondToSecond * m_TakingBlinkRate).Remap(-1.0f, 1.0f, 0.8f, 1.0f);
+            float cosine = Mathf.Cos(flag.captureElapsedTimeUs.Else(0u) * TimeConversions.MicrosecondToSecond * m_TakingBlinkRate);
+            color.a = cosine.Remap(-1.0f, 1.0f, 0.8f, 1.0f);
             m_Material.color = color;
+            
+            color.a = cosine.Remap(-1.0f, 1.0f, 0.2f, 1.0f);
             m_SpriteMaterial.color = color;
             m_SpriteRenderer.enabled = isIconVisible;
         }

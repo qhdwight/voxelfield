@@ -6,6 +6,7 @@ using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
+using Voxel.Map;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
 
@@ -18,7 +19,7 @@ namespace Voxelfield.Interface.Showdown
         
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isVisible = session.GetMode(sessionContainer) is ShowdownMode;
+            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Showdown;
             if (isVisible)
             {
                 var showdown = sessionContainer.Require<ShowdownSessionComponent>();

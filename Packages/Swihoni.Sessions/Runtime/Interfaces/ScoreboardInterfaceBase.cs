@@ -5,7 +5,8 @@ using Swihoni.Sessions.Player.Components;
 
 namespace Swihoni.Sessions.Interfaces
 {
-    public class ScoreboardInterface : ArrayViewerInterfaceBase<ScoreboardEntryInterface, PlayerContainerArrayElement, Container>
+    public abstract class ScoreboardInterfaceBase<T> : ArrayViewerInterfaceBase<T, PlayerContainerArrayElement, Container>
+        where T : ElementInterfaceBase<Container>
     {
         public override void Render(SessionBase session, Container sessionContainer)
         {

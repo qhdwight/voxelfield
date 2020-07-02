@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace Swihoni.Sessions.Interfaces
 {
-    public abstract class DefaultPlayerHud : SessionInterfaceBehavior
+    public class DefaultPlayerHud : SessionInterfaceBehavior
     {
         [SerializeField] private BufferedTextGui m_HealthText = default, m_AmmoText = default;
         [SerializeField] private Image m_Crosshair = default, m_HitMarker = default;

@@ -78,8 +78,7 @@ namespace Voxelfield.Interface.Showdown
             sessionLocalPlayer = default;
             sessionShowdown = default;
 
-            var showdownMode = session.GetMode(sessionContainer) as ShowdownMode;
-            if (showdownMode == null) return false;
+            if (sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Showdown) return false;
 
             sessionShowdown = sessionContainer.Require<ShowdownSessionComponent>();
             if (sessionShowdown.number.WithValue && sessionShowdown.remainingUs <= ShowdownMode.FightTimeUs) return false;

@@ -1843,7 +1843,7 @@ MonoBehaviour:
     m_Value: 60
   ModeId:
     m_Flags: 1
-    m_Value: 2
+    m_Value: 0
 --- !u!850595691 &607889173
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -3990,7 +3990,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1031529355}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a673a8338fc04c23b6fb5656a8348ff4, type: 3}
+  m_Script: {fileID: 11500000, guid: 044713a4e3724f92a3387283784e9c8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_NeedsCursor: 1

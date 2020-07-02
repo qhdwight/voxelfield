@@ -8,7 +8,7 @@ namespace Swihoni.Sessions.Interfaces
 {
     public abstract class ElementInterfaceBase<TElement> : InterfaceBehaviorBase
     {
-        public abstract void Render(Container session, TElement element);
+        public abstract void Render(SessionBase session, Container sessionContainer, TElement element);
     }
 
     public abstract class ArrayViewerInterfaceBase<TEntry, TArray, TElement> : SessionInterfaceBehavior
@@ -29,14 +29,12 @@ namespace Swihoni.Sessions.Interfaces
 
         private TEntry[] GetEntries(TArray array)
         {
-            if (m_Entries == null)
-                m_Entries = Enumerable.Range(0, array.Length).Select(i =>
-                {
-                    GameObject instance = Instantiate(m_EntryPrefab, m_EntryHolder);
-                    var entry = instance.GetComponent<TEntry>();
-                    return entry;
-                }).ToArray();
-            return m_Entries;
+            return m_Entries ?? (m_Entries = Enumerable.Range(0, array.Length).Select(i =>
+            {
+                GameObject instance = Instantiate(m_EntryPrefab, m_EntryHolder);
+                var entry = instance.GetComponent<TEntry>();
+                return entry;
+            }).ToArray());
         }
 
         private void SortEntries(TArray array)
@@ -63,7 +61,7 @@ namespace Swihoni.Sessions.Interfaces
             {
                 TElement element = array[i];
                 TEntry entry = entries[i];
-                entry.Render(sessionContainer, element);
+                entry.Render(session, sessionContainer, element);
             }
 
             SortEntries(array);

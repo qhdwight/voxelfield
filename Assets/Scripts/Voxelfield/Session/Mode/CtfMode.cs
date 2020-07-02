@@ -11,7 +11,7 @@ using Voxel.Map;
 namespace Voxelfield.Session.Mode
 {
     [CreateAssetMenu(fileName = "Capture The Flag", menuName = "Session/Mode/Capture The Flag", order = 0)]
-    public class CtfMode : DeathmatchMode
+    public class CtfMode : DeathmatchModeBase
     {
         public const byte BlueTeam = 0, RedTeam = 1;
 

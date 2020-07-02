@@ -6,11 +6,11 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Interfaces
 {
-    public class ScoreboardEntryInterface : ElementInterfaceBase<Container>
+    public class DefaultScoreboardEntryInterface : ElementInterfaceBase<Container>
     {
-        [SerializeField] private BufferedTextGui m_UsernameText = default, m_KillsText = default, m_DamageText = default, m_DeathsText = default, m_PingText = default;
+        [SerializeField] protected BufferedTextGui m_UsernameText = default, m_KillsText = default, m_DamageText = default, m_DeathsText = default, m_PingText = default;
 
-        public override void Render(Container _, Container player)
+        public override void Render(SessionBase session, Container sessionContainer, Container player)
         {
             bool isVisible = player.Without(out HealthProperty health) || health.WithValue;
             if (isVisible && player.With(out StatsComponent stats))
@@ -19,9 +19,11 @@ namespace Swihoni.Sessions.Interfaces
                 m_DamageText.BuildText(builder => builder.Append(stats.damage));
                 m_DeathsText.BuildText(builder => builder.Append(stats.deaths));
                 m_PingText.BuildText(builder => builder.Append(stats.ping));
-                m_UsernameText.SetText(player.Require<UsernameProperty>().Builder);
+                PostRender(session, sessionContainer, player);
             }
             SetInterfaceActive(isVisible);
         }
+
+        protected virtual void PostRender(SessionBase session, Container sessionContainer, Container player) { }
     }
 }

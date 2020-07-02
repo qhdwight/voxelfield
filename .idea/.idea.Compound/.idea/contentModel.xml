@@ -45,7 +45,10 @@
               <e p="CtfInterface.cs" t="Include" />
               <e p="DesignerInterface.cs" t="Include" />
               <e p="LoadingInterface.cs" t="Include" />
+              <e p="PlayerHud.cs" t="Include" />
               <e p="ProgressInterface.cs" t="Include" />
+              <e p="ScoreboardEntryInterface.cs" t="Include" />
+              <e p="ScoreboardInterface.cs" t="Include" />
               <e p="Showdown" t="Include">
                 <e p="BuyMenuButton.cs" t="Include" />
                 <e p="BuyMenuInterface.cs" t="Include" />
@@ -65,12 +68,11 @@
               <e p="Mode" t="Include">
                 <e p="CtfMode.cs" t="Include" />
                 <e p="CurePackageBehavior.cs" t="Include" />
+                <e p="DeathmatchMode.cs" t="Include" />
                 <e p="DesignerMode.cs" t="Include" />
                 <e p="FlagBehavior.cs" t="Include" />
                 <e p="ShowdownMode.cs" t="Include" />
-                <e p="WarmupMode.cs" t="Include" />
               </e>
-              <e p="PlayerHud.cs" t="Include" />
               <e p="ServerInjector.cs" t="Include" />
               <e p="SessionManager.cs" t="Include" />
               <e p="VoxelInjector.cs" t="Include" />
@@ -188,9 +190,9 @@
             <e p="Interfaces" t="Include">
               <e p="ArrayViewerInterfaceBase.cs" t="Include" />
               <e p="DefaultPlayerHud.cs" t="Include" />
+              <e p="DefaultScoreboardEntryInterface.cs" t="Include" />
               <e p="KillFeedEntryInterface.cs" t="Include" />
-              <e p="ScoreboardEntryInterface.cs" t="Include" />
-              <e p="ScoreboardInterface.cs" t="Include" />
+              <e p="ScoreboardInterfaceBase.cs" t="Include" />
               <e p="SessionInterfaceBehavior.cs" t="Include" />
               <e p="StandardDebugInterface.cs" t="Include" />
               <e p="StandardKillFeedInterface.cs" t="Include" />
@@ -213,7 +215,7 @@
               </e>
             </e>
             <e p="Modes" t="Include">
-              <e p="DeathmatchMode.cs" t="Include" />
+              <e p="DeathmatchModeBase.cs" t="Include" />
               <e p="ModeBase.cs" t="Include" />
               <e p="ModeManager.cs" t="Include" />
             </e>

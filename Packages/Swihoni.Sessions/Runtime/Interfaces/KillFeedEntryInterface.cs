@@ -20,16 +20,16 @@ namespace Swihoni.Sessions.Interfaces
 
         // private static StringBuilder GetName(int playerId, Container session) => new StringBuilder("ok");
 
-        public override void Render(Container session, KillFeedComponent feed)
+        public override void Render(SessionBase session, Container sessionContainer, KillFeedComponent feed)
         {
             bool isVisible = feed.elapsedUs > 0u;
             if (isVisible)
             {
-                void Build(StringBuilder builder) => builder.Append(GetName(feed.killingPlayerId, session))
+                void Build(StringBuilder builder) => builder.Append(GetName(feed.killingPlayerId, sessionContainer))
                                                             .Append(" [")
                                                             .Append(feed.weaponName.Builder)
                                                             .Append("] ")
-                                                            .Append(GetName(feed.killedPlayerId, session));
+                                                            .Append(GetName(feed.killedPlayerId, sessionContainer));
                 m_Text.BuildText(Build);
             }
             SetInterfaceActive(isVisible);

@@ -131,6 +131,8 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class ModeIdProperty : ByteProperty
     {
+        public const byte Deathmatch = 0, Showdown = 1, Ctf = 2, Designer = 3;
+        
         public ModeIdProperty(byte value) : base(value) { }
         public ModeIdProperty() { }
     }

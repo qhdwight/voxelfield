@@ -19,7 +19,7 @@ namespace Voxelfield.Session.Mode
     using QueuedTeamSpawns = IReadOnlyList<Queue<(Position3Int, Container)>>;
 
     [CreateAssetMenu(fileName = "Showdown", menuName = "Session/Mode/Showdown", order = 0)]
-    public class ShowdownMode : DeathmatchMode
+    public class ShowdownMode : DeathmatchModeBase
     {
         // public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
         // public const uint BuyTimeUs = 60_000_000u, FightTimeUs = 300_000_000u;
