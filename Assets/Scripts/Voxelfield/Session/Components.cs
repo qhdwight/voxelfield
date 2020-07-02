@@ -79,7 +79,7 @@ namespace Voxelfield.Session
      public static class VoxelfieldComponents
     {
         [RuntimeInitializeOnLoadMethod]
-        public static void Initialize() => SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(IdProperty), typeof(TeamProperty), typeof(VectorProperty));
+        public static void Initialize() => SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(IdProperty), typeof(TeamProperty), typeof(VectorProperty), typeof(ModeIdProperty));
 
         public static readonly SessionElements SessionElements;
 

@@ -13,12 +13,6 @@ namespace Voxelfield.Session
         private readonly Pool<VoxelChangeTransaction> m_Transactions = new Pool<VoxelChangeTransaction>(1, () => new VoxelChangeTransaction());
         private readonly UIntProperty m_Pointer = new UIntProperty();
 
-        protected override void OnSettingsTick(Container session)
-        {
-            base.OnSettingsTick(session);
-            MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
-        } 
-
         protected internal override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true) { }
 
         protected internal override void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, ChangedVoxelsProperty changedVoxels = null)

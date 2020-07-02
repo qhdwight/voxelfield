@@ -132,10 +132,10 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        protected override void SpawnPlayer(SessionBase session, Container player)
+        protected override void SpawnPlayer(SessionBase session, int playerId, Container player)
         {
-            base.SpawnPlayer(session, player);
-            player.Require<TeamProperty>().Value = RedTeam;
+            base.SpawnPlayer(session, playerId, player);
+            player.Require<TeamProperty>().Value = (byte) (playerId % 2);
         }
 
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)

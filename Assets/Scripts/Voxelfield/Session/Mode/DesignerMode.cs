@@ -13,7 +13,7 @@ namespace Voxelfield.Session.Mode
     [CreateAssetMenu(fileName = "Designer", menuName = "Session/Mode/Designer", order = 0)]
     public class DesignerMode : ModeBase
     {
-        protected override void SpawnPlayer(SessionBase session, Container player)
+        protected override void SpawnPlayer(SessionBase session, int playerId, Container player)
         {
             Debug.Log("Spawn Player");
             // TODO:refactor zeroing
@@ -36,9 +36,9 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override void SetupNewPlayer(SessionBase session, Container player)
+        public override void SetupNewPlayer(SessionBase session, int playerId, Container player)
         {
-            SpawnPlayer(session, player);
+            SpawnPlayer(session, playerId, player);
             var designer = player.Require<DesignerPlayerComponent>();
             designer.Reset();
             designer.selectedBlockId.Value = VoxelId.Stone;

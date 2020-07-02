@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Id: 3
-  m_Flag: {fileID: 0}
+  m_TakingBlinkRate: 10
 --- !u!183 &260114351
 Cloth:
   m_ObjectHideFlags: 0
@@ -365,7 +365,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: c332f07a7c4ca734e9bc822363940d62,
         type: 3}
       propertyPath: m_Name
-      value: Flag
+      value: Flag Variant
       objectReference: {fileID: 0}
     - target: {fileID: 3371480857174845726, guid: c332f07a7c4ca734e9bc822363940d62,
         type: 3}

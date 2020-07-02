@@ -6,6 +6,7 @@ using Console;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
@@ -187,9 +188,9 @@ namespace Voxelfield.Session
             AddSpawn(new Position3Int {x = 10, y = 5}, 2);
             AddSpawn(new Position3Int {x = 20, y = 5}, 3);
             for (byte i = 0; i < 9; i++)
-                models.Add(new Position3Int(i * 2 + 5, 5, 5), new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i)));
-            models.Add(new Position3Int(10, 5, 10), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(0)));
-            models.Add(new Position3Int(10, 5, 16), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(1)));
+                models.Add(new Position3Int(i * 2 + 5, 5, 5), new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(1)));
+            models.Add(new Position3Int(10, 5, 10), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(0), new ModeIdProperty(2)));
+            models.Add(new Position3Int(10, 5, 16), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(1), new ModeIdProperty(2)));
             var testMap = new MapContainer
             {
                 name = new StringProperty("Test"),

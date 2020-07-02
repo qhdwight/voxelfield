@@ -155,9 +155,9 @@ namespace Voxelfield.Session.Mode
             cure.isActive.Value = false;
         }
 
-        protected override void HandleRespawn(SessionBase session, Container container, Container player, HealthProperty health, uint durationUs)
+        protected override void HandleRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, uint durationUs)
         {
-            if (InWarmup(container)) base.HandleRespawn(session, container, player, health, durationUs); // Random respawn
+            if (InWarmup(container)) base.HandleRespawn(session, container, playerId, player, health, durationUs); // Random respawn
         }
 
         private static void FirstStageSpawn(Container session, int playerId, Container player, QueuedTeamSpawns spawns)

@@ -2,6 +2,7 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
@@ -56,7 +57,11 @@ namespace Voxelfield.Session
             return new Vector3 {y = 8.0f};
         }
 
-        protected override void OnSettingsTick(Container session) { }
+        protected override void OnSettingsTick(Container session)
+        {
+            MapManager.Singleton.ModelFilter = container => container.Without(out ModeIdProperty modeId) || modeId == session.Require<ModeIdProperty>();
+            MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
+        }
 
         public override bool IsPaused(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
                                                          || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;

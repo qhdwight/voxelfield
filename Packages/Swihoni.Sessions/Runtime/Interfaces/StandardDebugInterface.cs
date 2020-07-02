@@ -26,10 +26,10 @@ namespace Swihoni.Sessions.Interfaces
                 stats.ping.WithValue)
                 m_PingText.BuildText(builder => builder.Append("Ping: ").Append(stats.ping).Append(" ms"));
             if (session is Client client)
-                m_PredictionErrorText.BuildText(builder => builder.Append("Prediction Errors: ").Append(client.PredictionErrors));
+                m_PredictionErrorText.BuildText(builder => builder.Append("Pred Err: ").Append(client.PredictionErrors));
             if (session is NetworkedSessionBase networkSession)
             {
-                m_ResetErrorText.BuildText(builder => builder.Append("Reset Errors: ").Append(networkSession.ResetErrors));
+                m_ResetErrorText.BuildText(builder => builder.Append("Rst Err: ").Append(networkSession.ResetErrors));
                 m_UploadText.BuildText(builder => builder.AppendFormat("Up: {0:F1} kb/s", networkSession.Socket.SendRateKbs));
                 m_DownloadText.BuildText(builder => builder.AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.ReceiveRateKbs));
                 m_PacketLossText.BuildText(builder => builder.AppendFormat("Drop: {0:P1}", networkSession.Socket.PacketLoss));

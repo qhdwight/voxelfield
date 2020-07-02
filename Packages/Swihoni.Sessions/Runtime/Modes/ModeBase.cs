@@ -13,7 +13,7 @@ namespace Swihoni.Sessions.Modes
     {
         public byte id;
 
-        protected virtual void SpawnPlayer(SessionBase session, Container player)
+        protected virtual void SpawnPlayer(SessionBase session, int playerId, Container player)
         {
             Debug.Log("Spawning player");
             // TODO:refactor zeroing
@@ -146,7 +146,7 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void SetupNewPlayer(SessionBase session, Container player) => SpawnPlayer(session, player);
+        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player) => SpawnPlayer(session, playerId, player);
 
         protected static void ForEachActivePlayer(SessionBase session, Container container, Action<int, Container> action)
         {

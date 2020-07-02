@@ -23,10 +23,10 @@ namespace Swihoni.Sessions.Modes
 
             if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive) KillPlayer(player);
 
-            HandleRespawn(session, container, player, health, durationUs);
+            HandleRespawn(session, container, playerId, player, health, durationUs);
         }
 
-        protected virtual void HandleRespawn(SessionBase session, Container container, Container player, HealthProperty health, uint durationUs)
+        protected virtual void HandleRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, uint durationUs)
         {
             if (health.IsAlive || player.Without(out RespawnTimerProperty respawn)) return;
 
@@ -34,7 +34,7 @@ namespace Swihoni.Sessions.Modes
             else
             {
                 respawn.Value = 0u;
-                SpawnPlayer(session, player);
+                SpawnPlayer(session, playerId, player);
             }
         }
     }

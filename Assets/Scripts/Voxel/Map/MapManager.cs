@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,21 +16,24 @@ namespace Voxel.Map
     {
         private const string MapSaveExtension = "vfm", MapSaveFolder = "Maps";
 
-        private static readonly StringProperty TestMapName = new StringProperty("Test"), EmptyMapName = new StringProperty();
+        private static StringProperty _testMapName, _emptyMapName;
         private static readonly MapContainer EmptyMap = new MapContainer().Zero();
         private static Dictionary<string, TextAsset> _defaultMaps;
         private static ModelBehavior[] _modelPrefabs;
-        private Pool<ModelBehavior>[] m_ModelsPool;
 
-        private StringProperty m_WantedMapName = EmptyMapName;
+        private Pool<ModelBehavior>[] m_ModelsPool;
+        private StringProperty m_WantedMapName;
         private IEnumerator m_ManageActionsRoutine;
 
+        public Predicate<Container> ModelFilter { get; set; }
         public Dictionary<Position3Int, ModelBehavior> Models { get; } = new Dictionary<Position3Int, ModelBehavior>();
         public MapContainer Map { get; private set; } = new MapContainer();
 
         [RuntimeInitializeOnLoadMethod]
         public static void Initialize()
         {
+            _emptyMapName = new StringProperty();
+            _testMapName = new StringProperty("Test");
             _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m);
             _modelPrefabs = Resources.LoadAll<ModelBehavior>("Models")
                                      .OrderBy(modifier => modifier.Id).ToArray();
@@ -46,8 +50,8 @@ namespace Voxel.Map
         private void Start()
         {
             m_ManageActionsRoutine = ManageActionsRoutine();
+            m_WantedMapName = _emptyMapName;
             StartCoroutine(m_ManageActionsRoutine);
-            UnloadMap();
             SetupModelPool();
         }
 
@@ -93,7 +97,7 @@ namespace Voxel.Map
         {
             string mapPath = GetMapPath(map.name);
 #if UNITY_EDITOR
-            if (map.name == TestMapName) mapPath = "Assets/Resources/Maps/Test.bytes";
+            if (map.name == _testMapName) mapPath = "Assets/Resources/Maps/Test.bytes";
 #endif
             var writer = new NetDataWriter();
             map.Serialize(writer);
@@ -105,8 +109,9 @@ namespace Voxel.Map
 
         private IEnumerator LoadMap(StringProperty mapName)
         {
-            Debug.Log($"Starting to load map: {mapName}");
-            MapContainer map = mapName.WithoutValue ? EmptyMap : ReadMapSave(mapName);
+            bool isEmpty = mapName.WithoutValue;
+            MapContainer map = isEmpty ? EmptyMap : ReadMapSave(mapName);
+            Debug.Log(isEmpty ? "Unloading map" : $"Starting to load map: {mapName}");
 
 #if UNITY_EDITOR
             map.dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, 0, -1), upperBound = new Position3IntProperty(0, 0, 0)};
@@ -121,7 +126,7 @@ namespace Voxel.Map
 
             LoadModels(map);
 
-            // PlaceTrees(mapName, mapSave);
+            // PlaceTrees(mapName, mapSave);z
 
             Debug.Log($"Finished loading map: {mapName}");
             Map = map;
@@ -133,11 +138,14 @@ namespace Voxel.Map
             foreach (Pool<ModelBehavior> pool in m_ModelsPool) pool.ReturnAll();
             foreach ((Position3Int position, Container model) in map.models)
             {
-                ushort modelId = model.Require<ModelIdProperty>();
-                ModelBehavior modelInstance = m_ModelsPool[modelId].Obtain();
-                modelInstance.SetContainer(model);
-                modelInstance.transform.SetPositionAndRotation(position + new Vector3 {y = 0.5f}, Quaternion.identity);
-                Models.Add(position, modelInstance);
+                if (ModelFilter == null || ModelFilter(model))
+                {
+                    ushort modelId = model.Require<ModelIdProperty>();
+                    ModelBehavior modelInstance = m_ModelsPool[modelId].Obtain();
+                    modelInstance.SetContainer(model);
+                    modelInstance.transform.SetPositionAndRotation(position + new Vector3 {y = 0.5f}, Quaternion.identity);
+                    Models.Add(position, modelInstance);
+                }
             }
         }
 
@@ -166,7 +174,7 @@ namespace Voxel.Map
 
         public void SetMap(StringProperty mapName) => m_WantedMapName = mapName;
 
-        public void UnloadMap() => SetMap(EmptyMapName);
+        public void UnloadMap() => SetMap(_emptyMapName);
 
         private static IEnumerator LoadMapSave(MapContainer save)
         {

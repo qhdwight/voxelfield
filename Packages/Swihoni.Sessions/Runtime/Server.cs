@@ -127,7 +127,7 @@ namespace Swihoni.Sessions
                         if (serverPlayer.Require<HealthProperty>().WithoutValue)
                         {
                             Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {fromPeer.GetPlayerId()}");
-                            SetupNewPlayer(serverSession, serverPlayer);
+                            SetupNewPlayer(serverSession, clientId, serverPlayer);
                         }
                         HandleClientCommand(clientId, receivedClientCommands, serverSession, serverPlayer);
                         break;
@@ -260,9 +260,9 @@ namespace Swihoni.Sessions
             }
         }
 
-        protected void SetupNewPlayer(Container session, Container player)
+        protected void SetupNewPlayer(Container session, int playerId, Container player)
         {
-            GetMode(session).SetupNewPlayer(this, player);
+            GetMode(session).SetupNewPlayer(this, playerId, player);
             // TODO:refactor zeroing
 
             player.ZeroIfWith<StatsComponent>();
