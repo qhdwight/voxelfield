@@ -70,6 +70,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3520456744884771956}
   - component: {fileID: 3520456744884771955}
+  - component: {fileID: 856624331643220773}
   - component: {fileID: 3520456744884771954}
   m_Layer: 0
   m_Name: Throwable Visuals
@@ -104,7 +105,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: a6db81701ea61f1498b1a4f124272a28, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -115,9 +116,105 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 5
+  MaxDistance: 10
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &856624331643220773
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3520456744884771953}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: fba73e8c764fdf441a3dd094d7122cbd, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 10
+  Pan2D: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -209,8 +306,8 @@ MonoBehaviour:
     isReverseAnimation: 0
   - animationClip: {fileID: 7400000, guid: 95ad9751f5bd5e24e9dbb0d5791e8d8f, type: 2}
     animationEvents:
-    - time: 0
-      audioSource: {fileID: 8300000, guid: a6db81701ea61f1498b1a4f124272a28, type: 3}
+    - timeUs: 0
+      audio: {fileID: 3520456744884771955}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}
     isReverseAnimation: 0
@@ -219,16 +316,16 @@ MonoBehaviour:
     isReverseAnimation: 0
   - animationClip: {fileID: 7400000, guid: 63a7fd78e18bea348b7727cb5c16d455, type: 2}
     animationEvents:
-    - time: 0
-      audioSource: {fileID: 0}
+    - timeUs: 0
+      audio: {fileID: 0}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}
     isReverseAnimation: 0
   m_EquipStatusVisualProperties:
   - animationClip: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
     animationEvents:
-    - time: 0
-      audioSource: {fileID: 8300000, guid: fba73e8c764fdf441a3dd094d7122cbd, type: 3}
+    - timeUs: 0
+      audio: {fileID: 856624331643220773}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}
     isReverseAnimation: 1
@@ -239,3 +336,6 @@ MonoBehaviour:
   m_IkR: {fileID: 3520456743948849009}
   m_FpvOffset: {x: 0.027, y: -0.344, z: 0.213}
   m_TpvOffset: {x: 0.061, y: -0.08, z: 0.105}
+  m_ChildBehaviors: []
+  m_Crosshair: {fileID: 0}
+  m_FovMultiplier: 1

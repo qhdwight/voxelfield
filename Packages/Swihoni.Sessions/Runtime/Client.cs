@@ -420,6 +420,11 @@ namespace Swihoni.Sessions
             }
         }
 
+        public override void StringCommand(string stringCommand)
+        {
+            m_Socket.SendToServer(new StringCommandProperty(stringCommand), DeliveryMethod.ReliableOrdered);
+        }
+
         private void SendDebug(Container player)
         {
             DebugClientView debug = m_EmptyDebugClientView.Clone();

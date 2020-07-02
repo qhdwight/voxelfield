@@ -20,6 +20,7 @@ namespace Voxelfield.Item
             base.Swing(session, playerId, item, durationUs); // Melee damage
             if (WithoutServerHit(session, playerId, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
+
             var voxelInjector = (VoxelInjector) session.Injector;
             switch (voxel.renderType)
             {
@@ -30,6 +31,9 @@ namespace Voxelfield.Item
                     voxelInjector.RemoveVoxelRadius(position, m_DestroyRadius, true);
                     break;
             }
+            var brokeVoxelTickProperty = session.GetPlayerFromId(playerId).Require<BrokeVoxelTickProperty>();
+            if (brokeVoxelTickProperty.WithValue) brokeVoxelTickProperty.Value++;
+            else brokeVoxelTickProperty.Value = 0;
         }
 
         protected static bool WithoutInnerVoxel(RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)

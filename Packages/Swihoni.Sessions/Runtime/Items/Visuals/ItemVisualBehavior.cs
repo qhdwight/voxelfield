@@ -19,7 +19,7 @@ namespace Swihoni.Sessions.Items.Visuals
         public class AnimationEvent
         {
             public uint timeUs;
-            public AudioClip audioSource;
+            public AudioSource audio;
             public ParticleSystem particleSystem;
             public GameObject tracer;
         }
@@ -118,7 +118,7 @@ namespace Swihoni.Sessions.Items.Visuals
                 bool shouldDoEvent = (!lastStatusElapsedUs.HasValue || lastStatusElapsedUs < animationEvent.timeUs)
                                   && expressedStatus.elapsedUs >= animationEvent.timeUs;
                 if (!shouldDoEvent) continue;
-                if (animationEvent.audioSource) m_AudioSource.PlayOneShot(animationEvent.audioSource);
+                if (animationEvent.audio) animationEvent.audio.PlayOneShot(animationEvent.audio.clip);
                 if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
             }
             if (lastRenderedInventory == null) m_PlayerItemAnimator.LastRenderedInventory = inventory.Clone();

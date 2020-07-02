@@ -132,7 +132,7 @@ namespace Swihoni.Sessions.Components
     public class ModeIdProperty : ByteProperty
     {
         public const byte Deathmatch = 0, Showdown = 1, Ctf = 2, Designer = 3;
-        
+
         public ModeIdProperty(byte value) : base(value) { }
         public ModeIdProperty() { }
     }
@@ -161,5 +161,12 @@ namespace Swihoni.Sessions.Components
     {
         public DebugClientView() { }
         public DebugClientView(IEnumerable<Type> types) : base(types) { }
+    }
+
+    [Serializable]
+    public class StringCommandProperty : StringProperty
+    {
+        public StringCommandProperty() { }
+        public StringCommandProperty(string @string) : base(@string) { }
     }
 }

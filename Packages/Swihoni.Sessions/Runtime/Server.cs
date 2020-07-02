@@ -137,6 +137,11 @@ namespace Swihoni.Sessions
                         DebugBehavior.Singleton.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
                         break;
                     }
+                    case StringCommandProperty stringCommand:
+                    {
+                        StringCommand(stringCommand.Builder.ToString());
+                        break;
+                    }
                 }
             });
             Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
@@ -301,6 +306,8 @@ namespace Swihoni.Sessions
                 if (modifierId == 0) DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
         }
+
+        public override void StringCommand(string stringCommand) => Debug.Log(stringCommand);
 
         public override void Dispose()
         {

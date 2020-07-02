@@ -62,6 +62,7 @@ namespace Swihoni.Sessions
             socket.RegisterContainer(typeof(ClientCommandsContainer), m_EmptyClientCommands, 0);
             socket.RegisterContainer(typeof(ServerSessionContainer), m_EmptyServerSession, 1);
             socket.RegisterContainer(typeof(DebugClientView), m_EmptyDebugClientView, 2);
+            socket.RegisterSimpleElement(typeof(StringCommandProperty));
         }
 
         protected static void ZeroCommand(Container command)
@@ -123,6 +124,8 @@ namespace Swihoni.Sessions
             session.ZeroIfWith<KillFeedElement>();
             return session;
         }
+
+        public abstract void StringCommand(string stringCommand);
     }
 
     internal static class NetworkSessionExtensions

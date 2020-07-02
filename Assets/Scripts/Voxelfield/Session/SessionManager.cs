@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using Console;
 using LiteNetLib;
@@ -13,6 +14,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
 using Voxel.Map;
+using Voxelfield.Session.Mode;
 using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -28,7 +30,7 @@ namespace Voxelfield.Session
 
         private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);
         private readonly IPEndPoint m_LocalHost = new IPEndPoint(IPAddress.Loopback, 7777);
-        
+
         private void Start()
         {
             SaveTestMap();
@@ -53,6 +55,13 @@ namespace Voxelfield.Session
                 Debug.Log($"Started client at {client.IpEndPoint}");
             });
             ConsoleCommandExecutor.RegisterCommand("disconnect", args => DisconnectAll());
+            ConsoleCommandExecutor.RegisterCommand("hello", args =>
+            {
+                foreach (NetworkedSessionBase session in m_Sessions)
+                {
+                    session.StringCommand(string.Join(",", args));
+                }
+            });
 
             if (Application.isBatchMode)
             {
@@ -60,7 +69,7 @@ namespace Voxelfield.Session
                 StartServer(endPoint);
                 Debug.Log($"Starting headless server at {endPoint}...");
             }
-            ConsoleCommandExecutor.RegisterCommand("r", args => { DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]); });
+            ConsoleCommandExecutor.RegisterCommand("r", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
 
             Debug.Log("Started session manager");
         }
@@ -144,22 +153,22 @@ namespace Voxelfield.Session
                 DisconnectAll();
             }
 
-            if (UnityEngine.Input.GetKeyDown(KeyCode.H))
-            {
-                StartHost();
-            }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Y))
-            {
-                StartServer(m_LocalHost);
-            }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.J))
-            {
-                StartClient(m_LocalHost);
-            }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.K))
-            {
-                DisconnectAll();
-            }
+            // if (UnityEngine.Input.GetKeyDown(KeyCode.H))
+            // {
+            //     StartHost();
+            // }
+            // if (UnityEngine.Input.GetKeyDown(KeyCode.Y))
+            // {
+            //     StartServer(m_LocalHost);
+            // }
+            // if (UnityEngine.Input.GetKeyDown(KeyCode.J))
+            // {
+            //     StartClient(m_LocalHost);
+            // }
+            // if (UnityEngine.Input.GetKeyDown(KeyCode.K))
+            // {
+            //     DisconnectAll();
+            // }
         }
 
         private void FixedUpdate()
@@ -182,17 +191,23 @@ namespace Voxelfield.Session
         private static void SaveTestMap()
         {
             var models = new ModelsProperty();
-            void AddSpawn(Position3Int position, byte team) => models.Add(position, new Container(new ModelIdProperty(ModelsProperty.Spawn), new TeamProperty(team), new ModeIdProperty(ModeIdProperty.Showdown)));
+            void AddSpawn(Position3Int position, byte team) =>
+                models.Add(position, new Container(new ModelIdProperty(ModelsProperty.Spawn), new TeamProperty(team), new ModeIdProperty(ModeIdProperty.Showdown)));
             AddSpawn(new Position3Int {x = -10, y = 2}, 0);
             AddSpawn(new Position3Int {y = 5}, 1);
             AddSpawn(new Position3Int {x = 10, y = 5}, 2);
             AddSpawn(new Position3Int {x = 20, y = 5}, 3);
             for (byte i = 0; i < 9; i++)
-                models.Add(new Position3Int(i * 2 + 5, 5, 5), new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(ModeIdProperty.Showdown)));
-            models.Add(new Position3Int(16, 5, 16), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(0), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Add(new Position3Int(16, 5, -16), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(0), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Add(new Position3Int(-16, 5, 16), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(1), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Add(new Position3Int(-16, 5, -16), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(1), new ModeIdProperty(ModeIdProperty.Ctf)));
+                models.Add(new Position3Int(i * 2 + 5, 5, 5),
+                           new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(ModeIdProperty.Showdown)));
+            models.Add(new Position3Int(16, 5, 16),
+                       new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+            models.Add(new Position3Int(16, 5, -16),
+                       new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+            models.Add(new Position3Int(-16, 5, 16),
+                       new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+            models.Add(new Position3Int(-16, 5, -16),
+                       new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
             var testMap = new MapContainer
             {
                 name = new StringProperty("Test"),

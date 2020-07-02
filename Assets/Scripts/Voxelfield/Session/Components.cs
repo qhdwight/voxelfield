@@ -76,7 +76,12 @@ namespace Voxelfield.Session
         [ClientTrusted, SingleTick] public ByteProperty wantedBuyItemId;
     }
 
-     public static class VoxelfieldComponents
+    [Serializable]
+    public class BrokeVoxelTickProperty : ByteProperty
+    {
+    }
+
+    public static class VoxelfieldComponents
     {
         [RuntimeInitializeOnLoadMethod]
         public static void Initialize() => SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(IdProperty), typeof(TeamProperty), typeof(VectorProperty), typeof(ModeIdProperty));
@@ -86,7 +91,7 @@ namespace Voxelfield.Session
         static VoxelfieldComponents()
         {
             SessionElements = SessionElements.NewStandardSessionElements();
-            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(MoneyComponent));
+            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(MoneyComponent), typeof(BrokeVoxelTickProperty));
             // SessionElements.commandElements.AppendAll(typeof(TeamProperty));
             SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty), typeof(CtfComponent), typeof(ShowdownSessionComponent));
         }

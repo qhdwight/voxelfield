@@ -146,6 +146,7 @@ namespace Voxelfield.Session.Mode
         {
             base.SpawnPlayer(session, playerId, player);
             player.Require<TeamProperty>().Value = (byte) (playerId % 2);
+            player.Require<BrokeVoxelTickProperty>().Clear();
         }
 
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)

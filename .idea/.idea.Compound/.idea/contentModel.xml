@@ -73,6 +73,9 @@
                 <e p="FlagBehavior.cs" t="Include" />
                 <e p="ShowdownMode.cs" t="Include" />
               </e>
+              <e p="Player" t="Include">
+                <e p="VoxelfieldPlayerVisualBehavior.cs" t="Include" />
+              </e>
               <e p="ServerInjector.cs" t="Include" />
               <e p="SessionManager.cs" t="Include" />
               <e p="VoxelInjector.cs" t="Include" />

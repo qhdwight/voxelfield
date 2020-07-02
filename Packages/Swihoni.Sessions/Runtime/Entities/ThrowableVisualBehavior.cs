@@ -6,9 +6,8 @@ namespace Swihoni.Sessions.Entities
 {
     public class ThrowableVisualBehavior : EntityVisualBehavior
     {
-        [SerializeField] private AudioClip m_PopAudioClip = default, m_ContactAudioClip = default;
+        [SerializeField] private AudioSource m_PopAudioSource = default, m_ContactAudioSource = default;
         protected ThrowableModifierBehavior m_Modifier;
-        private AudioSource m_AudioSource;
         private ParticleSystem[] m_Particles;
         private uint m_LastThrownElapsedUs, m_LastContactElapsedUs;
 
@@ -16,7 +15,6 @@ namespace Swihoni.Sessions.Entities
         {
             base.Setup(manager);
             m_Particles = GetComponentsInChildren<ParticleSystem>();
-            m_AudioSource = GetComponent<AudioSource>();
             m_Modifier = (ThrowableModifierBehavior) m_Manager.GetModifierPrefab(id);
             foreach (ParticleSystem particle in m_Particles) particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
@@ -40,7 +38,7 @@ namespace Swihoni.Sessions.Entities
             if (hasPopped)
             {
                 bool hasJustPopped = m_LastThrownElapsedUs < throwable.popTimeUs;
-                if (hasJustPopped) m_AudioSource.PlayOneShot(m_PopAudioClip, 1.0f);
+                if (hasJustPopped) m_PopAudioSource.PlayOneShot(m_PopAudioSource.clip, 1.0f);
                 uint particleElapsedUs = throwable.thrownElapsedUs - throwable.popTimeUs;
                 foreach (ParticleSystem particle in m_Particles)
                 {
@@ -51,7 +49,7 @@ namespace Swihoni.Sessions.Entities
             else
             {
                 if (throwable.contactElapsedUs < m_LastContactElapsedUs)
-                    m_AudioSource.PlayOneShot(m_ContactAudioClip, 1.0f);
+                    m_ContactAudioSource.PlayOneShot(m_ContactAudioSource.clip, 1.0f);
             }
             m_LastThrownElapsedUs = throwable.thrownElapsedUs;
             m_LastContactElapsedUs = throwable.contactElapsedUs;

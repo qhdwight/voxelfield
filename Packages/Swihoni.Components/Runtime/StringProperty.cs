@@ -8,7 +8,7 @@ namespace Swihoni.Components
     public class StringProperty : PropertyBase
     {
         private readonly int m_MaxSize;
-        private const int DefaultSize = 255;
+        private const int DefaultSize = byte.MaxValue;
 
         public StringBuilder Builder { get; }
 
