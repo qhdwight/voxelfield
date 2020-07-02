@@ -75,7 +75,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
         {
             if (player.Without(out MoveComponent move)) return;
-            
+
             base.ModifyChecked(session, playerId, player, commands, durationUs); // Synchronize game object
 
             if (player.WithPropertyWithValue(out FrozenProperty frozen) && frozen
@@ -216,6 +216,21 @@ namespace Swihoni.Sessions.Player.Modifiers
                 }
             }
             Vector3 motion = (initialVelocity + endingVelocity) / 2.0f * duration;
+
+            // Prevent player from walking off the side when crouching
+            if (inputs.GetInput(PlayerInput.Crouch) && !inputs.GetInput(PlayerInput.Jump) && isGrounded)
+            {
+                int projectedCount = Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance} + motion,
+                                                                    position + new Vector3 {y = m_Controller.height / 2.0f}, radius,
+                                                                    m_CachedContactColliders, m_GroundMask);
+                if (projectedCount == 1)
+                {
+                    move.position.Value = position;
+                    move.velocity.Value = Vector3.zero;
+                    return;
+                }
+            }
+
             if (applyStick)
             {
                 float distance = m_CachedGroundHits[0].distance;
@@ -224,6 +239,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                     // m_Controller.Move(new Vector3 {y = -distance - RaycastOffset});
                     motion.y = -distance - RaycastOffset;
             }
+
             m_Controller.Move(motion);
             move.position.Value = m_MoveTransform.position;
             move.velocity.Value = endingVelocity;

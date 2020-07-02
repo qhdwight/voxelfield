@@ -39,7 +39,7 @@ namespace Swihoni.Components.Tests
         [Serializable]
         private class SimpleComponent : ComponentBase
         {
-            public ByteProperty b;
+            public ByteProperty @byte;
         }
 
         [Serializable]
@@ -49,13 +49,13 @@ namespace Swihoni.Components.Tests
         }
 
         [Test]
-        public void TestNested()
+        public void TestNestedArrays()
         {
             var nested = new ArrayElement<ByteArrayElement>(2);
-            nested[0][0].b.Value = 1;
-            nested[0][1].b.Value = 2;
-            nested[1][0].b.Value = 3;
-            nested[1][1].b.Value = 4;
+            nested[0][0].@byte.Value = 1;
+            nested[0][1].@byte.Value = 2;
+            nested[1][0].@byte.Value = 3;
+            nested[1][1].@byte.Value = 4;
             
             var writer = new NetDataWriter();
             nested.Serialize(writer);
@@ -64,10 +64,10 @@ namespace Swihoni.Components.Tests
             var deserialized = new ArrayElement<ByteArrayElement>(2);
             deserialized.Deserialize(reader);
             
-            Assert.AreEqual(1, deserialized[0][0].b.Value);
-            Assert.AreEqual(2, deserialized[0][1].b.Value);
-            Assert.AreEqual(3, deserialized[1][0].b.Value);
-            Assert.AreEqual(4, deserialized[1][1].b.Value);
+            Assert.AreEqual(1, deserialized[0][0].@byte.Value);
+            Assert.AreEqual(2, deserialized[0][1].@byte.Value);
+            Assert.AreEqual(3, deserialized[1][0].@byte.Value);
+            Assert.AreEqual(4, deserialized[1][1].@byte.Value);
         }
     }
 }

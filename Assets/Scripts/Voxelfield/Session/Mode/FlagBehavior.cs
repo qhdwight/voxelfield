@@ -37,23 +37,25 @@ namespace Voxelfield.Session.Mode
                 Container capturingPlayer = session.GetPlayerFromId(flag.capturingPlayerId);
                 spritePosition = capturingPlayer.Require<MoveComponent>().position + new Vector3 {y = 2.7f};
             }
-            else spritePosition = transform.position + new Vector3 {y = 3.1f};
+            else spritePosition = transform.position + new Vector3 {y = 2.8f};
 
             var isIconVisible = true;
             if (ShowdownInterface.IsValidLocalPlayer(session, sessionContainer, out Container localPlayer))
             {
                 Vector3 localPosition = localPlayer.Require<MoveComponent>().position + new Vector3 {y = 1.8f};
                 m_SpriteRenderer.transform.LookAt(localPosition);
-                m_SpriteRenderer.transform.localScale = Vector3.one * Mathf.Clamp(Vector3.Distance(localPosition, spritePosition) * 0.05f, 1.0f, 5.0f);
+                float distanceMultiplier = Mathf.Clamp(Vector3.Distance(localPosition, spritePosition) * 0.05f, 1.0f, 5.0f);
+                spritePosition += new Vector3 {y = distanceMultiplier};
+                m_SpriteRenderer.transform.localScale = Vector3.one * distanceMultiplier;
                 if (isFlagTaken && sessionContainer.Require<LocalPlayerId>() == flag.capturingPlayerId) isIconVisible = false;
             }
             m_SpriteRenderer.transform.position = spritePosition;
-            
+
             Color color = Container.Require<TeamProperty>() == CtfMode.BlueTeam ? Color.blue : Color.red;
             float cosine = Mathf.Cos(flag.captureElapsedTimeUs.Else(0u) * TimeConversions.MicrosecondToSecond * m_TakingBlinkRate);
             color.a = cosine.Remap(-1.0f, 1.0f, 0.8f, 1.0f);
             m_Material.color = color;
-            
+
             color.a = cosine.Remap(-1.0f, 1.0f, 0.2f, 1.0f);
             m_SpriteMaterial.color = color;
             m_SpriteRenderer.enabled = isIconVisible;

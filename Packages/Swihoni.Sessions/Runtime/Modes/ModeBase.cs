@@ -66,7 +66,7 @@ namespace Swihoni.Sessions.Modes
                 if (damageNotifier.elapsedUs.Value > durationUs) damageNotifier.elapsedUs.Value -= durationUs;
                 else damageNotifier.elapsedUs.Value = 0u;
             if (player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
-                KillPlayer(player);
+                InflictDamage(session, playerId, player, player, playerId, health.Value, "Void");
 
             if (commands.With(out WantedTeamProperty wantedTeam) && AllowTeamSwap(container, player))
             {
@@ -106,25 +106,28 @@ namespace Swihoni.Sessions.Modes
         {
             checked
             {
-                bool usesHitMarker = inflictingPlayer.With(out HitMarkerComponent hitMarker),
+                bool isSelfInflicting = inflictingPlayerId == hitPlayerId,
+                     usesHitMarker = inflictingPlayer.With(out HitMarkerComponent hitMarker) && !isSelfInflicting,
                      usesNotifier = hitPlayer.With(out DamageNotifierComponent damageNotifier);
-                const uint notifierDuration = 1_000_000u;
-                if (usesHitMarker) hitMarker.elapsedUs.Value = notifierDuration;
-                if (usesNotifier)
-                {
-                    damageNotifier.elapsedUs.Value = 2_000_000u;
-                    damageNotifier.inflictingPlayerId.Value = (byte) inflictingPlayerId;
-                    damageNotifier.damage.Value = damage;
-                }
+                
                 var health = hitPlayer.Require<HealthProperty>();
-                if (damage >= health)
+                bool isKilling = damage >= health;
+                if (isKilling)
                 {
                     KillPlayer(hitPlayer);
 
-                    if (inflictingPlayer.With(out StatsComponent stats))
+                    if (!isSelfInflicting && inflictingPlayer.With(out StatsComponent stats))
                         stats.kills.Value++;
 
                     if (usesHitMarker) hitMarker.isKill.Value = true;
+                    const uint notifierDuration = 1_000_000u;
+                    if (usesHitMarker) hitMarker.elapsedUs.Value = notifierDuration;
+                    if (usesNotifier)
+                    {
+                        damageNotifier.elapsedUs.Value = 2_000_000u;
+                        damageNotifier.inflictingPlayerId.Value = (byte) inflictingPlayerId;
+                        damageNotifier.damage.Value = damage;
+                    }
 
                     if (session.GetLatestSession().Without(out KillFeedElement killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)

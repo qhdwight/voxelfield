@@ -70,7 +70,7 @@ namespace Input
                     [InputType.Interact] = KeyCode.E,
                     [InputType.Map] = KeyCode.M,
                     [InputType.UseOne] = KeyCode.Mouse0,
-                    [InputType.UseTwo] = KeyCode.Mouse2,
+                    [InputType.UseTwo] = KeyCode.Mouse1,
                     [InputType.Reload] = KeyCode.R,
                     [InputType.ItemOne] = KeyCode.Alpha1,
                     [InputType.ItemTwo] = KeyCode.Alpha2,
