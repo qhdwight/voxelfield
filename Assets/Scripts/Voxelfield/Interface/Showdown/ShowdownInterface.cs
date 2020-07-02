@@ -4,10 +4,8 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Util;
 using Swihoni.Util.Interface;
 using UnityEngine;
-using UnityEngine.UI;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
 
@@ -16,17 +14,8 @@ namespace Voxelfield.Interface.Showdown
     public class ShowdownInterface : SessionInterfaceBehavior
     {
         [SerializeField] private BufferedTextGui m_UpperText = default;
-        [SerializeField] private Slider m_SecuringProgress = default;
-        private BufferedTextGui m_SecuringText;
-        private CanvasGroup m_SecuringGroup;
-
-        protected override void Awake()
-        {
-            base.Awake();
-            m_SecuringText = m_SecuringProgress.GetComponentInChildren<BufferedTextGui>();
-            m_SecuringGroup = m_SecuringProgress.GetComponent<CanvasGroup>();
-        }
-
+        [SerializeField] private ProgressInterface m_SecuringProgress = default;
+        
         public override void Render(SessionBase session, Container sessionContainer)
         {
             bool isVisible = session.GetMode(sessionContainer) is ShowdownMode;
@@ -39,11 +28,14 @@ namespace Voxelfield.Interface.Showdown
             SetInterfaceActive(isVisible);
         }
 
-        private static bool IsValidLocalPlayer(SessionBase session, Container sessionContainer, out Container localPlayer)
+        public static bool IsValidLocalPlayer(SessionBase session, Container sessionContainer, out Container localPlayer)
         {
-            localPlayer = default;
             var localPlayerId = sessionContainer.Require<LocalPlayerId>();
-            if (localPlayerId.WithoutValue) return false;
+            if (localPlayerId.WithoutValue)
+            {
+                localPlayer = default;
+                return false;
+            }
             localPlayer = session.GetPlayerFromId(localPlayerId);
             return localPlayer.Require<HealthProperty>().IsAlive;
         }
@@ -55,14 +47,13 @@ namespace Voxelfield.Interface.Showdown
             {
                 var showdownPlayer = localPlayer.Require<ShowdownPlayerComponent>();
                 uint securingElapsedUs = showdownPlayer.elapsedSecuringUs;
-                isProgressVisible = securingElapsedUs > 0u;
-                if (isProgressVisible)
+                if (securingElapsedUs > 0u)
                 {
-                    m_SecuringProgress.value = (float) (securingElapsedUs / (decimal) ShowdownMode.SecureTimeUs);
-                    m_SecuringText.BuildText(builder => builder.AppendFormat("{0:F1} Seconds", securingElapsedUs * TimeConversions.MicrosecondToSecond));
+                    isProgressVisible = true;
+                    m_SecuringProgress.Set(securingElapsedUs, ShowdownMode.SecureTimeUs);
                 }
             }
-            SetCanvasGroupActive(m_SecuringGroup, isProgressVisible);
+            m_SecuringProgress.SetInterfaceActive(isProgressVisible);
         }
 
         private void BuildUpperText(ShowdownSessionComponent showdown)

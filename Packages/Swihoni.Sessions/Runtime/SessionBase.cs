@@ -255,15 +255,15 @@ namespace Swihoni.Sessions
         public virtual ModeBase GetMode(Container session = null)
         {
             ModeBase mode = ModeManager.GetMode((session ?? GetLatestSession()).Require<ModeIdProperty>());
-            if (m_Mode && m_Mode != mode)
+            if (!m_Mode || m_Mode != mode)
             {
-                m_Mode.Dispose();
-                mode.Start(this, session);
+                if (m_Mode) m_Mode.End();
+                mode.Begin(this, session);
             }
             return m_Mode = mode;
         }
 
-        public virtual Container GetPlayerFromId(int playerId, Container session = null) { throw new NotImplementedException(); }
+        public abstract Container GetPlayerFromId(int playerId, Container session = null);
 
         protected void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)
         {
@@ -282,7 +282,7 @@ namespace Swihoni.Sessions
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
             EntityManager.pool.Return(EntityManager);
-            if (m_Mode) m_Mode.Dispose();
+            if (m_Mode) m_Mode.End();
             m_Injector.Stop();
             m_Stopwatch.Stop();
         }

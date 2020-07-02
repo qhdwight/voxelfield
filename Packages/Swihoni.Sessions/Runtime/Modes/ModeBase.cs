@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Modes
 {
-    public abstract class ModeBase : ScriptableObject, IDisposable
+    public abstract class ModeBase : ScriptableObject
     {
         public byte id;
 
@@ -44,7 +44,7 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void Start(SessionBase session, Container sessionContainer) { }
+        public virtual void Begin(SessionBase session, Container sessionContainer) { }
 
         protected virtual void KillPlayer(Container player)
         {
@@ -158,7 +158,7 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void Dispose() { }
+        public virtual void End() { }
 
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
     }

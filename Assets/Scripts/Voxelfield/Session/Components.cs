@@ -76,7 +76,7 @@ namespace Voxelfield.Session
         [ClientTrusted, SingleTick] public ByteProperty wantedBuyItemId;
     }
 
-    public static class VoxelfieldComponents
+     public static class VoxelfieldComponents
     {
         [RuntimeInitializeOnLoadMethod]
         public static void Initialize() => SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(IdProperty), typeof(TeamProperty), typeof(VectorProperty));

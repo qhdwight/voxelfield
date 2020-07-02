@@ -47,7 +47,7 @@ namespace Voxel.Map
         {
             m_ManageActionsRoutine = ManageActionsRoutine();
             StartCoroutine(m_ManageActionsRoutine);
-            SetMap(EmptyMapName);
+            UnloadMap();
             SetupModelPool();
         }
 
@@ -149,7 +149,7 @@ namespace Voxel.Map
         //         mapSave.Models = new Dictionary<Position3Int, ModelData>();
         //         for (var i = 0; i < 35; i++)
         //         {
-        //             int chunkSizme = ChunkManager.Singleton.ChunkSize;
+        //             int chunkSize = ChunkManager.Singleton.ChunkSize;
         //             Dimension dimension = mapSave.Dimension;
         //             float x = Random.Range(dimension.lowerBound.x * chunkSize, dimension.upperBound.x * chunkSize),
         //                   z = Random.Range(dimension.lowerBound.x * chunkSize, dimension.upperBound.x * chunkSize);
@@ -166,7 +166,7 @@ namespace Voxel.Map
 
         public void SetMap(StringProperty mapName) => m_WantedMapName = mapName;
 
-        public void UnloadMap() => m_WantedMapName = EmptyMapName;
+        public void UnloadMap() => SetMap(EmptyMapName);
 
         private static IEnumerator LoadMapSave(MapContainer save)
         {

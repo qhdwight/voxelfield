@@ -188,6 +188,8 @@ namespace Voxelfield.Session
             AddSpawn(new Position3Int {x = 20, y = 5}, 3);
             for (byte i = 0; i < 9; i++)
                 models.Add(new Position3Int(i * 2 + 5, 5, 5), new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i)));
+            models.Add(new Position3Int(10, 5, 10), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(0)));
+            models.Add(new Position3Int(10, 5, 16), new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(1)));
             var testMap = new MapContainer
             {
                 name = new StringProperty("Test"),

@@ -55,6 +55,7 @@ namespace Swihoni.Sessions.Player.Components
         public bool IsAlive => !IsDead;
         public bool IsDead => Value == 0;
         public bool IsInactiveOrDead => WithoutValue || IsDead;
+        public bool IsActiveAndAlive => WithValue && IsAlive;
     }
 
     [Serializable, OnlyServerTrusted]

@@ -13,3 +13,8 @@ MonoBehaviour:
   m_Name: Capture The Flag
   m_EditorClassIdentifier: 
   id: 2
+  m_PlayerMask:
+    serializedVersion: 2
+    m_Bits: 65536
+  m_CaptureRadius: 3
+  m_TakeFlagDurationUs: 2000000
