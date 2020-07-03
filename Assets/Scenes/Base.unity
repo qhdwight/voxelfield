@@ -556,7 +556,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1571494958}
   m_HandleRect: {fileID: 1571494957}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -1840,10 +1840,10 @@ MonoBehaviour:
     m_Value: 0
   TickRate:
     m_Flags: 1
-    m_Value: 10
+    m_Value: 60
   ModeId:
     m_Flags: 1
-    m_Value: 2
+    m_Value: 3
 --- !u!850595691 &607889173
 LightingSettings:
   m_ObjectHideFlags: 0

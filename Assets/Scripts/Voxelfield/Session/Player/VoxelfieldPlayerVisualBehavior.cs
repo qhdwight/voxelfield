@@ -11,7 +11,7 @@ namespace Voxelfield.Session.Player
 
         private byte m_LastBreakTick;
 
-        public override void SetActive(bool isActive) => m_LastBreakTick = 0;
+        public override void SetActive(bool isActive) => m_LastBreakTick = byte.MaxValue;
 
         public override void Render(SessionBase session, Container player, bool isLocalPlayer)
         {

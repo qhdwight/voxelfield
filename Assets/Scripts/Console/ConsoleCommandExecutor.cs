@@ -45,13 +45,15 @@ namespace Console
             };
         }
 
-        public static void RegisterCommand(string commandName, Action<string[]> command) => _commands.Add(commandName, command);
+        public static void SetCommand(string commandName, Action<string[]> command) => _commands[commandName] = command;
 
         public static string GetAutocomplete(string stub) => _commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
 
+        public static string[] Split(string fullCommand) => fullCommand.Split(CommandSeparator, StringSplitOptions.RemoveEmptyEntries);
+        
         public static void ExecuteCommand(string fullCommand)
         {
-            string[] commands = fullCommand.Split(CommandSeparator, StringSplitOptions.RemoveEmptyEntries);
+            string[] commands = Split(fullCommand);
             foreach (string command in commands)
             {
                 string[] args = command.Trim().Split();

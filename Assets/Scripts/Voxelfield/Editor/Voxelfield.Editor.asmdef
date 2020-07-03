@@ -1,0 +1,18 @@
+{
+    "name": "Voxelfield.Editor",
+    "references": [
+        "GUID:a42ffc10e96ce774ba65e36fa3c97ebb",
+        "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

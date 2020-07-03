@@ -30,18 +30,17 @@ namespace Voxelfield.Session
 
         private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);
         private readonly IPEndPoint m_LocalHost = new IPEndPoint(IPAddress.Loopback, 7777);
-
+        
         private void Start()
         {
-            SaveTestMap();
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 200;
             AudioListener.volume = 0.5f;
-            ConsoleCommandExecutor.RegisterCommand("host", args => StartHost());
-            ConsoleCommandExecutor.RegisterCommand("edit", args => StartEdit(args[1]));
-            ConsoleCommandExecutor.RegisterCommand("save", args => MapManager.Singleton.SaveCurrentMap());
-            ConsoleCommandExecutor.RegisterCommand("serve", args => StartServer(m_LocalHost));
-            ConsoleCommandExecutor.RegisterCommand("connect", args =>
+            ConsoleCommandExecutor.SetCommand("host", args => StartHost());
+            ConsoleCommandExecutor.SetCommand("edit", args => StartEdit(args[1]));
+            ConsoleCommandExecutor.SetCommand("save", args => MapManager.Singleton.SaveCurrentMap());
+            ConsoleCommandExecutor.SetCommand("serve", args => StartServer(m_LocalHost));
+            ConsoleCommandExecutor.SetCommand("connect", args =>
             {
                 Client client;
                 try
@@ -54,14 +53,7 @@ namespace Voxelfield.Session
                 }
                 Debug.Log($"Started client at {client.IpEndPoint}");
             });
-            ConsoleCommandExecutor.RegisterCommand("disconnect", args => DisconnectAll());
-            ConsoleCommandExecutor.RegisterCommand("hello", args =>
-            {
-                foreach (NetworkedSessionBase session in m_Sessions)
-                {
-                    session.StringCommand(string.Join(",", args));
-                }
-            });
+            ConsoleCommandExecutor.SetCommand("disconnect", args => DisconnectAll());
 
             if (Application.isBatchMode)
             {
@@ -69,7 +61,7 @@ namespace Voxelfield.Session
                 StartServer(endPoint);
                 Debug.Log($"Starting headless server at {endPoint}...");
             }
-            ConsoleCommandExecutor.RegisterCommand("r", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
+            ConsoleCommandExecutor.SetCommand("r", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
 
             Debug.Log("Started session manager");
         }
@@ -153,22 +145,23 @@ namespace Voxelfield.Session
                 DisconnectAll();
             }
 
-            // if (UnityEngine.Input.GetKeyDown(KeyCode.H))
-            // {
-            //     StartHost();
-            // }
-            // if (UnityEngine.Input.GetKeyDown(KeyCode.Y))
-            // {
-            //     StartServer(m_LocalHost);
-            // }
-            // if (UnityEngine.Input.GetKeyDown(KeyCode.J))
-            // {
-            //     StartClient(m_LocalHost);
-            // }
-            // if (UnityEngine.Input.GetKeyDown(KeyCode.K))
-            // {
-            //     DisconnectAll();
-            // }
+            if (m_Sessions.Any(session => session.ShouldInterruptCommands)) return;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.H))
+            {
+                StartHost();
+            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Y))
+            {
+                StartServer(m_LocalHost);
+            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.J))
+            {
+                StartClient(m_LocalHost);
+            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.K))
+            {
+                DisconnectAll();
+            }
         }
 
         private void FixedUpdate()
@@ -187,8 +180,7 @@ namespace Voxelfield.Session
 
         private void OnApplicationQuit() => DisconnectAll();
 
-        [Conditional("UNITY_EDITOR")]
-        private static void SaveTestMap()
+        public static void SaveTestMap()
         {
             var models = new ModelsProperty();
             void AddSpawn(Position3Int position, byte team) =>
@@ -200,13 +192,13 @@ namespace Voxelfield.Session
             for (byte i = 0; i < 9; i++)
                 models.Add(new Position3Int(i * 2 + 5, 5, 5),
                            new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(ModeIdProperty.Showdown)));
-            models.Add(new Position3Int(16, 5, 16),
+            models.Add(new Position3Int(32, 5, 32),
                        new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Add(new Position3Int(16, 5, -16),
+            models.Add(new Position3Int(32, 5, -32),
                        new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Add(new Position3Int(-16, 5, 16),
+            models.Add(new Position3Int(-32, 5, 32),
                        new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Add(new Position3Int(-16, 5, -16),
+            models.Add(new Position3Int(-32, 5, -32),
                        new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
             var testMap = new MapContainer
             {
@@ -225,6 +217,7 @@ namespace Voxelfield.Session
                 models = models
             };
             MapManager.SaveMapSave(testMap);
+            Debug.Log("Saved Test Map");
         }
 
 #if UNITY_EDITOR

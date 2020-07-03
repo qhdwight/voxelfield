@@ -88,7 +88,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             m_HitPlayers.Clear();
         }
 
-        internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+        protected internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
         {
             if (itemComponent.status.id == GunStatusId.Reloading)
                 StartStatus(session, playerId, itemComponent, ItemStatusId.Idle, durationUs);

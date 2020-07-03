@@ -83,7 +83,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             item.ammoInReserve.Value--;
         }
 
-        internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+        protected internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
         {
             if (itemComponent.status.id == ThrowableStatusId.Cooking)
                 StartStatus(session, playerId, itemComponent, ItemStatusId.Idle, durationUs);

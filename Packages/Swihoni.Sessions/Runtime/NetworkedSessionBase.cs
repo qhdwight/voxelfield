@@ -124,8 +124,6 @@ namespace Swihoni.Sessions
             session.ZeroIfWith<KillFeedElement>();
             return session;
         }
-
-        public abstract void StringCommand(string stringCommand);
     }
 
     internal static class NetworkSessionExtensions

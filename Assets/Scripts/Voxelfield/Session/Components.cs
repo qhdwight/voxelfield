@@ -44,14 +44,14 @@ namespace Voxelfield.Session
         public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
         public ArrayElement<FlagArrayElement> teamFlags = new ArrayElement<FlagArrayElement>(2);
     }
-
-    /* Player */
-
+    
     [Serializable]
     public class CurePackageComponent : ComponentBase
     {
         public BoolProperty isActive;
     }
+
+    /* Player */
 
     [Serializable, OnlyServerTrusted]
     public class ShowdownPlayerComponent : ComponentBase
@@ -76,7 +76,7 @@ namespace Voxelfield.Session
         [ClientTrusted, SingleTick] public ByteProperty wantedBuyItemId;
     }
 
-    [Serializable]
+    [Serializable, OnlyServerTrusted]
     public class BrokeVoxelTickProperty : ByteProperty
     {
     }

@@ -39,12 +39,12 @@ namespace Voxelfield.Session.Mode
             ctf.teamFlags.Reset();
             m_FlagBehaviors = null;
         }
-        
+
         public override void Render(SessionBase session, Container sessionContainer)
         {
             if (m_FlagBehaviors == null && !session.IsPaused) LinkFlagBehaviors();
             if (m_FlagBehaviors == null) return;
-            
+
             ArrayElement<FlagArrayElement> flags = sessionContainer.Require<CtfComponent>().teamFlags;
             for (var flagTeam = 0; flagTeam < m_FlagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < m_FlagBehaviors[flagTeam].Length; flagId++)
@@ -54,10 +54,10 @@ namespace Voxelfield.Session.Mode
         public override void Modify(SessionBase session, Container container, uint durationUs)
         {
             base.Modify(session, container, durationUs);
-            
+
             if (m_FlagBehaviors == null && !session.IsPaused) LinkFlagBehaviors();
             if (m_FlagBehaviors == null) return;
-            
+
             var ctf = container.Require<CtfComponent>();
             for (byte flagTeam = 0; flagTeam < m_FlagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < m_FlagBehaviors[flagTeam].Length; flagId++)
@@ -93,7 +93,7 @@ namespace Voxelfield.Session.Mode
                 }
                 else
                 {
-                    /* Enemy trying to capture flag */ 
+                    /* Enemy trying to capture flag */
                     if (flag.capturingPlayerId.WithoutValue)
                     {
                         // Start taking
@@ -123,7 +123,7 @@ namespace Voxelfield.Session.Mode
                 flag.Reset();
             }
         }
-        
+
         private static void TryReturnCapturedFlag(byte playerTeam, CtfComponent ctf, PlayerTrigger player)
         {
             for (var flagTeam = 0; flagTeam < ctf.teamFlags.Length; flagTeam++)
@@ -146,7 +146,6 @@ namespace Voxelfield.Session.Mode
         {
             base.SpawnPlayer(session, playerId, player);
             player.Require<TeamProperty>().Value = (byte) (playerId % 2);
-            player.Require<BrokeVoxelTickProperty>().Clear();
         }
 
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)

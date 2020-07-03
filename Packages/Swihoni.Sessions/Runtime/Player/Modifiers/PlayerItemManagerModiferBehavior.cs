@@ -53,7 +53,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (hasValidWantedIndex && wantsNewIndex && !isAlreadyUnequipping)
             {
                 equipStatus.id.Value = ItemEquipStatusId.Unequipping;
-                equipStatus.elapsedUs.Value = 0u;
+                equipStatus.elapsedUs.Value = 0u; 
             }
 
             if (inventory.HasNoItemEquipped) return;
@@ -65,15 +65,21 @@ namespace Swihoni.Sessions.Player.Modifiers
             ItemStatusModiferProperties modifierProperties;
             while (equipStatus.elapsedUs > (modifierProperties = modifier.GetEquipStatusModifierProperties(equipStatus.id)).durationUs)
             {
-                if (equipStatus.id == ItemEquipStatusId.Equipping) equipStatus.id.Value = ItemEquipStatusId.Equipped;
-                else if (equipStatus.id == ItemEquipStatusId.Unequipping) equipStatus.id.Value = ItemEquipStatusId.Unequipped;
+                if (equipStatus.id == ItemEquipStatusId.Equipping)
+                {
+                    equipStatus.id.Value = ItemEquipStatusId.Equipped;
+                    modifier.OnEquip(session, playerId, inventory.EquippedItemComponent, durationUs);
+                }
+                else if (equipStatus.id == ItemEquipStatusId.Unequipping)
+                {
+                    equipStatus.id.Value = ItemEquipStatusId.Unequipped;
+                    modifier.OnUnequip(session, playerId, inventory.EquippedItemComponent, durationUs);
+                }
                 equipStatus.elapsedUs.Value -= modifierProperties.durationUs;
             }
 
             if (equipStatus.id != ItemEquipStatusId.Unequipped) return;
-            // We have just unequipped the current index
-            ItemComponent equippedItemComponent = inventory.EquippedItemComponent;
-            modifier.OnUnequip(session, playerId, equippedItemComponent, durationUs);
+            // We have unequipped the current index
             if (hasValidWantedIndex)
                 inventory.equippedIndex.Value = wantedIndex;
             else if (FindReplacement(inventory, out byte replacementIndex))

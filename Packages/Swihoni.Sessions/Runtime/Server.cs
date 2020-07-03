@@ -139,7 +139,7 @@ namespace Swihoni.Sessions
                     }
                     case StringCommandProperty stringCommand:
                     {
-                        StringCommand(stringCommand.Builder.ToString());
+                        StringCommand(clientId, stringCommand.Builder.ToString());
                         break;
                     }
                 }
@@ -307,7 +307,16 @@ namespace Swihoni.Sessions
             }
         }
 
-        public override void StringCommand(string stringCommand) => Debug.Log(stringCommand);
+        public override void SetSessionCommand(string command, SessionCommandAction action)
+        {
+            ConsoleCommandExecutor
+        }
+
+        public override void StringCommand(int playerId, string stringCommand)
+        {
+            Container session = GetLatestSession(), player = GetPlayerFromId(playerId, session);
+            GetPlayerModifier(player, playerId).InterpretCommand(this, stringCommand, playerId, player, session);
+        }
 
         public override void Dispose()
         {

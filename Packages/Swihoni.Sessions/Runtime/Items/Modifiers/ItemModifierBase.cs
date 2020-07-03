@@ -138,6 +138,8 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual bool HasSecondaryUse() => false;
 
-        internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs) { }
+        protected internal virtual void OnEquip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs) { }
+
+        protected internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs) { }
     }
 }

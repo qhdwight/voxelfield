@@ -57,7 +57,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_ControllerCenter = m_Controller.center;
         }
 
-        internal override void SynchronizeBehavior(Container player)
+        protected internal override void SynchronizeBehavior(Container player)
         {
             var move = player.Require<MoveComponent>();
             m_MoveTransform.position = move.position;

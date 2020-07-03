@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
-    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2020.1/extResources" t="IncludeRecursive" />
-    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2020.1/resharper-host/local/Transient/ReSharperHost/v201/SolutionCaches/_Compound.-1205327708.00" t="ExcludeRecursive" />
-    <e p="$PROJECT_DIR$" t="IncludeRecursive">
+    <e p="C:\Users\qhdwi\AppData\local\JetBrains\Rider2020.1\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\qhdwi\AppData\local\JetBrains\Rider2020.1\resharper-host\local\Transient\ReSharperHost\v201\SolutionCaches\_Compound.-1869316390.00" t="ExcludeRecursive" />
+    <e p="C:\Users\qhdwi\AppData\Roaming\JetBrains\Rider2020.1\scratches" t="IncludeRecursive" />
+    <e p="C:\Users\qhdwi\Projects\Programming\Unity\Compound" t="IncludeRecursive">
       <e p="Assets" t="Include">
         <e p="Scripts" t="Include">
           <e p="Console" t="Include">
@@ -40,6 +41,10 @@
             <e p="VoxelRenderer.cs" t="Include" />
           </e>
           <e p="Voxelfield" t="Include">
+            <e p="Editor" t="Include">
+              <e p="SessionManagerEditor.cs" t="Include" />
+              <e p="Voxelfield.Editor.asmdef" t="Include" />
+            </e>
             <e p="Interface" t="Include">
               <e p="CtfInterface.cs" t="Include" />
               <e p="DesignerInterface.cs" t="Include" />
@@ -69,6 +74,7 @@
                 <e p="CurePackageBehavior.cs" t="Include" />
                 <e p="DeathmatchMode.cs" t="Include" />
                 <e p="DesignerMode.cs" t="Include" />
+                <e p="DominationMode.cs" t="Include" />
                 <e p="FlagBehavior.cs" t="Include" />
                 <e p="ShowdownMode.cs" t="Include" />
               </e>
@@ -304,9 +310,10 @@
       <e p="Swihoni.Sessions.Tests.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Util.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Util.Editor.csproj" t="IncludeRecursive" />
-      <e p="Temp/Bin" t="ExcludeRecursive" />
+      <e p="Temp\Bin" t="ExcludeRecursive" />
       <e p="Voxel.csproj" t="IncludeRecursive" />
       <e p="Voxelfield.csproj" t="IncludeRecursive" />
+      <e p="Voxelfield.Editor.csproj" t="IncludeRecursive" />
     </e>
   </component>
 </project>

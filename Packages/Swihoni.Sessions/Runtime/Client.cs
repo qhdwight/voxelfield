@@ -420,7 +420,12 @@ namespace Swihoni.Sessions
             }
         }
 
-        public override void StringCommand(string stringCommand)
+        public override void SetSessionCommand(string command, SessionCommandAction action)
+        {
+            
+        }
+
+        public override void StringCommand(int playerId, string stringCommand)
         {
             m_Socket.SendToServer(new StringCommandProperty(stringCommand), DeliveryMethod.ReliableOrdered);
         }

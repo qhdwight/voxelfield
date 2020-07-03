@@ -39,7 +39,7 @@ namespace Swihoni.Components.Tests
         [Serializable]
         private class SimpleComponent : ComponentBase
         {
-            public ByteProperty @byte;
+            public ByteProperty @byte = default;
         }
 
         [Serializable]
