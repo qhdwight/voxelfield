@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Generic;
 using Console;
+using Input;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
@@ -14,7 +15,13 @@ namespace Voxelfield.Item
     public class VoxelWand : SculptingItem
     {
         private readonly VoxelChangeTransaction m_Transaction = new VoxelChangeTransaction();
-        
+
+        protected override void OnEquip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+            => ConsoleCommandExecutor.SetCommand("set", args => session.StringCommand(playerId, string.Join(" ", args)));
+
+        protected override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+            => ConsoleCommandExecutor.RemoveCommand("set");
+
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
             if (WithoutServerHit(session, playerId, out RaycastHit hit)
@@ -22,10 +29,11 @@ namespace Voxelfield.Item
             if (voxel.renderType == VoxelRenderType.Block)
             {
                 var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
-                if (designer.positionOne.WithoutValue)
+                if (designer.positionOne.WithoutValue || designer.positionTwo.WithValue)
                 {
                     Debug.Log($"Set position one: {position}");
                     designer.positionOne.Value = position;
+                    designer.positionTwo.Clear();
                 }
                 else
                 {
@@ -41,6 +49,23 @@ namespace Voxelfield.Item
             SetDimension(session, designer);
         }
 
+        public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,
+                                           uint durationUs)
+        {
+            base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
+            
+            if (player.WithoutPropertyOrWithoutValue(out StringCommandProperty command)) return;
+
+            string[] split = command.Builder.ToString().Split();
+            if (split[0] == "set")
+            {
+                var designer = player.Require<DesignerPlayerComponent>();
+                if (split.Length > 1 && byte.TryParse(split[1], out byte blockId))
+                    designer.selectedBlockId.Value = blockId;
+                SetDimension(session, designer);
+            }
+        }
+
         private void SetDimension(SessionBase session, DesignerPlayerComponent designer)
         {
             if (designer.positionOne.WithValue && designer.positionTwo.WithValue)
@@ -54,15 +79,6 @@ namespace Voxelfield.Item
                 Debug.Log($"Set {p1} to {p2}");
                 voxelInjector.VoxelTransaction(m_Transaction);
             }
-            designer.positionOne.Clear();
-            designer.positionTwo.Clear();
-        }
-
-        protected void InterpretCommand(SessionBase session, string stringCommand, int playerId, Container player, Container sessionContainer)
-        {
-            string[] args = ConsoleCommandExecutor.Split(stringCommand);
-            if (args[0] == "set")
-                SetDimension(session, player.Require<DesignerPlayerComponent>());
         }
     }
 }

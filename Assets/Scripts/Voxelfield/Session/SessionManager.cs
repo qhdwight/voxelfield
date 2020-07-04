@@ -65,7 +65,7 @@ namespace Voxelfield.Session
 
             Debug.Log("Started session manager");
         }
-
+        
 #if UNITY_EDITOR
         private void OnApplicationPause(bool pauseStatus)
         {

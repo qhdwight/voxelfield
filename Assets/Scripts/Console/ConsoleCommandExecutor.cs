@@ -49,11 +49,9 @@ namespace Console
 
         public static string GetAutocomplete(string stub) => _commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
 
-        public static string[] Split(string fullCommand) => fullCommand.Split(CommandSeparator, StringSplitOptions.RemoveEmptyEntries);
-        
         public static void ExecuteCommand(string fullCommand)
         {
-            string[] commands = Split(fullCommand);
+            string[] commands = fullCommand.Split(CommandSeparator, StringSplitOptions.RemoveEmptyEntries);
             foreach (string command in commands)
             {
                 string[] args = command.Trim().Split();
@@ -66,5 +64,7 @@ namespace Console
                     Debug.LogWarning($"Command \"{commandName}\" not found!");
             }
         }
+
+        public static void RemoveCommand(string command) => _commands.Remove(command);
     }
 }

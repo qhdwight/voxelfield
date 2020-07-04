@@ -419,16 +419,9 @@ namespace Swihoni.Sessions
                 if (i == 0 && recentPlayer != null) SendDebug(recentPlayer);
             }
         }
-
-        public override void SetSessionCommand(string command, SessionCommandAction action)
-        {
-            
-        }
-
+        
         public override void StringCommand(int playerId, string stringCommand)
-        {
-            m_Socket.SendToServer(new StringCommandProperty(stringCommand), DeliveryMethod.ReliableOrdered);
-        }
+            => m_CommandHistory.Peek().Require<StringCommandProperty>().SetTo(stringCommand);
 
         private void SendDebug(Container player)
         {

@@ -137,11 +137,6 @@ namespace Swihoni.Sessions
                         DebugBehavior.Singleton.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
                         break;
                     }
-                    case StringCommandProperty stringCommand:
-                    {
-                        StringCommand(clientId, stringCommand.Builder.ToString());
-                        break;
-                    }
                 }
             });
             Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
@@ -306,17 +301,9 @@ namespace Swihoni.Sessions
                 if (modifierId == 0) DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
         }
-
-        public override void SetSessionCommand(string command, SessionCommandAction action)
-        {
-            ConsoleCommandExecutor
-        }
-
+        
         public override void StringCommand(int playerId, string stringCommand)
-        {
-            Container session = GetLatestSession(), player = GetPlayerFromId(playerId, session);
-            GetPlayerModifier(player, playerId).InterpretCommand(this, stringCommand, playerId, player, session);
-        }
+            => GetPlayerFromId(playerId).Require<StringCommandProperty>().SetTo(stringCommand);
 
         public override void Dispose()
         {

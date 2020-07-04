@@ -18,8 +18,6 @@ using UnityObject = UnityEngine.Object;
 
 namespace Swihoni.Sessions
 {
-    public delegate void SessionCommandAction(SessionBase session, string[] args, int playerId, Container player, Container sessionContainer);
-
     public class SessionElements
     {
         public List<Type> elements, playerElements, commandElements;
@@ -36,7 +34,8 @@ namespace Swihoni.Sessions
             {
                 typeof(HealthProperty), typeof(IdProperty), typeof(MoveComponent), typeof(FrozenProperty), typeof(InventoryComponent),
                 typeof(CameraComponent), typeof(RespawnTimerProperty),
-                typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameProperty)
+                typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameProperty),
+                typeof(StringCommandProperty)
             },
             commandElements = new List<Type>
             {
@@ -289,6 +288,6 @@ namespace Swihoni.Sessions
             m_Stopwatch.Stop();
         }
 
-        public abstract void SetSessionCommand(string command, SessionCommandAction action);
+        public abstract void StringCommand(int playerId, string stringCommand);
     }
 }

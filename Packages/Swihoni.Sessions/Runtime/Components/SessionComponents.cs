@@ -42,10 +42,11 @@ namespace Swihoni.Sessions.Components
     public class ServerPingComponent : ComponentBase
     {
         public UIntProperty latencyUs;
-        // public UIntProperty tick;
-        // public FloatProperty rtt,          // Last measured round trip time in seconds
-        //                      checkElapsed, // Time elapsed since initiating check
-        //                      initiateTime; // Time when check was last sent to client
+    }
+    
+    [Serializable, ServerOnly]
+    public class HasSentInitialData : BoolProperty
+    {
     }
 
     /* Client */
@@ -64,11 +65,6 @@ namespace Swihoni.Sessions.Components
 
     [Serializable, ClientTrusted]
     public class AcknowledgedServerTickProperty : UIntProperty
-    {
-    }
-
-    [Serializable, ServerOnly]
-    public class HasSentInitialData : BoolProperty
     {
     }
 
@@ -163,7 +159,7 @@ namespace Swihoni.Sessions.Components
         public DebugClientView(IEnumerable<Type> types) : base(types) { }
     }
 
-    [Serializable]
+    [Serializable, ClientTrusted, SingleTick]
     public class StringCommandProperty : StringProperty
     {
         public StringCommandProperty() { }

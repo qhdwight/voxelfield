@@ -82,7 +82,11 @@ namespace Swihoni.Components
 
         public bool Without<TElement>(out TElement component) where TElement : ElementBase => !With(out component);
 
-        public bool WithPropertyWithValue<TElement>(out TElement component) where TElement : PropertyBase => With(out component) && component.WithValue;
+        public bool WithPropertyWithValue<TElement>(out TElement component) where TElement : PropertyBase
+            => With(out component) && component.WithValue;
+
+        public bool WithoutPropertyOrWithoutValue<TElement>(out TElement component) where TElement : PropertyBase
+            => Without(out component) || component.WithoutValue;
 
         public bool With<TElement>(out TElement component) where TElement : ElementBase
         {

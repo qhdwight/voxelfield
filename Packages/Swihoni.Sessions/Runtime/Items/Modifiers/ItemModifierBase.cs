@@ -57,17 +57,17 @@ namespace Swihoni.Sessions.Items.Modifiers
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
 
         public virtual void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory,
-                                          InputFlagProperty inputProperty, uint durationUs)
+                                          InputFlagProperty inputs, uint durationUs)
         {
             // TODO:refactor move frozen into CanUse
             if (CanUse(item, inventory) && (player.Without(out FrozenProperty frozen) || frozen.WithoutValue || !frozen))
             {
-                if (inputProperty.GetInput(PlayerInput.UseOne))
-                    StartStatus(session, playerId, item, GetUseStatus(inputProperty), durationUs);
-                else if (HasSecondaryUse() && inputProperty.GetInput(PlayerInput.UseTwo))
+                if (inputs.GetInput(PlayerInput.UseOne))
+                    StartStatus(session, playerId, item, GetUseStatus(inputs), durationUs);
+                else if (HasSecondaryUse() && inputs.GetInput(PlayerInput.UseTwo))
                     StartStatus(session, playerId, item, ItemStatusId.SecondaryUsing, durationUs);
             }
-            ModifyStatus(session, playerId, item, inventory, inputProperty, durationUs);
+            ModifyStatus(session, playerId, item, inventory, inputs, durationUs);
         }
 
         private void ModifyStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, uint durationUs)

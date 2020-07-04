@@ -33,12 +33,12 @@ namespace Swihoni.Sessions.Items.Modifiers
         public ItemStatusModiferProperties GetAdsStatusModifierProperties(byte statusId) => m_AdsModifierProperties[statusId];
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory,
-                                           InputFlagProperty inputProperty, uint durationUs)
+                                           InputFlagProperty inputs, uint durationUs)
         {
-            bool reloadInput = inputProperty.GetInput(PlayerInput.Reload);
+            bool reloadInput = inputs.GetInput(PlayerInput.Reload);
             if ((reloadInput || item.ammoInMag == 0) && CanReload(item, inventory) && item.status.id == ItemStatusId.Idle)
                 StartStatus(session, playerId, item, GunStatusId.Reloading, durationUs);
-            base.ModifyChecked(session, playerId, player, item, inventory, inputProperty, durationUs);
+            base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
         }
 
         protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)

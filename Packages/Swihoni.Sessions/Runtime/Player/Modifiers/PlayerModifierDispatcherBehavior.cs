@@ -69,11 +69,6 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             if (m_HitboxManager) m_HitboxManager.Dispose();
         }
-
-        public void InterpretCommand(SessionBase session, string stringCommand, int playerId, Container player, Container sessionContainer)
-        {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.InterpretCommand(session, stringCommand, playerId, player, sessionContainer);
-        }
     }
 
     public abstract class PlayerModifierBehaviorBase : MonoBehaviour
@@ -96,7 +91,5 @@ namespace Swihoni.Sessions.Player.Modifiers
         public virtual void ModifyCommands(SessionBase session, Container commands) { }
 
         protected internal virtual void SynchronizeBehavior(Container player) { }
-
-        protected internal virtual void InterpretCommand(SessionBase sessionBase, string stringCommand, int playerId, Container player, Container sessionContainer) { }
     }
 }
