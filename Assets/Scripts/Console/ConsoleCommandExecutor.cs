@@ -56,12 +56,8 @@ namespace Console
             {
                 string[] args = command.Trim().Split();
                 string commandName = args.First();
-                if (_commands.ContainsKey(commandName))
-                {
-                    _commands[commandName](args);
-                }
-                else
-                    Debug.LogWarning($"Command \"{commandName}\" not found!");
+                if (_commands.ContainsKey(commandName)) _commands[commandName](args);
+                else Debug.LogWarning($"Command \"{commandName}\" not found!");
             }
         }
 

@@ -15,9 +15,9 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = 2_000_000u;
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)
+        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
-            base.ModifyPlayer(session, container, playerId, player, commands, durationUs);
+            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
 
             if (commands.Without(out InputFlagProperty inputs) || player.Without(out HealthProperty health) || health.WithoutValue) return;
 

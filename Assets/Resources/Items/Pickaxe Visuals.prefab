@@ -120,7 +120,6 @@ MonoBehaviour:
   - animationClip: {fileID: 7400000, guid: b923479c548733f4289aa653e57d02f9, type: 2}
     animationEvents:
     - timeUs: 0
-      audioSource: {fileID: 0}
       audio: {fileID: 1377445261336607370}
       particleSystem: {fileID: 0}
       tracer: {fileID: 0}

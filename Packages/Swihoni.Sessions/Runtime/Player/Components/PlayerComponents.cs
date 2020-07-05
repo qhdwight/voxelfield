@@ -158,6 +158,17 @@ namespace Swihoni.Sessions.Player.Components
         public bool HasItemEquipped => !HasNoItemEquipped;
         public bool HasNoItemEquipped => equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex;
 
+        public bool WithItemEquipped(out ItemComponent equippedItem)
+        {
+            if (HasItemEquipped)
+            {
+                equippedItem = EquippedItemComponent;
+                return true;
+            }
+            equippedItem = default;
+            return false;
+        }
+
         public override void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
         {
             var i1 = (InventoryComponent) c1;

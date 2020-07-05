@@ -35,7 +35,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           Sniper = 8,
                           VoxelWand = 9,
                           ModelWand = 10,
-                          Deagle = 11;
+                          Deagle = 11,
+                          GrenadeLauncher = 12;
     }
 
     [Serializable]
@@ -60,11 +61,12 @@ namespace Swihoni.Sessions.Items.Modifiers
                                           InputFlagProperty inputs, uint durationUs)
         {
             // TODO:refactor move frozen into CanUse
-            if (CanUse(item, inventory) && (player.Without(out FrozenProperty frozen) || frozen.WithoutValue || !frozen))
+            bool notFrozen = player.Without(out FrozenProperty frozen) || frozen.WithoutValue || !frozen;
+            if (notFrozen)
             {
-                if (inputs.GetInput(PlayerInput.UseOne))
+                if (inputs.GetInput(PlayerInput.UseOne) && CanPrimaryUse(item, inventory))
                     StartStatus(session, playerId, item, GetUseStatus(inputs), durationUs);
-                else if (HasSecondaryUse() && inputs.GetInput(PlayerInput.UseTwo))
+                else if (HasSecondaryUse() && inputs.GetInput(PlayerInput.UseTwo) && CanSecondaryUse(item, inventory))
                     StartStatus(session, playerId, item, ItemStatusId.SecondaryUsing, durationUs);
             }
             ModifyStatus(session, playerId, item, inventory, inputs, durationUs);
@@ -116,7 +118,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 case ItemStatusId.SecondaryUsing:
                     return ItemStatusId.Idle;
                 case ItemStatusId.PrimaryUsing:
-                    if (CanUse(item, inventory, true) && inputs.GetInput(PlayerInput.UseOne))
+                    if (CanPrimaryUse(item, inventory, true) && inputs.GetInput(PlayerInput.UseOne))
                         return GetUseStatus(inputs);
                     break;
             }
@@ -125,10 +127,12 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual byte GetUseStatus(InputFlagProperty inputProperty) => ItemStatusId.PrimaryUsing;
 
-        protected virtual bool CanUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
+        protected virtual bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
             (item.status.id != ItemStatusId.PrimaryUsing || justFinishedUse)
          && item.status.id != ItemStatusId.SecondaryUsing
          && inventory.equipStatus.id == ItemEquipStatusId.Equipped;
+
+        protected virtual bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory) => CanPrimaryUse(item, inventory);
 
         protected virtual void SecondaryUse(SessionBase session, int playerId, uint durationUs) { }
 

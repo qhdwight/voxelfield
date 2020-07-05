@@ -13,11 +13,8 @@ namespace Swihoni.Sessions.Items.Modifiers
 
     public class ThrowableModifierBase : ItemModifierBase
     {
-        [Header("Throwable"), SerializeField] private ushort m_ThrowForce = default;
+        [Header("Throwable"), SerializeField] private float m_ThrowForce = default;
         [SerializeField] protected ThrowableModifierBehavior m_ThrowablePrefab = default;
-
-        public ushort ThrowForce => m_ThrowForce;
-        public ThrowableModifierBehavior ThrowablePrefab => m_ThrowablePrefab;
 
         protected override void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, uint durationUs)
         {
@@ -40,8 +37,11 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected override byte GetUseStatus(InputFlagProperty inputProperty) => ThrowableStatusId.Cooking;
 
-        protected override bool CanUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
-            base.CanUse(item, inventory, justFinishedUse) && item.status.id != ThrowableStatusId.Cooking;
+        protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false)
+            => base.CanPrimaryUse(item, inventory, justFinishedUse) && item.status.id != ThrowableStatusId.Cooking && item.ammoInReserve > 0;
+
+        protected override bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory)
+            => base.CanPrimaryUse(item, inventory) && item.status.id != ThrowableStatusId.Cooking;
 
         protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
 
@@ -65,22 +65,30 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual void Release(SessionBase session, int playerId, ItemComponent item)
         {
+            checked
+            {
+                Throw(session, playerId, itemName, m_ThrowablePrefab, m_ThrowForce);
+                item.ammoInReserve.Value--;
+            }
+        }
+
+        public static bool Throw(SessionBase session, int playerId, string itemName, IdBehavior throwablePrefab, float throwForce)
+        {
             Container player = session.GetPlayerFromId(playerId);
-            if (player.Without<ServerTag>()) return;
+            if (player.Without<ServerTag>()) return false;
 
             Ray ray = SessionBase.GetRayForPlayer(player);
-            var modifier = (EntityModifierBehavior) session.EntityManager.ObtainNextModifier(session.GetLatestSession(), m_ThrowablePrefab.id);
+            var modifier = (EntityModifierBehavior) session.EntityManager.ObtainNextModifier(session.GetLatestSession(), throwablePrefab.id);
             if (modifier is ThrowableModifierBehavior throwableModifier)
             {
                 throwableModifier.Name = itemName;
                 modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.LookRotation(ray.direction));
                 throwableModifier.ThrowerId = playerId;
-                Vector3 force = ray.direction * m_ThrowForce;
+                Vector3 force = ray.direction * throwForce;
                 if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;
                 throwableModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
             }
-
-            item.ammoInReserve.Value--;
+            return true;
         }
 
         protected internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)

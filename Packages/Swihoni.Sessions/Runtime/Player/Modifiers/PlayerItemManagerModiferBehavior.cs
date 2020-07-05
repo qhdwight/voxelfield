@@ -11,7 +11,7 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         public const byte NoneIndex = 0;
 
-        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
+        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
             if (!player.With(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
@@ -126,23 +126,24 @@ namespace Swihoni.Sessions.Player.Modifiers
         public override void ModifyCommands(SessionBase session, Container commands)
         {
             if (commands.Without(out InputFlagProperty inputs)) return;
-            InputProvider inputProvider = InputProvider.Singleton;
-            inputs.SetInput(PlayerInput.UseOne, inputProvider.GetInput(InputType.UseOne));
-            inputs.SetInput(PlayerInput.UseTwo, inputProvider.GetInput(InputType.UseTwo));
-            inputs.SetInput(PlayerInput.Reload, inputProvider.GetInput(InputType.Reload));
-            inputs.SetInput(PlayerInput.Fly, inputProvider.GetInput(InputType.Fly));
-            inputs.SetInput(PlayerInput.Ads, inputProvider.GetInput(InputType.Ads));
-            inputs.SetInput(PlayerInput.Throw, inputProvider.GetInput(InputType.Throw));
+            InputProvider provider = InputProvider.Singleton;
+            inputs.SetInput(PlayerInput.UseOne, provider.GetInput(InputType.UseOne));
+            inputs.SetInput(PlayerInput.UseTwo, provider.GetInput(InputType.UseTwo));
+            inputs.SetInput(PlayerInput.Reload, provider.GetInput(InputType.Reload));
+            inputs.SetInput(PlayerInput.Fly, provider.GetInput(InputType.Fly));
+            inputs.SetInput(PlayerInput.Ads, provider.GetInput(InputType.Ads));
+            inputs.SetInput(PlayerInput.Throw, provider.GetInput(InputType.Throw));
             if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
-            if (inputProvider.GetInput(InputType.ItemOne)) itemIndex.Value = 1;
-            else if (inputProvider.GetInput(InputType.ItemTwo)) itemIndex.Value = 2;
-            else if (inputProvider.GetInput(InputType.ItemThree)) itemIndex.Value = 3;
-            else if (inputProvider.GetInput(InputType.ItemFour)) itemIndex.Value = 4;
-            else if (inputProvider.GetInput(InputType.ItemFive)) itemIndex.Value = 5;
-            else if (inputProvider.GetInput(InputType.ItemSix)) itemIndex.Value = 6;
-            else if (inputProvider.GetInput(InputType.ItemSeven)) itemIndex.Value = 7;
-            else if (inputProvider.GetInput(InputType.ItemEight)) itemIndex.Value = 8;
-            else if (inputProvider.GetInput(InputType.ItemNine)) itemIndex.Value = 9;
+            if (provider.GetInput(InputType.ItemOne)) itemIndex.Value = 1;
+            else if (provider.GetInput(InputType.ItemTwo)) itemIndex.Value = 2;
+            else if (provider.GetInput(InputType.ItemThree)) itemIndex.Value = 3;
+            else if (provider.GetInput(InputType.ItemFour)) itemIndex.Value = 4;
+            else if (provider.GetInput(InputType.ItemFive)) itemIndex.Value = 5;
+            else if (provider.GetInput(InputType.ItemSix)) itemIndex.Value = 6;
+            else if (provider.GetInput(InputType.ItemSeven)) itemIndex.Value = 7;
+            else if (provider.GetInput(InputType.ItemEight)) itemIndex.Value = 8;
+            else if (provider.GetInput(InputType.ItemNine)) itemIndex.Value = 9;
+            else if (provider.GetInput(InputType.ItemTen)) itemIndex.Value = 10;
         }
 
         private static bool FindItem(InventoryComponent inventory, Predicate<ItemComponent> predicate, out byte index)

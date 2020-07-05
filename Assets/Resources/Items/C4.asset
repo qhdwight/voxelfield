@@ -34,6 +34,5 @@ MonoBehaviour:
   - durationUs: 4294967295
     isPersistent: 0
   m_ThrowForce: 6
-  m_AmmoCount: 2
   m_ThrowablePrefab: {fileID: 7950055238968013887, guid: c36b61a1dd868f5489e54b7ebff544e9,
     type: 3}

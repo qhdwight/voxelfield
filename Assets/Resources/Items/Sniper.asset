@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 8
   itemName: Sniper
-  movementFactor: 1
+  movementFactor: 0.8
   m_StatusModiferProperties:
   - durationUs: 2000000
     isPersistent: 0
@@ -72,3 +72,4 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 100000
     isPersistent: 0
+  isPrimary: 1

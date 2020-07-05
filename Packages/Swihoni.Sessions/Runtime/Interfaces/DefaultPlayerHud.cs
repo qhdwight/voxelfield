@@ -51,9 +51,8 @@ namespace Swihoni.Sessions.Interfaces
             {
                 if (localPlayer.With<HealthProperty>())
                     m_HealthText.BuildText(builder => builder.Append("Health: ").Append(health.Value));
-                if (localPlayer.With(out InventoryComponent inventory) && inventory.HasItemEquipped)
+                if (localPlayer.With(out InventoryComponent inventory) && inventory.WithItemEquipped(out ItemComponent equippedItem))
                 {
-                    ItemComponent equippedItem = inventory.EquippedItemComponent;
                     ItemModifierBase modifier = ItemAssetLink.GetModifier(equippedItem.id);
                     m_AmmoText.BuildText(builder =>
                     {

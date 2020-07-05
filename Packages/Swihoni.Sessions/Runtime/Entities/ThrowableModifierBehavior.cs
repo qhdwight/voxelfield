@@ -21,8 +21,9 @@ namespace Swihoni.Sessions.Entities
         [SerializeField] private LayerMask m_Mask = default;
         [SerializeField] private float m_MinimumDamageRatio = 0.2f;
         [SerializeField] private float m_CollisionVelocityMultiplier = 0.5f;
-        [SerializeField] protected bool m_IsSticky;
+        [SerializeField] protected bool m_IsSticky, m_ExplodeOnContact;
 
+        private RigidbodyConstraints m_InitialConstraints;
         private readonly Collider[] m_OverlappingColliders = new Collider[8];
         private uint m_LastElapsedUs;
         private bool m_IsFrozen;
@@ -34,7 +35,11 @@ namespace Swihoni.Sessions.Entities
         public bool PopQueued { get; set; }
         public bool CanQueuePop => m_PopTimeUs == uint.MaxValue;
 
-        private void Awake() => Rigidbody = GetComponent<Rigidbody>();
+        private void Awake()
+        {
+            Rigidbody = GetComponent<Rigidbody>();
+            m_InitialConstraints = Rigidbody.constraints;
+        }
 
         private void OnCollisionEnter(Collision collision)
         {
@@ -47,7 +52,7 @@ namespace Swihoni.Sessions.Entities
         {
             Rigidbody.velocity = Vector3.zero;
             Rigidbody.angularVelocity = Vector3.zero;
-            Rigidbody.constraints = canMove ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;
+            Rigidbody.constraints = canMove ? m_InitialConstraints : RigidbodyConstraints.FreezeAll;
         }
 
         public override void SetActive(bool isActive)
@@ -102,28 +107,37 @@ namespace Swihoni.Sessions.Entities
                 (CollisionType collisionType, Collision collision) = m_LastCollision;
                 if (collisionType != CollisionType.None)
                 {
+                    var isContact = true;
                     if (collisionType == CollisionType.World)
                     {
-                        if (m_IsSticky)
+                        if (m_ExplodeOnContact)
                         {
-                            ResetRigidbody(false);
-                            Vector3 surfaceNormal = GetSurfaceNormal(collision);
-                            Rigidbody.transform.SetPositionAndRotation(collision.contacts[0].point,
-                                                                       Quaternion.FromToRotation(Rigidbody.transform.up, surfaceNormal) * Rigidbody.rotation);
-                            m_IsFrozen = true;
+                            throwable.popTimeUs.Value = throwable.thrownElapsedUs;
+                            isContact = false;
                         }
                         else
                         {
-                            Rigidbody.velocity *= m_CollisionVelocityMultiplier;
+                            if (m_IsSticky)
+                            {
+                                ResetRigidbody(false);
+                                Vector3 surfaceNormal = GetSurfaceNormal(collision);
+                                Rigidbody.transform.SetPositionAndRotation(collision.contacts[0].point,
+                                                                           Quaternion.FromToRotation(Rigidbody.transform.up, surfaceNormal) * Rigidbody.rotation);
+                                m_IsFrozen = true;
+                            }
+                            else
+                            {
+                                Rigidbody.velocity *= m_CollisionVelocityMultiplier;
+                            }
                         }
                     }
                     else if (throwable.thrownElapsedUs > 100_000u) Rigidbody.velocity = Vector3.zero; // Stop on hitting player. Delay to prevent hitting self
-                    throwable.contactElapsedUs.Value = 0u;
+                    if (isContact) throwable.contactElapsedUs.Value = 0u;
                 }
             }
             m_LastElapsedUs = throwable.thrownElapsedUs;
             m_LastCollision = (CollisionType.None, null);
-            Rigidbody.constraints = m_IsFrozen ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
+            Rigidbody.constraints = m_IsFrozen ? RigidbodyConstraints.FreezeAll : m_InitialConstraints;
 
             throwable.position.Value = t.position;
             throwable.rotation.Value = t.rotation;

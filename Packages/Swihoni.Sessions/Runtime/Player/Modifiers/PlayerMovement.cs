@@ -1,5 +1,6 @@
 using Input;
 using Swihoni.Components;
+using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
@@ -35,7 +36,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_SideSpeed = 30.0f,
             m_GravityFactor = 23.0f,
             m_MaxStickDistance = 0.25f,
-            m_FlySpeed = 5.0f;
+            m_FlySpeed = 5.0f,
+            m_MaxSlopeNerf = 0.3f;
         [SerializeField] private float m_WalkStateDuration = 1.0f, m_CrouchDuration = 0.3f;
         [SerializeField] private LayerMask m_GroundMask = default;
 
@@ -72,11 +74,11 @@ namespace Swihoni.Sessions.Player.Modifiers
         // TODO:refactor bad
         private bool m_LastFlyInput;
 
-        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs)
+        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
             if (player.Without(out MoveComponent move)) return;
 
-            base.ModifyChecked(session, playerId, player, commands, durationUs); // Synchronize game object
+            base.ModifyChecked(session, playerId, player, commands, durationUs, tickDelta); // Synchronize game object
 
             if (player.WithPropertyWithValue(out FrozenProperty frozen) && frozen
              || player.With(out HealthProperty health) && health.IsDead
@@ -89,7 +91,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_LastFlyInput = flyInput;
 
             // Vector3 prePosition = move.position;
-            if (move.type == MoveType.Grounded) FullMove(move, inputs, duration);
+            if (move.type == MoveType.Grounded) FullMove(player, move, inputs, duration);
             else FlyMove(move, inputs, duration);
             // if (session.GetMode().RestrictMovement(prePosition, move.position)) move.position.Value = prePosition;
 
@@ -157,7 +159,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        private void FullMove(MoveComponent move, InputFlagProperty inputs, float duration)
+        private void FullMove(Container player, MoveComponent move, InputFlagProperty inputs, float duration)
         {
             Vector3 initialVelocity = move.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = endingVelocity.LateralMagnitude();
@@ -179,11 +181,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             float wishSpeed = wishDirection.magnitude;
             wishDirection.Normalize();
 
-            float maxSpeed = inputs.GetInput(PlayerInput.Crouch) ? m_CrouchSpeed : m_RunSpeed;
-            if (inputs.GetInput(PlayerInput.Walk)) maxSpeed *= m_WalkMultiplier;
-            if (inputs.GetInput(PlayerInput.Sprint)) maxSpeed *= m_SprintMultiplier;
-            float slopeMultiplier = 0.3f + 0.7f * (1.0f - Mathf.Clamp01(slopeAngle / m_Controller.slopeLimit));
-            maxSpeed *= slopeMultiplier;
+            float maxSpeed = CalculateMaxSpeed(player, inputs, slopeAngle);
 
             if (wishSpeed > maxSpeed) wishSpeed = maxSpeed;
             if (isGrounded && withinAngleLimit)
@@ -243,6 +241,18 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_Controller.Move(motion);
             move.position.Value = m_MoveTransform.position;
             move.velocity.Value = endingVelocity;
+        }
+
+        private float CalculateMaxSpeed(Container player, InputFlagProperty inputs, float slopeAngle)
+        {
+            float maxSpeed = inputs.GetInput(PlayerInput.Crouch) ? m_CrouchSpeed : m_RunSpeed;
+            if (inputs.GetInput(PlayerInput.Walk)) maxSpeed *= m_WalkMultiplier;
+            if (inputs.GetInput(PlayerInput.Sprint)) maxSpeed *= m_SprintMultiplier;
+            if (player.With(out InventoryComponent inventory) && inventory.WithItemEquipped(out ItemComponent equippedItem))
+                maxSpeed *= ItemAssetLink.GetModifier(equippedItem.id).movementFactor;
+            float slopeMultiplier = m_MaxSlopeNerf + (1.0f - m_MaxSlopeNerf) * (1.0f - Mathf.Clamp01(slopeAngle / m_Controller.slopeLimit));
+            maxSpeed *= slopeMultiplier;
+            return maxSpeed;
         }
 
         private void Friction(float lateralSpeed, float time, ref Vector3 velocity)

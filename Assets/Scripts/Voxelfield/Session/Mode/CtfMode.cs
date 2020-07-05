@@ -148,9 +148,9 @@ namespace Voxelfield.Session.Mode
             player.Require<TeamProperty>().Value = (byte) (playerId % 2);
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)
+        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
-            base.ModifyPlayer(session, container, playerId, player, commands, durationUs);
+            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
         }
     }
 }

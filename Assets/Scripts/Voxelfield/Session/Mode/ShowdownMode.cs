@@ -80,9 +80,9 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)
+        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
-            base.ModifyPlayer(session, container, playerId, player, commands, durationUs);
+            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
 
             var stage = container.Require<ShowdownSessionComponent>();
             if (stage.number.WithoutValue) return;

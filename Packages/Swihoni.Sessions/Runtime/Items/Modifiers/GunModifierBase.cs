@@ -61,8 +61,8 @@ namespace Swihoni.Sessions.Items.Modifiers
         /// <summary>
         /// We want to be able to interrupt reload with firing, and also make sure we can not fire with no ammo
         /// </summary>
-        protected override bool CanUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
-            item.ammoInMag > 0 && base.CanUse(item, inventory, justFinishedUse);
+        protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
+            item.ammoInMag > 0 && base.CanPrimaryUse(item, inventory, justFinishedUse);
 
         protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) => Fire(playerId, session, item, durationUs);
 

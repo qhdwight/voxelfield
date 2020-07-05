@@ -229,15 +229,17 @@ namespace Swihoni.Sessions
                 else
                 {
                     // Make sure this is the newest tick
-                    bool isLatestTick = clientStamp.tick > serverPlayerClientStamp.tick;
+                    var tickDelta = checked((int) (clientStamp.tick - (long) serverPlayerClientStamp.tick));
+                    bool isLatestTick = tickDelta >= 1;
+                    ModeBase mode = GetMode(serverSession);
                     if (isLatestTick)
                     {
                         checked
                         {
                             serverPlayerTimeUs.Value += clientStamp.timeUs - serverPlayerClientStamp.timeUs;
 
-                            long delta = serverPlayerTimeUs.Value - (long) serverStamp.timeUs;
-                            if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
+                            long deltaUs = serverPlayerTimeUs.Value - (long) serverStamp.timeUs;
+                            if (Math.Abs(deltaUs) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
                             {
                                 ResetErrors++;
                                 serverPlayerTimeUs.Value = serverStamp.timeUs;
@@ -245,13 +247,16 @@ namespace Swihoni.Sessions
                         }
                         if (!IsPaused)
                         {
-                            ModeBase mode = GetMode(serverSession);
                             serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
-                            GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
-                            mode.ModifyPlayer(this, serverSession, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs);
                         }
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
+
+                    if (!IsPaused)
+                    {
+                        GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs, tickDelta);
+                        mode.ModifyPlayer(this, serverSession, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs, tickDelta);
+                    }
                 }
             }
             else
@@ -301,7 +306,7 @@ namespace Swihoni.Sessions
                 if (modifierId == 0) DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
         }
-        
+
         public override void StringCommand(int playerId, string stringCommand)
             => GetPlayerFromId(playerId).Require<StringCommandProperty>().SetTo(stringCommand);
 

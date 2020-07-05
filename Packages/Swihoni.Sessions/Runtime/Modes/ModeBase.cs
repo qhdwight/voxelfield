@@ -40,7 +40,8 @@ namespace Swihoni.Sessions.Modes
                                                           ItemId.Grenade,
                                                           ItemId.Molotov,
                                                           ItemId.C4,
-                                                          ItemId.Deagle);
+                                                          ItemId.Deagle,
+                                                          ItemId.GrenadeLauncher);
             }
         }
 
@@ -55,7 +56,7 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void Render(SessionBase session, Container sessionContainer) { }
 
-        public virtual void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs)
+        public virtual void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
         {
             if (player.Without(out HealthProperty health) || health.WithoutValue) return;
 
@@ -120,14 +121,6 @@ namespace Swihoni.Sessions.Modes
                         stats.kills.Value++;
 
                     if (usesHitMarker) hitMarker.isKill.Value = true;
-                    const uint notifierDuration = 1_000_000u;
-                    if (usesHitMarker) hitMarker.elapsedUs.Value = notifierDuration;
-                    if (usesNotifier)
-                    {
-                        damageNotifier.elapsedUs.Value = 2_000_000u;
-                        damageNotifier.inflictingPlayerId.Value = (byte) inflictingPlayerId;
-                        damageNotifier.damage.Value = damage;
-                    }
 
                     if (session.GetLatestSession().Without(out KillFeedElement killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)
@@ -140,11 +133,22 @@ namespace Swihoni.Sessions.Modes
                         kill.weaponName.SetTo(weaponName);
                         break;
                     }
+
+                    if (isSelfInflicting) usesNotifier = false;
                 }
                 else
                 {
                     health.Value -= damage;
                     if (usesHitMarker) hitMarker.isKill.Value = false;
+                }
+                
+                const uint notifierDuration = 1_000_000u;
+                if (usesHitMarker) hitMarker.elapsedUs.Value = notifierDuration;
+                if (usesNotifier)
+                {
+                    damageNotifier.elapsedUs.Value = 2_000_000u;
+                    damageNotifier.inflictingPlayerId.Value = (byte) inflictingPlayerId;
+                    damageNotifier.damage.Value = damage;
                 }
             }
         }

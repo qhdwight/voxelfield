@@ -9,16 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3fbf3b763934424afec26d7f2800659, type: 3}
-  m_Name: Rifle
+  m_Script: {fileID: 11500000, guid: ba929e75a8bc4f9583c0a66d987b733c, type: 3}
+  m_Name: Grenade Launcher
   m_EditorClassIdentifier: 
-  id: 1
-  itemName: Rifle
+  id: 12
+  itemName: Grenade Launcher
   movementFactor: 1
   m_StatusModiferProperties:
   - durationUs: 2000000
     isPersistent: 0
-  - durationUs: 100000
+  - durationUs: 1000000
     isPersistent: 0
   - durationUs: 0
     isPersistent: 0
@@ -73,3 +73,6 @@ MonoBehaviour:
   - durationUs: 100000
     isPersistent: 0
   isPrimary: 1
+  m_ThrowablePrefab: {fileID: 7530670241173920196, guid: 15f1e88241ffddcd1939d23f0ffdd3a3,
+    type: 3}
+  m_LaunchForce: 8

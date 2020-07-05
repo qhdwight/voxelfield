@@ -35,9 +35,9 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (m_Trigger) m_Trigger.Setup(playerId);
         }
 
-        public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs)
+        public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs, int tickDelta = 1)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs, tickDelta);
         }
 
         public void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)
@@ -80,7 +80,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
-        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs) => SynchronizeBehavior(player);
+        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta) => SynchronizeBehavior(player);
 
         /// <summary>
         ///     Called in Update() right after inputs are sampled

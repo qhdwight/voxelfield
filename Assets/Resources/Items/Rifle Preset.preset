@@ -1,0 +1,248 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Rifle Preset
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: c3fbf3b763934424afec26d7f2800659,
+      type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: id
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: itemName
+    value: Rifle
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: movementFactor
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StatusModiferProperties.Array.size
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StatusModiferProperties.Array.data[0].durationUs
+    value: 2000000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StatusModiferProperties.Array.data[0].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StatusModiferProperties.Array.data[1].durationUs
+    value: 100000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StatusModiferProperties.Array.data[1].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StatusModiferProperties.Array.data[2].durationUs
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StatusModiferProperties.Array.data[2].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StatusModiferProperties.Array.data[3].durationUs
+    value: 2000000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StatusModiferProperties.Array.data[3].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EquipStatusModiferProperties.Array.size
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EquipStatusModiferProperties.Array.data[0].durationUs
+    value: 150000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EquipStatusModiferProperties.Array.data[0].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EquipStatusModiferProperties.Array.data[1].durationUs
+    value: 150000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EquipStatusModiferProperties.Array.data[1].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EquipStatusModiferProperties.Array.data[2].durationUs
+    value: 4294967295
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EquipStatusModiferProperties.Array.data[2].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EquipStatusModiferProperties.Array.data[3].durationUs
+    value: 4294967295
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EquipStatusModiferProperties.Array.data[3].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Damage
+    value: 30
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_PlayerMask.m_Bits
+    value: 2048
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.size
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[0].time
+    value: 50
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[0].value
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[0].inSlope
+    value: Infinity
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[0].outSlope
+    value: -0.0013333332
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[0].tangentMode
+    value: 71
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[0].weightedMode
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[0].inWeight
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[0].outWeight
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[1].time
+    value: 200
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[1].value
+    value: 0.8
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[1].inSlope
+    value: -0.0013333332
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[1].outSlope
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[1].tangentMode
+    value: 69
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[1].weightedMode
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[1].inWeight
+    value: 0.5285432
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_Curve.Array.data[1].outWeight
+    value: 0.46777794
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_PreInfinity
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_PostInfinity
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_DropOff.m_RotationOrder
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_MagSize
+    value: 30
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_StartingAmmoInReserve
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_AdsModifierProperties.Array.size
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_AdsModifierProperties.Array.data[0].durationUs
+    value: 4294967295
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_AdsModifierProperties.Array.data[0].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_AdsModifierProperties.Array.data[1].durationUs
+    value: 100000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_AdsModifierProperties.Array.data[1].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_AdsModifierProperties.Array.data[2].durationUs
+    value: 4294967295
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_AdsModifierProperties.Array.data[2].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_AdsModifierProperties.Array.data[3].durationUs
+    value: 100000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_AdsModifierProperties.Array.data[3].isPersistent
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: isPrimary
+    value: 1
+    objectReference: {fileID: 0}
+  m_ExcludedProperties: []

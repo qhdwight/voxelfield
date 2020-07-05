@@ -10,7 +10,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: a6db81701ea61f1498b1a4f124272a28, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 5b9d1ac5666ec084fb4c59a61f6d0f49, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -205,11 +205,6 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 856624331643220773, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
         type: 3}
-      propertyPath: m_audioClip
-      value: 
-      objectReference: {fileID: 8300000, guid: 5b9d1ac5666ec084fb4c59a61f6d0f49, type: 3}
-    - target: {fileID: 856624331643220773, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
-        type: 3}
       propertyPath: MaxDistance
       value: 7
       objectReference: {fileID: 0}
@@ -230,11 +225,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3520456744884771954, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
         type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[0].audioSource
-      value: 
-      objectReference: {fileID: 8300000, guid: 5b9d1ac5666ec084fb4c59a61f6d0f49, type: 3}
-    - target: {fileID: 3520456744884771954, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
-        type: 3}
       propertyPath: m_ChildBehaviors.Array.data[0]
       value: 
       objectReference: {fileID: 2670231317900631834}
@@ -242,7 +232,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[0].audio
       value: 
-      objectReference: {fileID: 8774267702124255642}
+      objectReference: {fileID: 8472336354288938631}
     - target: {fileID: 3520456744884771956, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -309,12 +299,6 @@ GameObject:
 --- !u!4 &4826748808945497803 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3520456744884771956, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
-    type: 3}
-  m_PrefabInstance: {fileID: 8225581410245700287}
-  m_PrefabAsset: {fileID: 0}
---- !u!82 &8774267702124255642 stripped
-AudioSource:
-  m_CorrespondingSourceObject: {fileID: 856624331643220773, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
     type: 3}
   m_PrefabInstance: {fileID: 8225581410245700287}
   m_PrefabAsset: {fileID: 0}
