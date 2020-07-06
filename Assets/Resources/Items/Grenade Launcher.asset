@@ -24,6 +24,8 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 2000000
     isPersistent: 0
+  - durationUs: 2000000
+    isPersistent: 0
   m_EquipStatusModiferProperties:
   - durationUs: 150000
     isPersistent: 0
@@ -75,4 +77,4 @@ MonoBehaviour:
   isPrimary: 1
   m_ThrowablePrefab: {fileID: 2388795190162426220, guid: 68c64ec7bf794411589497f72485794d,
     type: 3}
-  m_LaunchForce: 8
+  m_LaunchForce: 12

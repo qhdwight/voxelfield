@@ -108,33 +108,30 @@ namespace Swihoni.Sessions.Entities
                 (CollisionType collisionType, Collision collision) = m_LastCollision;
                 if (collisionType != CollisionType.None)
                 {
-                    var isContact = true;
-                    if (collisionType == CollisionType.World)
+                    var resetContact = true;
+                    if (m_ExplodeOnContact)
                     {
-                        if (m_ExplodeOnContact)
+                        throwable.popTimeUs.Value = throwable.thrownElapsedUs;
+                        resetContact = false;
+                        HurtNearby(session, durationUs);
+                    }
+                    if (collisionType == CollisionType.World && !m_ExplodeOnContact)
+                    {
+                        if (m_IsSticky)
                         {
-                            throwable.popTimeUs.Value = throwable.thrownElapsedUs;
-                            isContact = false;
-                            HurtNearby(session, durationUs);
+                            ResetRigidbody(false);
+                            Vector3 surfaceNormal = GetSurfaceNormal(collision);
+                            Rigidbody.transform.SetPositionAndRotation(collision.contacts[0].point,
+                                                                       Quaternion.FromToRotation(Rigidbody.transform.up, surfaceNormal) * Rigidbody.rotation);
+                            m_IsFrozen = true;
                         }
                         else
                         {
-                            if (m_IsSticky)
-                            {
-                                ResetRigidbody(false);
-                                Vector3 surfaceNormal = GetSurfaceNormal(collision);
-                                Rigidbody.transform.SetPositionAndRotation(collision.contacts[0].point,
-                                                                           Quaternion.FromToRotation(Rigidbody.transform.up, surfaceNormal) * Rigidbody.rotation);
-                                m_IsFrozen = true;
-                            }
-                            else
-                            {
-                                Rigidbody.velocity *= m_CollisionVelocityMultiplier;
-                            }
+                            Rigidbody.velocity *= m_CollisionVelocityMultiplier;
                         }
                     }
                     else if (throwable.thrownElapsedUs > 100_000u) Rigidbody.velocity = Vector3.zero; // Stop on hitting player. Delay to prevent hitting self
-                    if (isContact) throwable.contactElapsedUs.Value = 0u;
+                    if (resetContact) throwable.contactElapsedUs.Value = 0u;
                 }
             }
             m_LastElapsedUs = throwable.thrownElapsedUs;

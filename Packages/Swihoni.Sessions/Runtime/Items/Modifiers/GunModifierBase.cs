@@ -9,7 +9,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 {
     public static class GunStatusId
     {
-        public const byte Reloading = ItemStatusId.Last + 1;
+        public const byte Reloading = ItemStatusId.Last + 1, DryFiring = ItemStatusId.Last + 2;
     }
 
     public static class AdsStatusId
@@ -38,6 +38,8 @@ namespace Swihoni.Sessions.Items.Modifiers
             bool reloadInput = inputs.GetInput(PlayerInput.Reload);
             if ((reloadInput || item.ammoInMag == 0) && CanReload(item, inventory) && item.status.id == ItemStatusId.Idle)
                 StartStatus(session, playerId, item, GunStatusId.Reloading, durationUs);
+            else if (inputs.GetInput(PlayerInput.UseOne) && item.ammoInMag == 0 && item.ammoInReserve == 0 && item.status.id == ItemStatusId.Idle)
+                StartStatus(session, playerId, item, GunStatusId.DryFiring, durationUs);
             base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
         }
 
@@ -70,6 +72,8 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual void Fire(int playerId, SessionBase session, ItemComponent item, uint durationUs)
         {
+            if (item.ammoInMag == 0) return;
+
             item.ammoInMag.Value--;
 
             Ray ray = session.GetRayForPlayerId(playerId);

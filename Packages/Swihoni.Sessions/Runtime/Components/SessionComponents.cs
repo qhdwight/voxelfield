@@ -81,14 +81,14 @@ namespace Swihoni.Sessions.Components
     [Serializable, OnlyServerTrusted]
     public class HitMarkerComponent : ComponentBase
     {
-        public UIntTimeProperty elapsedUs;
+        public ElapsedUsProperty elapsedUs;
         public BoolProperty isKill;
     }
 
     [Serializable, OnlyServerTrusted]
     public class DamageNotifierComponent : ComponentBase
     {
-        public UIntTimeProperty elapsedUs;
+        public ElapsedUsProperty elapsedUs;
         public ByteProperty damage, inflictingPlayerId;
     }
 
@@ -101,7 +101,7 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class KillFeedComponent : ComponentBase
     {
-        public UIntTimeProperty elapsedUs;
+        public ElapsedUsProperty elapsedUs;
         public ByteProperty killingPlayerId, killedPlayerId;
         public StringProperty weaponName = new StringProperty(32);
     }

@@ -12,6 +12,11 @@ PrefabInstance:
       propertyPath: m_Id
       value: 12
       objectReference: {fileID: 0}
+    - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: m_FpvOffset.z
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 3047713979344524743, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -94,5 +99,15 @@ PrefabInstance:
       propertyPath: m_audioClip
       value: 
       objectReference: {fileID: 8300000, guid: 72e772ca8f1184b4a8d71ece945560d2, type: 3}
+    - target: {fileID: 6554873159179470197, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: rolloffMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6554873159179470197, guid: c68544406b7baff40a29df41b5183514,
+        type: 3}
+      propertyPath: MaxDistance
+      value: 20
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c68544406b7baff40a29df41b5183514, type: 3}

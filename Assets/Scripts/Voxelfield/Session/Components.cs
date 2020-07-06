@@ -21,7 +21,7 @@ namespace Voxelfield.Session
     public class ShowdownSessionComponent : ComponentBase
     {
         public ByteProperty number;
-        public UIntTimeProperty remainingUs;
+        public TimeUsProperty remainingUs;
         public ArrayElement<CurePackageComponent> curePackages = new ArrayElement<CurePackageComponent>(9);
     }
 
@@ -29,7 +29,7 @@ namespace Voxelfield.Session
     public class FlagComponent : ComponentBase
     {
         public ByteProperty capturingPlayerId;
-        public UIntTimeProperty captureElapsedTimeUs;
+        public ElapsedUsProperty captureElapsedTimeUs;
     }
 
     [Serializable]
@@ -57,7 +57,7 @@ namespace Voxelfield.Session
     public class ShowdownPlayerComponent : ComponentBase
     {
         public ByteProperty stagesCuredFlags;
-        public UIntTimeProperty elapsedSecuringUs;
+        public ElapsedUsProperty elapsedSecuringUs;
 
         public bool IsCured(ShowdownSessionComponent showdown) => (stagesCuredFlags & (byte) (1 << showdown.number)) != 0;
     }

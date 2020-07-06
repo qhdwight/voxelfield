@@ -118,11 +118,16 @@ namespace Swihoni.Sessions.Items.Visuals
                 bool shouldDoEvent = (!lastStatusElapsedUs.HasValue || lastStatusElapsedUs < animationEvent.timeUs)
                                   && expressedStatus.elapsedUs >= animationEvent.timeUs;
                 if (!shouldDoEvent) continue;
-                if (animationEvent.audio) animationEvent.audio.PlayOneShot(animationEvent.audio.clip);
-                if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
+                SampleEvent(item, animationEvent);
             }
             if (lastRenderedInventory == null) m_PlayerItemAnimator.LastRenderedInventory = inventory.Clone();
             else lastRenderedInventory.CopyFrom(inventory);
+        }
+
+        protected virtual void SampleEvent(ItemComponent item, ItemStatusVisualProperties.AnimationEvent animationEvent)
+        {
+            if (animationEvent.audio) animationEvent.audio.PlayOneShot(animationEvent.audio.clip);
+            if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
         }
 
         public void SampleAnimation(ItemComponent item, ByteStatusComponent equipStatus, float interpolation)

@@ -24,6 +24,8 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 2000000
     isPersistent: 0
+  - durationUs: 2000000
+    isPersistent: 0
   m_EquipStatusModiferProperties:
   - durationUs: 150000
     isPersistent: 0
@@ -62,7 +64,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   m_MagSize: 30
-  m_StartingAmmoInReserve: 90
+  m_StartingAmmoInReserve: 60
   m_AdsModifierProperties:
   - durationUs: 4294967295
     isPersistent: 0

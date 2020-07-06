@@ -31,10 +31,17 @@ namespace Swihoni.Components
     /// This solves issues where the second time represents a "jump" by resetting to a lower value.
     /// </summary>
     [Serializable]
-    public class UIntTimeProperty : UIntProperty
+    public class ElapsedUsProperty : UIntProperty
     {
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation)
-            => Value = p2.Value <= p1.Value ? p2.Value : InterpolateUInt(p1.Value, p2.Value, interpolation);
+            => Value = p2.Value > p1.Value ? InterpolateUInt(p1.Value, p2.Value, interpolation) : p2.Value;
+    }
+    
+    [Serializable]
+    public class TimeUsProperty : UIntProperty
+    {
+        public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation)
+            => Value = p2.Value < p1.Value ? InterpolateUInt(p1.Value, p2.Value, interpolation) : p2.Value;
     }
 
     [Serializable]
