@@ -3,6 +3,7 @@ using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Entities;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
@@ -65,5 +66,11 @@ namespace Voxelfield.Session
 
         public override bool IsPaused(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
                                                          || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
+
+        public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
+        {
+            var center = (Position3Int) throwableBehavior.transform.position;
+            RemoveVoxelRadius(center, throwableBehavior.Radius * 0.4f, true);
+        }
     }
 }

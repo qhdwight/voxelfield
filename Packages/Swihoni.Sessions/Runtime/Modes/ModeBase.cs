@@ -40,8 +40,8 @@ namespace Swihoni.Sessions.Modes
                                                           ItemId.Grenade,
                                                           ItemId.Molotov,
                                                           ItemId.C4,
-                                                          ItemId.Deagle,
-                                                          ItemId.GrenadeLauncher);
+                                                          ItemId.GrenadeLauncher,
+                                                          ItemId.MissileLauncher);
             }
         }
 

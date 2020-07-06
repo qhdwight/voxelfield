@@ -34,6 +34,7 @@ namespace Swihoni.Sessions.Entities
         public int ThrowerId { get; set; }
         public bool PopQueued { get; set; }
         public bool CanQueuePop => m_PopTimeUs == uint.MaxValue;
+        public float Radius => m_Radius;
 
         private void Awake()
         {
@@ -114,6 +115,7 @@ namespace Swihoni.Sessions.Entities
                         {
                             throwable.popTimeUs.Value = throwable.thrownElapsedUs;
                             isContact = false;
+                            HurtNearby(session, durationUs);
                         }
                         else
                         {
@@ -161,6 +163,7 @@ namespace Swihoni.Sessions.Entities
                     session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage, Name);
                 }
             }
+            session.Injector.OnThrowablePopped(this);
         }
 
         private byte CalculateDamage(Container hitPlayer, uint durationUs)

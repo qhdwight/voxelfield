@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ba929e75a8bc4f9583c0a66d987b733c, type: 3}
-  m_Name: Grenade Launcher
+  m_Name: Missile Launcher
   m_EditorClassIdentifier: 
-  id: 12
-  itemName: Grenade Launcher
-  movementFactor: 1
+  id: 13
+  itemName: Missile Launcher
+  movementFactor: 0.7
   m_StatusModiferProperties:
   - durationUs: 2000000
     isPersistent: 0
@@ -61,8 +61,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_MagSize: 30
-  m_StartingAmmoInReserve: 90
+  m_MagSize: 1
+  m_StartingAmmoInReserve: 3
   m_AdsModifierProperties:
   - durationUs: 4294967295
     isPersistent: 0
@@ -73,6 +73,6 @@ MonoBehaviour:
   - durationUs: 100000
     isPersistent: 0
   isPrimary: 1
-  m_ThrowablePrefab: {fileID: 2388795190162426220, guid: 68c64ec7bf794411589497f72485794d,
+  m_ThrowablePrefab: {fileID: 26372127107003135, guid: 39fa1d6097f0d4522abd3f844527430b,
     type: 3}
-  m_LaunchForce: 8
+  m_LaunchForce: 40

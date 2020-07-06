@@ -103,7 +103,7 @@ namespace Swihoni.Sessions.Components
     {
         public UIntTimeProperty elapsedUs;
         public ByteProperty killingPlayerId, killedPlayerId;
-        public StringProperty weaponName = new StringProperty(12);
+        public StringProperty weaponName = new StringProperty(32);
     }
 
     [Serializable]

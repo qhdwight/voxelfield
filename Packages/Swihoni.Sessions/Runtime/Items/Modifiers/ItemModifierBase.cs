@@ -36,7 +36,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           VoxelWand = 9,
                           ModelWand = 10,
                           Deagle = 11,
-                          GrenadeLauncher = 12;
+                          GrenadeLauncher = 12,
+                          MissileLauncher = 13;
     }
 
     [Serializable]
