@@ -62,5 +62,10 @@ namespace Console
         }
 
         public static void RemoveCommand(string command) => _commands.Remove(command);
+
+        public static void RemoveCommands(params string[] commands)
+        {
+            foreach (string command in commands) RemoveCommand(command);
+        }
     }
 }

@@ -18,6 +18,7 @@ namespace Voxelfield.Session
             base.SetVoxelData(worldPosition, change, chunk, updateMesh);
             changed.SetVoxel(worldPosition, change);
             m_MasterChanges.AddAllFrom(changed);
+            
         }
 
         protected internal override void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, ChangedVoxelsProperty changedVoxels = null)
@@ -46,8 +47,6 @@ namespace Voxelfield.Session
         {
             serverSession.Require<VoxelMapNameProperty>().SetTo(DebugBehavior.Singleton.MapNameProperty);
             base.OnSettingsTick(serverSession); // Set map
-            MapManager manager = MapManager.Singleton;
-            if (manager.Map != null) manager.Map.changedVoxels = m_MasterChanges;
         }
     }
 }

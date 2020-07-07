@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
@@ -44,6 +45,7 @@ namespace Voxel
         [SerializeField] private int m_ChunkSize = default;
         private readonly Stack<Chunk> m_ChunkPool = new Stack<Chunk>();
         private int m_PoolSize;
+        private MapContainer m_LoadedMap;
 
         public int ChunkSize => m_ChunkSize;
         public MapContainer Map { get; private set; }
@@ -64,6 +66,7 @@ namespace Voxel
         public IEnumerator LoadMap(MapContainer map)
         {
             Map = map;
+            m_LoadedMap = map.Clone();
             SetPoolSize(map);
             // Decommission all current chunks
             yield return DecommissionAllChunks();
@@ -180,16 +183,16 @@ namespace Voxel
             if (!chunk) return;
             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
             chunk.SetVoxelDataNoCheck(voxelChunkPosition, changeData);
+            Map.changedVoxels.SetVoxel(worldPosition, changeData);
             if (updateMesh) UpdateChunkMesh(chunk, voxelChunkPosition);
         }
 
-        public VoxelChangeData? RevertVoxelToMapSave(in Position3Int worldPosition, bool updateMesh = true)
+        public VoxelChangeData? GetMapSaveVoxel(in Position3Int worldPosition)
         {
             Chunk chunk = GetChunkFromWorldPosition(worldPosition);
             if (!chunk) return null;
             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-            VoxelChangeData? change = chunk.RevertToMapSave(voxelChunkPosition, Map);
-            if (updateMesh) UpdateChunkMesh(chunk, voxelChunkPosition);
+            VoxelChangeData change = chunk.RevertToMapSave(voxelChunkPosition, m_LoadedMap);
             return change;
         }
 

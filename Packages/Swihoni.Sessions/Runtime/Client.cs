@@ -193,6 +193,8 @@ namespace Swihoni.Sessions
 
         private void SendCommand() => m_Socket.SendToServer(m_CommandHistory.Peek(), DeliveryMethod.ReliableUnordered);
 
+        private static bool _predictionIsAccurate; // Prevents heap allocation in closure
+        
         private void CheckPrediction(Container serverSession)
         {
             if (!GetLocalPlayerId(serverSession, out int localPlayerId))
@@ -208,7 +210,7 @@ namespace Swihoni.Sessions
                 Container predictedPlayer = m_PlayerPredictionHistory.Get(-playerHistoryIndex);
                 if (predictedPlayer.Require<ClientStampComponent>().tick != targetTick) continue;
                 /* We are checking predicted */
-                var areEqual = true;
+                _predictionIsAccurate = true;
                 Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
                 ElementExtensions.NavigateZipped((_predicted, _latestPredicted, _server) =>
                 {
@@ -226,13 +228,13 @@ namespace Swihoni.Sessions
                         case VectorProperty v1 when _server is VectorProperty v2 && v1.TryAttribute(out PredictionToleranceAttribute vPredictionToleranceAttribute)
                                                                                  && !v1.CheckWithinTolerance(v2, vPredictionToleranceAttribute.tolerance):
                         case PropertyBase p1 when _server is PropertyBase p2 && !p1.Equals(p2):
-                            areEqual = false;
+                            _predictionIsAccurate = false;
                             Debug.LogWarning($"Prediction error with {_predicted.GetType().Name} with predicted: {_predicted} and verified: {_server}");
                             return Navigation.Exit;
                     }
                     return Navigation.Continue;
                 }, predictedPlayer, latestPredictedPlayer, serverPlayer);
-                if (areEqual) break;
+                if (_predictionIsAccurate) break;
                 /* We did not predict properly */
                 PredictionErrors++;
                 // Place base from verified server

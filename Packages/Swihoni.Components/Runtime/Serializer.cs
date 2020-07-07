@@ -10,15 +10,19 @@ namespace Swihoni.Components
 
     public static class Serializer
     {
+        private static NetDataWriter _writer;
+        private static NetDataReader _reader;
+        
         /// <summary>
         /// Serialize element into stream.
         /// </summary>
         public static void Serialize(this ElementBase element, NetDataWriter writer)
         {
+            _writer = writer; // Prevents heap allocation in closure
             element.Navigate(_element =>
             {
                 if (_element.WithAttribute<NoSerialization>()) return Navigation.SkipDescendents;
-                if (_element is PropertyBase property) property.Serialize(writer);
+                if (_element is PropertyBase property) property.Serialize(_writer);
                 return Navigation.Continue;
             });
         }
@@ -28,13 +32,14 @@ namespace Swihoni.Components
         /// </summary>
         public static void Deserialize(this ElementBase element, NetDataReader reader)
         {
+            _reader = reader;
             element.Navigate(_element =>
             {
                 if (_element.WithAttribute<NoSerialization>()) return Navigation.SkipDescendents;
                 if (_element is PropertyBase property)
                 {
                     property.Clear();
-                    property.Deserialize(reader);
+                    property.Deserialize(_reader);
                 }
                 return Navigation.Continue;
             });

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Util.Math;
@@ -61,7 +62,13 @@ namespace Voxel.Map
             return container;
         }
 
-        public override void SetTo(PropertyBase other) => throw new NotImplementedException();
+        public override void SetTo(PropertyBase other)
+        {
+            if (!(other is ModelsProperty otherModels)) throw new ArgumentException("Other was not models");
+            Clear();
+            foreach ((Position3Int position, Container container) in otherModels)
+                Add(position, container);
+        }
 
         public void Add(Position3Int position, Container container) => m_Map.Add(position, container);
     }

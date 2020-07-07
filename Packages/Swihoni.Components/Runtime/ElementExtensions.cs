@@ -12,6 +12,38 @@ namespace Swihoni.Components
 
     public static class ElementExtensions
     {
+        #region Anti-allocation measures for closures
+        
+        private static bool _areEqual;
+
+        private interface IVisitFunc
+        {
+            Navigation Invoke(TriArray<ElementBase> _zip);
+        }
+
+        private class VisitFunc : IVisitFunc
+        {
+            internal static readonly VisitFunc Instance = new VisitFunc();
+            internal Func<ElementBase, Navigation> func;
+            public Navigation Invoke(TriArray<ElementBase> _zip) => func(_zip[0]);
+        }
+
+        private class DualVisitFunc : IVisitFunc
+        {
+            internal static readonly DualVisitFunc Instance = new DualVisitFunc();
+            internal Func<ElementBase, ElementBase, Navigation> func;
+            public Navigation Invoke(TriArray<ElementBase> _zip) => func(_zip[0], _zip[1]);
+        }
+
+        private class TriVisitFunc : IVisitFunc
+        {
+            internal static readonly TriVisitFunc Instance = new TriVisitFunc();
+            internal Func<ElementBase, ElementBase, ElementBase, Navigation> func;
+            public Navigation Invoke(TriArray<ElementBase> _zip) => func(_zip[0], _zip[1], _zip[2]);
+        }
+
+        #endregion
+
         public static bool IsElement(this Type type) => type.IsSubclassOf(typeof(ElementBase));
 
         public static void AppendAll<T>(this List<T> enumerable, params T[] elements) => enumerable.AddRange(elements);
@@ -64,40 +96,43 @@ namespace Swihoni.Components
         /// </summary>
         public static bool EqualTo<T>(this T e1, T e2) where T : ElementBase
         {
-            var areEqual = true;
+            _areEqual = true;
             NavigateZipped((_e1, _e2) =>
             {
                 if (_e1 is PropertyBase p1 && _e2 is PropertyBase p2)
                 {
                     if (p1.Equals(p2))
                         return Navigation.Continue;
-                    areEqual = false;
+                    _areEqual = false;
                     return Navigation.Exit;
                 }
                 return Navigation.Continue;
             }, e1, e2);
-            return areEqual;
+            return _areEqual;
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
         public static void Navigate(this ElementBase e, Func<ElementBase, Navigation> visit)
         {
             var zip = new TriArray<ElementBase> {[0] = e};
-            Navigate(_zip => visit(_zip[0]), zip, 1);
+            VisitFunc.Instance.func = visit;
+            Navigate(VisitFunc.Instance, zip, 1);
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
         public static void NavigateZipped(Func<ElementBase, ElementBase, Navigation> visit, ElementBase e1, ElementBase e2)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2};
-            Navigate(_zip => visit(_zip[0], _zip[1]), zip, 2);
+            DualVisitFunc.Instance.func = visit;
+            Navigate(DualVisitFunc.Instance, zip, 2);
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
         public static void NavigateZipped(Func<ElementBase, ElementBase, ElementBase, Navigation> visit, ElementBase e1, ElementBase e2, ElementBase e3)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2, [2] = e3};
-            Navigate(_zip => visit(_zip[0], _zip[1], _zip[2]), zip, 3);
+            TriVisitFunc.Instance.func = visit;
+            Navigate(TriVisitFunc.Instance, zip, 3);
         }
 
         /// <summary>
@@ -109,13 +144,13 @@ namespace Swihoni.Components
         /// <param name="zip">Zipped element roots.</param>
         /// <param name="size">Amount of elements zipped to zip together. Max three supported.</param>
         /// <exception cref="ArgumentException">If an object navigated was not an element.</exception>
-        private static void Navigate(Func<TriArray<ElementBase>, Navigation> visit, in TriArray<ElementBase> zip, int size)
+        private static void Navigate(IVisitFunc visit, in TriArray<ElementBase> zip, int size)
         {
             if (size <= 0) throw new ArgumentException("Size needs to be greater than zero");
             var exitAll = false;
             void NavigateRecursively(in TriArray<ElementBase> _zip)
             {
-                Navigation navigation = visit(_zip);
+                Navigation navigation = visit.Invoke(_zip);
                 if (navigation == Navigation.Exit)
                     exitAll = true;
                 if (exitAll || navigation == Navigation.SkipDescendents)
