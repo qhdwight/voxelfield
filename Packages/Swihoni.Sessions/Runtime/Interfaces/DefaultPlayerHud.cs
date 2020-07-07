@@ -1,3 +1,4 @@
+using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
@@ -50,31 +51,30 @@ namespace Swihoni.Sessions.Interfaces
             if (isActive)
             {
                 if (localPlayer.With<HealthProperty>())
-                    m_HealthText.BuildText(builder => builder.Append("Health: ").Append(health.Value));
+                    m_HealthText.StartBuild().Append("Health: ").Append(health.Value).Commit(m_HealthText);
                 if (localPlayer.With(out InventoryComponent inventory) && inventory.WithItemEquipped(out ItemComponent equippedItem))
                 {
                     ItemModifierBase modifier = ItemAssetLink.GetModifier(equippedItem.id);
-                    m_AmmoText.BuildText(builder =>
+                    StringBuilder builder = m_AmmoText.StartBuild();
+                    switch (modifier)
                     {
-                        switch (modifier)
-                        {
-                            case GunModifierBase gunModifier:
-                                builder
-                                   .Append("Ammo ")
-                                   .Append(equippedItem.ammoInMag)
-                                   .Append("/")
-                                   .Append(gunModifier.MagSize)
-                                   .Append(" x")
-                                   .Append(equippedItem.ammoInReserve);
-                                break;
-                            case ThrowableModifierBase _:
-                                builder.Append("x").Append(equippedItem.ammoInReserve);
-                                break;
-                            default:
-                                builder.Append("∞");
-                                break;
-                        }
-                    });
+                        case GunModifierBase gunModifier:
+                            builder
+                               .Append("Ammo ")
+                               .Append(equippedItem.ammoInMag)
+                               .Append("/")
+                               .Append(gunModifier.MagSize)
+                               .Append(" x")
+                               .Append(equippedItem.ammoInReserve);
+                            break;
+                        case ThrowableModifierBase _:
+                            builder.Append("x").Append(equippedItem.ammoInReserve);
+                            break;
+                        default:
+                            builder.Append("∞");
+                            break;
+                    }
+                    m_AmmoText.SetText(builder);
 
                     // Color crosshairColor = m_Crosshair.color;
                     // crosshairColor.a = inventory.adsStatus.id.Else(AdsStatusId.HipAiming) == AdsStatusId.Ads ? 0.0f : 1.0f;
@@ -84,19 +84,18 @@ namespace Swihoni.Sessions.Interfaces
                     m_Crosshair.sprite = isDefaultCrosshair ? m_DefaultCrosshair : visualPrefab.Crosshair;
                     m_Crosshair.rectTransform.sizeDelta = Vector2.one * (isDefaultCrosshair ? 32.0f : 48.0f);
 
-                    m_InventoryText.BuildText(builder =>
+                    builder = m_InventoryText.StartBuild();
+                    var realizedIndex = 0;
+                    for (var index = 0; index < inventory.items.Length; index++)
                     {
-                        var realizedIndex = 0;
-                        for (var index = 0; index < inventory.items.Length; index++)
-                        {
-                            ItemComponent item = inventory.items[index];
-                            if (item.id == ItemId.None) continue;
-                            if (realizedIndex++ != 0) builder.Append("    ");
-                            string itemName = ItemAssetLink.GetModifier(item.id).itemName;
-                            // TODO:feature show key bind instead
-                            builder.Append("[").Append(index + 1).Append("] ").Append(itemName);
-                        }
-                    });
+                        ItemComponent item = inventory.items[index];
+                        if (item.id == ItemId.None) continue;
+                        if (realizedIndex++ != 0) builder.Append("    ");
+                        string itemName = ItemAssetLink.GetModifier(item.id).itemName;
+                        // TODO:feature show key bind instead
+                        builder.Append("[").Append(index + 1).Append("] ").Append(itemName);
+                    }
+                    m_InventoryText.SetText(builder);
                 }
                 else
                 {

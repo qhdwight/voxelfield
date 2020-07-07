@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
@@ -434,9 +433,9 @@ namespace Voxel
                                     Position3Int internalPosition = new Position3Int(x, y, z) + Positions[i];
                                     Voxel? v = chunk.GetVoxel(internalPosition);
                                     bool useEmpty = !v.HasValue
-                                                   || internalPosition.x == 0 && lowerBound.x == chunk.Position.x
-                                                   || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
-                                                   || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
+                                                 || internalPosition.x == 0 && lowerBound.x == chunk.Position.x
+                                                 || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
+                                                 || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
                                     float density = useEmpty ? 0.0f : (float) v.Value.density / byte.MaxValue * 2;
                                     CachedDensities[i] = density;
                                     if (density < IsoLevel) cubeIndex |= 1 << i;
@@ -455,32 +454,11 @@ namespace Voxel
                                     {
                                         int index = solidMesh.vertices.Count;
                                         solidMesh.vertices.Add(CachedVertList[TriangleTable[cubeIndex][i + j]] - Offset);
+                                        solidMesh.colors.Add(voxel.color);
                                         solidMesh.triangleIndices.Add(index);
                                     }
                                     if (voxel.texture == VoxelId.Grass && voxel.natural)
-                                    {
-                                        Vector3 normal = Vector3.Cross(solidMesh.vertices.FromEnd(2) - solidMesh.vertices.FromEnd(0),
-                                                                       solidMesh.vertices.FromEnd(1) - solidMesh.vertices.FromEnd(0));
-                                        if (normal.y > 0.0f)
-                                        {
-                                            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1) + Vector3.up);
-                                            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1));
-                                            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0));
-                                            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0) + Vector3.up);
-                                            for (var k = 0; k < 4; k++) foliageMesh.normals.Add(Vector3.up);
-                                            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
-                                            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 3);
-                                            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 2);
-                                            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
-                                            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 2);
-                                            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 1);
-                                            Vector2 uv = Voxel.TileRatio * (Vector2) voxel.TexturePosition();
-                                            foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio, y = Voxel.TileRatio});
-                                            foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio});
-                                            foliageMesh.uvs.Add(uv);
-                                            foliageMesh.uvs.Add(uv + new Vector2 {y = Voxel.TileRatio});
-                                        }
-                                    }
+                                        GenerateFoliage(solidMesh, foliageMesh, ref voxel);
                                     int length = voxel.FaceUVs(CachedUvs);
                                     for (var j = 0; j < length; j++) solidMesh.uvs.Add(CachedUvs[j]);
                                 }
@@ -494,7 +472,7 @@ namespace Voxel
                                     var orientation = (byte) (i + 1);
                                     Voxel? adjacentVoxel = chunk.GetVoxel(new Position3Int(x, y, z) + Adjacents[orientation]);
                                     if (adjacentVoxel?.ShouldRender(orientation) ?? true)
-                                        AddBlockData(voxel, x, y, z, orientation, solidMesh);
+                                        GenerateBlock(ref voxel, x, y, z, orientation, solidMesh);
                                 }
                                 break;
                             }
@@ -504,9 +482,42 @@ namespace Voxel
             }
         }
 
-        private static void AddBlockData(Voxel voxel, int x, int y, int z, byte dir, MeshData meshData)
+        private static void GenerateFoliage(MeshData solidMesh, MeshData foliageMesh, ref Voxel voxel)
         {
-            foreach (Vector3 vert in BlockVerts[dir]) meshData.vertices.Add(new Vector3(x, y, z) + vert);
+            Vector3 normal = Vector3.Cross(solidMesh.vertices.FromEnd(2) - solidMesh.vertices.FromEnd(0),
+                                           solidMesh.vertices.FromEnd(1) - solidMesh.vertices.FromEnd(0));
+            if (normal.y > 0.0f)
+            {
+                foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1) + Vector3.up);
+                foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1));
+                foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0));
+                foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0) + Vector3.up);
+                for (var k = 0; k < 4; k++)
+                {
+                    foliageMesh.colors.Add(voxel.color);
+                    foliageMesh.normals.Add(Vector3.up);
+                }
+                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
+                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 3);
+                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 2);
+                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
+                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 2);
+                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 1);
+                Vector2 uv = Voxel.TileRatio * (Vector2) voxel.TexturePosition();
+                foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio, y = Voxel.TileRatio});
+                foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio});
+                foliageMesh.uvs.Add(uv);
+                foliageMesh.uvs.Add(uv + new Vector2 {y = Voxel.TileRatio});
+            }
+        }
+
+        private static void GenerateBlock(ref Voxel voxel, int x, int y, int z, byte dir, MeshData meshData)
+        {
+            foreach (Vector3 vert in BlockVerts[dir])
+            {
+                meshData.vertices.Add(new Vector3(x, y, z) + vert);
+                meshData.colors.Add(voxel.color);
+            }
             meshData.triangleIndices.Add(meshData.vertices.Count - 4);
             meshData.triangleIndices.Add(meshData.vertices.Count - 3);
             meshData.triangleIndices.Add(meshData.vertices.Count - 2);
@@ -517,7 +528,7 @@ namespace Voxel
             for (var i = 0; i < length; i++) meshData.uvs.Add(CachedUvs[i]);
         }
 
-        private static Vector3 InterpolateVertex(Vector3 p1, Vector3 p2, float v1, float v2)
+        private static Vector3 InterpolateVertex(in Vector3 p1, in Vector3 p2, float v1, float v2)
         {
             if (Mathf.Abs(IsoLevel - v1) < Mathf.Epsilon || Mathf.Abs(v1 - v2) < Mathf.Epsilon)
                 return p1;

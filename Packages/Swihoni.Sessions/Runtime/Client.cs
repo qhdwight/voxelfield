@@ -194,7 +194,7 @@ namespace Swihoni.Sessions
         private void SendCommand() => m_Socket.SendToServer(m_CommandHistory.Peek(), DeliveryMethod.ReliableUnordered);
 
         private static bool _predictionIsAccurate; // Prevents heap allocation in closure
-        
+
         private void CheckPrediction(Container serverSession)
         {
             if (!GetLocalPlayerId(serverSession, out int localPlayerId))
@@ -421,7 +421,7 @@ namespace Swihoni.Sessions
                 if (i == 0 && recentPlayer != null) SendDebug(recentPlayer);
             }
         }
-        
+
         public override void StringCommand(int playerId, string stringCommand)
             => m_CommandHistory.Peek().Require<StringCommandProperty>().SetTo(stringCommand);
 

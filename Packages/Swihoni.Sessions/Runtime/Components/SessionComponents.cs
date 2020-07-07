@@ -43,7 +43,7 @@ namespace Swihoni.Sessions.Components
     {
         public UIntProperty latencyUs;
     }
-    
+
     [Serializable, ServerOnly]
     public class HasSentInitialData : BoolProperty
     {

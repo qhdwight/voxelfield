@@ -1,5 +1,5 @@
 using UnityEngine;
- 
+
 namespace Voxel.Map
 {
     public class MapSpawn : MonoBehaviour

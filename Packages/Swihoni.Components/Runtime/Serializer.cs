@@ -12,7 +12,7 @@ namespace Swihoni.Components
     {
         private static NetDataWriter _writer;
         private static NetDataReader _reader;
-        
+
         /// <summary>
         /// Serialize element into stream.
         /// </summary>

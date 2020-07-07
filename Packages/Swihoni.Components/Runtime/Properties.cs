@@ -36,7 +36,7 @@ namespace Swihoni.Components
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation)
             => Value = p2.Value > p1.Value ? InterpolateUInt(p1.Value, p2.Value, interpolation) : p2.Value;
     }
-    
+
     [Serializable]
     public class TimeUsProperty : UIntProperty
     {
@@ -119,6 +119,9 @@ namespace Swihoni.Components
     [Serializable]
     public class BoolProperty : PropertyBase<bool>
     {
+        public BoolProperty() { }
+        public BoolProperty(bool value) : base(value) { }
+
         public override bool ValueEquals(PropertyBase<bool> other) => other.Value == Value;
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetBool();

@@ -177,7 +177,7 @@ namespace Console.Interface
             m_ConsoleInput.text = string.Empty;
             m_ConsoleInput.ActivateInputField();
             m_ConsoleInput.Select();
-            
+
             if (m_OpenedForCommand) SetInterfaceActive(false);
         }
     }

@@ -6,7 +6,6 @@ using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
-using Voxel.Map;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
 
@@ -16,7 +15,7 @@ namespace Voxelfield.Interface.Showdown
     {
         [SerializeField] private BufferedTextGui m_UpperText = default;
         [SerializeField] private ProgressInterface m_SecuringProgress = default;
-        
+
         public override void Render(SessionBase session, Container sessionContainer)
         {
             bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Showdown;
@@ -65,13 +64,15 @@ namespace Voxelfield.Interface.Showdown
                 bool isBuyPhase = totalUs > ShowdownMode.FightTimeUs;
                 if (isBuyPhase) totalUs -= ShowdownMode.FightTimeUs;
                 uint minutes = totalUs / 60_000_000u, seconds = totalUs / 1_000_000u % 60u;
-                void AppendTime(string prefix, StringBuilder builder)
+                StringBuilder builder = m_UpperText.StartBuild();
+                void AppendTime(string prefix)
                 {
                     builder.Append(prefix).Append(minutes).Append(":");
                     if (seconds < 10) builder.Append("0");
                     builder.Append(seconds);
                 }
-                m_UpperText.BuildText(builder => AppendTime(isBuyPhase ? "Buy! Time remaining until first stage: " : "Time to secure the cure: ", builder));
+                AppendTime(isBuyPhase ? "Buy! Time remaining until first stage: " : "Time to secure the cure: ");
+                m_UpperText.SetText(builder);
             }
             else
             {

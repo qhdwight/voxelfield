@@ -6,7 +6,7 @@ namespace Voxelfield.Session.Mode
     public class CurePackageBehavior : ModelBehavior
     {
         [SerializeField] private GameObject m_Cure = default;
-        
+
         public void Render(CurePackageComponent cure)
         {
             if (cure.isActive.WithoutValue)

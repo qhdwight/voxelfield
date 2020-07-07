@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using Console;
@@ -15,7 +14,6 @@ using UnityEngine;
 using Voxel;
 using Voxel.Map;
 using Voxelfield.Session.Mode;
-using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -30,7 +28,7 @@ namespace Voxelfield.Session
 
         private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);
         private readonly IPEndPoint m_LocalHost = new IPEndPoint(IPAddress.Loopback, 7777);
-        
+
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
@@ -65,7 +63,7 @@ namespace Voxelfield.Session
 
             Debug.Log("Started session manager");
         }
-        
+
 #if UNITY_EDITOR
         private void OnApplicationPause(bool pauseStatus)
         {
@@ -203,18 +201,19 @@ namespace Voxelfield.Session
             var testMap = new MapContainer
             {
                 name = new StringProperty("Test"),
-                terrainHeight = new IntProperty(4),
-                dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-2, -1, -2), upperBound = new Position3IntProperty(2, 1, 2)},
+                terrainHeight = new IntProperty(12),
+                dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-2, 0, -2), upperBound = new Position3IntProperty(2, 1, 2)},
                 noise = new NoiseComponent
                 {
                     seed = new IntProperty(0),
-                    octaves = new ByteProperty(4),
+                    octaves = new ByteProperty(3),
                     lateralScale = new FloatProperty(35.0f),
-                    verticalScale = new FloatProperty(3.5f),
+                    verticalScale = new FloatProperty(1.5f),
                     persistance = new FloatProperty(0.5f),
                     lacunarity = new FloatProperty(0.5f)
                 },
-                models = models
+                models = models,
+                breakableEdges = new BoolProperty(false)
             };
             MapManager.SaveMapSave(testMap);
             Debug.Log("Saved Test Map");

@@ -13,7 +13,7 @@ namespace Swihoni.Components
     public static class ElementExtensions
     {
         #region Anti-allocation measures for closures
-        
+
         private static bool _areEqual;
 
         private interface IVisitFunc

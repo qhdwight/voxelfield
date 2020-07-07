@@ -18,7 +18,8 @@ namespace Voxelfield.Session
 
         protected internal virtual void VoxelTransaction(VoxelChangeTransaction uncommitted) => uncommitted.Commit();
 
-        protected internal virtual void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, bool destroyBlocks = false, ChangedVoxelsProperty changedVoxels = null)
+        protected internal virtual void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, bool destroyBlocks = false,
+                                                          ChangedVoxelsProperty changedVoxels = null)
             => ChunkManager.Singleton.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, changedVoxels);
 
         private readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
@@ -60,7 +61,8 @@ namespace Voxelfield.Session
 
         protected override void OnSettingsTick(Container session)
         {
-            MapManager.Singleton.ModelFilter = container => container.Without(out ModeIdProperty modeId) || session.Require<ModeIdProperty>() == ModeIdProperty.Designer || modeId == session.Require<ModeIdProperty>();
+            MapManager.Singleton.ModelFilter = container =>
+                container.Without(out ModeIdProperty modeId) || session.Require<ModeIdProperty>() == ModeIdProperty.Designer || modeId == session.Require<ModeIdProperty>();
             MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
         }
 

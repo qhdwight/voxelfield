@@ -18,8 +18,8 @@ namespace Voxelfield.Interface
 
         public void Render(int leftScore, Color leftColor, int rightScore, Color rightColor)
         {
-            m_LeftText.BuildText(builder => builder.Append(leftScore));
-            m_RightText.BuildText(builder => builder.Append(rightScore));
+            m_LeftText.StartBuild().Append(leftScore).Commit(m_LeftText);
+            m_RightText.StartBuild().Append(rightScore).Commit(m_RightText);
             leftColor.a = rightColor.a = 0.8f;
             m_LeftScore.color = leftColor;
             m_RightScore.color = rightColor;

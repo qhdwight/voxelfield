@@ -19,7 +19,7 @@ namespace Voxelfield.Interface
         public void Set(uint timeUs, uint maxTimeUs)
         {
             m_Slider.value = (float) (timeUs / (decimal) maxTimeUs);
-            m_Text.BuildText(builder => builder.AppendFormat("{0:F1} Seconds", timeUs * TimeConversions.MicrosecondToSecond));
+            m_Text.StartBuild().AppendFormat("{0:F1} Seconds", timeUs * TimeConversions.MicrosecondToSecond).Commit(m_Text);
         }
     }
 }

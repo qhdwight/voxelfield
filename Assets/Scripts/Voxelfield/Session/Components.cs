@@ -44,7 +44,7 @@ namespace Voxelfield.Session
         public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
         public ArrayElement<FlagArrayElement> teamFlags = new ArrayElement<FlagArrayElement>(2);
     }
-    
+
     [Serializable]
     public class CurePackageComponent : ComponentBase
     {
@@ -85,7 +85,8 @@ namespace Voxelfield.Session
     public static class VoxelfieldComponents
     {
         [RuntimeInitializeOnLoadMethod]
-        public static void Initialize() => SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(IdProperty), typeof(TeamProperty), typeof(VectorProperty), typeof(ModeIdProperty));
+        public static void Initialize() =>
+            SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(IdProperty), typeof(TeamProperty), typeof(VectorProperty), typeof(ModeIdProperty));
 
         public static readonly SessionElements SessionElements;
 

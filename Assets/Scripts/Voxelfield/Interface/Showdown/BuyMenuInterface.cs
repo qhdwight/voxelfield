@@ -68,7 +68,7 @@ namespace Voxelfield.Interface.Showdown
 
             if (isActive)
             {
-                m_MoneyText.BuildText(builder => builder.Append("$").Append(localPlayer.Require<MoneyComponent>().count));
+                m_MoneyText.StartBuild().Append("$").Append(localPlayer.Require<MoneyComponent>().count).Commit(m_MoneyText);
             }
             SetInterfaceActive(isActive);
         }

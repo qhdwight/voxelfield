@@ -8,7 +8,6 @@ using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
-using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 
 namespace Swihoni.Sessions

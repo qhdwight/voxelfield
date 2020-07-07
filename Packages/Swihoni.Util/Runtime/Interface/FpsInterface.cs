@@ -22,7 +22,7 @@ namespace Swihoni.Util.Interface
         private void UpdateFramerate()
         {
             float fps = 1.0f / Time.deltaTime;
-            m_FramerateText.BuildText(builder => builder.AppendFormat("FPS: {0:F0}", fps));
+            m_FramerateText.StartBuild().AppendFormat("FPS: {0:F0}", fps).Commit(m_FramerateText);
         }
     }
 }

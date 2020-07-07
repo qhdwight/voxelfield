@@ -11,5 +11,6 @@ namespace Voxel.Map
 
         public ChangedVoxelsProperty changedVoxels;
         public ModelsProperty models;
+        public BoolProperty breakableEdges;
     }
 }

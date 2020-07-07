@@ -21,7 +21,7 @@ namespace Swihoni.Sessions.Entities
 
         public override void SetActive(bool isActive)
         {
-            if (isActive) 
+            if (isActive)
             {
                 m_LastContactElapsedUs = 0u;
             }

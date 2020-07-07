@@ -31,20 +31,19 @@ namespace Voxelfield.Interface.Designer
             if (isVisible)
             {
                 var designer = localPlayer.Require<DesignerPlayerComponent>();
-                m_InformationText.BuildText(builder =>
+                StringBuilder builder = m_InformationText.StartBuild();
+                switch (equippedItemId)
                 {
-                    switch (equippedItemId)
-                    {
-                        case ItemId.VoxelWand:
-                            AppendProperty("P1: ", designer.positionOne, builder).Append("\n");
-                            AppendProperty("P2: ", designer.positionTwo, builder).Append("\n");
-                            AppendProperty("Selected: ", designer.selectedBlockId, builder);
-                            break;
-                        case ItemId.ModelWand:
-                            AppendProperty("Selected: ", designer.selectedModelId, builder);
-                            break;
-                    }
-                });
+                    case ItemId.VoxelWand:
+                        AppendProperty("P1: ", designer.positionOne, builder).Append("\n");
+                        AppendProperty("P2: ", designer.positionTwo, builder).Append("\n");
+                        AppendProperty("Selected: ", designer.selectedBlockId, builder);
+                        break;
+                    case ItemId.ModelWand:
+                        AppendProperty("Selected: ", designer.selectedModelId, builder);
+                        break;
+                }
+                m_InformationText.SetText(builder);
             }
             SetInterfaceActive(isVisible);
         }

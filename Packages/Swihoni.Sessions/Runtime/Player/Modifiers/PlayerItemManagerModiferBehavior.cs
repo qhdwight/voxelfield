@@ -57,7 +57,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (hasValidWantedIndex && wantsNewIndex && !isAlreadyUnequipping)
             {
                 equipStatus.id.Value = ItemEquipStatusId.Unequipping;
-                equipStatus.elapsedUs.Value = 0u; 
+                equipStatus.elapsedUs.Value = 0u;
             }
 
             if (inventory.HasNoItemEquipped) return;

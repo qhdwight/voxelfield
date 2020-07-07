@@ -1,4 +1,3 @@
-using System;
 using Input;
 using Swihoni.Components;
 using Swihoni.Sessions;

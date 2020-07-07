@@ -22,17 +22,17 @@ namespace Swihoni.Sessions.Interfaces
             float time = Time.realtimeSinceStartup;
             if (time - m_LastUpdateTime < m_UpdateRate) return;
 
-            if (sessionContainer.WithPropertyWithValue(out LocalPlayerId localPlayer) && sessionContainer.GetPlayer(localPlayer).With(out StatsComponent stats) &&
-                stats.ping.WithValue)
-                m_PingText.BuildText(builder => builder.Append("Ping: ").Append(stats.ping).Append(" ms"));
+            if (sessionContainer.WithPropertyWithValue(out LocalPlayerId localPlayer)
+             && sessionContainer.GetPlayer(localPlayer).With(out StatsComponent stats) && stats.ping.WithValue)
+                m_PingText.StartBuild().Append("Ping: ").Append(stats.ping).Append(" ms").Commit(m_PingText);
             if (session is Client client)
-                m_PredictionErrorText.BuildText(builder => builder.Append("Pred Err: ").Append(client.PredictionErrors));
+                m_PredictionErrorText.StartBuild().Append("Pred Err: ").Append(client.PredictionErrors).Commit(m_PredictionErrorText);
             if (session is NetworkedSessionBase networkSession)
             {
-                m_ResetErrorText.BuildText(builder => builder.Append("Rst Err: ").Append(networkSession.ResetErrors));
-                m_UploadText.BuildText(builder => builder.AppendFormat("Up: {0:F1} kb/s", networkSession.Socket.SendRateKbs));
-                m_DownloadText.BuildText(builder => builder.AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.ReceiveRateKbs));
-                m_PacketLossText.BuildText(builder => builder.AppendFormat("Drop: {0:P1}", networkSession.Socket.PacketLoss));
+                m_ResetErrorText.StartBuild().Append("Rst Err: ").Append(networkSession.ResetErrors).Commit(m_ResetErrorText);
+                m_UploadText.StartBuild().AppendFormat("Up: {0:F1} kb/s", networkSession.Socket.SendRateKbs).Commit(m_UploadText);
+                m_DownloadText.StartBuild().AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.ReceiveRateKbs).Commit(m_DownloadText);
+                m_PacketLossText.StartBuild().AppendFormat("Drop: {0:P1}", networkSession.Socket.PacketLoss).Commit(m_PacketLossText);
             }
             m_LastUpdateTime = time;
         }

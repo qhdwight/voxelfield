@@ -112,7 +112,7 @@ namespace Voxelfield.Session.Mode
                 }
             }
         }
-        
+
         public bool IsLookingAt<TBehavior>(Container player, out TBehavior behavior)
         {
             Ray ray = SessionBase.GetRayForPlayer(player);
@@ -181,7 +181,7 @@ namespace Voxelfield.Session.Mode
             }
             player.Require<ShowdownPlayerComponent>().Zero();
         }
- 
+
         private static void StartFirstStage(SessionBase session, Container sessionContainer, ShowdownSessionComponent stage)
         {
             ModelsProperty models = MapManager.Singleton.Map.models;

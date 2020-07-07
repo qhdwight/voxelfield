@@ -110,7 +110,7 @@ namespace Swihoni.Sessions.Modes
                 bool isSelfInflicting = inflictingPlayerId == hitPlayerId,
                      usesHitMarker = inflictingPlayer.With(out HitMarkerComponent hitMarker) && !isSelfInflicting,
                      usesNotifier = hitPlayer.With(out DamageNotifierComponent damageNotifier);
-                
+
                 var health = hitPlayer.Require<HealthProperty>();
                 bool isKilling = damage >= health;
                 if (isKilling)
@@ -141,7 +141,7 @@ namespace Swihoni.Sessions.Modes
                     health.Value -= damage;
                     if (usesHitMarker) hitMarker.isKill.Value = false;
                 }
-                
+
                 const uint notifierDuration = 1_000_000u;
                 if (usesHitMarker) hitMarker.elapsedUs.Value = notifierDuration;
                 if (usesNotifier)

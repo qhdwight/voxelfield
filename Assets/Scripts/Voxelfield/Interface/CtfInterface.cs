@@ -16,7 +16,7 @@ namespace Voxelfield.Interface
         [SerializeField] private ProgressInterface m_TakeProgress = default;
         [SerializeField] private UpperScoreInterface m_ScoreInterface = default;
         [SerializeField] private Image m_HasFlagSprite = default;
-        
+
         public override void Render(SessionBase session, Container sessionContainer)
         {
             bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Ctf;
@@ -24,7 +24,7 @@ namespace Voxelfield.Interface
             {
                 var ctf = sessionContainer.Require<CtfComponent>();
                 RenderLocalPlayer(session, sessionContainer, ctf);
-                m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], Color.blue, ctf.teamScores[CtfMode.RedTeam], Color.red);   
+                m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], Color.blue, ctf.teamScores[CtfMode.RedTeam], Color.red);
             }
             SetInterfaceActive(isVisible);
         }
@@ -45,7 +45,7 @@ namespace Voxelfield.Interface
                             if (flag.captureElapsedTimeUs < CtfMode.TakeFlagDurationUs)
                             {
                                 isTaking = true;
-                                m_TakeProgress.Set(flag.captureElapsedTimeUs, CtfMode.TakeFlagDurationUs);   
+                                m_TakeProgress.Set(flag.captureElapsedTimeUs, CtfMode.TakeFlagDurationUs);
                             }
                             else
                             {

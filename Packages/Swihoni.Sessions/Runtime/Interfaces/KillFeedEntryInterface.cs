@@ -25,12 +25,12 @@ namespace Swihoni.Sessions.Interfaces
             bool isVisible = feed.elapsedUs > 0u;
             if (isVisible)
             {
-                void Build(StringBuilder builder) => builder.Append(GetName(feed.killingPlayerId, sessionContainer))
-                                                            .Append(" [")
-                                                            .Append(feed.weaponName.Builder)
-                                                            .Append("] ")
-                                                            .Append(GetName(feed.killedPlayerId, sessionContainer));
-                m_Text.BuildText(Build);
+                m_Text.StartBuild()
+                      .Append(GetName(feed.killingPlayerId, sessionContainer))
+                      .Append(" [")
+                      .Append(feed.weaponName.Builder)
+                      .Append("] ")
+                      .Append(GetName(feed.killedPlayerId, sessionContainer)).Commit(m_Text);
             }
             SetInterfaceActive(isVisible);
         }

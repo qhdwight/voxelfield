@@ -97,20 +97,27 @@ namespace Voxel
                 : m_ChunkManager.GetVoxel(internalPosition + m_Position * m_ChunkSize);
         }
 
-        public Voxel GetVoxelNoCheck(in Position3Int position) { return m_Voxels[position.x, position.y, position.z]; }
+        public Voxel GetVoxelNoCheck(in Position3Int position) => m_Voxels[position.x, position.y, position.z];
 
-        private VoxelChangeData GetChangeDataFromSave(in Position3Int position, MapContainer save)
+        private VoxelChangeData GetChangeDataFromSave(in Position3Int voxelPosition, MapContainer save)
         {
             float
-                noiseHeight = Noise.Simplex(m_Position.x * m_ChunkSize + position.x,
-                                            m_Position.z * m_ChunkSize + position.z, save.noise),
-                height = noiseHeight + save.terrainHeight - position.y - m_Position.y * m_ChunkSize,
+                noiseHeight = Noise.Simplex(m_Position.x * m_ChunkSize + voxelPosition.x,
+                                            m_Position.z * m_ChunkSize + voxelPosition.z, save.noise),
+                height = noiseHeight + save.terrainHeight - voxelPosition.y - m_Position.y * m_ChunkSize,
                 floatDensity = Mathf.Clamp(height, 0.0f, 2.0f);
             var density = (byte) (floatDensity * byte.MaxValue / 2.0f);
+            bool breakable = save.breakableEdges || !(m_Position.x == save.dimension.lowerBound.Value.x && voxelPosition.x <= 1
+                                                   || m_Position.x == save.dimension.upperBound.Value.x && voxelPosition.x == m_ChunkSize - 1
+                                                   || m_Position.y == save.dimension.lowerBound.Value.y && voxelPosition.y <= 1
+                                                   || m_Position.y == save.dimension.upperBound.Value.y && voxelPosition.y == m_ChunkSize - 1
+                                                   || m_Position.z == save.dimension.lowerBound.Value.z && voxelPosition.z <= 1
+                                                   || m_Position.z == save.dimension.upperBound.Value.z && voxelPosition.z == m_ChunkSize - 1);
             return new VoxelChangeData
             {
                 texture = height > 5.0f ? VoxelId.Stone : VoxelId.Grass,
-                renderType = VoxelRenderType.Smooth, density = density, breakable = true, orientation = Orientation.None, natural = true
+                renderType = VoxelRenderType.Smooth, density = density, breakable = breakable, orientation = Orientation.None, natural = true,
+                color = new Color32(255, 255, 255, 255)
             };
         }
 
@@ -188,10 +195,9 @@ namespace Voxel
             mesh.SetVertices(data.vertices);
             mesh.SetIndices(data.triangleIndices.ToArray(), MeshTopology.Triangles, 0);
             mesh.SetUVs(0, data.uvs);
-            if (data.normals.Count == 0)
-                mesh.RecalculateNormals();
-            else
-                mesh.SetNormals(data.normals);
+            mesh.SetColors(data.colors);
+            if (data.normals.Count == 0) mesh.RecalculateNormals();
+            else mesh.SetNormals(data.normals);
             mesh.RecalculateTangents();
         }
     }

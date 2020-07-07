@@ -55,7 +55,7 @@ namespace Voxelfield.Item
             var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
             DimensionFunction(session, designer, _ => new VoxelChangeData {texture = designer.selectedBlockId, renderType = VoxelRenderType.Block});
         }
-        
+
         public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,
                                            uint durationUs)
         {

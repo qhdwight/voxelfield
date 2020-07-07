@@ -61,8 +61,8 @@ namespace Swihoni.Sessions
         protected internal virtual Vector3 GetSpawnPosition() => new Vector3 {y = 10.0f};
 
         public virtual bool IsPaused(Container session) => false;
-        
-        public virtual void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior) {  }
+
+        public virtual void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior) { }
     }
 
     public abstract class SessionBase : IDisposable

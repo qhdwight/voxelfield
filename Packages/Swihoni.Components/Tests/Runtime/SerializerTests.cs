@@ -56,14 +56,14 @@ namespace Swihoni.Components.Tests
             nested[0][1].@byte.Value = 2;
             nested[1][0].@byte.Value = 3;
             nested[1][1].@byte.Value = 4;
-            
+
             var writer = new NetDataWriter();
             nested.Serialize(writer);
 
             var reader = new NetDataReader(writer.Data);
             var deserialized = new ArrayElement<ByteArrayElement>(2);
             deserialized.Deserialize(reader);
-            
+
             Assert.AreEqual(1, deserialized[0][0].@byte.Value);
             Assert.AreEqual(2, deserialized[0][1].@byte.Value);
             Assert.AreEqual(3, deserialized[1][0].@byte.Value);

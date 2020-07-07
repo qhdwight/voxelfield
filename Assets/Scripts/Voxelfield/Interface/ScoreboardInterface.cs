@@ -4,6 +4,5 @@ namespace Voxelfield.Interface
 {
     public class ScoreboardInterface : ScoreboardInterfaceBase<ScoreboardEntryInterface>
     {
-        
     }
 }

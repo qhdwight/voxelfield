@@ -30,8 +30,9 @@ namespace Voxel
         public byte texture, density, orientation;
         public VoxelRenderType renderType;
         public bool breakable, natural;
+        public Color32 color;
 
-        public void SetVoxelData(VoxelChangeData changeData)
+        public void SetVoxelData(in VoxelChangeData changeData)
         {
             if (changeData.texture.HasValue) texture = changeData.texture.Value;
             if (changeData.renderType.HasValue) renderType = changeData.renderType.Value;
@@ -39,6 +40,7 @@ namespace Voxel
             if (changeData.breakable.HasValue) breakable = changeData.breakable.Value;
             if (changeData.orientation.HasValue) orientation = changeData.orientation.Value;
             if (changeData.natural.HasValue) natural = changeData.natural.Value;
+            if (changeData.color.HasValue) color = changeData.color.Value;
         }
 
         public Vector2Int TexturePosition()

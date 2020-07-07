@@ -22,7 +22,7 @@ namespace Voxel.Map
         private static ModelBehavior[] _modelPrefabs;
 
         [SerializeField] private bool m_TruncateDimension = true;
-        
+
         private Pool<ModelBehavior>[] m_ModelsPool;
         private StringProperty m_WantedMapName;
         private IEnumerator m_ManageActionsRoutine;
@@ -99,7 +99,9 @@ namespace Voxel.Map
         {
             string mapPath = GetMapPath(map.name);
 #if UNITY_EDITOR
-            if (map.name == _testMapName) mapPath = "Assets/Resources/Maps/Test.bytes";
+            if (map.name == _testMapName) mapPath = @"Assets/Resources/Maps/Test.bytes";
+#else
+            if (map.name == _testMapName) mapPath = @"C:/Users/qhdwi/Projects/Programming/Unity/Compound/Assets/Resources/Maps/Test.bytes";
 #endif
             var writer = new NetDataWriter();
             map.Serialize(writer);

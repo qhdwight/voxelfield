@@ -65,7 +65,8 @@ namespace Voxelfield.Item
             Vector3 position = hit.point + hit.normal * 0.5f;
             var voxelInjector = (VoxelInjector) session.Injector;
             byte texture = session.GetPlayerFromId(playerId).With(out DesignerPlayerComponent designer) && designer.selectedBlockId.WithValue
-                ? designer.selectedBlockId : VoxelId.Stone;
+                ? designer.selectedBlockId
+                : VoxelId.Stone;
             voxelInjector.SetVoxelData((Position3Int) position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = texture});
         }
     }
