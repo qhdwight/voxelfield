@@ -33,6 +33,7 @@ namespace Input
         ItemTen,
         Ads,
         ToggleConsole,
+        ConsoleCommand,
         OpenScoreboard,
         AutocompleteConsole,
         PreviousConsoleCommand,
@@ -40,6 +41,7 @@ namespace Input
         Fly,
         Buy,
         Throw,
+        OpenModelSelect
     }
 
     public enum MouseMovement
@@ -85,13 +87,15 @@ namespace Input
                     [InputType.ItemTen] = KeyCode.Alpha0,
                     [InputType.Ads] = KeyCode.Mouse1,
                     [InputType.ToggleConsole] = KeyCode.BackQuote,
+                    [InputType.ConsoleCommand] = KeyCode.Slash,
                     [InputType.OpenScoreboard] = KeyCode.Tab,
                     [InputType.AutocompleteConsole] = KeyCode.Tab,
                     [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
                     [InputType.NextConsoleCommand] = KeyCode.DownArrow,
                     [InputType.Fly] = KeyCode.F,
                     [InputType.Buy] = KeyCode.B,
-                    [InputType.Throw] = KeyCode.G
+                    [InputType.Throw] = KeyCode.G,
+                    [InputType.OpenModelSelect] = KeyCode.M
                 }
             };
     }

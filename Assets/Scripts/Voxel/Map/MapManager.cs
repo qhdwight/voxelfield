@@ -21,6 +21,8 @@ namespace Voxel.Map
         private static Dictionary<string, TextAsset> _defaultMaps;
         private static ModelBehavior[] _modelPrefabs;
 
+        [SerializeField] private bool m_TruncateDimension = true;
+        
         private Pool<ModelBehavior>[] m_ModelsPool;
         private StringProperty m_WantedMapName;
         private IEnumerator m_ManageActionsRoutine;
@@ -114,7 +116,7 @@ namespace Voxel.Map
             Debug.Log(isEmpty ? "Unloading map" : $"Starting to load map: {mapName}");
 
 #if UNITY_EDITOR
-            map.dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, 0, -1), upperBound = new Position3IntProperty(0, 0, 0)};
+            if (m_TruncateDimension) map.dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, 0, -1), upperBound = new Position3IntProperty(0, 0, 0)};
 #endif
 
             yield return LoadMapSave(map);
@@ -137,16 +139,33 @@ namespace Voxel.Map
             Models.Clear();
             foreach (Pool<ModelBehavior> pool in m_ModelsPool) pool.ReturnAll();
             foreach ((Position3Int position, Container model) in map.models)
+                InstantiateModel(position, model);
+        }
+
+        private void InstantiateModel(in Position3Int position, Container model)
+        {
+            if (ModelFilter == null || ModelFilter(model))
             {
-                if (ModelFilter == null || ModelFilter(model))
-                {
-                    ushort modelId = model.Require<ModelIdProperty>();
-                    ModelBehavior modelInstance = m_ModelsPool[modelId].Obtain();
-                    modelInstance.SetContainer(model);
-                    modelInstance.transform.SetPositionAndRotation(position + new Vector3 {y = 0.5f}, Quaternion.identity);
-                    Models.Add(position, modelInstance);
-                }
+                ushort modelId = model.Require<ModelIdProperty>();
+                ModelBehavior modelInstance = m_ModelsPool[modelId].Obtain();
+                modelInstance.Set(position, model);
+                modelInstance.transform.SetPositionAndRotation(position - new Vector3 {y = 0.5f}, Quaternion.identity);
+                Models.Add(position, modelInstance);
             }
+        }
+
+        public void AddModel(in Position3Int position, Container model)
+        {
+            Map.models.Add(position, model);
+            InstantiateModel(position, model);
+        }
+
+        public void RemoveModel(in Position3Int position)
+        {
+            Map.models.Remove(position);
+            ModelBehavior model = Models[position];
+            Models.Remove(position);
+            m_ModelsPool[model.Id].Return(model);
         }
 
         // private static void PlaceTrees(string mapName, MapSave mapSave)

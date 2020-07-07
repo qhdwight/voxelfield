@@ -247,7 +247,7 @@ namespace Swihoni.Sessions
                         }
                         if (!IsPaused)
                         {
-                            serverPlayer.MergeFrom(receivedClientCommands); // Merge in trusted
+                            MergeTrusted(receivedClientCommands, serverPlayer);
                         }
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
@@ -263,6 +263,17 @@ namespace Swihoni.Sessions
             {
                 serverPlayerTimeUs.Value = serverStamp.timeUs;
             }
+        }
+
+        private static void MergeTrusted(ElementBase receivedClientCommands, ElementBase serverPlayer)
+        {
+            ElementExtensions.NavigateZipped((_server, _client) =>
+            {
+                if (!_server.WithAttribute<ClientTrustedAttribute>()) return Navigation.SkipDescendents;
+                if (_server is PropertyBase serverProperty && _client is PropertyBase clientProperty)
+                    serverProperty.SetFromIfWith(clientProperty);
+                return Navigation.Continue;
+            }, serverPlayer, receivedClientCommands);
         }
 
         protected void SetupNewPlayer(Container session, int playerId, Container player)

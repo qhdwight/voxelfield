@@ -36,11 +36,11 @@ namespace Swihoni.Sessions.Modes
                                                           ItemId.Rifle,
                                                           ItemId.Shotgun,
                                                           ItemId.Sniper,
-                                                          ItemId.Pistol,
+                                                          ItemId.Deagle,
                                                           ItemId.Grenade,
                                                           ItemId.Molotov,
                                                           ItemId.C4,
-                                                          ItemId.GrenadeLauncher,
+                                                          ItemId.Smg,
                                                           ItemId.MissileLauncher);
             }
         }

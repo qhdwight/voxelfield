@@ -22,8 +22,8 @@ namespace Voxel
     public struct Voxel
     {
         public const float
-            TileSize = 34.0f,
-            ImageSize = 136.0f,
+            TileSize = 256.0f,
+            ImageSize = 1024.0f,
             TileRatio = TileSize / ImageSize,
             PixelRatio = 1.0f / ImageSize;
 
@@ -68,29 +68,22 @@ namespace Voxel
                 case VoxelRenderType.Block:
                 {
                     float x = TileRatio * tilePos.x, y = TileRatio * tilePos.y;
-                    uvs[0] = new Vector2(x + TileRatio - PixelRatio,
-                                         y + PixelRatio);
-                    uvs[1] = new Vector2(x + TileRatio - PixelRatio,
-                                         y + TileRatio - PixelRatio);
-                    uvs[2] = new Vector2(x + PixelRatio,
-                                         y + TileRatio - PixelRatio);
-                    uvs[3] = new Vector2(x + PixelRatio,
-                                         y + PixelRatio);
+                    uvs[0] = new Vector2(x + TileRatio, y);
+                    uvs[1] = new Vector2(x + TileRatio, y + TileRatio);
+                    uvs[2] = new Vector2(x, y + TileRatio);
+                    uvs[3] = new Vector2(x, y);
                     return 4;
                 }
                 case VoxelRenderType.Smooth:
                 {
                     float x = TileRatio * tilePos.x, y = TileRatio * tilePos.y;
-                    uvs[0] = new Vector2(x + PixelRatio,
-                                         y + PixelRatio);
-                    uvs[2] = new Vector2(x + TileRatio - PixelRatio,
-                                         y + PixelRatio);
-                    uvs[1] = new Vector2(x + PixelRatio,
-                                         y + TileRatio - PixelRatio);
+                    uvs[0] = new Vector2(x, y);
+                    uvs[2] = new Vector2(x + TileRatio, y);
+                    uvs[1] = new Vector2(x, y + TileRatio);
                     return 3;
                 }
+                default: return 0;
             }
-            return 0;
         }
 
         public override string ToString() => $"Texture: {texture}, Render Type: {renderType}, Density: {density}, Breakable: {breakable}, Orientation: {orientation}";

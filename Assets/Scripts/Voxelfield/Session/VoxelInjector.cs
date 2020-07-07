@@ -18,8 +18,8 @@ namespace Voxelfield.Session
 
         protected internal virtual void VoxelTransaction(VoxelChangeTransaction uncommitted) => uncommitted.Commit();
 
-        protected internal virtual void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, ChangedVoxelsProperty changedVoxels = null)
-            => ChunkManager.Singleton.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, changedVoxels);
+        protected internal virtual void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, bool destroyBlocks = false, ChangedVoxelsProperty changedVoxels = null)
+            => ChunkManager.Singleton.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, changedVoxels);
 
         private readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
 
@@ -60,7 +60,7 @@ namespace Voxelfield.Session
 
         protected override void OnSettingsTick(Container session)
         {
-            MapManager.Singleton.ModelFilter = container => container.Without(out ModeIdProperty modeId) || modeId == session.Require<ModeIdProperty>();
+            MapManager.Singleton.ModelFilter = container => container.Without(out ModeIdProperty modeId) || session.Require<ModeIdProperty>() == ModeIdProperty.Designer || modeId == session.Require<ModeIdProperty>();
             MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
         }
 
@@ -70,7 +70,7 @@ namespace Voxelfield.Session
         public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
         {
             var center = (Position3Int) throwableBehavior.transform.position;
-            RemoveVoxelRadius(center, throwableBehavior.Radius * 0.4f, true);
+            RemoveVoxelRadius(center, throwableBehavior.Radius * 0.4f, true, true);
         }
     }
 }

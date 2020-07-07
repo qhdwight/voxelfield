@@ -17,14 +17,14 @@ namespace Voxelfield.Item
 
         private static readonly string[] Commands = {"set", "revert"};
 
-        protected override void OnEquip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
-            => SessionCommand(session, playerId, Commands);
-
-        private static void SessionCommand(SessionBase session, int playerId, params string[] commandNames)
+        public static void SessionCommand(SessionBase session, int playerId, params string[] commandNames)
         {
             foreach (string commandName in commandNames)
                 ConsoleCommandExecutor.SetCommand(commandName, args => session.StringCommand(playerId, string.Join(" ", args)));
         }
+
+        protected override void OnEquip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+            => SessionCommand(session, playerId, Commands);
 
         protected override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
             => ConsoleCommandExecutor.RemoveCommands(Commands);
@@ -55,7 +55,7 @@ namespace Voxelfield.Item
             var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
             DimensionFunction(session, designer, _ => new VoxelChangeData {texture = designer.selectedBlockId, renderType = VoxelRenderType.Block});
         }
-
+        
         public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,
                                            uint durationUs)
         {

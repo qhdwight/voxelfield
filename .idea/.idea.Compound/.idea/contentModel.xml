@@ -47,7 +47,10 @@
             </e>
             <e p="Interface" t="Include">
               <e p="CtfInterface.cs" t="Include" />
-              <e p="DesignerInterface.cs" t="Include" />
+              <e p="Designer" t="Include">
+                <e p="DesignerSidebarInterface.cs" t="Include" />
+                <e p="ModelSelectInterface.cs" t="Include" />
+              </e>
               <e p="LoadingInterface.cs" t="Include" />
               <e p="PlayerHud.cs" t="Include" />
               <e p="ProgressInterface.cs" t="Include" />
@@ -148,7 +151,6 @@
         <e p="Swihoni.Components" t="Include">
           <e p="Runtime" t="Include">
             <e p="ArrayElement.cs" t="Include" />
-            <e p="Cache.cs" t="Include" />
             <e p="ComponentBase.cs" t="Include" />
             <e p="Container.cs" t="Include" />
             <e p="Copier.cs" t="Include" />
@@ -162,6 +164,7 @@
             </e>
             <e p="Properties.cs" t="Include" />
             <e p="PropertyBase.cs" t="Include" />
+            <e p="ReflectionCache.cs" t="Include" />
             <e p="SerializationRegistrar.cs" t="Include" />
             <e p="Serializer.cs" t="Include" />
             <e p="StringProperty.cs" t="Include" />

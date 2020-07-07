@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
@@ -415,6 +416,7 @@ namespace Voxel
 
         public static void RenderVoxels(ChunkManager manager, Chunk chunk, MeshData solidMesh, MeshData foliageMesh)
         {
+            Position3Int lowerBound = manager.Map.dimension.lowerBound;
             for (var x = 0; x < manager.ChunkSize; x++)
             {
                 for (var y = 0; y < manager.ChunkSize; y++)
@@ -429,8 +431,13 @@ namespace Voxel
                                 var cubeIndex = 0;
                                 for (var i = 0; i < 8; i++)
                                 {
-                                    Voxel? v = chunk.GetVoxel(new Position3Int(x, y, z) + Positions[i]);
-                                    float density = v.HasValue ? (float) v.Value.density / byte.MaxValue * 2 : 0.0F;
+                                    Position3Int internalPosition = new Position3Int(x, y, z) + Positions[i];
+                                    Voxel? v = chunk.GetVoxel(internalPosition);
+                                    bool useEmpty = !v.HasValue
+                                                   || internalPosition.x == 0 && lowerBound.x == chunk.Position.x
+                                                   || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
+                                                   || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
+                                    float density = useEmpty ? 0.0f : (float) v.Value.density / byte.MaxValue * 2;
                                     CachedDensities[i] = density;
                                     if (density < IsoLevel) cubeIndex |= 1 << i;
                                     CachedPositions[i] = new Vector3(x, y, z) + Positions[i];

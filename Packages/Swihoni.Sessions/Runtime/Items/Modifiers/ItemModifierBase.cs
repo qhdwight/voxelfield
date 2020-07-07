@@ -37,7 +37,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           ModelWand = 10,
                           Deagle = 11,
                           GrenadeLauncher = 12,
-                          MissileLauncher = 13;
+                          MissileLauncher = 13,
+                          Smg = 14;
     }
 
     [Serializable]
@@ -57,6 +58,8 @@ namespace Swihoni.Sessions.Items.Modifiers
         public ItemStatusModiferProperties GetStatusModifierProperties(byte statusId) => m_StatusModiferProperties[statusId];
 
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
+        
+        public virtual void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs) { }
 
         public virtual void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory,
                                           InputFlagProperty inputs, uint durationUs)

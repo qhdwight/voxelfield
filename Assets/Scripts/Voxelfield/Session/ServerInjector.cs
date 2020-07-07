@@ -21,10 +21,10 @@ namespace Voxelfield.Session
             
         }
 
-        protected internal override void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, ChangedVoxelsProperty changedVoxels = null)
+        protected internal override void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, bool destroyBlocks = false, ChangedVoxelsProperty changedVoxels = null)
         {
             var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();
-            base.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, changed);
+            base.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, changed);
             m_MasterChanges.AddAllFrom(changed);
         }
 

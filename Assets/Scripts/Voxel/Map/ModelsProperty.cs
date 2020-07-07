@@ -16,7 +16,7 @@ namespace Voxel.Map
     [Serializable]
     public class ModelsProperty : DictionaryPropertyBase<Position3Int, Container>
     {
-        public const ushort Spawn = 0, Tree = 1, Cure = 2, Flag = 3;
+        public const ushort Spawn = 0, Tree = 1, Cure = 2, Flag = 3, Last = 3;
 
         public override void Serialize(NetDataWriter writer)
         {
@@ -70,6 +70,8 @@ namespace Voxel.Map
                 Add(position, container);
         }
 
-        public void Add(Position3Int position, Container container) => m_Map.Add(position, container);
+        public void Add(in Position3Int position, Container container) => m_Map.Add(position, container);
+
+        public void Remove(in Position3Int position) => m_Map.Remove(position);
     }
 }

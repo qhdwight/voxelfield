@@ -12,7 +12,8 @@ namespace Voxelfield.Item
     [CreateAssetMenu(fileName = "Sculpting", menuName = "Item/Sculpting", order = 0)]
     public class SculptingItem : MeleeModifier
     {
-        [SerializeField] private float m_EditDistance = 5.0f, m_DestroyRadius = 1.7f;
+        [SerializeField] protected float m_EditDistance = 5.0f;
+        [SerializeField] private float m_DestroyRadius = 1.7f;
         [SerializeField] private LayerMask m_ChunkMask = default;
 
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
@@ -36,7 +37,7 @@ namespace Voxelfield.Item
             else brokeVoxelTickProperty.Value = 0;
         }
 
-        protected static bool WithoutInnerVoxel(RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
+        protected static bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
             position = (Position3Int) (hit.point - hit.normal * 0.5f);
             Voxel.Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
@@ -63,7 +64,9 @@ namespace Voxelfield.Item
             if (WithoutServerHit(session, playerId, out RaycastHit hit)) return;
             Vector3 position = hit.point + hit.normal * 0.5f;
             var voxelInjector = (VoxelInjector) session.Injector;
-            voxelInjector.SetVoxelData((Position3Int) position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = VoxelId.Stone});
+            byte texture = session.GetPlayerFromId(playerId).With(out DesignerPlayerComponent designer) && designer.selectedBlockId.WithValue
+                ? designer.selectedBlockId : VoxelId.Stone;
+            voxelInjector.SetVoxelData((Position3Int) position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = texture});
         }
     }
 }

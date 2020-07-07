@@ -70,12 +70,12 @@ namespace Swihoni.Components
         /// Note: Use carefully as this unregisters field elements.
         /// TODO: only allow on containers of same type
         /// </summary>
-        public void TakeElementTypes(Container other)
+        public virtual void TakeElementTypes(Container other)
         {
-            m_TypeToIndex.Clear();
-            ClearRegistered();
+            VerifyFieldsRegistered();
             foreach (ElementBase element in other.Elements)
-                RegisterAppend(element.GetType());
+                if (!m_TypeToIndex.ContainsKey(element.GetType()))
+                    RegisterAppend(element.GetType());
         }
 
         public bool Without<TElement>() where TElement : ElementBase => !With<TElement>();

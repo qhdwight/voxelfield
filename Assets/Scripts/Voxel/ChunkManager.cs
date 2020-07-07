@@ -284,7 +284,7 @@ namespace Voxel
         }
 
         public void RemoveVoxelRadius
-            (in Position3Int worldPositionCenter, float radius, bool replaceGrassWithDirt = false, IVoxelChanges changedVoxels = null)
+            (in Position3Int worldPositionCenter, float radius, bool replaceGrassWithDirt = false, bool destroyBlocks = false, IVoxelChanges changedVoxels = null)
         {
             int roundedRadius = Mathf.CeilToInt(radius);
             for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
@@ -298,13 +298,15 @@ namespace Voxel
                         if (!chunk) continue;
                         Voxel? voxel = GetVoxel(voxelWorldPosition, chunk);
                         if (!voxel.HasValue) continue;
+                        
                         float distance = Position3Int.Distance(worldPositionCenter, voxelWorldPosition);
 //                        if (distance > roundedRadius) continue;
                         byte newDensity = (byte) Mathf.RoundToInt(Mathf.Clamp01(distance / radius * 0.5f) * byte.MaxValue),
                              currentDensity = voxel.Value.density;
-                        if (newDensity >= currentDensity) continue;
-                        var changeData = new VoxelChangeData {density = newDensity};
+                        var changeData = new VoxelChangeData();
+                        if (newDensity < currentDensity) changeData.density = newDensity;
                         if (replaceGrassWithDirt && voxel.Value.texture == VoxelId.Grass) changeData.texture = VoxelId.Dirt;
+                        if (destroyBlocks && distance < roundedRadius && voxel.Value.renderType == VoxelRenderType.Block) changeData.renderType = VoxelRenderType.Smooth;
                         changedVoxels?.SetVoxel(voxelWorldPosition, changeData);
                         if (!Transaction.HasChangeAt(voxelWorldPosition)) Transaction.AddChange(voxelWorldPosition, changeData);
                     }

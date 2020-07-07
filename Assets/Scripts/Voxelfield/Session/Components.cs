@@ -62,11 +62,12 @@ namespace Voxelfield.Session
         public bool IsCured(ShowdownSessionComponent showdown) => (stagesCuredFlags & (byte) (1 << showdown.number)) != 0;
     }
 
-    [Serializable]
+    [Serializable, OnlyServerTrusted]
     public class DesignerPlayerComponent : ComponentBase
     {
         public Position3IntProperty positionOne, positionTwo;
         public ByteProperty selectedBlockId;
+        public UShortProperty selectedModelId;
     }
 
     [Serializable]

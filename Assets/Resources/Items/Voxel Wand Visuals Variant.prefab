@@ -126,6 +126,11 @@ PrefabInstance:
       propertyPath: m_StatusVisualProperties.Array.data[1].animationClip
       value: 
       objectReference: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
+    - target: {fileID: 7274393323216527679, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_EquipStatusVisualProperties.Array.data[1].animationClip
+      value: 
+      objectReference: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
     - target: {fileID: 8179706771489379414, guid: b145cb9d7211a794fbcb8dde5c61741d,
         type: 3}
       propertyPath: m_Mesh

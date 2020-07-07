@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Swihoni.Components
 {
-    internal static class Cache
+    internal static class ReflectionCache
     {
         private static readonly Dictionary<Type, FieldInfo[]> FieldCache = new Dictionary<Type, FieldInfo[]>();
 

@@ -12,6 +12,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Item
       objectReference: {fileID: 0}
+    - target: {fileID: 2001882060126472662, guid: 38c6b2e8bde96a848b58c793f96f3463,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.06
+      objectReference: {fileID: 0}
     - target: {fileID: 2001882060132984936, guid: 38c6b2e8bde96a848b58c793f96f3463,
         type: 3}
       propertyPath: m_Name
@@ -31,7 +36,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_EquipStatusVisualProperties.Array.data[1].animationClip
       value: 
-      objectReference: {fileID: 7400000, guid: b923479c548733f4289aa653e57d02f9, type: 2}
+      objectReference: {fileID: 7400000, guid: c45ad005b2944394bb7f2b137cd7c3b2, type: 2}
     - target: {fileID: 2001882060132984951, guid: 38c6b2e8bde96a848b58c793f96f3463,
         type: 3}
       propertyPath: m_LocalPosition.x

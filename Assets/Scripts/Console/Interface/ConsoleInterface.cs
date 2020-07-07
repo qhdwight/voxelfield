@@ -38,6 +38,7 @@ namespace Console.Interface
         private readonly List<string> m_PreviousCommands = new List<string>(MaxPreviousCommands + 1);
         private int m_CommandHistoryIndex;
         private string m_CurrentAutocomplete;
+        private bool m_OpenedForCommand;
 
         [RuntimeInitializeOnLoadMethod]
         private static void Initialize()
@@ -86,6 +87,11 @@ namespace Console.Interface
             InputProvider input = InputProvider.Singleton;
             if (input.GetInputDown(InputType.ToggleConsole))
                 ToggleInterfaceActive();
+            else if (input.GetInputDown(InputType.ConsoleCommand))
+            {
+                SetInterfaceActive(true);
+                m_OpenedForCommand = true;
+            }
             if (input.GetInputDown(InputType.AutocompleteConsole))
             {
                 if (!string.IsNullOrEmpty(m_CurrentAutocomplete))
@@ -171,6 +177,8 @@ namespace Console.Interface
             m_ConsoleInput.text = string.Empty;
             m_ConsoleInput.ActivateInputField();
             m_ConsoleInput.Select();
+            
+            if (m_OpenedForCommand) SetInterfaceActive(false);
         }
     }
 }

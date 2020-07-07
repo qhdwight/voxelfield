@@ -60,12 +60,12 @@ namespace Swihoni.Components
 
         public ElementBase this[int index] => Elements[index];
 
-        private void VerifyFieldsRegistered()
+        protected void VerifyFieldsRegistered()
         {
             if (m_Elements != null) return;
 
             m_Elements = new List<ElementBase>();
-            IReadOnlyList<FieldInfo> fieldInfos = Cache.GetFieldInfo(GetType());
+            IReadOnlyList<FieldInfo> fieldInfos = ReflectionCache.GetFieldInfo(GetType());
             foreach (FieldInfo field in fieldInfos)
             {
                 object fieldValue = field.GetValue(this);
@@ -79,7 +79,7 @@ namespace Swihoni.Components
 
         private void InstantiateFieldElements()
         {
-            foreach (FieldInfo field in Cache.GetFieldInfo(GetType()))
+            foreach (FieldInfo field in ReflectionCache.GetFieldInfo(GetType()))
             {
                 Type fieldType = field.FieldType;
                 bool isElement = fieldType.IsElement();

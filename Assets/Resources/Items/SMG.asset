@@ -9,29 +9,33 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ae5ee6ef34f46369f27cc0c9512b035, type: 3}
-  m_Name: Pickaxe
+  m_Script: {fileID: 11500000, guid: c3fbf3b763934424afec26d7f2800659, type: 3}
+  m_Name: SMG
   m_EditorClassIdentifier: 
-  id: 6
-  itemName: Pickaxe
+  id: 14
+  itemName: SMG
   movementFactor: 1
   m_StatusModiferProperties:
+  - durationUs: 1500000
+    isPersistent: 0
+  - durationUs: 100000
+    isPersistent: 0
+  - durationUs: 0
+    isPersistent: 0
   - durationUs: 2000000
     isPersistent: 0
-  - durationUs: 250000
-    isPersistent: 0
-  - durationUs: 300000
+  - durationUs: 2000000
     isPersistent: 0
   m_EquipStatusModiferProperties:
   - durationUs: 150000
     isPersistent: 0
-  - durationUs: 400000
+  - durationUs: 150000
     isPersistent: 0
   - durationUs: 4294967295
     isPersistent: 0
   - durationUs: 4294967295
     isPersistent: 0
-  m_Damage: 50
+  m_Damage: 20
   m_PlayerMask:
     serializedVersion: 2
     m_Bits: 2048
@@ -39,29 +43,35 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
+      time: 50
       value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
+      inSlope: Infinity
+      outSlope: -0.0013333332
+      tangentMode: 71
+      weightedMode: 3
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 1000
-      value: 1
-      inSlope: 0
+      time: 200
+      value: 0.8
+      inSlope: -0.0013333332
       outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
+      tangentMode: 69
+      weightedMode: 3
+      inWeight: 0.5285432
+      outWeight: 0.46777794
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_Distance: 2
-  m_EditDistance: 5
-  m_DestroyRadius: 1.7
-  m_ChunkMask:
-    serializedVersion: 2
-    m_Bits: 32768
+  m_MagSize: 40
+  m_StartingAmmoInReserve: 80
+  m_AdsModifierProperties:
+  - durationUs: 4294967295
+    isPersistent: 0
+  - durationUs: 100000
+    isPersistent: 0
+  - durationUs: 4294967295
+    isPersistent: 0
+  - durationUs: 100000
+    isPersistent: 0
+  isPrimary: 1
