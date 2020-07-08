@@ -37,12 +37,22 @@ namespace Voxelfield.Item
             else brokeVoxelTickProperty.Value = 0;
         }
 
+        protected override bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
+
         protected static bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
             position = (Position3Int) (hit.point - hit.normal * 0.5f);
             Voxel.Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
             voxel = optionalVoxel ?? default;
-            return !optionalVoxel.HasValue;
+            return !optionalVoxel.HasValue || !voxel.breakable;
+        }
+        
+        protected static bool WithoutOuterVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
+        {
+            position = (Position3Int) (hit.point + hit.normal * 0.5f);
+            Voxel.Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
+            voxel = optionalVoxel ?? default;
+            return !optionalVoxel.HasValue || !voxel.breakable;
         }
 
         protected bool WithoutServerHit(SessionBase session, int playerId, out RaycastHit hit)
@@ -56,18 +66,16 @@ namespace Voxelfield.Item
             return !Physics.Raycast(ray, out hit, m_EditDistance, m_ChunkMask);
         }
 
-        protected override bool HasSecondaryUse() => true;
-
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
             // TODO:feature add client side prediction for placing blocks
-            if (WithoutServerHit(session, playerId, out RaycastHit hit)) return;
-            Vector3 position = hit.point + hit.normal * 0.5f;
+            if (WithoutServerHit(session, playerId, out RaycastHit hit)
+             || WithoutOuterVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
             var voxelInjector = (VoxelInjector) session.Injector;
             byte texture = session.GetPlayerFromId(playerId).With(out DesignerPlayerComponent designer) && designer.selectedBlockId.WithValue
                 ? designer.selectedBlockId
                 : VoxelId.Stone;
-            voxelInjector.SetVoxelData((Position3Int) position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = texture});
+            voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = texture});
         }
     }
 }

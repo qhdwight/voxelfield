@@ -31,6 +31,8 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 4294967295
     isPersistent: 0
+  - durationUs: 4294967295
+    isPersistent: 0
   m_Damage: 50
   m_PlayerMask:
     serializedVersion: 2

@@ -559,8 +559,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
         type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.size
+      propertyPath: m_StatusVisualProperties.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
+        type: 3}
+      propertyPath: m_StatusVisualProperties.Array.data[4].animationEvents.Array.size
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
+        type: 3}
+      propertyPath: m_StatusVisualProperties.Array.data[6].animationEvents.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
         type: 3}
@@ -594,26 +604,6 @@ PrefabInstance:
       objectReference: {fileID: 4030869189799941847}
     - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
         type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[0].time
-      value: 0.5833333
-      objectReference: {fileID: 0}
-    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
-        type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[1].time
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
-        type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[0].audioSource
-      value: 
-      objectReference: {fileID: 8300000, guid: d2dc0f96ed5c3e144b137121ad584f87, type: 3}
-    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
-        type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[1].audioSource
-      value: 
-      objectReference: {fileID: 8300000, guid: 9d4e373b6a15d7a478162016148c8f7f, type: 3}
-    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
-        type: 3}
       propertyPath: m_StatusVisualProperties.Array.data[1].animationEvents.Array.data[0].particleSystem
       value: 
       objectReference: {fileID: 5585756551665809993}
@@ -634,24 +624,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
         type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[1].timeUs
-      value: 1500000
-      objectReference: {fileID: 0}
-    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
-        type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[0].timeUs
+      propertyPath: m_StatusVisualProperties.Array.data[4].animationEvents.Array.data[0].timeUs
       value: 583333
       objectReference: {fileID: 0}
     - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
         type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[1].audio
-      value: 
-      objectReference: {fileID: 6057557378410544621}
-    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
-        type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[0].audio
+      propertyPath: m_StatusVisualProperties.Array.data[4].animationEvents.Array.data[0].audio
       value: 
       objectReference: {fileID: 6608747666126056867}
+    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
+        type: 3}
+      propertyPath: m_StatusVisualProperties.Array.data[4].animationEvents.Array.data[1].timeUs
+      value: 1500000
+      objectReference: {fileID: 0}
+    - target: {fileID: 7032793368321201166, guid: 74b99f40e89f0b84c88a62617ddd156b,
+        type: 3}
+      propertyPath: m_StatusVisualProperties.Array.data[4].animationEvents.Array.data[1].audio
+      value: 
+      objectReference: {fileID: 6057557378410544621}
     - target: {fileID: 7032793368321201167, guid: 74b99f40e89f0b84c88a62617ddd156b,
         type: 3}
       propertyPath: m_LocalPosition.x

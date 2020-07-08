@@ -161,6 +161,9 @@ MonoBehaviour:
   - animationClip: {fileID: 0}
     animationEvents: []
     isReverseAnimation: 0
+  - animationClip: {fileID: 0}
+    animationEvents: []
+    isReverseAnimation: 0
   - animationClip: {fileID: 7400000, guid: f6de116ba938ba644aee4573f86fdeef, type: 2}
     animationEvents: []
     isReverseAnimation: 0

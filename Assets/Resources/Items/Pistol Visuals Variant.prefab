@@ -196,11 +196,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[1].animationEvents.Array.data[0].audioSource
-      value: 
-      objectReference: {fileID: 8300000, guid: 7ff1d152b8a559c44978a8033bb912f7, type: 3}
-    - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
-        type: 3}
       propertyPath: m_FpvOffset.y
       value: -0.256
       objectReference: {fileID: 0}

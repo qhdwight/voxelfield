@@ -201,7 +201,7 @@ namespace Voxelfield.Session
             var testMap = new MapContainer
             {
                 name = new StringProperty("Test"),
-                terrainHeight = new IntProperty(12),
+                terrainHeight = new IntProperty(7),
                 dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-2, 0, -2), upperBound = new Position3IntProperty(2, 1, 2)},
                 noise = new NoiseComponent
                 {

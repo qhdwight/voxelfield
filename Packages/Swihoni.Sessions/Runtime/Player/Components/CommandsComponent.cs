@@ -17,10 +17,11 @@ namespace Swihoni.Sessions.Player.Components
                           Suicide = 9,
                           UseOne = 10,
                           UseTwo = 11,
-                          Ads = 12,
-                          Reload = 13,
-                          Fly = 14,
-                          Throw = 15;
+                          UseThree = 12,
+                          Ads = 13,
+                          Reload = 14,
+                          Fly = 15,
+                          Throw = 16;
     }
 
     [Serializable, NoSerialization]
@@ -30,15 +31,15 @@ namespace Swihoni.Sessions.Player.Components
     }
 
     [Serializable]
-    public class InputFlagProperty : UShortProperty
+    public class InputFlagProperty : UIntProperty
     {
         public bool GetInput(int input) => (Value & (1 << input)) != 0;
 
         public void SetInput(int input, bool enabled)
         {
             if (WithoutValue) Value = 0;
-            if (enabled) Value |= (ushort) (1 << input);
-            else Value &= (ushort) ~(1 << input);
+            if (enabled) Value |= (uint) (1 << input);
+            else Value &= (uint) ~(1 << input);
         }
 
         public float GetAxis(int positiveInput, int negativeInput) =>

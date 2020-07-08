@@ -228,11 +228,6 @@ PrefabInstance:
       propertyPath: m_ChildBehaviors.Array.data[0]
       value: 
       objectReference: {fileID: 2670231317900631834}
-    - target: {fileID: 3520456744884771954, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
-        type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[0].audio
-      value: 
-      objectReference: {fileID: 8472336354288938631}
     - target: {fileID: 3520456744884771956, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
         type: 3}
       propertyPath: m_LocalPosition.x

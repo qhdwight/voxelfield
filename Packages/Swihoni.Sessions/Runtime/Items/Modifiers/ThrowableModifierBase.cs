@@ -45,8 +45,6 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
 
-        protected override bool HasSecondaryUse() => true;
-
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
             var entities = session.GetLatestSession().Require<EntityArrayElement>();

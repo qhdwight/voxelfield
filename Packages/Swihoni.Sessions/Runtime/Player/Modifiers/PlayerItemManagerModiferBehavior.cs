@@ -133,6 +133,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             InputProvider provider = InputProvider.Singleton;
             inputs.SetInput(PlayerInput.UseOne, provider.GetInput(InputType.UseOne));
             inputs.SetInput(PlayerInput.UseTwo, provider.GetInput(InputType.UseTwo));
+            inputs.SetInput(PlayerInput.UseThree, provider.GetInput(InputType.UseThree));
             inputs.SetInput(PlayerInput.Reload, provider.GetInput(InputType.Reload));
             inputs.SetInput(PlayerInput.Fly, provider.GetInput(InputType.Fly));
             inputs.SetInput(PlayerInput.Ads, provider.GetInput(InputType.Ads));

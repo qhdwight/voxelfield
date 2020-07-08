@@ -19,11 +19,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
         type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[1].animationEvents.Array.data[0].audioSource
-      value: 
-      objectReference: {fileID: 8300000, guid: bd51211f33447e048904fad5a5398bf0, type: 3}
-    - target: {fileID: 3047713979344524742, guid: c68544406b7baff40a29df41b5183514,
-        type: 3}
       propertyPath: m_Id
       value: 4
       objectReference: {fileID: 0}

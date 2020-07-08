@@ -220,11 +220,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3520456744884771954, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
         type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[1].animationEvents.Array.data[0].audioSource
-      value: 
-      objectReference: {fileID: 8300000, guid: 2d936fc2b7784134f894dcf64f21b499, type: 3}
-    - target: {fileID: 3520456744884771954, guid: bb53a76f7d0c1db4285a3eac1b5b7dfd,
-        type: 3}
       propertyPath: m_StatusVisualProperties.Array.data[3].animationEvents.Array.data[0].audioSource
       value: 
       objectReference: {fileID: 8300000, guid: eff027394bc544944a51b6e9169ca704, type: 3}

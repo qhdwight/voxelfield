@@ -314,6 +314,9 @@ MonoBehaviour:
   - animationClip: {fileID: 0}
     animationEvents: []
     isReverseAnimation: 0
+  - animationClip: {fileID: 0}
+    animationEvents: []
+    isReverseAnimation: 0
   - animationClip: {fileID: 7400000, guid: 63a7fd78e18bea348b7727cb5c16d455, type: 2}
     animationEvents:
     - timeUs: 0

@@ -494,7 +494,14 @@ namespace Voxel
                 foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0) + Vector3.up);
                 for (var k = 0; k < 4; k++)
                 {
-                    foliageMesh.colors.Add(voxel.color);
+                    Color32 color = voxel.color;
+                    if (!voxel.breakable)
+                    {
+                        color.r -= 20;
+                        color.g -= 20;
+                        color.b -= 20;
+                    }
+                    foliageMesh.colors.Add(color);
                     foliageMesh.normals.Add(Vector3.up);
                 }
                 foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
