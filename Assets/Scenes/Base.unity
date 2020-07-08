@@ -1696,7 +1696,7 @@ MonoBehaviour:
     m_Value: 60
   ModeId:
     m_Flags: 1
-    m_Value: 0
+    m_Value: 3
 --- !u!850595691 &607889173
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -5678,7 +5678,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22ff533082484fe9811b662bfe327a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TruncateDimension: 1
+  m_TruncateDimension: 0
 --- !u!1 &1454660423
 GameObject:
   m_ObjectHideFlags: 0

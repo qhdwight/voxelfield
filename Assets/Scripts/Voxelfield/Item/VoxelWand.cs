@@ -15,7 +15,7 @@ namespace Voxelfield.Item
     {
         private readonly VoxelChangeTransaction m_Transaction = new VoxelChangeTransaction();
 
-        private static readonly string[] Commands = {"set", "revert"};
+        private static readonly string[] Commands = {"set", "revert", "breakable"};
 
         public static void SessionCommand(SessionBase session, int playerId, params string[] commandNames)
         {
@@ -23,10 +23,10 @@ namespace Voxelfield.Item
                 ConsoleCommandExecutor.SetCommand(commandName, args => session.StringCommand(playerId, string.Join(" ", args)));
         }
 
-        protected override void OnEquip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+        protected override void OnEquip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
             => SessionCommand(session, playerId, Commands);
 
-        protected override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+        protected override void OnUnequip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
             => ConsoleCommandExecutor.RemoveCommands(Commands);
 
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
@@ -56,6 +56,18 @@ namespace Voxelfield.Item
             DimensionFunction(session, designer, _ => new VoxelChangeData {texture = designer.selectedBlockId, renderType = VoxelRenderType.Block});
         }
 
+        protected override bool CanTernaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
+
+        protected override void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        {
+            if (WithoutServerHit(session, playerId, out RaycastHit hit)) return;
+
+            var voxelInjector = (VoxelInjector) session.Injector;
+            var position = (Position3Int) hit.point;
+            Debug.Log("Bet");
+            voxelInjector.SetVoxelRadius(position, m_DestroyRadius, additive: true);
+        }
+
         public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,
                                            uint durationUs)
         {
@@ -79,25 +91,31 @@ namespace Voxelfield.Item
                     DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => ChunkManager.Singleton.GetMapSaveVoxel(position).Value);
                     break;
                 }
+                case "breakable":
+                {
+                    var breakable = true;
+                    if (split.Length > 1 && bool.TryParse(split[1], out bool parsedBreakable)) breakable = parsedBreakable;
+                    DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => new VoxelChangeData {breakable = breakable});
+                    break;
+                }
             }
         }
 
         private void DimensionFunction(SessionBase session, DesignerPlayerComponent designer, Func<Position3Int, VoxelChangeData> function)
         {
-            if (designer.positionOne.WithValue && designer.positionTwo.WithValue)
+            if (designer.positionOne.WithoutValue || designer.positionTwo.WithoutValue) return;
+            
+            var voxelInjector = (VoxelInjector) session.Injector;
+            Position3Int p1 = designer.positionOne, p2 = designer.positionTwo;
+            for (int x = Math.Min(p1.x, p2.x); x <= Math.Max(p1.x, p2.x); x++)
+            for (int y = Math.Min(p1.y, p2.y); y <= Math.Max(p1.y, p2.y); y++)
+            for (int z = Math.Min(p1.z, p2.z); z <= Math.Max(p1.z, p2.z); z++)
             {
-                var voxelInjector = (VoxelInjector) session.Injector;
-                Position3Int p1 = designer.positionOne, p2 = designer.positionTwo;
-                for (int x = Math.Min(p1.x, p2.x); x <= Math.Max(p1.x, p2.x); x++)
-                for (int y = Math.Min(p1.y, p2.y); y <= Math.Max(p1.y, p2.y); y++)
-                for (int z = Math.Min(p1.z, p2.z); z <= Math.Max(p1.z, p2.z); z++)
-                {
-                    var worldPosition = new Position3Int(x, y, z);
-                    m_Transaction.AddChange(worldPosition, function(worldPosition));
-                }
-                Debug.Log($"Set {p1} to {p2}");
-                voxelInjector.VoxelTransaction(m_Transaction);
+                var worldPosition = new Position3Int(x, y, z);
+                m_Transaction.AddChange(worldPosition, function(worldPosition));
             }
+            Debug.Log($"Set {p1} to {p2}");
+            voxelInjector.VoxelTransaction(m_Transaction);
         }
     }
 }

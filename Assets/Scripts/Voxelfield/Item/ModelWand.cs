@@ -16,10 +16,10 @@ namespace Voxelfield.Item
 
         [SerializeField] private LayerMask m_ModelMask = default;
 
-        protected override void OnEquip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+        protected override void OnEquip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
             => VoxelWand.SessionCommand(session, playerId, Commands);
 
-        protected override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+        protected override void OnUnequip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
             => ConsoleCommandExecutor.RemoveCommands(Commands);
 
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)

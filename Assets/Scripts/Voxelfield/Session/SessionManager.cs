@@ -181,15 +181,15 @@ namespace Voxelfield.Session
         public static void SaveTestMap()
         {
             var models = new ModelsProperty();
-            void AddSpawn(Position3Int position, byte team) =>
-                models.Add(position, new Container(new ModelIdProperty(ModelsProperty.Spawn), new TeamProperty(team), new ModeIdProperty(ModeIdProperty.Showdown)));
-            AddSpawn(new Position3Int {x = -10, y = 2}, 0);
-            AddSpawn(new Position3Int {y = 5}, 1);
-            AddSpawn(new Position3Int {x = 10, y = 5}, 2);
-            AddSpawn(new Position3Int {x = 20, y = 5}, 3);
-            for (byte i = 0; i < 9; i++)
-                models.Add(new Position3Int(i * 2 + 5, 5, 5),
-                           new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(ModeIdProperty.Showdown)));
+            // void AddSpawn(Position3Int position, byte team) =>
+            //     models.Add(position, new Container(new ModelIdProperty(ModelsProperty.Spawn), new TeamProperty(team), new ModeIdProperty(ModeIdProperty.Showdown)));
+            // AddSpawn(new Position3Int {x = -10, y = 2}, 0);
+            // AddSpawn(new Position3Int {y = 5}, 1);
+            // AddSpawn(new Position3Int {x = 10, y = 5}, 2);
+            // AddSpawn(new Position3Int {x = 20, y = 5}, 3);
+            // for (byte i = 0; i < 9; i++)
+            //     models.Add(new Position3Int(i * 2 + 5, 5, 5),
+            //                new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(ModeIdProperty.Showdown)));
             models.Add(new Position3Int(32, 5, 32),
                        new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
             models.Add(new Position3Int(32, 5, -32),

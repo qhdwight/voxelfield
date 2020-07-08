@@ -10,7 +10,7 @@ namespace Swihoni.Sessions.Interfaces
     {
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            SetInterfaceActive(InputProvider.Singleton.GetInput(InputType.OpenScoreboard));
+            SetInterfaceActive(!session.ShouldInterruptCommands && InputProvider.Singleton.GetInput(InputType.OpenScoreboard));
             base.Render(session, sessionContainer);
         }
 

@@ -118,6 +118,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7274393323216527679, guid: b145cb9d7211a794fbcb8dde5c61741d,
         type: 3}
+      propertyPath: m_StatusVisualProperties.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7274393323216527679, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
       propertyPath: m_Id
       value: 9
       objectReference: {fileID: 0}

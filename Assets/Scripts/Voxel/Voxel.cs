@@ -4,7 +4,7 @@ namespace Voxel
 {
     public static class VoxelId
     {
-        public const byte None = 0, Dirt = 1, Grass = 2, Stone = 3;
+        public const byte None = 0, Dirt = 1, Grass = 2, Stone = 3, Wood = 4;
     }
 
     public enum VoxelRenderType : byte
@@ -57,6 +57,9 @@ namespace Voxel
                     break;
                 case VoxelId.Grass:
                     tile = new Vector2Int(1, 0);
+                    break;
+                case VoxelId.Wood:
+                    tile = new Vector2Int(0, 1);
                     break;
             }
             return tile;

@@ -18,9 +18,9 @@ namespace Voxelfield.Session
 
         protected internal virtual void VoxelTransaction(VoxelChangeTransaction uncommitted) => uncommitted.Commit();
 
-        protected internal virtual void RemoveVoxelRadius(Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false, bool destroyBlocks = false,
-                                                          ChangedVoxelsProperty changedVoxels = null)
-            => ChunkManager.Singleton.RemoveVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, changedVoxels);
+        protected internal virtual void SetVoxelRadius(in Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false,
+                                                       bool destroyBlocks = false, bool additive = false, ChangedVoxelsProperty changedVoxels = null)
+            => ChunkManager.Singleton.SetVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, additive, changedVoxels);
 
         private readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
 
@@ -72,7 +72,7 @@ namespace Voxelfield.Session
         public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
         {
             var center = (Position3Int) throwableBehavior.transform.position;
-            RemoveVoxelRadius(center, throwableBehavior.Radius * 0.4f, true, true);
+            SetVoxelRadius(center, throwableBehavior.Radius * 0.4f, true, true);
         }
     }
 }

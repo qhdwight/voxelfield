@@ -75,7 +75,11 @@ namespace Input
                     [InputType.Map] = KeyCode.M,
                     [InputType.UseOne] = KeyCode.Mouse0,
                     [InputType.UseTwo] = KeyCode.Mouse1,
+#if UNITY_EDITOR_OSX
+                    [InputType.UseThree] = KeyCode.C,
+#else
                     [InputType.UseThree] = KeyCode.Mouse2,
+#endif
                     [InputType.Reload] = KeyCode.R,
                     [InputType.ItemOne] = KeyCode.Alpha1,
                     [InputType.ItemTwo] = KeyCode.Alpha2,

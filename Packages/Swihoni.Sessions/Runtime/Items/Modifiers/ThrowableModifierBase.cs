@@ -35,7 +35,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             return base.FinishStatus(session, playerId, item, inventory, inputs);
         }
 
-        protected override byte GetUseStatus(InputFlagProperty inputProperty) => ThrowableStatusId.Cooking;
+        protected override byte GetUseStatus(InputFlagProperty input) => ThrowableStatusId.Cooking;
 
         protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false)
             => base.CanPrimaryUse(item, inventory, justFinishedUse) && item.status.id != ThrowableStatusId.Cooking && item.ammoInReserve > 0;
@@ -89,10 +89,10 @@ namespace Swihoni.Sessions.Items.Modifiers
             return true;
         }
 
-        protected internal override void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs)
+        protected internal override void OnUnequip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
-            if (itemComponent.status.id == ThrowableStatusId.Cooking)
-                StartStatus(session, playerId, itemComponent, ItemStatusId.Idle, durationUs);
+            if (item.status.id == ThrowableStatusId.Cooking)
+                StartStatus(session, playerId, item, ItemStatusId.Idle, durationUs);
         }
     }
 }

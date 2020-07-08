@@ -250,7 +250,9 @@ namespace Swihoni.Sessions
             Vector3 position = move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
 
             var ray = new Ray(position, direction);
+#if UNITY_EDITOR
             Debug.DrawLine(position, position + direction * 10.0f, Color.blue, 5.0f);
+#endif
             return ray;
         }
 

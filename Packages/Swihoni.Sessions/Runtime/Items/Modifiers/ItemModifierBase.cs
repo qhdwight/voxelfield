@@ -102,17 +102,20 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, uint durationUs) { }
 
-        protected void StartStatus(SessionBase session, int playerId, ItemComponent itemComponent, byte statusId, uint durationUs, uint elapsedUs = 0u)
+        protected void StartStatus(SessionBase session, int playerId, ItemComponent item, byte statusId, uint durationUs, uint elapsedUs = 0u)
         {
-            itemComponent.status.id.Value = statusId;
-            itemComponent.status.elapsedUs.Value = elapsedUs;
+            item.status.id.Value = statusId;
+            item.status.elapsedUs.Value = elapsedUs;
             switch (statusId)
             {
                 case ItemStatusId.PrimaryUsing:
-                    PrimaryUse(session, playerId, itemComponent, durationUs);
+                    PrimaryUse(session, playerId, item, durationUs);
                     break;
                 case ItemStatusId.SecondaryUsing:
                     SecondaryUse(session, playerId, durationUs);
+                    break;
+                case ItemStatusId.TernaryUsing:
+                    TernaryUse(session, playerId, item, durationUs);
                     break;
             }
         }
@@ -132,11 +135,12 @@ namespace Swihoni.Sessions.Items.Modifiers
             return null;
         }
 
-        protected virtual byte GetUseStatus(InputFlagProperty inputProperty) => ItemStatusId.PrimaryUsing;
+        protected virtual byte GetUseStatus(InputFlagProperty input) => ItemStatusId.PrimaryUsing;
 
         protected virtual bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
             (item.status.id != ItemStatusId.PrimaryUsing || justFinishedUse)
          && item.status.id != ItemStatusId.SecondaryUsing
+         && item.status.id != ItemStatusId.TernaryUsing
          && inventory.equipStatus.id == ItemEquipStatusId.Equipped;
 
         protected virtual bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory) => false;
@@ -150,9 +154,9 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected virtual void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
 
         public void ModifyCommands(SessionBase session, InputFlagProperty commandsToModify) { }
-        
-        protected internal virtual void OnEquip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs) { }
 
-        protected internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent itemComponent, uint durationUs) { }
+        protected internal virtual void OnEquip(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
+
+        protected internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
     }
 }

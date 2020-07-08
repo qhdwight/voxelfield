@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
@@ -40,7 +41,6 @@ namespace Voxel
         };
 
         private static readonly int[] VertIdx1 = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3};
-
         private static readonly int[] VertIdx2 = {1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7};
 
         private static readonly Vector3 Offset = new Vector3(0.5f, 0.5f, 0.5f);
@@ -476,6 +476,8 @@ namespace Voxel
                                 }
                                 break;
                             }
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(voxel.renderType), voxel.renderType, null);
                         }
                     }
                 }
@@ -494,14 +496,7 @@ namespace Voxel
                 foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0) + Vector3.up);
                 for (var k = 0; k < 4; k++)
                 {
-                    Color32 color = voxel.color;
-                    if (!voxel.breakable)
-                    {
-                        color.r -= 20;
-                        color.g -= 20;
-                        color.b -= 20;
-                    }
-                    foliageMesh.colors.Add(color);
+                    foliageMesh.colors.Add(voxel.color);
                     foliageMesh.normals.Add(Vector3.up);
                 }
                 foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
@@ -518,12 +513,21 @@ namespace Voxel
             }
         }
 
+        private static void Diminish(this ref Color32 color, float amount)
+        {
+            color.r = (byte) Mathf.RoundToInt(color.r * amount);
+            color.g = (byte) Mathf.RoundToInt(color.g * amount);
+            color.b = (byte) Mathf.RoundToInt(color.b * amount);
+        }
+
         private static void GenerateBlock(ref Voxel voxel, int x, int y, int z, byte dir, MeshData meshData)
         {
+            Color32 color = voxel.color;
+            if (!voxel.breakable) color.Diminish(0.7f);
             foreach (Vector3 vert in BlockVerts[dir])
             {
                 meshData.vertices.Add(new Vector3(x, y, z) + vert);
-                meshData.colors.Add(voxel.color);
+                meshData.colors.Add(color);
             }
             meshData.triangleIndices.Add(meshData.vertices.Count - 4);
             meshData.triangleIndices.Add(meshData.vertices.Count - 3);
