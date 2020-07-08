@@ -16,7 +16,7 @@ namespace Voxelfield.Session
             if (MapManager.Singleton.Models.ContainsKey(worldPosition)) return;
             var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();
             base.SetVoxelData(worldPosition, change, chunk, updateMesh);
-            changed.SetVoxel(worldPosition, change);
+            changed.Set(worldPosition, change);
             m_MasterChanges.AddAllFrom(changed);
         }
 
@@ -32,7 +32,7 @@ namespace Voxelfield.Session
         {
             var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();
             foreach ((Position3Int position, VoxelChangeData change) in uncommitted)
-                changed.SetVoxel(position, change);
+                changed.Set(position, change);
             m_MasterChanges.AddAllFrom(changed);
             base.VoxelTransaction(uncommitted); // Commit
         }

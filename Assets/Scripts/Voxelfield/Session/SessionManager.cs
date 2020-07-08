@@ -190,13 +190,13 @@ namespace Voxelfield.Session
             // for (byte i = 0; i < 9; i++)
             //     models.Add(new Position3Int(i * 2 + 5, 5, 5),
             //                new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(ModeIdProperty.Showdown)));
-            models.Add(new Position3Int(32, 5, 32),
+            models.Set(new Position3Int(32, 5, 32),
                        new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Add(new Position3Int(32, 5, -32),
+            models.Set(new Position3Int(32, 5, -32),
                        new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Add(new Position3Int(-32, 5, 32),
+            models.Set(new Position3Int(-32, 5, 32),
                        new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Add(new Position3Int(-32, 5, -32),
+            models.Set(new Position3Int(-32, 5, -32),
                        new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
             var testMap = new MapContainer
             {

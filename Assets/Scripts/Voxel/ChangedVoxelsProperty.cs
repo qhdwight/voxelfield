@@ -6,7 +6,7 @@ using Swihoni.Util.Math;
 namespace Voxel
 {
     [Serializable, SingleTick]
-    public class ChangedVoxelsProperty : DictionaryPropertyBase<Position3Int, VoxelChangeData>, IVoxelChanges
+    public class ChangedVoxelsProperty : DictPropertyBase<Position3Int, VoxelChangeData>
     {
         public override void Serialize(NetDataWriter writer)
         {
@@ -35,21 +35,16 @@ namespace Voxel
             WithValue = true;
         }
 
-        public void AddAllFrom(ChangedVoxelsProperty other)
+        public override void Set(in Position3Int position, in VoxelChangeData change)
         {
-            foreach ((Position3Int position, VoxelChangeData changeData) in other)
-                SetVoxel(position, changeData);
-        }
-
-        public void SetVoxel(in Position3Int position, VoxelChangeData change)
-        {
+            VoxelChangeData final = change;
             if (m_Map.TryGetValue(position, out VoxelChangeData existingChange))
             {
-                existingChange.Merge(change);
+                existingChange.Merge(final);
                 m_Map.Remove(position);
-                change = existingChange;
+                final = existingChange;
             }
-            m_Map.Add(position, change);
+            m_Map.Add(position, final);
             WithValue = true;
         }
     }

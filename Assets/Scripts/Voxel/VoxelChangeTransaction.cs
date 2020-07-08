@@ -34,7 +34,7 @@ namespace Voxel
                 Position3Int voxelChunkPosition = ChunkManager.Singleton.WorldVoxelToChunkVoxel(pair.Key, chunk);
                 chunk.SetVoxelDataNoCheck(voxelChunkPosition, pair.Value);
                 ChunkManager.Singleton.AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, m_ChunksToUpdate);
-                MapManager.Singleton.Map.changedVoxels.SetVoxel(pair.Key, pair.Value);
+                MapManager.Singleton.Map.changedVoxels.Set(pair.Key, pair.Value);
             }
             foreach (Chunk chunk in m_ChunksToUpdate)
                 ChunkManager.UpdateChunkMesh(chunk);

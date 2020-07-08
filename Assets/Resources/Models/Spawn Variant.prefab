@@ -58,6 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Id: 0
+  m_ModelName: Player Spawn
 --- !u!1001 &2606629801696298408
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -19,7 +19,7 @@ namespace Voxelfield.Item
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
             base.Swing(session, playerId, item, durationUs); // Melee damage
-            if (WithoutServerHit(session, playerId, out RaycastHit hit)
+            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
 
             var voxelInjector = (VoxelInjector) session.Injector;
@@ -55,7 +55,7 @@ namespace Voxelfield.Item
             return !optionalVoxel.HasValue || !voxel.breakable;
         }
 
-        protected bool WithoutServerHit(SessionBase session, int playerId, out RaycastHit hit)
+        protected bool WithoutServerHit(SessionBase session, int playerId, float distance, out RaycastHit hit)
         {
             if (session.GetPlayerFromId(playerId).Without<ServerTag>())
             {
@@ -63,13 +63,13 @@ namespace Voxelfield.Item
                 return true;
             }
             Ray ray = session.GetRayForPlayerId(playerId);
-            return !Physics.Raycast(ray, out hit, m_EditDistance, m_ChunkMask);
+            return !Physics.Raycast(ray, out hit, distance, m_ChunkMask);
         }
 
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
             // TODO:feature add client side prediction for placing blocks
-            if (WithoutServerHit(session, playerId, out RaycastHit hit)
+            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
              || WithoutOuterVoxel(hit, out Position3Int position, out Voxel.Voxel _)) return;
             
             var voxelInjector = (VoxelInjector) session.Injector;

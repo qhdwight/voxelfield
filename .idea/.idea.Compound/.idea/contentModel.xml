@@ -23,7 +23,6 @@
             <e p="ChangedVoxelsProperty.cs" t="Include" />
             <e p="Chunk.cs" t="Include" />
             <e p="ChunkManager.cs" t="Include" />
-            <e p="DictionaryPropertyBase.cs" t="Include" />
             <e p="Map" t="Include">
               <e p="DimensionComponent.cs" t="Include" />
               <e p="MapContainer.cs" t="Include" />
@@ -48,6 +47,7 @@
             <e p="Interface" t="Include">
               <e p="CtfInterface.cs" t="Include" />
               <e p="Designer" t="Include">
+                <e p="DesignerHudInterface.cs" t="Include" />
                 <e p="DesignerSidebarInterface.cs" t="Include" />
                 <e p="ModelSelectInterface.cs" t="Include" />
               </e>
@@ -154,6 +154,7 @@
             <e p="ComponentBase.cs" t="Include" />
             <e p="Container.cs" t="Include" />
             <e p="Copier.cs" t="Include" />
+            <e p="DictPropertyBase.cs" t="Include" />
             <e p="ElementExtensions.cs" t="Include" />
             <e p="Extensions.cs" t="Include" />
             <e p="Interpolator.cs" t="Include" />

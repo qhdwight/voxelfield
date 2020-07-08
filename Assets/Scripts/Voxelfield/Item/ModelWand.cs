@@ -38,7 +38,7 @@ namespace Voxelfield.Item
 
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
-            if (WithoutServerHit(session, playerId, out RaycastHit hit)) return;
+            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)) return;
 
             var position = (Position3Int) (hit.point + hit.normal * 0.5f);
 

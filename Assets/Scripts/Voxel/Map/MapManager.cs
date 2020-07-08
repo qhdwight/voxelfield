@@ -19,13 +19,14 @@ namespace Voxel.Map
         private static StringProperty _testMapName, _emptyMapName;
         private static readonly MapContainer EmptyMap = new MapContainer().Zero();
         private static Dictionary<string, TextAsset> _defaultMaps;
-        private static ModelBehavior[] _modelPrefabs;
 
         [SerializeField] private bool m_TruncateDimension = true;
 
         private Pool<ModelBehavior>[] m_ModelsPool;
         private StringProperty m_WantedMapName;
         private IEnumerator m_ManageActionsRoutine;
+
+        public static ModelBehavior[] ModelPrefabs { get; private set; }
 
         public Predicate<Container> ModelFilter { get; set; }
         public Dictionary<Position3Int, ModelBehavior> Models { get; } = new Dictionary<Position3Int, ModelBehavior>();
@@ -37,8 +38,8 @@ namespace Voxel.Map
             _emptyMapName = new StringProperty();
             _testMapName = new StringProperty("Test");
             _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m);
-            _modelPrefabs = Resources.LoadAll<ModelBehavior>("Models")
-                                     .OrderBy(modifier => modifier.Id).ToArray();
+            ModelPrefabs = Resources.LoadAll<ModelBehavior>("Models")
+                                    .OrderBy(modifier => modifier.Id).ToArray();
         }
 
         public static string GetDirectory(string folderName)
@@ -58,7 +59,7 @@ namespace Voxel.Map
         }
 
         private void SetupModelPool() =>
-            m_ModelsPool = _modelPrefabs
+            m_ModelsPool = ModelPrefabs
                           .Select(modelBehaviorPrefab => new Pool<ModelBehavior>(0, () =>
                            {
                                ModelBehavior modelInstance = Instantiate(modelBehaviorPrefab);
@@ -158,7 +159,7 @@ namespace Voxel.Map
 
         public void AddModel(in Position3Int position, Container model)
         {
-            Map.models.Add(position, model);
+            Map.models.Set(position, model);
             InstantiateModel(position, model);
         }
 

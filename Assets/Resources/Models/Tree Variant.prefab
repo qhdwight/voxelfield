@@ -1,32 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &243791091820744990
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5501482007049313177}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54d554be7e2d401fb407d6e5a805f222, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Id: 1
---- !u!136 &8095859188981300444
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7807052641231384332}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.53407633
-  m_Height: 7.655046
-  m_Direction: 1
-  m_Center: {x: -0.049053002, y: 3.4813561, z: 0.10721493}
 --- !u!64 &6550135302461863581
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -86,6 +59,34 @@ CapsuleCollider:
   m_Height: 13.993334
   m_Direction: 1
   m_Center: {x: 0, y: 6.496667, z: 0}
+--- !u!114 &243791091820744990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5501482007049313177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54d554be7e2d401fb407d6e5a805f222, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Id: 1
+  m_ModelName: Tree
+--- !u!136 &8095859188981300444
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7807052641231384332}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.53407633
+  m_Height: 7.655046
+  m_Direction: 1
+  m_Center: {x: -0.049053002, y: 3.4813561, z: 0.10721493}
 --- !u!1001 &4573649146735477392
 PrefabInstance:
   m_ObjectHideFlags: 0

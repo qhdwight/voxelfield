@@ -26,6 +26,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Id: 2
+  m_ModelName: Cure Package
   m_Cure: {fileID: 7676621563760137861}
 --- !u!1 &8970426197806874744
 GameObject:

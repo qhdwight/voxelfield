@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using LiteNetLib.Utils;
+using Swihoni.Components;
 using Swihoni.Util;
 using UnityEngine;
 
@@ -43,6 +45,20 @@ namespace Input
         Buy,
         Throw,
         OpenModelSelect
+    }
+
+    [Serializable]
+    public class KeyCodeProperty : PropertyBase<KeyCode>
+    {
+        public override bool ValueEquals(PropertyBase<KeyCode> other) => other.Value == Value;
+        public override void DeserializeValue(NetDataReader reader) => Value = (KeyCode) reader.GetUShort();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put((ushort) Value);
+    }
+    
+    [Serializable]
+    public class InputComponent
+    {
+        public DictProperty<ByteProperty, KeyCodeProperty> bindings;
     }
 
     public enum MouseMovement

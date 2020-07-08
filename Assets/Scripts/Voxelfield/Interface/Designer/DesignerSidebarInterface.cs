@@ -7,6 +7,7 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
+using Voxel.Map;
 using Voxelfield.Session;
 
 namespace Voxelfield.Interface.Designer
@@ -40,7 +41,7 @@ namespace Voxelfield.Interface.Designer
                         AppendProperty("Selected: ", designer.selectedBlockId, builder);
                         break;
                     case ItemId.ModelWand:
-                        AppendProperty("Selected: ", designer.selectedModelId, builder);
+                        builder.Append("Selected: ").Append(designer.selectedModelId.WithValue ? MapManager.ModelPrefabs[designer.selectedModelId].ModelName : "None");
                         break;
                 }
                 m_InformationText.SetText(builder);
@@ -52,7 +53,7 @@ namespace Voxelfield.Interface.Designer
         {
             builder.Append(prefix);
             if (position.WithValue) builder.Append(position.Value);
-            else builder.Append("Not set");
+            else builder.Append("None");
             return builder;
         }
     }

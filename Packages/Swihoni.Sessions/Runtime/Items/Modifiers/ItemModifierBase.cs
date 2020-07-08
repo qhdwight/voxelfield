@@ -89,14 +89,22 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected virtual void EndStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, uint durationUs)
         {
             ByteStatusComponent status = item.status;
-            ItemStatusModiferProperties modifierProperties;
-            while (status.elapsedUs > (modifierProperties = m_StatusModiferProperties[status.id]).durationUs)
+            try
             {
-                if (modifierProperties.isPersistent) break;
-                uint statusElapsedUs = status.elapsedUs;
-                byte? nextStatus = FinishStatus(session, playerId, item, inventory, inputs);
-                StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, durationUs, statusElapsedUs - modifierProperties.durationUs);
-                if (nextStatus == ItemStatusId.RequestRemoval) break;
+                ItemStatusModiferProperties modifierProperties;
+                while (status.elapsedUs > (modifierProperties = m_StatusModiferProperties[status.id]).durationUs)
+                {
+                    if (modifierProperties.isPersistent) break;
+                    uint statusElapsedUs = status.elapsedUs;
+                    byte? nextStatus = FinishStatus(session, playerId, item, inventory, inputs);
+                    StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, durationUs, statusElapsedUs - modifierProperties.durationUs);
+                    if (nextStatus == ItemStatusId.RequestRemoval) break;
+                }
+            }
+            catch (Exception)
+            {
+                Debug.LogError($"Status ID: {status.id}");
+                throw;
             }
         }
 

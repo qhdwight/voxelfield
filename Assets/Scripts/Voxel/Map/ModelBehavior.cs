@@ -7,11 +7,13 @@ namespace Voxel.Map
     public class ModelBehavior : MonoBehaviour
     {
         [SerializeField] private ushort m_Id = default;
+        [SerializeField] private string m_ModelName = default;
 
         public Position3Int Position { get; private set; }
         public Container Container { get; private set; }
 
         public ushort Id => m_Id;
+        public string ModelName => m_ModelName;
 
         public void Setup(MapManager mapManager) { }
 

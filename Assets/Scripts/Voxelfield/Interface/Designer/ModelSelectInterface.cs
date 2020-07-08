@@ -17,11 +17,11 @@ namespace Voxelfield.Interface.Designer
 
         private void Start()
         {
-            for (var modelId = 0; modelId < ModelsProperty.Last; modelId++)
+            for (var modelId = 0; modelId <= ModelsProperty.Last; modelId++)
             {
                 Button button = Instantiate(m_ButtonPrefab, transform);
                 var text = button.GetComponentInChildren<TextMeshProUGUI>();
-                text.SetText(modelId.ToString());
+                text.SetText(MapManager.ModelPrefabs[modelId].ModelName);
                 int _modelId = modelId;
                 button.onClick.AddListener(() => m_WantedModelId = _modelId);
             }
@@ -37,7 +37,7 @@ namespace Voxelfield.Interface.Designer
             if (m_WantedModelId.HasValue)
             {
                 Container localPlayer = session.GetPlayerFromId(localPlayerId);
-                localPlayer.Require<StringCommandProperty>().SetTo(builder => builder.Append("select_model ").Append(m_WantedModelId.Value));
+                localPlayer.Require<StringCommandProperty>().SetTo(builder => builder.AppendFormat("select_model {0}", m_WantedModelId.Value));
             }
             m_WantedModelId = null;
         }

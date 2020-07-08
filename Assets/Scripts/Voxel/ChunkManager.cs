@@ -31,12 +31,7 @@ namespace Voxel
         Generate,
         UpdateMesh
     }
-
-    public interface IVoxelChanges
-    {
-        void SetVoxel(in Position3Int voxelWorldPosition, VoxelChangeData change);
-    }
-
+    
     public class ChunkManager : SingletonBehavior<ChunkManager>
     {
         private static readonly VoxelChangeTransaction Transaction = new VoxelChangeTransaction();
@@ -183,7 +178,7 @@ namespace Voxel
             if (!chunk) return;
             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
             chunk.SetVoxelDataNoCheck(voxelChunkPosition, changeData);
-            Map.changedVoxels.SetVoxel(worldPosition, changeData);
+            Map.changedVoxels.Set(worldPosition, changeData);
             if (updateMesh) UpdateChunkMesh(chunk, voxelChunkPosition);
         }
 
@@ -284,7 +279,7 @@ namespace Voxel
         }
 
         public void SetVoxelRadius(in Position3Int worldPositionCenter, float radius,
-                                   bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool additive = false, IVoxelChanges changedVoxels = null)
+                                   bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool additive = false, ChangedVoxelsProperty changedVoxels = null)
         {
             int roundedRadius = Mathf.CeilToInt(radius);
             for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
@@ -319,7 +314,7 @@ namespace Voxel
                             changeData.texture = VoxelId.Dirt;
                         if (!additive && destroyBlocks && distance < roundedRadius && voxel.Value.renderType == VoxelRenderType.Block)
                             changeData.renderType = VoxelRenderType.Smooth;
-                        changedVoxels?.SetVoxel(voxelWorldPosition, changeData);
+                        changedVoxels?.Set(voxelWorldPosition, changeData);
                         if (!Transaction.HasChangeAt(voxelWorldPosition))
                             Transaction.AddChange(voxelWorldPosition, changeData);
                     }

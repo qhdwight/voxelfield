@@ -12,13 +12,10 @@ namespace Swihoni.Components
     {
         public UIntProperty(uint value) : base(value) { }
         public UIntProperty() { }
-
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUInt();
         public override bool ValueEquals(PropertyBase<uint> other) => other.Value == Value;
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation) => Value = InterpolateUInt(p1.Value, p2.Value, interpolation);
-
-        // public static uint InterpolateUInt(uint u1, uint u2, float interpolation) => checked((uint) Math.Round(u1 + (u2 - u1) * interpolation));
         public static uint InterpolateUInt(uint u1, uint u2, float interpolation)
         {
             decimal d1 = u1, d2 = u2, i = (decimal) interpolation;
@@ -49,7 +46,6 @@ namespace Swihoni.Components
     {
         public IntProperty(int value) : base(value) { }
         public IntProperty() { }
-
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetInt();
         public override bool ValueEquals(PropertyBase<int> other) => other.Value == Value;
@@ -60,7 +56,6 @@ namespace Swihoni.Components
     {
         public UShortProperty(ushort value) : base(value) { }
         public UShortProperty() { }
-
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUShort();
         public override bool ValueEquals(PropertyBase<ushort> other) => other.Value == Value;
@@ -71,7 +66,6 @@ namespace Swihoni.Components
     {
         public ShortProperty(short value) : base(value) { }
         public ShortProperty() { }
-
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetShort();
         public override bool ValueEquals(PropertyBase<short> other) => other.Value == Value;
@@ -82,7 +76,6 @@ namespace Swihoni.Components
     {
         public SByteProperty(sbyte value) : base(value) { }
         public SByteProperty() { }
-
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetSByte();
         public override bool ValueEquals(PropertyBase<sbyte> other) => other.Value == Value;
@@ -93,7 +86,6 @@ namespace Swihoni.Components
     {
         public ByteProperty(byte value) : base(value) { }
         public ByteProperty() { }
-
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetByte();
         public override bool ValueEquals(PropertyBase<byte> other) => other.Value == Value;
@@ -121,7 +113,6 @@ namespace Swihoni.Components
     {
         public BoolProperty() { }
         public BoolProperty(bool value) : base(value) { }
-
         public override bool ValueEquals(PropertyBase<bool> other) => other.Value == Value;
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetBool();
@@ -134,7 +125,6 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void Zero() => Value = Quaternion.identity;
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetQuaternion();
-
         public override void ValueInterpolateFrom(PropertyBase<Quaternion> p1, PropertyBase<Quaternion> p2, float interpolation) =>
             Value = Quaternion.Lerp(p1.Value, p2.Value, interpolation);
     }
@@ -188,7 +178,6 @@ namespace Swihoni.Components
         public VectorProperty(Vector3 value) : base(value) { }
         public VectorProperty(float x, float y, float z) : base(new Vector3(x, y, z)) { }
         public VectorProperty() { }
-
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetVector3();
 

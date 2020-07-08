@@ -68,6 +68,7 @@ namespace Voxelfield.Session
         public Position3IntProperty positionOne, positionTwo;
         public ByteProperty selectedBlockId;
         public UShortProperty selectedModelId;
+        [ClientTrusted] public FloatProperty editRadius;
     }
 
     [Serializable]

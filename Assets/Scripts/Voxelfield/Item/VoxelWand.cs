@@ -31,8 +31,9 @@ namespace Voxelfield.Item
 
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
-            if (WithoutServerHit(session, playerId, out RaycastHit hit)
+            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
+            
             if (voxel.renderType == VoxelRenderType.Block)
             {
                 var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
@@ -60,12 +61,12 @@ namespace Voxelfield.Item
 
         protected override void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
-            if (WithoutServerHit(session, playerId, out RaycastHit hit)) return;
+            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)) return;
 
+            var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
             var voxelInjector = (VoxelInjector) session.Injector;
             var position = (Position3Int) hit.point;
-            Debug.Log("Bet");
-            voxelInjector.SetVoxelRadius(position, m_DestroyRadius, additive: true);
+            voxelInjector.SetVoxelRadius(position, designer.editRadius, additive: true);
         }
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,

@@ -13,6 +13,8 @@ namespace Voxel
         [SerializeField] private Material m_FoliageMaterial = default;
         [SerializeField, Layer] private int m_Layer = default;
 
+        private readonly MeshData m_SolidMeshData = new MeshData(), m_FoliageMeshData = new MeshData();
+
         private ChunkManager m_ChunkManager;
         private MeshCollider m_MeshCollider;
         private Mesh m_SolidMesh, m_FoliageMesh;
@@ -20,12 +22,8 @@ namespace Voxel
         private Position3Int m_Position;
         private bool m_InCommission, m_Generating, m_Updating;
         private int m_ChunkSize;
-
         private Voxel[,,] m_Voxels;
-
-        //private bool m_WaitingForMeshData = true;
-        private readonly MeshData m_SolidMeshData = new MeshData(), m_FoliageMeshData = new MeshData();
-
+        
         public Position3Int Position => m_Position;
 
         public override int GetHashCode() => m_Position.GetHashCode();
@@ -88,7 +86,7 @@ namespace Voxel
         private bool InsideChunk(in Position3Int pos) => pos.x < m_ChunkSize && pos.y < m_ChunkSize && pos.z < m_ChunkSize
                                                       && pos.x >= 0 && pos.y >= 0 && pos.z >= 0;
 
-        public void SetVoxelDataNoCheck(in Position3Int pos, VoxelChangeData changeData) => m_Voxels?[pos.x, pos.y, pos.z].SetVoxelData(changeData);
+        public void SetVoxelDataNoCheck(in Position3Int pos, in VoxelChangeData changeData) => m_Voxels?[pos.x, pos.y, pos.z].SetVoxelData(changeData);
 
         public Voxel? GetVoxel(in Position3Int internalPosition)
         {
