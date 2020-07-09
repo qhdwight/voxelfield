@@ -23,9 +23,12 @@ namespace Voxelfield.Item
         }
 
         protected override void RemoveBlock(SessionBase session, VoxelInjector injector, in Position3Int position)
-            => injector.SetVoxelData(position, new VoxelChangeData {id = ChunkManager.Singleton.GetMapSaveVoxel(position).Value.id, natural = true});
+        {
+            VoxelChangeData mapSaveVoxel = ChunkManager.Singleton.GetMapSaveVoxel(position).Value;
+            injector.SetVoxelData(position, new VoxelChangeData {id = mapSaveVoxel.id, renderType = VoxelRenderType.Smooth, natural = true});
+        }
 
-        protected override void SetVoxelRadius(SessionBase session, VoxelInjector injector, in Position3Int position)
-            => injector.SetVoxelRadius(position, session.GetLocalCommands().Require<DesignerPlayerComponent>().editRadius);
+        protected override void SetVoxelRadius(SessionBase session, int playerId, VoxelInjector injector, in Position3Int position)
+            => injector.SetVoxelRadius(position, session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>().editRadius);
     }
 }

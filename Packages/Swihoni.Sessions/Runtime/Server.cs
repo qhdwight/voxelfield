@@ -42,7 +42,7 @@ namespace Swihoni.Sessions
 
             Physics.autoSimulation = false;
         }
-        
+
         private void OnLatencyUpdated(NetPeer peer, int latency)
         {
             Container player = GetPlayerFromId(peer.GetPlayerId());
@@ -57,7 +57,7 @@ namespace Swihoni.Sessions
             int playerId = peer.GetPlayerId();
             Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
             Container player = GetPlayerFromId(playerId);
-            player.Reset();
+            player.Clear();
             GetPlayerModifier(player, playerId);
         }
 
@@ -94,8 +94,8 @@ namespace Swihoni.Sessions
             ElementExtensions.NavigateZipped((_previous, _current) =>
             {
                 if (_current.WithAttribute<SingleTick>())
-                    _current.Reset();
-                if (_current is PropertyBase _currentProperty && _currentProperty.IsOverride)
+                    _current.Clear();
+                if (_current is PropertyBase _currentProperty)
                     _currentProperty.IsOverride = false;
                 return Navigation.Continue;
             }, previousServerSession, serverSession);
@@ -105,8 +105,11 @@ namespace Swihoni.Sessions
         {
             ElementExtensions.NavigateZipped((_previous, _current) =>
             {
-                if (_previous is PropertyBase previousProperty && _current is PropertyBase currentProperty)
-                    currentProperty.SetTo(previousProperty);
+                if (_previous is PropertyBase _previousProperty && _current is PropertyBase _currentProperty)
+                {
+                    _currentProperty.SetTo(_previousProperty);
+                    _currentProperty.IsOverride = _previousProperty.IsOverride;
+                }
                 return Navigation.Continue;
             }, previous, current);
         }
@@ -137,7 +140,7 @@ namespace Swihoni.Sessions
                 }
             }
         }
-        
+
         private void Tick(Container serverSession, uint tick, uint timeUs, uint durationUs)
         {
             ServerTick(serverSession, timeUs, durationUs);
@@ -180,10 +183,10 @@ namespace Swihoni.Sessions
 
                 ElementExtensions.NavigateZipped((_send, _server) =>
                 {
-                    if (_send is PropertyBase sendProperty && _server is PropertyBase serverProperty)
+                    if (_send is PropertyBase _sendProperty && _server is PropertyBase _serverProperty)
                     {
-                        sendProperty.SetTo(serverProperty);
-                        sendProperty.IsOverride = serverProperty.IsOverride;
+                        _sendProperty.SetTo(_serverProperty);
+                        _sendProperty.IsOverride = _serverProperty.IsOverride;
                     }
                     return Navigation.Continue;
                 }, m_SendSession, serverSession);
@@ -210,7 +213,7 @@ namespace Swihoni.Sessions
                 if (_mostRecent is PropertyBase _mostRecentProperty && _lastAcknowledged is PropertyBase _lastAcknowledgedProperty && _send is PropertyBase _sendProperty)
                 {
                     if (_mostRecent.WithoutAttribute<SingleTick>() && _mostRecentProperty.Equals(_lastAcknowledgedProperty)
-                                                                 && !(_mostRecentProperty is VectorProperty))
+                                                                   && !(_mostRecentProperty is VectorProperty))
                     {
                         _sendProperty.Clear();
                         _sendProperty.WasSame = true;
@@ -298,8 +301,8 @@ namespace Swihoni.Sessions
             player.ZeroIfWith<StatsComponent>();
             player.Require<HasSentInitialData>().Zero();
             player.Require<ServerPingComponent>().Zero();
-            player.Require<ClientStampComponent>().Reset();
-            player.Require<ServerStampComponent>().Reset();
+            player.Require<ClientStampComponent>().Clear();
+            player.Require<ServerStampComponent>().Clear();
         }
 
         public override Ray GetRayForPlayerId(int playerId) => GetRayForPlayer(GetLatestSession().GetPlayer(playerId));

@@ -97,7 +97,7 @@ namespace Voxel
 
         public Voxel GetVoxelNoCheck(in Position3Int position) => m_Voxels[position.x, position.y, position.z];
 
-        private VoxelChangeData GetChangeDataFromSave(in Position3Int voxelPosition, MapContainer save)
+        public VoxelChangeData GetChangeDataFromSave(in Position3Int voxelPosition, MapContainer save)
         {
             float
                 noiseHeight = Noise.Simplex(m_Position.x * m_ChunkSize + voxelPosition.x,
@@ -150,14 +150,7 @@ namespace Voxel
             }
             m_Generating = false;
         }
-
-        public VoxelChangeData RevertToMapSave(in Position3Int position, MapContainer save)
-        {
-            VoxelChangeData changeData = GetChangeDataFromSave(position, save);
-            SetVoxelDataNoCheck(position, changeData);
-            return changeData;
-        }
-
+        
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = m_Generating ? Color.yellow : m_Updating ? Color.red : Color.cyan;

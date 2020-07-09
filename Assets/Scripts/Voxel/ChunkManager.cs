@@ -172,7 +172,7 @@ namespace Voxel
         /// <param name="chunk">Chunk that we know it is in. If null, we will try to find it</param>
         /// <param name="updateMesh">Whether or not to actually update the chunk's mesh</param>
         public void SetVoxelData
-            (in Position3Int worldPosition, VoxelChangeData changeData, Chunk chunk = null, bool updateMesh = true)
+            (in Position3Int worldPosition, in VoxelChangeData changeData, Chunk chunk = null, bool updateMesh = true)
         {
             if (!chunk) chunk = GetChunkFromWorldPosition(worldPosition);
             if (!chunk) return;
@@ -187,7 +187,7 @@ namespace Voxel
             Chunk chunk = GetChunkFromWorldPosition(worldPosition);
             if (!chunk) return null;
             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-            VoxelChangeData change = chunk.RevertToMapSave(voxelChunkPosition, m_LoadedMap);
+            VoxelChangeData change = chunk.GetChangeDataFromSave(voxelChunkPosition, m_LoadedMap);
             return change;
         }
 

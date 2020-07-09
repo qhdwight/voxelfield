@@ -20,6 +20,7 @@ namespace Voxelfield.Item
 
         public static void SessionCommand(SessionBase session, int playerId, params string[] commandNames)
         {
+            if (session is Client)
             foreach (string commandName in commandNames)
                 ConsoleCommandExecutor.SetCommand(commandName, args => session.StringCommand(playerId, string.Join(" ", args)));
         }
@@ -66,7 +67,7 @@ namespace Voxelfield.Item
         {
             base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
 
-            if (player.Without<ServerTag>() || player.WithoutPropertyOrWithoutValue(out StringCommandProperty command)) return;
+            if (player.Without<ServerTag>() || player.WithoutPropertyOrWithoutValue(out StringCommandProperty command) || command.Builder.Length == 0) return;
 
             string[] split = command.Builder.ToString().Split();
             switch (split[0])

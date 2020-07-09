@@ -33,7 +33,7 @@ namespace Voxelfield.Item
                     RemoveBlock(session, voxelInjector, position);
                     break;
                 case VoxelRenderType.Smooth:
-                    SetVoxelRadius(session, voxelInjector, position);
+                    SetVoxelRadius(session, playerId, voxelInjector, position);
                     break;
             }
             var brokeVoxelTickProperty = session.GetPlayerFromId(playerId).Require<BrokeVoxelTickProperty>();
@@ -44,7 +44,7 @@ namespace Voxelfield.Item
         protected virtual void RemoveBlock(SessionBase session, VoxelInjector injector, in Position3Int position)
             => injector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth, natural = false});
 
-        protected virtual void SetVoxelRadius(SessionBase session, VoxelInjector injector, in Position3Int position)
+        protected virtual void SetVoxelRadius(SessionBase session, int playerId, VoxelInjector injector, in Position3Int position)
             => injector.SetVoxelRadius(position, m_DestroyRadius, true);
 
         protected override bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);

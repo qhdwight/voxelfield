@@ -36,7 +36,7 @@ namespace Voxelfield.Session.Mode
             Debug.Log("Starting capture the flag game mode");
             var ctf = sessionContainer.Require<CtfComponent>();
             ctf.teamScores.Zero();
-            ctf.teamFlags.Reset();
+            ctf.teamFlags.Clear();
             m_FlagBehaviors = null;
         }
 
@@ -120,7 +120,7 @@ namespace Voxelfield.Session.Mode
             if (ReferenceEquals(enemyTaking, null))
             {
                 // Return flag if capturing player has left early when taking or has disconnected or died
-                flag.Reset();
+                flag.Clear();
             }
         }
 
@@ -135,7 +135,7 @@ namespace Voxelfield.Session.Mode
                     if (enemyFlag.capturingPlayerId.WithValue && enemyFlag.capturingPlayerId == player.PlayerId
                                                               && enemyFlag.captureElapsedTimeUs > TakeFlagDurationUs) // Test if friendly returning enemy flag
                     {
-                        enemyFlag.Reset();
+                        enemyFlag.Clear();
                         ctf.teamScores[playerTeam].Value++;
                     }
                 }

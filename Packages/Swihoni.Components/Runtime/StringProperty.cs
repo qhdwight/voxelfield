@@ -70,6 +70,12 @@ namespace Swihoni.Components
 
         public static bool operator !=(StringProperty s1, StringProperty s2) => !(s1 == s2);
 
+        public override void Clear()
+        {
+            Zero();
+            base.Clear();
+        }
+
         public override void Zero() => Builder.Clear();
 
         public override void SetFromIfWith(PropertyBase other)

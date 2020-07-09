@@ -28,7 +28,7 @@ namespace Swihoni.Sessions
                                                    .Append(typeof(ServerTag))
                                                    .Append(typeof(HostTag)));
             m_HostCommands.Zero();
-            m_HostCommands.Require<ServerStampComponent>().Reset();
+            m_HostCommands.Require<ServerStampComponent>().Clear();
         }
         
         public override Container GetLocalCommands() => m_HostCommands;

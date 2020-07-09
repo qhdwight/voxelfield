@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 4
   itemName: Shotgun
-  movementFactor: 1
+  movementFactor: 0.95
   m_StatusModiferProperties:
   - durationUs: 2000000
     isPersistent: 0
@@ -65,6 +65,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  m_HeadShotMultiplier: 1
   m_MagSize: 6
   m_StartingAmmoInReserve: 24
   m_AdsModifierProperties:

@@ -69,11 +69,16 @@ namespace Console.Interface
             base.SetInterfaceActive(isActive);
             if (isActive)
             {
+                m_ConsoleInput.enabled = true;
                 m_ConsoleInput.ActivateInputField();
                 m_ConsoleInput.Select();
             }
             else
+            {
                 m_ConsoleInput.DeactivateInputField();
+                m_OpenedForCommand = false;
+                m_ConsoleInput.enabled = false;
+            }
         }
 
         public void ClearConsole()
@@ -81,7 +86,7 @@ namespace Console.Interface
             m_LogItems.Clear();
             SetLogText();
         }
-
+        
         private void Update()
         {
             InputProvider input = InputProvider.Singleton;
