@@ -171,7 +171,7 @@ namespace Swihoni.Components
         /// <exception cref="WithoutValueException">Without value on at least one property.</exception>
         public abstract bool ValueEquals(PropertyBase<T> other);
 
-        public override string ToString() => $"{Field?.Name}, {GetType().Name}, {(WithValue ? m_Value.ToString() : "No Value")}";
+        public override string ToString() => $"[{Field?.Name ?? "No field"}] ({GetType().Name}), {(WithValue ? m_Value.ToString() : "No Value")}";
 
         /// <exception cref="ArgumentException">If types are different.</exception>
         public override void SetFromIfWith(PropertyBase other)

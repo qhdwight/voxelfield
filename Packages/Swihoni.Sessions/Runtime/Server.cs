@@ -173,23 +173,16 @@ namespace Swihoni.Sessions
                 int playerId = peer.GetPlayerId();
                 localPlayerProperty.Value = (byte) playerId;
 
-                // uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
-                // var rollback = checked((int) (tick - lastServerTickAcknowledged));
-                // if (lastServerTickAcknowledged == 0u)
-                //     m_SendSession.CopyFrom(serverSession);
-                // else
-                //     // TODO:performance serialize and compress at the same time
-                //     CompressSession(serverSession, rollback);
+                uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
+                var rollback = checked((int) (tick - lastServerTickAcknowledged));
+                if (lastServerTickAcknowledged == 0u)
+                    // m_SendSession.CopyFrom(serverSession);
+                    CopyToSend(serverSession);
+                else
+                    // TODO:performance serialize and compress at the same time
+                    CompressSession(serverSession, rollback);
 
-                ElementExtensions.NavigateZipped((_send, _server) =>
-                {
-                    if (_send is PropertyBase _sendProperty && _server is PropertyBase _serverProperty)
-                    {
-                        _sendProperty.SetTo(_serverProperty);
-                        _sendProperty.IsOverride = _serverProperty.IsOverride;
-                    }
-                    return Navigation.Continue;
-                }, m_SendSession, serverSession);
+                // CopyToSend(serverSession);
 
                 if (player.Require<ClientStampComponent>().tick.WithValue)
                 {
@@ -205,6 +198,19 @@ namespace Swihoni.Sessions
             }
         }
 
+        private void CopyToSend(ElementBase serverSession)
+        {
+            ElementExtensions.NavigateZipped((_send, _server) =>
+            {
+                if (_send is PropertyBase _sendProperty && _server is PropertyBase _serverProperty)
+                {
+                    _sendProperty.SetTo(_serverProperty);
+                    _sendProperty.IsOverride = _serverProperty.IsOverride;
+                }
+                return Navigation.Continue;
+            }, m_SendSession, serverSession);
+        }
+
         // Not working, prediction errors on ground tick and position
         private void CompressSession(ElementBase serverSession, int rollback)
         {
@@ -213,7 +219,8 @@ namespace Swihoni.Sessions
                 if (_mostRecent is PropertyBase _mostRecentProperty && _lastAcknowledged is PropertyBase _lastAcknowledgedProperty && _send is PropertyBase _sendProperty)
                 {
                     if (_mostRecent.WithoutAttribute<SingleTick>() && _mostRecentProperty.Equals(_lastAcknowledgedProperty)
-                                                                   && !(_mostRecentProperty is VectorProperty))
+                                                                   && !(_mostRecentProperty is VectorProperty)
+                                                                   && !(_mostRecentProperty is StringProperty))
                     {
                         _sendProperty.Clear();
                         _sendProperty.WasSame = true;
@@ -221,6 +228,7 @@ namespace Swihoni.Sessions
                     else
                     {
                         _sendProperty.SetTo(_mostRecentProperty);
+                        _sendProperty.IsOverride = _mostRecentProperty.IsOverride;
                         _sendProperty.WasSame = false;
                     }
                 }

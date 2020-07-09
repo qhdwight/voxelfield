@@ -126,7 +126,7 @@ namespace Swihoni.Sessions.Components
 
         public uint PlayerRenderIntervalUs => TickIntervalUs * 3;
 
-        public override string ToString() => $"Seconds: {TickInterval}, Microseconds: {TickIntervalUs}";
+        public override string ToString() => WithValue ? $"Seconds: {TickInterval}, Microseconds: {TickIntervalUs}" : "None";
     }
 
     [Serializable]

@@ -27,14 +27,17 @@ namespace Swihoni.Sessions.Interfaces
                 m_PingText.StartBuild().Append("Ping: ").Append(stats.ping).Append(" ms").Commit(m_PingText);
             if (session is Client client)
                 m_PredictionErrorText.StartBuild().Append("Pred Err: ").Append(client.PredictionErrors).Commit(m_PredictionErrorText);
-            if (session is NetworkedSessionBase networkSession)
+            var isVisible = false;
+            if (session is NetworkedSessionBase networkSession && networkSession.Socket.NetworkManager.ConnectedPeersCount > 0)
             {
+                isVisible = true;
                 m_ResetErrorText.StartBuild().Append("Rst Err: ").Append(networkSession.ResetErrors).Commit(m_ResetErrorText);
                 m_UploadText.StartBuild().AppendFormat("Up: {0:F1} kb/s", networkSession.Socket.SendRateKbs).Commit(m_UploadText);
                 m_DownloadText.StartBuild().AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.ReceiveRateKbs).Commit(m_DownloadText);
                 m_PacketLossText.StartBuild().AppendFormat("Drop: {0:P1}", networkSession.Socket.PacketLoss).Commit(m_PacketLossText);
             }
             m_LastUpdateTime = time;
+            SetInterfaceActive(isVisible);
         }
     }
 }
