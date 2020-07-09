@@ -32,7 +32,7 @@ namespace Voxelfield.Session.Mode
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
-                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Shovel, ItemId.VoxelWand, ItemId.ModelWand);
+                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.SuperPickaxe, ItemId.VoxelWand, ItemId.ModelWand);
             }
         }
 
@@ -40,8 +40,12 @@ namespace Voxelfield.Session.Mode
         {
             SpawnPlayer(session, playerId, player);
             var designer = player.Require<DesignerPlayerComponent>();
-            designer.Reset();
-            designer.selectedBlockId.Value = VoxelId.Stone;
+            designer.NavigateProperties(_p =>
+            {
+                _p.Clear();
+                _p.IsOverride = true;
+            });
+            designer.selectedVoxelId.Value = VoxelId.Stone;
         }
     }
 }

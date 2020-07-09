@@ -50,6 +50,7 @@
                 <e p="DesignerHudInterface.cs" t="Include" />
                 <e p="DesignerSidebarInterface.cs" t="Include" />
                 <e p="ModelSelectInterface.cs" t="Include" />
+                <e p="VoxelSelectInterface.cs" t="Include" />
               </e>
               <e p="LoadingInterface.cs" t="Include" />
               <e p="PlayerHud.cs" t="Include" />
@@ -67,6 +68,7 @@
             <e p="Item" t="Include">
               <e p="ModelWand.cs" t="Include" />
               <e p="SculptingItem.cs" t="Include" />
+              <e p="SuperPickaxe.cs" t="Include" />
               <e p="VoxelWand.cs" t="Include" />
             </e>
             <e p="Session" t="Include">

@@ -95,7 +95,7 @@ namespace Swihoni.Sessions.Tests
 
                 Thread.Sleep(100);
 
-                server.PollReceived((peer, component) =>
+                server.OnReceive = (peer, component) =>
                 {
                     switch (component)
                     {
@@ -104,7 +104,8 @@ namespace Swihoni.Sessions.Tests
                             received++;
                             break;
                     }
-                });
+                };
+                server.PollReceived();
 
                 Assert.AreEqual(1, received);
             }
@@ -141,7 +142,7 @@ namespace Swihoni.Sessions.Tests
 
                 Thread.Sleep(100);
 
-                server.PollReceived((ipEndPoint, component) =>
+                server.OnReceive = (ipEndPoint, component) =>
                 {
                     switch (component)
                     {
@@ -150,7 +151,8 @@ namespace Swihoni.Sessions.Tests
                             received++;
                             break;
                     }
-                });
+                };
+                server.PollReceived();
 
                 Assert.AreEqual(send, received);
             }

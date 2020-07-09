@@ -20,7 +20,7 @@ namespace Swihoni.Components.Networking
         private readonly NetDataWriter m_Writer = new NetDataWriter(true, InitialBufferSize);
         private readonly float m_StartTime;
         protected readonly EventBasedNetListener m_Listener = new EventBasedNetListener();
-        private Action<NetPeer, ElementBase> m_OnReceive;
+        public Action<NetPeer, ElementBase> OnReceive { get; set; }
         public NetManager NetworkManager => m_NetworkManager;
         public EventBasedNetListener Listener => m_Listener;
 
@@ -41,30 +41,26 @@ namespace Swihoni.Components.Networking
                 DisconnectTimeout = int.MaxValue,
 #endif
             };
-            m_Listener.NetworkReceiveEvent += OnReceive;
+            m_Listener.NetworkReceiveEvent += Receive;
             m_Listener.PeerConnectedEvent += peer => Debug.Log($"[{GetType().Name}] Connected: {peer.EndPoint}");
             m_Listener.PeerDisconnectedEvent += (peer, info) => Debug.Log($"[{GetType().Name}] Disconnected: {peer.EndPoint}");
             m_StartTime = Time.realtimeSinceStartup;
         }
 
-        private void OnReceive(NetPeer fromPeer, NetPacketReader reader, DeliveryMethod deliveryMethod)
+        private void Receive(NetPeer fromPeer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
             byte code = reader.GetByte();
             Type type = m_Codes.GetReverse(code);
             ElementBase message = m_MessagePools[type].Obtain();
             message.Deserialize(reader);
-            m_OnReceive?.Invoke(fromPeer, message);
+            OnReceive?.Invoke(fromPeer, message);
             m_MessagePools[message.GetType()].Return(message);
             reader.Recycle();
         }
 
         public void PollEvents() => m_NetworkManager.PollEvents();
 
-        public void PollReceived(Action<NetPeer, ElementBase> onReceive)
-        {
-            m_OnReceive = onReceive;
-            m_NetworkManager.PollEvents();
-        }
+        public void PollReceived() => m_NetworkManager.PollEvents();
 
         /// <summary>
         /// Register element type for serialization over network.
@@ -119,6 +115,7 @@ namespace Swihoni.Components.Networking
             m_Listener.ClearPeerDisconnectedEvent();
             m_Listener.ClearNetworkLatencyUpdateEvent();
             m_NetworkManager.Stop();
+            OnReceive = null;
         }
     }
 }

@@ -1,10 +1,23 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Voxel
 {
     public static class VoxelId
     {
-        public const byte None = 0, Dirt = 1, Grass = 2, Stone = 3, Wood = 4;
+        public const byte Dirt = 1, Grass = 2, Stone = 3, Wood = 4, Last = Wood;
+        
+        public static string Name(byte id)
+        {
+            switch (id)
+            {
+                case Dirt: return nameof(Dirt);
+                case Grass: return nameof(Grass);
+                case Stone: return nameof(Stone);
+                case Wood: return nameof(Wood);
+                default: throw new ArgumentOutOfRangeException(nameof(id), id, null);
+            }
+        }
     }
 
     public enum VoxelRenderType : byte
@@ -34,7 +47,7 @@ namespace Voxel
 
         public void SetVoxelData(in VoxelChangeData changeData)
         {
-            if (changeData.texture.HasValue) texture = changeData.texture.Value;
+            if (changeData.id.HasValue) texture = changeData.id.Value;
             if (changeData.renderType.HasValue) renderType = changeData.renderType.Value;
             if (changeData.density.HasValue) density = changeData.density.Value;
             if (changeData.breakable.HasValue) breakable = changeData.breakable.Value;
@@ -93,6 +106,6 @@ namespace Voxel
 
         public override string ToString() => $"Texture: {texture}, Render Type: {renderType}, Density: {density}, Breakable: {breakable}, Orientation: {orientation}";
 
-        public bool ShouldRender(byte direction) => renderType == VoxelRenderType.Smooth || renderType == VoxelRenderType.None;
+        public bool ShouldRenderBlock(byte direction) => renderType == VoxelRenderType.Smooth || renderType == VoxelRenderType.None;
     }
 }

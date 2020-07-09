@@ -1,26 +1,30 @@
+using System;
+using System.Linq;
 using Input;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Interfaces;
+using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Rendering;
 using Voxelfield.Interface.Showdown;
+using Voxelfield.Item;
 using Voxelfield.Session;
 
 namespace Voxelfield.Interface.Designer
 {
     public class DesignerHudInterface : SessionInterfaceBehavior
     {
-        private Image m_Image;
+        [SerializeField] private Mesh m_SphereMesh = default;
+        [SerializeField] private Material m_Material = default;
+        private SculptingItem m_SculptingItem;
 
-        protected override void Awake()
-        {
-            base.Awake();
-            m_Image = GetComponentInChildren<Image>();
-        }
-
+        private void Start() => m_SculptingItem = (SculptingItem) ItemAssetLink.GetModifier(ItemId.SuperPickaxe);
+        
+        private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
+        
         public override void Render(SessionBase session, Container sessionContainer)
         {
             bool isVisible = ShowdownInterface.IsValidLocalPlayer(session, sessionContainer, out Container localPlayer);
@@ -28,18 +32,23 @@ namespace Voxelfield.Interface.Designer
             if (isVisible)
             {
                 editRadius = localPlayer.Require<DesignerPlayerComponent>().editRadius;
-                if (!localPlayer.Require<InventoryComponent>().WithItemEquipped(out ItemComponent item) || item.id != ItemId.VoxelWand) isVisible = false;
+                if (!localPlayer.Require<InventoryComponent>().WithItemEquipped(out ItemComponent item) || item.id != ItemId.SuperPickaxe) isVisible = false;
             }
             if (isVisible)
             {
-                m_Image.rectTransform.localScale = Vector3.one * editRadius;
+                if (Physics.RaycastNonAlloc(SessionBase.GetRayForPlayer(localPlayer), m_CachedHits, m_SculptingItem.EditDistance, m_SculptingItem.ChunkMask) > 0)
+                {
+                    Camera activeCamera = Camera.allCameras.First();
+                    Matrix4x4 matrix = Matrix4x4.TRS(m_CachedHits.First().point, Quaternion.identity, Vector3.one * editRadius * 1.5f);
+                    Graphics.DrawMesh(m_SphereMesh, matrix, m_Material, 0, activeCamera, 0, null, ShadowCastingMode.Off, false);   
+                }
             }
             SetInterfaceActive(isVisible);
         }
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
-            float wheel = InputProvider.GetMouseScrollWheel();
+            float wheel = InputProvider.GetMouseScrollWheel() * 2.5f;
             FloatProperty editRadius = commands.Require<DesignerPlayerComponent>().editRadius;
             editRadius.Value = Mathf.Clamp(editRadius.Else(1.7f) + wheel, 0.0f, 10.0f);
         }

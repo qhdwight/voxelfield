@@ -6,7 +6,7 @@ namespace Voxel
 {
     public struct VoxelChangeData
     {
-        public const int TextureFlagIndex = 0,
+        public const int IdFlagIndex = 0,
                          RenderTypeFlagIndex = 1,
                          DensityFlagIndex = 2,
                          OrientationFlagIndex = 3,
@@ -14,17 +14,17 @@ namespace Voxel
                          NaturalFlagIndex = 5,
                          ColorFlagIndex = 6;
 
-        public byte? texture, density, orientation;
+        public byte? id, density, orientation;
         public VoxelRenderType? renderType;
         public bool? breakable, natural;
         public Color32? color;
 
-        public override string ToString() => $"Texture: {texture}, Render Type: {renderType}, Density: {density}, Orientation: {orientation}, Breakable: {breakable}";
+        public override string ToString() => $"Texture: {id}, Render Type: {renderType}, Density: {density}, Orientation: {orientation}, Breakable: {breakable}";
 
         public static void Serialize(in VoxelChangeData changeData, NetDataWriter writer)
         {
             byte flags = 0;
-            if (changeData.texture.HasValue) FlagUtil.SetFlag(ref flags, TextureFlagIndex);
+            if (changeData.id.HasValue) FlagUtil.SetFlag(ref flags, IdFlagIndex);
             if (changeData.renderType.HasValue) FlagUtil.SetFlag(ref flags, RenderTypeFlagIndex);
             if (changeData.density.HasValue) FlagUtil.SetFlag(ref flags, DensityFlagIndex);
             if (changeData.orientation.HasValue) FlagUtil.SetFlag(ref flags, OrientationFlagIndex);
@@ -32,7 +32,7 @@ namespace Voxel
             if (changeData.natural.HasValue) FlagUtil.SetFlag(ref flags, NaturalFlagIndex);
             if (changeData.color.HasValue) FlagUtil.SetFlag(ref flags, ColorFlagIndex);
             writer.Put(flags);
-            if (changeData.texture.HasValue) writer.Put(changeData.texture.Value);
+            if (changeData.id.HasValue) writer.Put(changeData.id.Value);
             if (changeData.renderType.HasValue) writer.Put((byte) changeData.renderType.Value);
             if (changeData.density.HasValue) writer.Put(changeData.density.Value);
             if (changeData.orientation.HasValue) writer.Put(changeData.orientation.Value);
@@ -45,7 +45,7 @@ namespace Voxel
         {
             byte flags = reader.GetByte();
             var data = new VoxelChangeData();
-            if (FlagUtil.HasFlag(flags, TextureFlagIndex)) data.texture = reader.GetByte();
+            if (FlagUtil.HasFlag(flags, IdFlagIndex)) data.id = reader.GetByte();
             if (FlagUtil.HasFlag(flags, RenderTypeFlagIndex)) data.renderType = (VoxelRenderType) reader.GetByte();
             if (FlagUtil.HasFlag(flags, DensityFlagIndex)) data.density = reader.GetByte();
             if (FlagUtil.HasFlag(flags, OrientationFlagIndex)) data.orientation = reader.GetByte();
@@ -57,7 +57,7 @@ namespace Voxel
 
         public void Merge(in VoxelChangeData newChange)
         {
-            if (newChange.texture.HasValue) texture = newChange.texture.Value;
+            if (newChange.id.HasValue) id = newChange.id.Value;
             if (newChange.renderType.HasValue) renderType = newChange.renderType.Value;
             if (newChange.density.HasValue) density = newChange.density.Value;
             if (newChange.orientation.HasValue) orientation = newChange.orientation.Value;

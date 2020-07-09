@@ -75,7 +75,7 @@ namespace Swihoni.Sessions
         private uint m_Tick;
         private Stopwatch m_Stopwatch;
         private ModeBase m_Mode;
-        public bool ShouldInterruptCommands { get; private set; }
+        public InterfaceBehaviorBase InterruptingInterface { get; private set; }
 
         public SessionInjectorBase Injector => m_Injector;
         public PlayerManager PlayerManager { get; private set; }
@@ -146,13 +146,13 @@ namespace Swihoni.Sessions
             if (Application.isFocused)
             {
                 desiredLockState = CursorLockMode.Locked;
-                ShouldInterruptCommands = false;
+                InterruptingInterface = null;
                 foreach (InterfaceBehaviorBase @interface in m_Interfaces)
                 {
                     if (@interface.NeedsCursor)
                         desiredLockState = CursorLockMode.Confined;
                     if (@interface.InterruptsCommands)
-                        ShouldInterruptCommands = true;
+                        InterruptingInterface = @interface;
                 }
             }
             else desiredLockState = CursorLockMode.None;
@@ -240,6 +240,8 @@ namespace Swihoni.Sessions
 
         public abstract Container GetLatestSession();
 
+        public virtual Container GetLocalCommands() => throw new NotImplementedException();
+        
         public static Ray GetRayForPlayer(Container player)
         {
             var camera = player.Require<CameraComponent>();

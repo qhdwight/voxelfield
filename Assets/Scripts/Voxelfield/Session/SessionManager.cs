@@ -143,7 +143,7 @@ namespace Voxelfield.Session
                 DisconnectAll();
             }
 
-            if (m_Sessions.Any(session => session.ShouldInterruptCommands)) return;
+            if (m_Sessions.Any(session => session.InterruptingInterface)) return;
             if (UnityEngine.Input.GetKeyDown(KeyCode.H))
             {
                 StartHost();

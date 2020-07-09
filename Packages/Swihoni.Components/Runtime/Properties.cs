@@ -16,6 +16,7 @@ namespace Swihoni.Components
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUInt();
         public override bool ValueEquals(PropertyBase<uint> other) => other.Value == Value;
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation) => Value = InterpolateUInt(p1.Value, p2.Value, interpolation);
+
         public static uint InterpolateUInt(uint u1, uint u2, float interpolation)
         {
             decimal d1 = u1, d2 = u2, i = (decimal) interpolation;
@@ -125,6 +126,7 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void Zero() => Value = Quaternion.identity;
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetQuaternion();
+
         public override void ValueInterpolateFrom(PropertyBase<Quaternion> p1, PropertyBase<Quaternion> p2, float interpolation) =>
             Value = Quaternion.Lerp(p1.Value, p2.Value, interpolation);
     }

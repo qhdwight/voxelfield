@@ -19,8 +19,8 @@ namespace Voxelfield.Session
         protected internal virtual void VoxelTransaction(VoxelChangeTransaction uncommitted) => uncommitted.Commit();
 
         protected internal virtual void SetVoxelRadius(in Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false,
-                                                       bool destroyBlocks = false, bool additive = false, ChangedVoxelsProperty changedVoxels = null)
-            => ChunkManager.Singleton.SetVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, additive, changedVoxels);
+                                                       bool destroyBlocks = false, bool isAdditive = false, in VoxelChangeData additiveChange = default, ChangedVoxelsProperty changedVoxels = null)
+            => ChunkManager.Singleton.SetVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, isAdditive, additiveChange, changedVoxels);
 
         private readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
 

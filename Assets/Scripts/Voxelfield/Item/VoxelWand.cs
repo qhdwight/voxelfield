@@ -11,6 +11,7 @@ using Voxelfield.Session;
 
 namespace Voxelfield.Item
 {
+    [CreateAssetMenu(fileName = "Voxel Wand", menuName = "Item/Voxel Wand", order = 0)]
     public class VoxelWand : SculptingItem
     {
         private readonly VoxelChangeTransaction m_Transaction = new VoxelChangeTransaction();
@@ -36,7 +37,7 @@ namespace Voxelfield.Item
             
             if (voxel.renderType == VoxelRenderType.Block)
             {
-                var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
+                var designer = session.GetLocalCommands().Require<DesignerPlayerComponent>();
                 if (designer.positionOne.WithoutValue || designer.positionTwo.WithValue)
                 {
                     Debug.Log($"Set position one: {position}");
@@ -54,19 +55,7 @@ namespace Voxelfield.Item
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
             var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
-            DimensionFunction(session, designer, _ => new VoxelChangeData {texture = designer.selectedBlockId, renderType = VoxelRenderType.Block});
-        }
-
-        protected override bool CanTernaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
-
-        protected override void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs)
-        {
-            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)) return;
-
-            var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
-            var voxelInjector = (VoxelInjector) session.Injector;
-            var position = (Position3Int) hit.point;
-            voxelInjector.SetVoxelRadius(position, designer.editRadius, additive: true);
+            DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId, renderType = VoxelRenderType.Block});
         }
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,
@@ -83,8 +72,8 @@ namespace Voxelfield.Item
                 {
                     var designer = player.Require<DesignerPlayerComponent>();
                     if (split.Length > 1 && byte.TryParse(split[1], out byte blockId))
-                        designer.selectedBlockId.Value = blockId;
-                    DimensionFunction(session, designer, _ => new VoxelChangeData {texture = designer.selectedBlockId, renderType = VoxelRenderType.Block});
+                        designer.selectedVoxelId.Value = blockId;
+                    DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId, renderType = VoxelRenderType.Block});
                     break;
                 }
                 case "revert":

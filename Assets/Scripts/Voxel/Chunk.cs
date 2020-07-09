@@ -113,7 +113,7 @@ namespace Voxel
                                                    || m_Position.z == save.dimension.upperBound.Value.z && voxelPosition.z == m_ChunkSize - 1);
             return new VoxelChangeData
             {
-                texture = height > 5.0f ? VoxelId.Stone : VoxelId.Grass,
+                id = height > 5.0f ? VoxelId.Stone : VoxelId.Grass,
                 renderType = VoxelRenderType.Smooth, density = density, breakable = breakable, orientation = Orientation.None, natural = true,
                 color = new Color32(255, 255, 255, 255)
             };

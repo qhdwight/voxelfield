@@ -471,7 +471,7 @@ namespace Voxel
                                 {
                                     var orientation = (byte) (i + 1);
                                     Voxel? adjacentVoxel = chunk.GetVoxel(new Position3Int(x, y, z) + Adjacents[orientation]);
-                                    if (adjacentVoxel?.ShouldRender(orientation) ?? true)
+                                    if (adjacentVoxel?.ShouldRenderBlock(orientation) ?? true)
                                         GenerateBlock(ref voxel, x, y, z, orientation, solidMesh);
                                 }
                                 break;

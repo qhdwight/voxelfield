@@ -6,39 +6,39 @@ using Swihoni.Sessions.Interfaces;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Voxel.Map;
+using Voxel;
 using Voxelfield.Session;
 
 namespace Voxelfield.Interface.Designer
 {
-    public class ModelSelectInterface : SessionInterfaceBehavior
+    public class VoxelSelectInterface : SessionInterfaceBehavior
     {
         [SerializeField] private Button m_ButtonPrefab = default;
-        private int? m_WantedModelId;
+        private int? m_WantedId;
 
         private void Start()
         {
-            for (var modelId = 0; modelId <= ModelsProperty.Last; modelId++)
+            for (byte id = 1; id <= VoxelId.Last; id++)
             {
                 Button button = Instantiate(m_ButtonPrefab, transform);
                 var text = button.GetComponentInChildren<TextMeshProUGUI>();
-                text.SetText(MapManager.ModelPrefabs[modelId].ModelName);
-                int _modelId = modelId;
-                button.onClick.AddListener(() => m_WantedModelId = _modelId);
+                text.SetText(VoxelId.Name(id));
+                int _modelId = id;
+                button.onClick.AddListener(() => m_WantedId = _modelId);
             }
         }
 
         public override void Render(SessionBase session, Container sessionContainer)
-            => SetInterfaceActive(NoInterrupting(session) && sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer && InputProvider.Singleton.GetInput(InputType.OpenModelSelect));
+            => SetInterfaceActive(NoInterrupting(session) && sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer && InputProvider.Singleton.GetInput(InputType.OpenVoxelSelect));
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
-            if (m_WantedModelId.HasValue)
+            if (m_WantedId.HasValue)
             {
                 Container localCommands = session.GetLocalCommands();
-                localCommands.Require<DesignerPlayerComponent>().selectedModelId.Value = (ushort) m_WantedModelId.Value;
+                localCommands.Require<DesignerPlayerComponent>().selectedVoxelId.Value = (byte) m_WantedId.Value;
             }
-            m_WantedModelId = null;
+            m_WantedId = null;
         }
     }
 }

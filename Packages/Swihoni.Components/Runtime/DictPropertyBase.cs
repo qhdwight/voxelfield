@@ -6,7 +6,8 @@ using LiteNetLib.Utils;
 namespace Swihoni.Components
 {
     [Serializable]
-    public class DictProperty<TKey, TValue> : DictPropertyBase<TKey, TValue> where TKey : ElementBase where TValue : ElementBase
+    public class DictProperty<TKey, TValue> : DictPropertyBase<TKey, TValue>
+        where TKey : ElementBase where TValue : ElementBase
     {
         public override void Serialize(NetDataWriter writer)
         {
@@ -33,7 +34,7 @@ namespace Swihoni.Components
             WithValue = true;
         }
     }
-    
+
     [Serializable]
     public abstract class DictPropertyBase<TKey, TValue> : PropertyBase, IEnumerable<(TKey, TValue)>
     {
@@ -73,7 +74,7 @@ namespace Swihoni.Components
             foreach ((TKey key, TValue value) in other)
                 Set(key, value);
         }
-        
+
         public override void SetTo(PropertyBase other)
         {
             if (!(other is DictPropertyBase<TKey, TValue> otherMap)) throw new ArgumentException("Other was not same type map");

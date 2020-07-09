@@ -29,6 +29,8 @@ namespace Swihoni.Sessions
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Reset();
         }
+        
+        public override Container GetLocalCommands() => m_HostCommands;
 
         protected override void Input(uint timeUs, uint deltaUs)
         {

@@ -16,6 +16,9 @@ namespace Voxelfield.Item
         [SerializeField] protected float m_DestroyRadius = 1.7f;
         [SerializeField] private LayerMask m_ChunkMask = default;
 
+        public float EditDistance => m_EditDistance;
+        public LayerMask ChunkMask => m_ChunkMask;
+
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
             base.Swing(session, playerId, item, durationUs); // Melee damage
@@ -26,10 +29,10 @@ namespace Voxelfield.Item
             switch (voxel.renderType)
             {
                 case VoxelRenderType.Block:
-                    voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth});
+                    RemoveBlock(session, voxelInjector, position);
                     break;
                 case VoxelRenderType.Smooth:
-                    voxelInjector.SetVoxelRadius(position, m_DestroyRadius, true);
+                    SetVoxelRadius(session, voxelInjector, position);
                     break;
             }
             var brokeVoxelTickProperty = session.GetPlayerFromId(playerId).Require<BrokeVoxelTickProperty>();
@@ -37,16 +40,23 @@ namespace Voxelfield.Item
             else brokeVoxelTickProperty.Value = 0;
         }
 
+        protected virtual void RemoveBlock(SessionBase session, VoxelInjector injector, in Position3Int position)
+            => injector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth, natural = false});
+
+        protected virtual void SetVoxelRadius(SessionBase session, VoxelInjector injector, in Position3Int position)
+            => injector.SetVoxelRadius(position, m_EditDistance, true);
+
         protected override bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
 
         protected static bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
+            // TODO:refactor similar to outer
             position = (Position3Int) (hit.point - hit.normal * 0.5f);
             Voxel.Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
             voxel = optionalVoxel ?? default;
             return !optionalVoxel.HasValue || !voxel.breakable;
         }
-        
+
         protected static bool WithoutOuterVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
             position = (Position3Int) (hit.point + hit.normal * 0.5f);
@@ -71,12 +81,12 @@ namespace Voxelfield.Item
             // TODO:feature add client side prediction for placing blocks
             if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
              || WithoutOuterVoxel(hit, out Position3Int position, out Voxel.Voxel _)) return;
-            
+
             var voxelInjector = (VoxelInjector) session.Injector;
-            byte texture = session.GetPlayerFromId(playerId).With(out DesignerPlayerComponent designer) && designer.selectedBlockId.WithValue
-                ? designer.selectedBlockId
+            byte texture = session.GetPlayerFromId(playerId).With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
+                ? designer.selectedVoxelId
                 : VoxelId.Stone;
-            voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, texture = texture});
+            voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, id = texture});
         }
     }
 }

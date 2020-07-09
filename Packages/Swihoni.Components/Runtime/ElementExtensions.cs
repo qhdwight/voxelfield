@@ -21,25 +21,38 @@ namespace Swihoni.Components
             Navigation Invoke(TriArray<ElementBase> _zip);
         }
 
+        private class VisitPropertiesAction : IVisitFunc
+        {
+            internal static readonly VisitPropertiesAction Instance = new VisitPropertiesAction();
+            internal Action<PropertyBase> action;
+
+            public Navigation Invoke(TriArray<ElementBase> _zip)
+            {
+                if (_zip[0] is PropertyBase property)
+                    action(property);
+                return Navigation.Continue;
+            }
+        }
+
         private class VisitFunc : IVisitFunc
         {
             internal static readonly VisitFunc Instance = new VisitFunc();
-            internal Func<ElementBase, Navigation> func;
-            public Navigation Invoke(TriArray<ElementBase> _zip) => func(_zip[0]);
+            internal Func<ElementBase, Navigation> function;
+            public Navigation Invoke(TriArray<ElementBase> _zip) => function(_zip[0]);
         }
 
         private class DualVisitFunc : IVisitFunc
         {
             internal static readonly DualVisitFunc Instance = new DualVisitFunc();
-            internal Func<ElementBase, ElementBase, Navigation> func;
-            public Navigation Invoke(TriArray<ElementBase> _zip) => func(_zip[0], _zip[1]);
+            internal Func<ElementBase, ElementBase, Navigation> function;
+            public Navigation Invoke(TriArray<ElementBase> _zip) => function(_zip[0], _zip[1]);
         }
 
         private class TriVisitFunc : IVisitFunc
         {
             internal static readonly TriVisitFunc Instance = new TriVisitFunc();
-            internal Func<ElementBase, ElementBase, ElementBase, Navigation> func;
-            public Navigation Invoke(TriArray<ElementBase> _zip) => func(_zip[0], _zip[1], _zip[2]);
+            internal Func<ElementBase, ElementBase, ElementBase, Navigation> function;
+            public Navigation Invoke(TriArray<ElementBase> _zip) => function(_zip[0], _zip[1], _zip[2]);
         }
 
         #endregion
@@ -52,13 +65,10 @@ namespace Swihoni.Components
         /// Un-sets with value flag.
         /// If you instead want to zero, see <see cref="Zero{T}"/>
         /// </summary>
-        public static void Reset(this ElementBase element)
+        public static ElementBase Reset(this ElementBase element)
         {
-            element.Navigate(_e =>
-            {
-                (_e as PropertyBase)?.Clear();
-                return Navigation.Continue;
-            });
+            element.NavigateProperties(_p => _p.Clear());
+            return element;
         }
 
         /// <summary>
@@ -67,11 +77,7 @@ namespace Swihoni.Components
         /// </summary>
         public static T Zero<T>(this T element) where T : ElementBase
         {
-            element.Navigate(_e =>
-            {
-                (_e as PropertyBase)?.Zero();
-                return Navigation.Continue;
-            });
+            element.NavigateProperties(_p => _p.Zero());
             return element;
         }
 
@@ -112,10 +118,18 @@ namespace Swihoni.Components
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
+        public static void NavigateProperties(this ElementBase e, Action<PropertyBase> visit)
+        {
+            var zip = new TriArray<ElementBase> {[0] = e};
+            VisitPropertiesAction.Instance.action = visit;
+            Navigate(VisitPropertiesAction.Instance, zip, 1);
+        }
+
+        /// <summary>See: <see cref="Navigate"/></summary>
         public static void Navigate(this ElementBase e, Func<ElementBase, Navigation> visit)
         {
             var zip = new TriArray<ElementBase> {[0] = e};
-            VisitFunc.Instance.func = visit;
+            VisitFunc.Instance.function = visit;
             Navigate(VisitFunc.Instance, zip, 1);
         }
 
@@ -123,7 +137,7 @@ namespace Swihoni.Components
         public static void NavigateZipped(Func<ElementBase, ElementBase, Navigation> visit, ElementBase e1, ElementBase e2)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2};
-            DualVisitFunc.Instance.func = visit;
+            DualVisitFunc.Instance.function = visit;
             Navigate(DualVisitFunc.Instance, zip, 2);
         }
 
@@ -131,7 +145,7 @@ namespace Swihoni.Components
         public static void NavigateZipped(Func<ElementBase, ElementBase, ElementBase, Navigation> visit, ElementBase e1, ElementBase e2, ElementBase e3)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2, [2] = e3};
-            TriVisitFunc.Instance.func = visit;
+            TriVisitFunc.Instance.function = visit;
             Navigate(TriVisitFunc.Instance, zip, 3);
         }
 

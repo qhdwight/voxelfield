@@ -279,7 +279,7 @@ namespace Voxel
         }
 
         public void SetVoxelRadius(in Position3Int worldPositionCenter, float radius,
-                                   bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool additive = false, ChangedVoxelsProperty changedVoxels = null)
+                                   bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool additive = false, in VoxelChangeData change = default, ChangedVoxelsProperty changedVoxels = null)
         {
             int roundedRadius = Mathf.CeilToInt(radius);
             for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
@@ -303,7 +303,11 @@ namespace Voxel
                             if (additive)
                             {
                                 newDensity = checked((byte) (byte.MaxValue - newDensity));
-                                if (newDensity > currentDensity) changeData.density = newDensity;
+                                if (newDensity > currentDensity)
+                                {
+                                    changeData.density = newDensity;
+                                    changeData.Merge(change);
+                                }
                             }
                             else
                             {
@@ -311,9 +315,11 @@ namespace Voxel
                             }
                         }
                         if (!additive && replaceGrassWithDirt && voxel.Value.texture == VoxelId.Grass)
-                            changeData.texture = VoxelId.Dirt;
-                        if (!additive && destroyBlocks && distance < roundedRadius && voxel.Value.renderType == VoxelRenderType.Block)
+                            changeData.id = VoxelId.Dirt;
+                        bool inSphere = distance < Mathf.Ceil(radius);
+                        if (!additive && destroyBlocks && inSphere && voxel.Value.renderType == VoxelRenderType.Block)
                             changeData.renderType = VoxelRenderType.Smooth;
+                        if (inSphere) changeData.natural = false;
                         changedVoxels?.Set(voxelWorldPosition, changeData);
                         if (!Transaction.HasChangeAt(voxelWorldPosition))
                             Transaction.AddChange(voxelWorldPosition, changeData);

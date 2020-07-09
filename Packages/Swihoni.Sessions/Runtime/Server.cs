@@ -37,11 +37,12 @@ namespace Swihoni.Sessions
             m_Socket = new ComponentServerSocket(IpEndPoint, m_Injector.OnHandleNewConnection);
             m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
             m_Socket.Listener.NetworkLatencyUpdateEvent += OnLatencyUpdated;
+            m_Socket.OnReceive = OnReceive;
             RegisterMessages(m_Socket);
 
             Physics.autoSimulation = false;
         }
-
+        
         private void OnLatencyUpdated(NetPeer peer, int latency)
         {
             Container player = GetPlayerFromId(peer.GetPlayerId());
@@ -92,10 +93,14 @@ namespace Swihoni.Sessions
 
             ElementExtensions.NavigateZipped((_previous, _current) =>
             {
-                if (_current.WithAttribute<SingleTick>() && _current is PropertyBase _currentProperty)
+                if (_current is PropertyBase _currentProperty)
                 {
-                    _currentProperty.Clear();
-                    return Navigation.SkipDescendents;
+                    if (_current.WithAttribute<SingleTick>())
+                    {
+                        _currentProperty.Clear();
+                        return Navigation.SkipDescendents;
+                    }
+                    if (_currentProperty.IsOverride) _currentProperty.IsOverride = false;
                 }
                 return Navigation.Continue;
             }, previousServerSession, serverSession);
@@ -113,32 +118,35 @@ namespace Swihoni.Sessions
 
         protected virtual void ServerTick(Container serverSession, uint timeUs, uint durationUs) { }
 
+        private void OnReceive(NetPeer fromPeer, ElementBase element)
+        {
+            Container serverSession = GetLatestSession();
+            int clientId = fromPeer.GetPlayerId();
+            Container serverPlayer = GetPlayerFromId(clientId);
+            switch (element)
+            {
+                case ClientCommandsContainer receivedClientCommands:
+                {
+                    if (serverPlayer.Require<HealthProperty>().WithoutValue)
+                    {
+                        Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {fromPeer.GetPlayerId()}");
+                        SetupNewPlayer(serverSession, clientId, serverPlayer);
+                    }
+                    HandleClientCommand(clientId, receivedClientCommands, serverSession, serverPlayer);
+                    break;
+                }
+                case DebugClientView receivedDebugClientView:
+                {
+                    DebugBehavior.Singleton.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
+                    break;
+                }
+            }
+        }
+        
         private void Tick(Container serverSession, uint tick, uint timeUs, uint durationUs)
         {
             ServerTick(serverSession, timeUs, durationUs);
-            m_Socket.PollReceived((fromPeer, element) =>
-            {
-                int clientId = fromPeer.GetPlayerId();
-                Container serverPlayer = GetPlayerFromId(clientId);
-                switch (element)
-                {
-                    case ClientCommandsContainer receivedClientCommands:
-                    {
-                        if (serverPlayer.Require<HealthProperty>().WithoutValue)
-                        {
-                            Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {fromPeer.GetPlayerId()}");
-                            SetupNewPlayer(serverSession, clientId, serverPlayer);
-                        }
-                        HandleClientCommand(clientId, receivedClientCommands, serverSession, serverPlayer);
-                        break;
-                    }
-                    case DebugClientView receivedDebugClientView:
-                    {
-                        DebugBehavior.Singleton.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
-                        break;
-                    }
-                }
-            });
+            m_Socket.PollReceived();
             Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
 
             void IterateEntity(ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs);
@@ -198,7 +206,7 @@ namespace Swihoni.Sessions
             {
                 if (_mostRecent is PropertyBase _mostRecentProperty && _lastAcknowledged is PropertyBase _lastAcknowledgedProperty && _send is PropertyBase _sendProperty)
                 {
-                    if (!_mostRecent.WithAttribute<SingleTick>() && _mostRecentProperty.Equals(_lastAcknowledgedProperty)
+                    if (_mostRecent.WithoutAttribute<SingleTick>() && _mostRecentProperty.Equals(_lastAcknowledgedProperty)
                                                                  && !(_mostRecentProperty is VectorProperty))
                     {
                         _sendProperty.Clear();
@@ -269,7 +277,7 @@ namespace Swihoni.Sessions
         {
             ElementExtensions.NavigateZipped((_server, _client) =>
             {
-                if (!_server.WithAttribute<ClientTrustedAttribute>()) return Navigation.SkipDescendents;
+                if (_server.WithoutAttribute<ClientTrustedAttribute>()) return Navigation.SkipDescendents;
                 if (_server is PropertyBase serverProperty && _client is PropertyBase clientProperty)
                     serverProperty.SetFromIfWith(clientProperty);
                 return Navigation.Continue;
@@ -293,9 +301,9 @@ namespace Swihoni.Sessions
         protected override void RollbackHitboxes(int playerId)
         {
             uint latencyUs = GetPlayerFromId(playerId).Require<ServerPingComponent>().latencyUs;
-            for (var i = 0; i < MaxPlayers; i++)
+            for (var _modifierId = 0; _modifierId < MaxPlayers; _modifierId++)
             {
-                int modifierId = i; // Copy for use in lambda
+                int modifierId = _modifierId; // Copy for use in lambda
                 Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(modifierId);
 
                 Container rollbackPlayer = m_RollbackSession.GetPlayer(modifierId);

@@ -44,7 +44,8 @@ namespace Input
         Fly,
         Buy,
         Throw,
-        OpenModelSelect
+        OpenModelSelect,
+        OpenVoxelSelect,
     }
 
     [Serializable]
@@ -117,7 +118,8 @@ namespace Input
                     [InputType.Fly] = KeyCode.F,
                     [InputType.Buy] = KeyCode.B,
                     [InputType.Throw] = KeyCode.G,
-                    [InputType.OpenModelSelect] = KeyCode.M
+                    [InputType.OpenModelSelect] = KeyCode.M,
+                    [InputType.OpenVoxelSelect] = KeyCode.V
                 }
             };
     }

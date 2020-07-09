@@ -1,17 +1,19 @@
 using System;
 using System.Runtime.CompilerServices;
 using LiteNetLib.Utils;
+using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Components
 {
     [Flags]
-    public enum ElementFlags : sbyte
+    public enum ElementFlags : byte
     {
         None = 0,
         WithValue = 1,
         DontSerialize = 2,
-        WasSame = 4
+        WasSame = 4,
+        IsOverride = 8
     }
 
     /// <summary>
@@ -22,9 +24,9 @@ namespace Swihoni.Components
     {
         [SerializeField] private ElementFlags m_Flags = ElementFlags.None;
 
-        public sbyte RawFlags
+        public byte RawFlags
         {
-            get => (sbyte) m_Flags;
+            get => (byte) m_Flags;
             set => m_Flags = (ElementFlags) value;
         }
 
@@ -49,6 +51,16 @@ namespace Swihoni.Components
             }
         }
 
+        public bool IsOverride
+        {
+            get => (m_Flags & ElementFlags.IsOverride) == ElementFlags.IsOverride;
+            set
+            {
+                if (value) m_Flags |= ElementFlags.IsOverride;
+                else m_Flags &= ~ElementFlags.IsOverride;
+            }
+        }        
+        
         public bool WithoutValue => !WithValue;
 
         public bool DontSerialize
@@ -114,7 +126,17 @@ namespace Swihoni.Components
             }
         }
 
-        public T? NullableValue => WithValue ? m_Value : (T?) null;
+        public T ValueOverride
+        {
+            get => Value;
+            set
+            {
+                Value = value;
+                IsOverride = true;
+            }
+        }
+
+        public T? AsNullable => WithValue ? m_Value : (T?) null;
 
         protected PropertyBase() { }
 
@@ -196,7 +218,7 @@ namespace Swihoni.Components
         public sealed override void Deserialize(NetDataReader reader)
         {
             if (DontSerialize) return;
-            RawFlags = reader.GetSByte();
+            RawFlags = reader.GetByte();
             if (WithoutValue) return;
             DeserializeValue(reader);
         }
