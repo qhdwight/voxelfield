@@ -32,7 +32,7 @@ namespace Voxelfield.Item
 
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
-            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
+            if (WithoutClientHit(session, playerId, m_EditDistance, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
             
             if (voxel.renderType == VoxelRenderType.Block)
@@ -54,7 +54,10 @@ namespace Voxelfield.Item
 
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
-            var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
+            Container player = session.GetPlayerFromId(playerId);
+            if (player.Without<ServerTag>()) return;
+            
+            var designer = player.Require<DesignerPlayerComponent>();
             DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId, renderType = VoxelRenderType.Block});
         }
 
@@ -63,7 +66,7 @@ namespace Voxelfield.Item
         {
             base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
 
-            if (player.WithoutPropertyOrWithoutValue(out StringCommandProperty command)) return;
+            if (player.Without<ServerTag>() || player.WithoutPropertyOrWithoutValue(out StringCommandProperty command)) return;
 
             string[] split = command.Builder.ToString().Split();
             switch (split[0])
@@ -72,8 +75,8 @@ namespace Voxelfield.Item
                 {
                     var designer = player.Require<DesignerPlayerComponent>();
                     if (split.Length > 1 && byte.TryParse(split[1], out byte blockId))
-                        designer.selectedVoxelId.Value = blockId;
-                    DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId, renderType = VoxelRenderType.Block});
+                        designer.selectedVoxelId.ValueOverride = blockId;
+                    DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId.AsNullable, renderType = VoxelRenderType.Block});
                     break;
                 }
                 case "revert":

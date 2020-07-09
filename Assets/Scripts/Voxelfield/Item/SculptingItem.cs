@@ -1,3 +1,4 @@
+using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
@@ -44,7 +45,7 @@ namespace Voxelfield.Item
             => injector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth, natural = false});
 
         protected virtual void SetVoxelRadius(SessionBase session, VoxelInjector injector, in Position3Int position)
-            => injector.SetVoxelRadius(position, m_EditDistance, true);
+            => injector.SetVoxelRadius(position, m_DestroyRadius, true);
 
         protected override bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
 
@@ -68,6 +69,18 @@ namespace Voxelfield.Item
         protected bool WithoutServerHit(SessionBase session, int playerId, float distance, out RaycastHit hit)
         {
             if (session.GetPlayerFromId(playerId).Without<ServerTag>())
+            {
+                hit = default;
+                return true;
+            }
+            Ray ray = session.GetRayForPlayerId(playerId);
+            return !Physics.Raycast(ray, out hit, distance, m_ChunkMask);
+        }
+        
+        protected bool WithoutClientHit(SessionBase session, int playerId, float distance, out RaycastHit hit)
+        {
+            Container player = session.GetPlayerFromId(playerId);
+            if (player.With<ServerTag>() && player.Without<HostTag>())
             {
                 hit = default;
                 return true;

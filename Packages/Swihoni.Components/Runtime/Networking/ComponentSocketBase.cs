@@ -60,8 +60,6 @@ namespace Swihoni.Components.Networking
 
         public void PollEvents() => m_NetworkManager.PollEvents();
 
-        public void PollReceived() => m_NetworkManager.PollEvents();
-
         /// <summary>
         /// Register element type for serialization over network.
         /// Assigns an ID to each type. Order of registration is important.

@@ -89,8 +89,8 @@ namespace Console.Interface
                 ToggleInterfaceActive();
             else if (input.GetInputDown(InputType.ConsoleCommand))
             {
-                SetInterfaceActive(true);
-                m_OpenedForCommand = true;
+                SetInterfaceActive(!IsActive);
+                if (IsActive) m_OpenedForCommand = true;
             }
             if (input.GetInputDown(InputType.AutocompleteConsole))
             {

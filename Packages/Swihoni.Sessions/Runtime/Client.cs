@@ -54,131 +54,6 @@ namespace Swihoni.Sessions
             RegisterMessages(m_Socket);
         }
 
-        private static uint _timeUs;
-
-        private void OnReceive(NetPeer fromPeer, ElementBase message)
-        {
-            switch (message)
-            {
-                case ServerSessionContainer receivedServerSession:
-                {
-                    Profiler.BeginSample("Client Receive Setup");
-                    ServerSessionContainer previousServerSession = m_SessionHistory.Peek();
-
-                    uint serverTick = receivedServerSession.Require<ServerStampComponent>().tick;
-                    UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
-                    ServerSessionContainer serverSession;
-                    var isMostRecent = true;
-                    if (previousServerTick.WithValue)
-                    {
-                        var delta = checked((int) (serverTick - (long) previousServerTick));
-                        if (delta > 0)
-                        {
-                            m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick;
-                            for (var i = 0; i < delta - 1; i++) // We skipped tick(s). Reserve spaces to fill later
-                            {
-                                ServerSessionContainer reserved = m_SessionHistory.ClaimNext();
-                                reserved.CopyFrom(previousServerSession);
-                            }
-                            serverSession = m_SessionHistory.ClaimNext();
-                        }
-                        else
-                        {
-                            // We received an old tick. Fill in history
-                            serverSession = m_SessionHistory.Get(delta);
-                            Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
-                            isMostRecent = false;
-                        }
-                    }
-                    else serverSession = m_SessionHistory.ClaimNext();
-
-                    serverSession.CopyFrom(previousServerSession);
-                    UpdateCurrentSessionFromReceived(serverSession, receivedServerSession);
-                    Profiler.EndSample();
-
-                    m_Injector.OnReceive(serverSession);
-
-                    if (!isMostRecent)
-                    {
-                        Debug.LogWarning("Is not most recent!");
-                        return;
-                    }
-
-                    /* Most Recent */
-                    
-                    {
-                        // TODO:refactor make class
-                        UIntProperty serverTimeUs = serverSession.Require<ServerStampComponent>().timeUs,
-                                     localizedServerTimeUs = serverSession.Require<LocalizedClientStampComponent>().timeUs;
-
-                        if (localizedServerTimeUs.WithValue)
-                            localizedServerTimeUs.Value += checked(serverTimeUs - previousServerSession.Require<ServerStampComponent>().timeUs);
-                        else localizedServerTimeUs.Value = _timeUs;
-
-                        long delta = localizedServerTimeUs.Value - (long) _timeUs;
-                        if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
-                        {
-                            ResetErrors++;
-                            localizedServerTimeUs.Value = _timeUs;
-                        }
-                    }
-
-                    Profiler.BeginSample("Client Update Players");
-                    var serverPlayers = serverSession.Require<PlayerContainerArrayElement>();
-                    bool isLocalPlayerOnServer = GetLocalPlayerId(serverSession, out int localPlayerId);
-                    for (var playerId = 0; playerId < serverPlayers.Length; playerId++)
-                    {
-                        Container serverPlayer = serverPlayers[playerId];
-                        var healthProperty = serverPlayer.Require<HealthProperty>();
-                        UIntProperty localizedServerTimeUs = serverPlayer.Require<LocalizedClientStampComponent>().timeUs;
-                        if (healthProperty.WithoutValue)
-                            localizedServerTimeUs.Clear(); // Is something a client only has so we have to clear it
-                        if (healthProperty.WithoutValue || healthProperty.IsDead)
-                            continue;
-                        /* Valid player */
-
-                        UIntProperty serverTimeUs = serverPlayer.Require<ServerStampComponent>().timeUs;
-
-                        if (localizedServerTimeUs.WithValue)
-                        {
-                            uint previousTimeUs = previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs;
-                            localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
-                        }
-                        else localizedServerTimeUs.Value = _timeUs;
-
-                        if (playerId != localPlayerId) GetPlayerModifier(serverPlayer, playerId).Synchronize(serverPlayer);
-
-                        long delta = localizedServerTimeUs.Value - (long) _timeUs;
-                        if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
-                        {
-                            ResetErrors++;
-                            localizedServerTimeUs.Value = _timeUs;
-                        }
-                    }
-                    Profiler.EndSample();
-
-                    // Debug.Log($"{receivedServerSession.Require<ServerStampComponent>().time} {trackedTime.Value}");
-
-                    Profiler.BeginSample("Client Check Prediction");
-                    if (isLocalPlayerOnServer)
-                    {
-                        Container serverPlayer = serverSession.GetPlayer(localPlayerId);
-                        CheckPrediction(serverPlayer, localPlayerId);
-                    }
-                    Profiler.EndSample();
-
-                    ElementExtensions.NavigateZipped((_server, _command) =>
-                    {
-                        if (_command.WithoutAttribute<ClientTrustedAttribute>()) return Navigation.SkipDescendents;
-                        if (_server is PropertyBase serverProperty && serverProperty.IsOverride && _command is PropertyBase serverCommand)
-                            serverCommand.SetTo(serverProperty);
-                        return Navigation.Continue;
-                    }, serverSession.GetPlayer(localPlayerId), m_CommandHistory.Peek());
-                    break;
-                }
-            }
-        }
-
         private void OnDisconnect(NetPeer peer, DisconnectInfo disconnect)
         {
             if (disconnect.AdditionalData.TryGetString(out string reason))
@@ -274,18 +149,141 @@ namespace Swihoni.Sessions
         private void Receive(uint timeUs)
         {
             _timeUs = timeUs;
-            m_Socket.PollReceived();
+            m_Socket.PollEvents();
         }
 
-        public static void ClearSingleTicks(ElementBase commands)
+        private static uint _timeUs;
+
+        private void OnReceive(NetPeer fromPeer, ElementBase message)
         {
-            commands.Navigate(_element =>
+            switch (message)
             {
-                if (_element is PropertyBase _property && _property.WithAttribute<SingleTick>())
-                    _property.Clear();
-                return Navigation.Continue;
-            });
+                case ServerSessionContainer receivedServerSession:
+                {
+                    Profiler.BeginSample("Client Receive Setup");
+                    ServerSessionContainer previousServerSession = m_SessionHistory.Peek();
+
+                    uint serverTick = receivedServerSession.Require<ServerStampComponent>().tick;
+                    UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
+                    ServerSessionContainer serverSession;
+                    var isMostRecent = true;
+                    if (previousServerTick.WithValue)
+                    {
+                        var delta = checked((int) (serverTick - (long) previousServerTick));
+                        if (delta > 0)
+                        {
+                            m_CommandHistory.Peek().Require<AcknowledgedServerTickProperty>().Value = serverTick;
+                            for (var i = 0; i < delta - 1; i++) // We skipped tick(s). Reserve spaces to fill later
+                            {
+                                ServerSessionContainer reserved = m_SessionHistory.ClaimNext();
+                                reserved.CopyFrom(previousServerSession);
+                            }
+                            serverSession = m_SessionHistory.ClaimNext();
+                        }
+                        else
+                        {
+                            // We received an old tick. Fill in history
+                            serverSession = m_SessionHistory.Get(delta);
+                            Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
+                            isMostRecent = false;
+                        }
+                    }
+                    else serverSession = m_SessionHistory.ClaimNext();
+
+                    serverSession.CopyFrom(previousServerSession);
+                    UpdateCurrentSessionFromReceived(serverSession, receivedServerSession);
+                    Profiler.EndSample();
+
+                    m_Injector.OnReceive(serverSession);
+
+                    if (!isMostRecent)
+                    {
+                        Debug.LogWarning("Is not most recent!");
+                        break;
+                    }
+
+                    /* Most Recent */
+
+                    {
+                        // TODO:refactor make class
+                        UIntProperty serverTimeUs = serverSession.Require<ServerStampComponent>().timeUs,
+                                     localizedServerTimeUs = serverSession.Require<LocalizedClientStampComponent>().timeUs;
+
+                        if (localizedServerTimeUs.WithValue)
+                            localizedServerTimeUs.Value += checked(serverTimeUs - previousServerSession.Require<ServerStampComponent>().timeUs);
+                        else localizedServerTimeUs.Value = _timeUs;
+
+                        long delta = localizedServerTimeUs.Value - (long) _timeUs;
+                        if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
+                        {
+                            ResetErrors++;
+                            localizedServerTimeUs.Value = _timeUs;
+                        }
+                    }
+
+                    Profiler.BeginSample("Client Update Players");
+                    var serverPlayers = serverSession.Require<PlayerContainerArrayElement>();
+                    bool isLocalPlayerOnServer = GetLocalPlayerId(serverSession, out int localPlayerId);
+                    for (var playerId = 0; playerId < serverPlayers.Length; playerId++)
+                    {
+                        Container serverPlayer = serverPlayers[playerId];
+                        var healthProperty = serverPlayer.Require<HealthProperty>();
+                        UIntProperty localizedServerTimeUs = serverPlayer.Require<LocalizedClientStampComponent>().timeUs;
+                        if (healthProperty.WithoutValue)
+                            localizedServerTimeUs.Clear(); // Is something a client only has so we have to clear it
+                        if (healthProperty.IsInactiveOrDead)
+                            continue;
+                        /* Valid player */
+
+                        UIntProperty serverTimeUs = serverPlayer.Require<ServerStampComponent>().timeUs;
+
+                        if (localizedServerTimeUs.WithValue)
+                        {
+                            uint previousTimeUs = previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs;
+                            localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
+                        }
+                        else localizedServerTimeUs.Value = _timeUs;
+
+                        if (playerId != localPlayerId) GetPlayerModifier(serverPlayer, playerId).Synchronize(serverPlayer);
+
+                        long delta = localizedServerTimeUs.Value - (long) _timeUs;
+                        if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
+                        {
+                            ResetErrors++;
+                            localizedServerTimeUs.Value = _timeUs;
+                        }
+                    }
+                    Profiler.EndSample();
+
+                    // Debug.Log($"{receivedServerSession.Require<ServerStampComponent>().time} {trackedTime.Value}");
+
+                    Profiler.BeginSample("Client Check Prediction");
+                    if (isLocalPlayerOnServer)
+                    {
+                        Container serverPlayer = serverSession.GetPlayer(localPlayerId);
+                        CheckPrediction(serverPlayer, localPlayerId);
+                    }
+                    Profiler.EndSample();
+
+                    ElementExtensions.NavigateZipped((_server, _command) =>
+                    {
+                        if (_server is PropertyBase serverProperty && serverProperty.IsOverride && _command is PropertyBase commandProperty)
+                        {
+                            commandProperty.SetTo(serverProperty);
+                            Debug.Log($"Overriding with server: {serverProperty}");
+                        }
+                        return Navigation.Continue;
+                    }, serverSession.GetPlayer(localPlayerId), m_CommandHistory.Peek());
+                    break;
+                }
+            }
         }
+
+        public static void ClearSingleTicks(ElementBase commands) =>
+            commands.NavigateProperties(_property =>
+            {
+                if (_property.WithAttribute<SingleTick>()) _property.Clear();
+            });
 
         private void Predict(uint tick, uint timeUs, int localPlayerId)
         {
@@ -342,28 +340,7 @@ namespace Swihoni.Sessions
                 /* We are checking predicted */
                 _predictionIsAccurate = true;
                 Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
-                ElementExtensions.NavigateZipped((_predicted, _latestPredicted, _server) =>
-                {
-                    if (_predicted.WithAttribute<OnlyServerTrustedAttribute>())
-                    {
-                        _latestPredicted.MergeFrom(_server);
-                        return Navigation.SkipDescendents;
-                    }
-                    if (_predicted.WithAttribute<ClientTrustedAttribute>())
-                        return Navigation.SkipDescendents;
-                    switch (_predicted)
-                    {
-                        case FloatProperty f1 when _server is FloatProperty f2 && f1.TryAttribute(out PredictionToleranceAttribute fPredictionToleranceAttribute)
-                                                                               && !f1.CheckWithinTolerance(f2, fPredictionToleranceAttribute.tolerance):
-                        case VectorProperty v1 when _server is VectorProperty v2 && v1.TryAttribute(out PredictionToleranceAttribute vPredictionToleranceAttribute)
-                                                                                 && !v1.CheckWithinTolerance(v2, vPredictionToleranceAttribute.tolerance):
-                        case PropertyBase p1 when _server is PropertyBase p2 && !p1.Equals(p2):
-                            _predictionIsAccurate = false;
-                            Debug.LogWarning($"Prediction error with {_predicted.GetType().Name} with predicted: {_predicted} and verified: {_server}");
-                            return Navigation.Exit;
-                    }
-                    return Navigation.Continue;
-                }, predictedPlayer, latestPredictedPlayer, serverPlayer);
+                ElementExtensions.NavigateZipped(VisitPredicted, predictedPlayer, latestPredictedPlayer, serverPlayer);
                 if (_predictionIsAccurate) break;
                 /* We did not predict properly */
                 PredictionErrors++;
@@ -390,7 +367,29 @@ namespace Swihoni.Sessions
                 break;
             }
         }
-        
+
+        private static Navigation VisitPredicted(ElementBase _predicted, ElementBase _latestPredicted, ElementBase _server)
+        {
+            if (_predicted.WithAttribute<OnlyServerTrustedAttribute>())
+            {
+                _latestPredicted.MergeFrom(_server);
+                return Navigation.SkipDescendents;
+            }
+            if (_predicted.WithAttribute<ClientTrustedAttribute>()) return Navigation.SkipDescendents;
+            switch (_predicted)
+            {
+                case FloatProperty f1 when _server is FloatProperty f2 && f1.TryAttribute(out PredictionToleranceAttribute fPredictionToleranceAttribute)
+                                                                       && !f1.CheckWithinTolerance(f2, fPredictionToleranceAttribute.tolerance):
+                case VectorProperty v1 when _server is VectorProperty v2 && v1.TryAttribute(out PredictionToleranceAttribute vPredictionToleranceAttribute)
+                                                                         && !v1.CheckWithinTolerance(v2, vPredictionToleranceAttribute.tolerance):
+                case PropertyBase p1 when _server is PropertyBase p2 && !p1.Equals(p2):
+                    _predictionIsAccurate = false;
+                    Debug.LogWarning($"Error with predicted: {_predicted} and verified: {_server}");
+                    return Navigation.Exit;
+            }
+            return Navigation.Continue;
+        }
+
         private static void UpdateCurrentSessionFromReceived(ElementBase serverSession, ElementBase receivedServerSession)
         {
             ElementExtensions.NavigateZipped((_current, _received) =>
@@ -398,7 +397,10 @@ namespace Swihoni.Sessions
                 if (_current is PropertyBase _currentProperty && _received is PropertyBase _receivedProperty)
                 {
                     if (_current.WithAttribute<SingleTick>() || !_receivedProperty.WasSame)
+                    {
                         _currentProperty.SetTo(_receivedProperty);
+                        _currentProperty.IsOverride = _receivedProperty.IsOverride;
+                    }
                 }
                 return Navigation.Continue;
             }, serverSession, receivedServerSession);

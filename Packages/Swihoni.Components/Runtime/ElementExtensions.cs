@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Swihoni.Collections;
 
 namespace Swihoni.Components
 {
@@ -21,9 +22,9 @@ namespace Swihoni.Components
             Navigation Invoke(TriArray<ElementBase> _zip);
         }
 
-        private class VisitPropertiesAction : IVisitFunc
+        private class VisitPropsAction : IVisitFunc
         {
-            internal static readonly VisitPropertiesAction Instance = new VisitPropertiesAction();
+            internal static readonly Pool<VisitPropsAction> Pool = new Pool<VisitPropsAction>(1, () => new VisitPropsAction());
             internal Action<PropertyBase> action;
 
             public Navigation Invoke(TriArray<ElementBase> _zip)
@@ -36,21 +37,21 @@ namespace Swihoni.Components
 
         private class VisitFunc : IVisitFunc
         {
-            internal static readonly VisitFunc Instance = new VisitFunc();
+            internal static readonly Pool<VisitFunc> Pool = new Pool<VisitFunc>(1, () => new VisitFunc());
             internal Func<ElementBase, Navigation> function;
             public Navigation Invoke(TriArray<ElementBase> _zip) => function(_zip[0]);
         }
 
         private class DualVisitFunc : IVisitFunc
         {
-            internal static readonly DualVisitFunc Instance = new DualVisitFunc();
+            internal static readonly Pool<DualVisitFunc> Pool = new Pool<DualVisitFunc>(1, () => new DualVisitFunc());
             internal Func<ElementBase, ElementBase, Navigation> function;
             public Navigation Invoke(TriArray<ElementBase> _zip) => function(_zip[0], _zip[1]);
         }
 
         private class TriVisitFunc : IVisitFunc
         {
-            internal static readonly TriVisitFunc Instance = new TriVisitFunc();
+            internal static readonly Pool<TriVisitFunc> Pool = new Pool<TriVisitFunc>(1, () => new TriVisitFunc());
             internal Func<ElementBase, ElementBase, ElementBase, Navigation> function;
             public Navigation Invoke(TriArray<ElementBase> _zip) => function(_zip[0], _zip[1], _zip[2]);
         }
@@ -65,11 +66,7 @@ namespace Swihoni.Components
         /// Un-sets with value flag.
         /// If you instead want to zero, see <see cref="Zero{T}"/>
         /// </summary>
-        public static ElementBase Reset(this ElementBase element)
-        {
-            element.NavigateProperties(_p => _p.Clear());
-            return element;
-        }
+        public static ElementBase Reset(this ElementBase element) => element.NavigateProperties(_p => _p.Clear());
 
         /// <summary>
         /// Reset all properties to default values.
@@ -118,35 +115,69 @@ namespace Swihoni.Components
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
-        public static void NavigateProperties(this ElementBase e, Action<PropertyBase> visit)
+        public static ElementBase NavigateProperties(this ElementBase e, Action<PropertyBase> visit)
         {
             var zip = new TriArray<ElementBase> {[0] = e};
-            VisitPropertiesAction.Instance.action = visit;
-            Navigate(VisitPropertiesAction.Instance, zip, 1);
+            VisitPropsAction visitPropsAction = VisitPropsAction.Pool.Obtain();
+            try
+            {
+                visitPropsAction.action = visit;
+                Navigate(visitPropsAction, zip, 1);
+            }
+            finally
+            {
+                VisitPropsAction.Pool.Return(visitPropsAction);
+            }
+            return e;
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
-        public static void Navigate(this ElementBase e, Func<ElementBase, Navigation> visit)
+        public static ElementBase Navigate(this ElementBase e, Func<ElementBase, Navigation> visit)
         {
             var zip = new TriArray<ElementBase> {[0] = e};
-            VisitFunc.Instance.function = visit;
-            Navigate(VisitFunc.Instance, zip, 1);
+            VisitFunc visitFunc = VisitFunc.Pool.Obtain();
+            try
+            {
+                visitFunc.function = visit;
+                Navigate(visitFunc, zip, 1);
+            }
+            finally
+            {
+                VisitFunc.Pool.Return(visitFunc);
+            }
+            return e;
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
         public static void NavigateZipped(Func<ElementBase, ElementBase, Navigation> visit, ElementBase e1, ElementBase e2)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2};
-            DualVisitFunc.Instance.function = visit;
-            Navigate(DualVisitFunc.Instance, zip, 2);
+            DualVisitFunc dualVisitFunc = DualVisitFunc.Pool.Obtain();
+            try
+            {
+                dualVisitFunc.function = visit;
+                Navigate(dualVisitFunc, zip, 2);
+            }
+            finally
+            {
+                DualVisitFunc.Pool.Return(dualVisitFunc);
+            }
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
         public static void NavigateZipped(Func<ElementBase, ElementBase, ElementBase, Navigation> visit, ElementBase e1, ElementBase e2, ElementBase e3)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2, [2] = e3};
-            TriVisitFunc.Instance.function = visit;
-            Navigate(TriVisitFunc.Instance, zip, 3);
+            TriVisitFunc triVisitFunc = TriVisitFunc.Pool.Obtain();
+            try
+            {
+                triVisitFunc.function = visit;
+                Navigate(triVisitFunc, zip, 3);
+            }
+            finally
+            {
+                TriVisitFunc.Pool.Return(triVisitFunc);
+            }
         }
 
         /// <summary>

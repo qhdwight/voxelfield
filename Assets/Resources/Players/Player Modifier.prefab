@@ -85,6 +85,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 0.8
+  m_IsHead: 0
 --- !u!1 &2337597608109740118
 GameObject:
   m_ObjectHideFlags: 0
@@ -242,11 +243,12 @@ MonoBehaviour:
   m_GravityFactor: 23
   m_MaxStickDistance: 0.25
   m_FlySpeed: 7
+  m_MaxSlopeNerf: 0.3
   m_WalkStateDuration: 0.5
   m_CrouchDuration: 0.1
   m_GroundMask:
     serializedVersion: 2
-    m_Bits: 33281
+    m_Bits: 164353
 --- !u!114 &-7077651449580160097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,6 +325,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 0.8
+  m_IsHead: 0
 --- !u!136 &2401303024649251745
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -350,6 +353,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 1
+  m_IsHead: 0
 --- !u!65 &6247631948384098298
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -376,6 +380,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 1
+  m_IsHead: 0
 --- !u!136 &8614732019771672
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -403,6 +408,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 1
+  m_IsHead: 0
 --- !u!136 &5903335291745189000
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -430,6 +436,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 0.8
+  m_IsHead: 0
 --- !u!135 &1291284718622760614
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -456,6 +463,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 2
+  m_IsHead: 1
 --- !u!136 &1479706176300969694
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -483,6 +491,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 0.8
+  m_IsHead: 0
 --- !u!65 &7755149477620590898
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -509,6 +518,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 1
+  m_IsHead: 0
 --- !u!95 &425333041633980004
 Animator:
   serializedVersion: 3
@@ -591,6 +601,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 1
+  m_IsHead: 0
 --- !u!136 &5612442590788553560
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -618,6 +629,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DamageMultiplier: 1
+  m_IsHead: 0
 --- !u!1001 &3166110304179143470
 PrefabInstance:
   m_ObjectHideFlags: 0

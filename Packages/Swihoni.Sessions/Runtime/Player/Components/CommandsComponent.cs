@@ -1,5 +1,6 @@
 using System;
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 
 namespace Swihoni.Sessions.Player.Components
 {
@@ -30,7 +31,7 @@ namespace Swihoni.Sessions.Player.Components
         public FloatProperty mouseDeltaX, mouseDeltaY;
     }
 
-    [Serializable]
+    [Serializable, ClientTrusted]
     public class InputFlagProperty : UIntProperty
     {
         public bool GetInput(int input) => (Value & (1 << input)) != 0;
@@ -46,7 +47,7 @@ namespace Swihoni.Sessions.Player.Components
             (GetInput(positiveInput) ? 1.0f : 0.0f) + (GetInput(negativeInput) ? -1.0f : 0.0f);
     }
 
-    [Serializable]
+    [Serializable, ClientTrusted]
     public class WantedItemIndexProperty : ByteProperty
     {
     }

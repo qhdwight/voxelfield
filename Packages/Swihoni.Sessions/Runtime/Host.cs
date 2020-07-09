@@ -25,7 +25,8 @@ namespace Swihoni.Sessions
                                                    .Append(typeof(AcknowledgedServerTickProperty))
                                                    .Append(typeof(ServerStampComponent))
                                                    .Concat(elements.commandElements)
-                                                   .Append(typeof(ServerTag)));
+                                                   .Append(typeof(ServerTag))
+                                                   .Append(typeof(HostTag)));
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Reset();
         }

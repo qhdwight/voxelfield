@@ -105,7 +105,7 @@ namespace Swihoni.Sessions.Tests
                             break;
                     }
                 };
-                server.PollReceived();
+                server.PollEvents();
 
                 Assert.AreEqual(1, received);
             }
@@ -152,7 +152,7 @@ namespace Swihoni.Sessions.Tests
                             break;
                     }
                 };
-                server.PollReceived();
+                server.PollEvents();
 
                 Assert.AreEqual(send, received);
             }

@@ -37,6 +37,11 @@ namespace Swihoni.Sessions.Components
     public class ServerTag : ComponentBase
     {
     }
+    
+    [Serializable, ServerOnly]
+    public class HostTag : ComponentBase
+    {
+    }
 
     [Serializable, ServerOnly]
     public class ServerPingComponent : ComponentBase

@@ -9,8 +9,11 @@ namespace Swihoni.Sessions.Interfaces
 
         public virtual void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands) { }
 
-        public virtual void SessionStateChange(bool isActive) => SetInterfaceActive(isActive);
-        
+        public virtual void SessionStateChange(bool isActive)
+        {
+            if (!isActive) SetInterfaceActive(false);
+        }
+
         protected bool NoInterrupting(SessionBase session) => !session.InterruptingInterface || session.InterruptingInterface == this;
     }
 }

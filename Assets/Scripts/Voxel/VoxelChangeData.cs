@@ -51,7 +51,7 @@ namespace Voxel
             if (FlagUtil.HasFlag(flags, OrientationFlagIndex)) data.orientation = reader.GetByte();
             if (FlagUtil.HasFlag(flags, BreakableFlagIndex)) data.breakable = reader.GetBool();
             if (FlagUtil.HasFlag(flags, NaturalFlagIndex)) data.natural = reader.GetBool();
-            if (FlagUtil.HasFlag(flags, NaturalFlagIndex)) data.color = GetColor32(reader);
+            if (FlagUtil.HasFlag(flags, ColorFlagIndex)) data.color = GetColor32(reader);
             return data;
         }
 

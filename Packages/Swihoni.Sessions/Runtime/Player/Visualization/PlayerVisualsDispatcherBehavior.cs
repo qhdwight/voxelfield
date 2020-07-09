@@ -1,7 +1,9 @@
 using System;
+using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util.Interface;
 using TMPro;
 using UnityEngine;
 
@@ -42,6 +44,8 @@ namespace Swihoni.Sessions.Player.Visualization
             m_AudioListener = GetComponentInChildren<AudioListener>();
         }
 
+        private readonly StringBuilder m_DamageNotifierBuilder = new StringBuilder();
+        
         public void Render(SessionBase session, Container container, int playerId, Container player, bool isLocalPlayer)
         {
             bool usesHealth = player.With(out HealthProperty health),
@@ -73,7 +77,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
                         if (damageNotifier.elapsedUs > 0u)
                         {
-                            m_DamageText.SetText(damageNotifier.damage.ToString());
+                            m_DamageNotifierBuilder.Clear().Append(damageNotifier.damage.Value).Commit(m_DamageText);
                             Vector3 GetPosition(int i) => container.Require<PlayerContainerArrayElement>()[i].Require<MoveComponent>().position;
                             m_DamageText.transform.position = GetPosition(playerId) + new Vector3 {y = 2.4f};
                             m_DamageText.transform.LookAt(GetPosition(container.Require<LocalPlayerId>()));

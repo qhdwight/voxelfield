@@ -101,7 +101,11 @@ namespace Swihoni.Sessions.Modes
 
         protected virtual float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer,
                                                       PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
-            => weapon.GetDamage(hit.distance) * hitbox.DamageMultiplier;
+        {
+            float damage = weapon.GetDamage(hit.distance) * hitbox.DamageMultiplier;
+            if (hitbox.IsHead) damage *= weapon.HeadShotMultiplier;
+            return damage;
+        }
 
         public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName)
         {

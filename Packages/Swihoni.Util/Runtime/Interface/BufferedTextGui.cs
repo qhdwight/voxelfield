@@ -23,6 +23,6 @@ namespace Swihoni.Util.Interface
 
     public static class BuilderExtension
     {
-        public static void Commit(this StringBuilder builder, BufferedTextGui text) => text.SetText(builder);
+        public static void Commit(this StringBuilder builder, TMP_Text text) => text.SetText(builder);
     }
 }

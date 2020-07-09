@@ -39,11 +39,11 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs)
-        {
-            if (trustedPlayer.Require<InventoryComponent>().WithItemEquipped(out ItemComponent item))
-                ItemAssetLink.GetModifier(item.id).ModifyTrusted(session, playerId, trustedPlayer, commands, container, durationUs);
-        }
+        // public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs)
+        // {
+        //     if (trustedPlayer.Require<InventoryComponent>().WithItemEquipped(out ItemComponent item))
+        //         ItemAssetLink.GetModifier(item.id).ModifyTrusted(session, playerId, trustedPlayer, commands, container, durationUs);
+        // }
 
         private static void ModifyEquipStatus(SessionBase session, int playerId, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex, uint durationUs)
         {

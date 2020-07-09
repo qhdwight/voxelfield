@@ -50,7 +50,7 @@ namespace Voxelfield.Interface.Designer
         {
             float wheel = InputProvider.GetMouseScrollWheel() * 2.5f;
             FloatProperty editRadius = commands.Require<DesignerPlayerComponent>().editRadius;
-            editRadius.Value = Mathf.Clamp(editRadius.Else(1.7f) + wheel, 0.0f, 10.0f);
+            editRadius.Value = Mathf.Clamp(editRadius.Else(2.0f) + wheel, 0.0f, 10.0f);
         }
     }
 }

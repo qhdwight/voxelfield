@@ -86,22 +86,17 @@ namespace Swihoni.Sessions
 
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
-            Tick(serverSession, tick, timeUs, durationUs);
+            Tick(serverSession, tick, timeUs, durationUs); // Send
             PostTick(serverSession);
             // IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
 
             ElementExtensions.NavigateZipped((_previous, _current) =>
             {
-                if (_current is PropertyBase _currentProperty)
-                {
-                    if (_current.WithAttribute<SingleTick>())
-                    {
-                        _currentProperty.Clear();
-                        return Navigation.SkipDescendents;
-                    }
-                    if (_currentProperty.IsOverride) _currentProperty.IsOverride = false;
-                }
+                if (_current.WithAttribute<SingleTick>())
+                    _current.Reset();
+                if (_current is PropertyBase _currentProperty && _currentProperty.IsOverride)
+                    _currentProperty.IsOverride = false;
                 return Navigation.Continue;
             }, previousServerSession, serverSession);
         }
@@ -146,7 +141,7 @@ namespace Swihoni.Sessions
         private void Tick(Container serverSession, uint tick, uint timeUs, uint durationUs)
         {
             ServerTick(serverSession, timeUs, durationUs);
-            m_Socket.PollReceived();
+            m_Socket.PollEvents();
             Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
 
             void IterateEntity(ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs);
@@ -183,7 +178,15 @@ namespace Swihoni.Sessions
                 //     // TODO:performance serialize and compress at the same time
                 //     CompressSession(serverSession, rollback);
 
-                m_SendSession.CopyFrom(serverSession);
+                ElementExtensions.NavigateZipped((_send, _server) =>
+                {
+                    if (_send is PropertyBase sendProperty && _server is PropertyBase serverProperty)
+                    {
+                        sendProperty.SetTo(serverProperty);
+                        sendProperty.IsOverride = serverProperty.IsOverride;
+                    }
+                    return Navigation.Continue;
+                }, m_SendSession, serverSession);
 
                 if (player.Require<ClientStampComponent>().tick.WithValue)
                 {
@@ -255,7 +258,8 @@ namespace Swihoni.Sessions
                         }
                         if (!IsPaused)
                         {
-                            MergeTrusted(receivedClientCommands, serverPlayer);
+                            MergeTrustedFromCommands(serverPlayer, receivedClientCommands);
+                            // serverPlayer.MergeFrom(receivedClientCommands);
                         }
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
@@ -273,13 +277,15 @@ namespace Swihoni.Sessions
             }
         }
 
-        private static void MergeTrusted(ElementBase receivedClientCommands, ElementBase serverPlayer)
+        private static void MergeTrustedFromCommands(ElementBase serverPlayer, ElementBase receivedClientCommands)
         {
             ElementExtensions.NavigateZipped((_server, _client) =>
             {
-                if (_server.WithoutAttribute<ClientTrustedAttribute>()) return Navigation.SkipDescendents;
-                if (_server is PropertyBase serverProperty && _client is PropertyBase clientProperty)
-                    serverProperty.SetFromIfWith(clientProperty);
+                if (_client.WithAttribute<ClientTrustedAttribute>())
+                {
+                    _server.CopyFrom(_client);
+                    return Navigation.SkipDescendents;
+                }
                 return Navigation.Continue;
             }, serverPlayer, receivedClientCommands);
         }
