@@ -28,22 +28,10 @@ namespace Voxelfield.Interface.Showdown
             SetInterfaceActive(isVisible);
         }
 
-        public static bool IsValidLocalPlayer(SessionBase session, Container sessionContainer, out Container localPlayer)
-        {
-            var localPlayerId = sessionContainer.Require<LocalPlayerId>();
-            if (localPlayerId.WithoutValue)
-            {
-                localPlayer = default;
-                return false;
-            }
-            localPlayer = session.GetPlayerFromId(localPlayerId);
-            return localPlayer.Require<HealthProperty>().IsAlive;
-        }
-
         private void BuildLocalPlayer(SessionBase session, Container sessionContainer, ShowdownSessionComponent showdown)
         {
             var isProgressVisible = false;
-            if (showdown.number.WithValue && IsValidLocalPlayer(session, sessionContainer, out Container localPlayer))
+            if (showdown.number.WithValue && session.IsValidLocalPlayer(sessionContainer, out Container localPlayer))
             {
                 var showdownPlayer = localPlayer.Require<ShowdownPlayerComponent>();
                 uint securingElapsedUs = showdownPlayer.elapsedSecuringUs;

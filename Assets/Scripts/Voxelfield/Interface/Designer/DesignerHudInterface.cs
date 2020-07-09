@@ -27,7 +27,7 @@ namespace Voxelfield.Interface.Designer
         
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isVisible = ShowdownInterface.IsValidLocalPlayer(session, sessionContainer, out Container localPlayer);
+            bool isVisible = session.IsValidLocalPlayer(sessionContainer, out Container localPlayer);
             FloatProperty editRadius = default;
             if (isVisible)
             {

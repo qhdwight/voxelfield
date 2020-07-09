@@ -19,7 +19,7 @@ namespace Swihoni.Components
 
         private interface IVisitFunc
         {
-            Navigation Invoke(TriArray<ElementBase> _zip);
+            Navigation Invoke(in TriArray<ElementBase> _zip);
         }
 
         private class VisitPropsAction : IVisitFunc
@@ -27,7 +27,7 @@ namespace Swihoni.Components
             internal static readonly Pool<VisitPropsAction> Pool = new Pool<VisitPropsAction>(1, () => new VisitPropsAction());
             internal Action<PropertyBase> action;
 
-            public Navigation Invoke(TriArray<ElementBase> _zip)
+            public Navigation Invoke(in TriArray<ElementBase> _zip)
             {
                 if (_zip[0] is PropertyBase property)
                     action(property);
@@ -39,21 +39,21 @@ namespace Swihoni.Components
         {
             internal static readonly Pool<VisitFunc> Pool = new Pool<VisitFunc>(1, () => new VisitFunc());
             internal Func<ElementBase, Navigation> function;
-            public Navigation Invoke(TriArray<ElementBase> _zip) => function(_zip[0]);
+            public Navigation Invoke(in TriArray<ElementBase> _zip) => function(_zip[0]);
         }
 
         private class DualVisitFunc : IVisitFunc
         {
             internal static readonly Pool<DualVisitFunc> Pool = new Pool<DualVisitFunc>(1, () => new DualVisitFunc());
             internal Func<ElementBase, ElementBase, Navigation> function;
-            public Navigation Invoke(TriArray<ElementBase> _zip) => function(_zip[0], _zip[1]);
+            public Navigation Invoke(in TriArray<ElementBase> _zip) => function(_zip[0], _zip[1]);
         }
 
         private class TriVisitFunc : IVisitFunc
         {
             internal static readonly Pool<TriVisitFunc> Pool = new Pool<TriVisitFunc>(1, () => new TriVisitFunc());
             internal Func<ElementBase, ElementBase, ElementBase, Navigation> function;
-            public Navigation Invoke(TriArray<ElementBase> _zip) => function(_zip[0], _zip[1], _zip[2]);
+            public Navigation Invoke(in TriArray<ElementBase> _zip) => function(_zip[0], _zip[1], _zip[2]);
         }
 
         #endregion

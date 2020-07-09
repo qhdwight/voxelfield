@@ -32,7 +32,7 @@ namespace Voxelfield.Interface
         private void RenderLocalPlayer(SessionBase session, Container sessionContainer, CtfComponent ctf)
         {
             bool isTaking = false, hasFlag = false;
-            if (ShowdownInterface.IsValidLocalPlayer(session, sessionContainer, out Container localPlayer))
+            if (session.IsValidLocalPlayer(sessionContainer, out Container localPlayer))
             {
                 ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
                 for (var flagTeam = 0; flagTeam < flags.Length; flagTeam++)

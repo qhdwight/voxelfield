@@ -1,0 +1,21 @@
+{
+    "name": "Voxelfield.Interface",
+    "references": [
+        "GUID:f3a68b7e3f7640a4d8d06a2fdadbcd13",
+        "GUID:70d0ab44ec86f354e892f6445447b475",
+        "GUID:a42ffc10e96ce774ba65e36fa3c97ebb",
+        "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7",
+        "GUID:675b7d67bbbe3ea41b2c0d6e53daebc9",
+        "GUID:74cc9c6f527046c2833c6ee4c17ae7a2",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

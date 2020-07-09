@@ -6,7 +6,6 @@ using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
-using Voxelfield.Interface.Showdown;
 
 namespace Voxelfield.Session.Mode
 {
@@ -40,7 +39,7 @@ namespace Voxelfield.Session.Mode
             else spritePosition = transform.position + new Vector3 {y = 2.8f};
 
             var isIconVisible = true;
-            if (ShowdownInterface.IsValidLocalPlayer(session, sessionContainer, out Container localPlayer))
+            if (session.IsValidLocalPlayer(sessionContainer, out Container localPlayer))
             {
                 Vector3 localPosition = localPlayer.Require<MoveComponent>().position + new Vector3 {y = 1.8f};
                 m_SpriteRenderer.transform.LookAt(localPosition);

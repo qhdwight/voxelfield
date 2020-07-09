@@ -163,6 +163,18 @@ namespace Swihoni.Sessions
             Cursor.lockState = desiredLockState;
             Cursor.visible = desiredVisibility;
         }
+        
+        public bool IsValidLocalPlayer(Container sessionContainer, out Container localPlayer)
+        {
+            var localPlayerId = sessionContainer.Require<LocalPlayerId>();
+            if (localPlayerId.WithoutValue)
+            {
+                localPlayer = default;
+                return false;
+            }
+            localPlayer = GetPlayerFromId(localPlayerId);
+            return localPlayer.Require<HealthProperty>().IsAlive;
+        }
 
         protected virtual void Render(uint renderTimeUs) { }
 

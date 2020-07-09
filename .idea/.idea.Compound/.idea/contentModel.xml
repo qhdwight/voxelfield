@@ -64,6 +64,7 @@
               </e>
               <e p="UpperScoreInterface.cs" t="Include" />
               <e p="VersionInterface.cs" t="Include" />
+              <e p="Voxelfield.Interface.asmdef" t="Include" />
             </e>
             <e p="Item" t="Include">
               <e p="ModelWand.cs" t="Include" />
@@ -320,6 +321,7 @@
       <e p="Voxel.csproj" t="IncludeRecursive" />
       <e p="Voxelfield.csproj" t="IncludeRecursive" />
       <e p="Voxelfield.Editor.csproj" t="IncludeRecursive" />
+      <e p="Voxelfield.Interface.csproj" t="IncludeRecursive" />
     </e>
   </component>
 </project>
