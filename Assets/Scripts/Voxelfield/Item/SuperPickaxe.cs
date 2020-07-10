@@ -26,7 +26,7 @@ namespace Voxelfield.Item
             injector.SetVoxelData(position, new VoxelChangeData {id = mapSaveVoxel.id, renderType = VoxelRenderType.Smooth, natural = true});
         }
 
-        protected override void SetVoxelRadius(SessionBase session, int playerId, VoxelInjector injector, in Position3Int position)
+        protected override void RemoveVoxelRadius(SessionBase session, int playerId, VoxelInjector injector, in Position3Int position)
             => injector.SetVoxelRadius(position, session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>().editRadius);
     }
 }

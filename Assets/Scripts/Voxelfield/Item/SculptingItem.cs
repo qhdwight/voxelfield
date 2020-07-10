@@ -17,6 +17,7 @@ namespace Voxelfield.Item
         [SerializeField] protected float m_DestroyRadius = 1.7f;
         [SerializeField] protected float m_AdditiveRadius = 1.5f;
         [SerializeField] private LayerMask m_ChunkMask = default;
+        [SerializeField] private bool m_PreventPlacingOnSelf = true;
 
         public float EditDistance => m_EditDistance;
         public LayerMask ChunkMask => m_ChunkMask;
@@ -34,7 +35,7 @@ namespace Voxelfield.Item
                     RemoveBlock(session, voxelInjector, position);
                     break;
                 case VoxelRenderType.Smooth:
-                    SetVoxelRadius(session, playerId, voxelInjector, position);
+                    RemoveVoxelRadius(session, playerId, voxelInjector, position);
                     break;
             }
             var brokeVoxelTickProperty = session.GetModifyingPayerFromId(playerId).Require<BrokeVoxelTickProperty>();
@@ -45,10 +46,8 @@ namespace Voxelfield.Item
         protected virtual void RemoveBlock(SessionBase session, VoxelInjector injector, in Position3Int position)
             => injector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth, natural = false});
 
-        protected virtual void SetVoxelRadius(SessionBase session, int playerId, VoxelInjector injector, in Position3Int position)
+        protected virtual void RemoveVoxelRadius(SessionBase session, int playerId, VoxelInjector injector, in Position3Int position)
             => injector.SetVoxelRadius(position, m_DestroyRadius, true);
-
-        protected override bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
 
         protected static bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
@@ -90,27 +89,56 @@ namespace Voxelfield.Item
             return !Physics.Raycast(ray, out hit, distance, m_ChunkMask);
         }
 
+        private Position3Int? m_CachedPosition; // Guaranteed set by can use and tested in actual use 
+
+        protected override bool CanSecondaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory)
+        {
+            if (!base.CanPrimaryUse(item, inventory) || WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
+                                                     || WithoutOuterVoxel(hit, out Position3Int position, out Voxel.Voxel _))
+            {
+                m_CachedPosition = null;
+                return false;
+            }
+            m_CachedPosition = position;
+            return CanPlace(m_CachedPosition.Value, session.GetModifyingPayerFromId(playerId));
+        }
+
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
             // TODO:feature add client side prediction for placing blocks
-            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
-             || WithoutOuterVoxel(hit, out Position3Int position, out Voxel.Voxel _)) return;
+            if (!(m_CachedPosition is Position3Int position)) return;
 
             var voxelInjector = (VoxelInjector) session.Injector;
-            byte texture = session.GetModifyingPayerFromId(playerId).With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
+            Container player = session.GetModifyingPayerFromId(playerId);
+            byte texture = player.With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
                 ? designer.selectedVoxelId
                 : VoxelId.Dirt;
             voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, id = texture});
         }
 
-        protected override bool CanTernaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
+        private bool CanPlace(in Position3Int position, Container player)
+        {
+            if (!m_PreventPlacingOnSelf) return true;
+            var playerPosition = (Position3Int) player.Require<MoveComponent>().position.Value;
+            return position != playerPosition && position != playerPosition + new Position3Int {y = 1};
+        }
+
+        protected override bool CanTernaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory)
+        {
+            if (!base.CanPrimaryUse(item, inventory) || WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit))
+            {
+                m_CachedPosition = null;
+                return false;
+            }
+            m_CachedPosition = (Position3Int) hit.point;
+            return CanPlace(m_CachedPosition.Value, session.GetModifyingPayerFromId(playerId));
+        }
 
         protected override void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
-            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)) return;
+            if (!(m_CachedPosition is Position3Int position)) return;
 
             var voxelInjector = (VoxelInjector) session.Injector;
-            var position = (Position3Int) hit.point;
             voxelInjector.SetVoxelRadius(position, m_AdditiveRadius, additiveChange: new VoxelChangeData {id = VoxelId.Dirt}, isAdditive: true);
         }
     }

@@ -70,9 +70,9 @@ namespace Swihoni.Sessions.Items.Modifiers
             {
                 if (inputs.GetInput(PlayerInput.UseOne) && CanPrimaryUse(item, inventory))
                     StartStatus(session, playerId, item, GetUseStatus(inputs), durationUs);
-                else if (inputs.GetInput(PlayerInput.UseTwo) && CanSecondaryUse(item, inventory))
+                else if (inputs.GetInput(PlayerInput.UseTwo) && CanSecondaryUse(session, playerId, item, inventory))
                     StartStatus(session, playerId, item, ItemStatusId.SecondaryUsing, durationUs);
-                else if (inputs.GetInput(PlayerInput.UseThree) && CanTernaryUse(item, inventory))
+                else if (inputs.GetInput(PlayerInput.UseThree) && CanTernaryUse(session, playerId, item, inventory))
                     StartStatus(session, playerId, item, ItemStatusId.TernaryUsing, durationUs);
             }
             ModifyStatus(session, playerId, item, inventory, inputs, durationUs);
@@ -150,9 +150,9 @@ namespace Swihoni.Sessions.Items.Modifiers
          && item.status.id != ItemStatusId.TernaryUsing
          && inventory.equipStatus.id == ItemEquipStatusId.Equipped;
 
-        protected virtual bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory) => false;
+        protected virtual bool CanSecondaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory) => false;
 
-        protected virtual bool CanTernaryUse(ItemComponent item, InventoryComponent inventory) => false;
+        protected virtual bool CanTernaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory) => false;
 
         protected virtual void SecondaryUse(SessionBase session, int playerId, uint durationUs) { }
 

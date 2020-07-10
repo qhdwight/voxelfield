@@ -40,7 +40,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false)
             => base.CanPrimaryUse(item, inventory, justFinishedUse) && item.status.id != ThrowableStatusId.Cooking && item.ammoInReserve > 0;
 
-        protected override bool CanSecondaryUse(ItemComponent item, InventoryComponent inventory)
+        protected override bool CanSecondaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory)
             => base.CanPrimaryUse(item, inventory) && item.status.id != ThrowableStatusId.Cooking;
 
         protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }

@@ -61,9 +61,12 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  m_HeadShotMultiplier: 1
   m_Distance: 2
   m_EditDistance: 8
   m_DestroyRadius: 1.7
+  m_AdditiveRadius: 1.5
   m_ChunkMask:
     serializedVersion: 2
     m_Bits: 32768
+  m_PreventPlacingOnSelf: 0
