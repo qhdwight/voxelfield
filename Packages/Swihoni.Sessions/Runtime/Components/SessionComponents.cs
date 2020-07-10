@@ -108,6 +108,7 @@ namespace Swihoni.Sessions.Components
     {
         public ElapsedUsProperty elapsedUs;
         public ByteProperty killingPlayerId, killedPlayerId;
+        public BoolProperty isHeadShot;
         public StringProperty weaponName = new StringProperty(32);
     }
 

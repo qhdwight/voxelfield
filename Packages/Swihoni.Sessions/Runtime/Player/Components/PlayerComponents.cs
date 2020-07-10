@@ -40,9 +40,9 @@ namespace Swihoni.Sessions.Player.Components
     public class MoveComponent : ComponentBase
     {
         public MoveType type;
-        [PredictionTolerance(0.01f), InterpolateRange(2.0f)]
+        [PredictionTolerance(0.01f), InterpolateRange(2.0f), NeverCompress]
         public VectorProperty position, velocity;
-        public ByteProperty groundTick;
+        [NeverCompress] public ByteProperty groundTick;
         [PredictionTolerance(0.01f)] public FloatProperty normalizedCrouch;
         [Cyclic(0.0f, 1.0f)] public FloatProperty normalizedMove;
 

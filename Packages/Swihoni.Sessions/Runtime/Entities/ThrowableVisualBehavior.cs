@@ -6,7 +6,7 @@ namespace Swihoni.Sessions.Entities
 {
     public class ThrowableVisualBehavior : EntityVisualBehavior
     {
-        [SerializeField] private AudioSource m_PopAudioSource = default, m_ContactAudioSource = default;
+        [SerializeField] private AudioSource m_PopAudioSource = default, m_ContinuousPopAudioSource = default, m_ContactAudioSource = default;
         protected ThrowableModifierBehavior m_Modifier;
         private ParticleSystem[] m_Particles;
         private uint m_LastThrownElapsedUs, m_LastContactElapsedUs;
@@ -25,6 +25,7 @@ namespace Swihoni.Sessions.Entities
             {
                 m_LastContactElapsedUs = 0u;
             }
+            if (m_ContinuousPopAudioSource) m_ContinuousPopAudioSource.Stop();
         }
 
         public override void Render(Container entity)
@@ -45,11 +46,13 @@ namespace Swihoni.Sessions.Entities
                     particle.time = particleElapsedUs * TimeConversions.MicrosecondToSecond;
                     if (particle.isStopped && hasJustPopped) particle.Play(false);
                 }
+                if (m_ContinuousPopAudioSource && !m_ContinuousPopAudioSource.isPlaying) m_ContinuousPopAudioSource.Play();
             }
             else
             {
                 if (throwable.contactElapsedUs < m_LastContactElapsedUs)
                     m_ContactAudioSource.PlayOneShot(m_ContactAudioSource.clip, 1.0f);
+                if (m_ContinuousPopAudioSource) m_ContinuousPopAudioSource.Stop();
             }
             m_LastThrownElapsedUs = throwable.thrownElapsedUs;
             m_LastContactElapsedUs = throwable.contactElapsedUs;

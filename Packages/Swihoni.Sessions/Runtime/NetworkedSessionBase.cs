@@ -12,6 +12,11 @@ using Swihoni.Sessions.Player.Components;
 
 namespace Swihoni.Sessions
 {
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
+    public class NeverCompress : Attribute
+    {
+    }
+    
     public abstract class NetworkedSessionBase : SessionBase
     {
         protected const int HistoryCount = 250;

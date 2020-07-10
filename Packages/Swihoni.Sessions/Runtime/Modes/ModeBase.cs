@@ -98,8 +98,8 @@ namespace Swihoni.Sessions.Modes
                       inflictingPlayer = session.GetPlayerFromId(inflictingPlayerId);
             if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive && hitPlayer.With<ServerTag>())
             {
-                var damage = checked((byte) CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit));
-                InflictDamage(session, inflictingPlayerId, inflictingPlayer, hitPlayer, hitPlayerId, damage, weapon.itemName);
+                var damage = checked((byte) Mathf.Clamp(CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit), 0.0f, 255.0f));
+                InflictDamage(session, inflictingPlayerId, inflictingPlayer, hitPlayer, hitPlayerId, damage, weapon.itemName, hitbox.IsHead);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Swihoni.Sessions.Modes
             return damage;
         }
 
-        public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName)
+        public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName, bool isHeadShot = false)
         {
             checked
             {
@@ -138,6 +138,7 @@ namespace Swihoni.Sessions.Modes
                         kill.elapsedUs.Value = 2_000_000u;
                         kill.killingPlayerId.Value = (byte) inflictingPlayerId;
                         kill.killedPlayerId.Value = (byte) hitPlayerId;
+                        kill.isHeadShot.Value = isHeadShot;
                         kill.weaponName.SetTo(weaponName);
                         break;
                     }

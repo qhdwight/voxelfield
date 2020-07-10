@@ -218,9 +218,11 @@ namespace Swihoni.Sessions
             {
                 if (_mostRecent is PropertyBase _mostRecentProperty && _lastAcknowledged is PropertyBase _lastAcknowledgedProperty && _send is PropertyBase _sendProperty)
                 {
-                    if (_mostRecent.WithoutAttribute<SingleTick>() && _mostRecentProperty.Equals(_lastAcknowledgedProperty)
-                                                                   && !(_mostRecentProperty is VectorProperty)
-                                                                   && !(_mostRecentProperty is StringProperty))
+                    if (_mostRecent.WithoutAttribute<SingleTick>()
+                     && _mostRecent.WithoutAttribute<NeverCompress>()
+                     && !(_mostRecentProperty is VectorProperty)
+                     && !(_mostRecentProperty is StringProperty)
+                     && _mostRecentProperty.Equals(_lastAcknowledgedProperty))
                     {
                         _sendProperty.Clear();
                         _sendProperty.WasSame = true;
@@ -233,7 +235,7 @@ namespace Swihoni.Sessions
                     }
                 }
                 return Navigation.Continue;
-            }, serverSession, m_SessionHistory.Get(-rollback), m_SendSession);
+            }, serverSession, m_SessionHistory.Get(-1), m_SendSession);
         }
 
         private void HandleClientCommand(int clientId, Container receivedClientCommands, Container serverSession, Container serverPlayer)
