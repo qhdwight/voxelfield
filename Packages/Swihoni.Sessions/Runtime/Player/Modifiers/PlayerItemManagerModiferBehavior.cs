@@ -85,7 +85,10 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (equipStatus.id != ItemEquipStatusId.Unequipped) return;
             // We have unequipped the current index
             if (hasValidWantedIndex)
+            {
+                inventory.previousEquippedIndex.Value = inventory.equippedIndex.Value;
                 inventory.equippedIndex.Value = wantedIndex;
+            }
             else if (FindReplacement(inventory, out byte replacementIndex))
                 inventory.equippedIndex.Value = replacementIndex;
             else
@@ -167,7 +170,12 @@ namespace Swihoni.Sessions.Player.Modifiers
             => FindItem(inventory, item => item.id == ItemId.None, out emptyIndex);
 
         private static bool FindReplacement(InventoryComponent inventory, out byte replacementIndex)
-            => FindItem(inventory, item => item.id != ItemId.None, out replacementIndex);
+        {
+            if (inventory.previousEquippedIndex == NoneIndex || inventory[inventory.previousEquippedIndex].id == ItemId.None)
+                return FindItem(inventory, item => item.id != ItemId.None, out replacementIndex);
+            replacementIndex = inventory.previousEquippedIndex;
+            return true;
+        }
 
         public static void AddItems(InventoryComponent inventory, params byte[] itemIds)
         {

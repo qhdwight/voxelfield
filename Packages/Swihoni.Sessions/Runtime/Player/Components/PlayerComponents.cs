@@ -150,7 +150,7 @@ namespace Swihoni.Sessions.Player.Components
     [Serializable, ClientChecked, CustomInterpolation]
     public class InventoryComponent : ComponentBase
     {
-        public ByteProperty equippedIndex;
+        public ByteProperty equippedIndex, previousEquippedIndex;
         public ByteStatusComponent equipStatus, adsStatus;
         public ArrayElement<ItemComponent> items = new ArrayElement<ItemComponent>(10);
 

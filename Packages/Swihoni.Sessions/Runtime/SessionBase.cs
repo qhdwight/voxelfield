@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -198,7 +199,7 @@ namespace Swihoni.Sessions
             m_FixedUpdateTicks = clockTicks;
             Tick(m_Tick++, GetUsFromTicks(clockTicks), GetUsFromTicks(clockTickDelta));
         }
-
+        
         protected static void RenderInterpolated
             (uint renderTimeUs, Container renderContainer, int maxRollback, Func<int, StampComponent> getTimeInHistory, Func<int, Container> getInHistory)
         {
@@ -232,12 +233,15 @@ namespace Swihoni.Sessions
             renderContainer.CopyFrom(getInHistory(1));
         }
 
+        private static Func<int, Container> _getInHistory;
+        
         protected static void RenderInterpolatedPlayer<TStampComponent>
             (uint renderTimeUs, Container renderContainer, int maxRollback, Func<int, Container> getInHistory)
             where TStampComponent : StampComponent
         {
+            _getInHistory = getInHistory; // Prevent allocation in closure
             RenderInterpolated(renderTimeUs, renderContainer, maxRollback,
-                               historyIndex => getInHistory(historyIndex).Require<TStampComponent>(), getInHistory);
+                               historyIndex => _getInHistory(historyIndex).Require<TStampComponent>(), getInHistory);
         }
 
         public abstract Ray GetRayForPlayerId(int playerId);
@@ -304,5 +308,8 @@ namespace Swihoni.Sessions
         }
 
         public abstract void StringCommand(int playerId, string stringCommand);
+
+        public static StringBuilder BuildUsername(Container sessionContainer, StringBuilder builder, Container player)
+            => ModeManager.GetMode(sessionContainer.Require<ModeIdProperty>()).BuildUsername(builder, player);
     }
 }

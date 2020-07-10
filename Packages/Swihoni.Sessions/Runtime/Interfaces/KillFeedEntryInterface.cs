@@ -27,7 +27,7 @@ namespace Swihoni.Sessions.Interfaces
                       .Append(" [")
                       .Append(feed.weaponName.Builder)
                       .Append("] ")
-                      .Append(feed.isHeadShot ? "<color=#F25C69>[HS]</color> " : string.Empty)
+                      .Append(feed.isHeadShot ? "<sprite=0> " : string.Empty)
                       .AppendUsername(feed.killedPlayerId, sessionContainer).Commit(m_Text);
             }
             SetInterfaceActive(isVisible);
@@ -36,12 +36,12 @@ namespace Swihoni.Sessions.Interfaces
 
     internal static class KillFeedExtensions
     {
-        internal static StringBuilder AppendUsername(this StringBuilder builder, int playerId, Container session)
+        internal static StringBuilder AppendUsername(this StringBuilder builder, int playerId, Container sessionContainer)
         {
-            var username = session.GetPlayer(playerId).Require<UsernameProperty>();
-            bool isLocalPlayer = session.WithPropertyWithValue(out LocalPlayerId localPlayerId) && playerId == localPlayerId;
+            Container player = sessionContainer.GetPlayer(playerId);
+            bool isLocalPlayer = sessionContainer.WithPropertyWithValue(out LocalPlayerId localPlayerId) && playerId == localPlayerId;
             if (isLocalPlayer) builder.Append("<b><i>");
-            builder.Append(username.Builder);
+            SessionBase.BuildUsername(sessionContainer, builder, player);
             if (isLocalPlayer) builder.Append("</i></b>");
             return builder;
         }

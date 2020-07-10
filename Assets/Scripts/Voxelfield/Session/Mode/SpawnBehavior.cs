@@ -13,7 +13,7 @@ namespace Voxelfield.Session.Mode
         public override void SetInMode(Container session)
         {
             gameObject.SetActive(session.Require<ModeIdProperty>() == ModeIdProperty.Designer);
-            m_Material.color = FlagBehavior.GetTeamColor(Container);
+            m_Material.color = CtfMode.GetTeamColor(Container);
         }
     }
 }

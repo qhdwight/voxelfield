@@ -18,11 +18,9 @@ namespace Swihoni.Sessions.Interfaces
                 m_DamageText.StartBuild().Append(stats.damage).Commit(m_DamageText);
                 m_DeathsText.StartBuild().Append(stats.deaths).Commit(m_DeathsText);
                 m_PingText.StartBuild().Append(stats.ping).Commit(m_PingText);
-                PostRender(session, sessionContainer, player);
+                SessionBase.BuildUsername(sessionContainer, m_UsernameText.StartBuild(), player).Commit(m_UsernameText);
             }
             SetInterfaceActive(isVisible);
         }
-
-        protected virtual void PostRender(SessionBase session, Container sessionContainer, Container player) { }
     }
 }

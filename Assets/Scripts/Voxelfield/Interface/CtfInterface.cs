@@ -23,7 +23,8 @@ namespace Voxelfield.Interface
             {
                 var ctf = sessionContainer.Require<CtfComponent>();
                 RenderLocalPlayer(session, sessionContainer, ctf);
-                m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], Color.blue, ctf.teamScores[CtfMode.RedTeam], Color.red);
+                m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], CtfMode.GetTeamColor(CtfMode.BlueTeam), 
+                                        ctf.teamScores[CtfMode.RedTeam], CtfMode.GetTeamColor(CtfMode.RedTeam));
             }
             SetInterfaceActive(isVisible);
         }

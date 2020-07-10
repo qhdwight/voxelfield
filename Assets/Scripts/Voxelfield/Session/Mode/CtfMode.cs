@@ -1,6 +1,8 @@
 using System.Linq;
+using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
@@ -19,7 +21,6 @@ namespace Voxelfield.Session.Mode
         public const uint TakeFlagDurationUs = 2_000_000u;
 
         [SerializeField] private LayerMask m_PlayerMask = default;
-
         [SerializeField] private float m_CaptureRadius = 3.0f;
 
         // private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
@@ -166,6 +167,17 @@ namespace Voxelfield.Session.Mode
             player.Require<TeamProperty>().Value = (byte) (playerId % 2);
             base.SpawnPlayer(session, sessionContainer, playerId, player);
         }
+
+        // TODO:performance garbage generator
+        public override StringBuilder BuildUsername(StringBuilder builder, Container player)
+            => builder.AppendFormat("<color=#{0}>{1}</color>",
+                                    ColorUtility.ToHtmlStringRGB(GetTeamColor(player)),
+                                    player.Require<UsernameProperty>().Builder);
+
+        public static Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());
+
+        public static Color GetTeamColor(byte teamId) => teamId == BlueTeam
+            ? new Color(0.1764705882f, 0.5098039216f, 0.8509803922f) : new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
 
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {

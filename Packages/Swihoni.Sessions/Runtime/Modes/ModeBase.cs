@@ -1,10 +1,12 @@
 using System;
+using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
+using Swihoni.Util.Interface;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Modes
@@ -181,5 +183,8 @@ namespace Swihoni.Sessions.Modes
         public virtual void End() { }
 
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
+
+        public virtual StringBuilder BuildUsername(StringBuilder builder, Container player)
+            => builder.Append(player.Require<UsernameProperty>().Builder);
     }
 }

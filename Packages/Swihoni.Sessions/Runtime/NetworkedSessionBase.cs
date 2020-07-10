@@ -90,16 +90,21 @@ namespace Swihoni.Sessions
 
         protected void RenderInterfaces(Container session) => ForEachSessionInterface(sessionInterface => sessionInterface.Render(this, session));
 
+
+        private static CyclicArray<ServerSessionContainer> _history;
+        private static int _entityIndex;
+        
         protected void RenderEntities<TStampComponent>(uint currentRenderTimeUs, uint rollbackUs) where TStampComponent : StampComponent
         {
+            _history = m_SessionHistory; // Prevent allocation in closure
             uint renderTimeUs = currentRenderTimeUs - rollbackUs;
             var renderEntities = m_RenderSession.Require<EntityArrayElement>();
-            for (var i = 0; i < renderEntities.Length; i++)
+            for (var index = 0; index < renderEntities.Length; index++)
             {
-                int index = i;
-                RenderInterpolated(renderTimeUs, renderEntities[index], m_SessionHistory.Size,
-                                   h => m_SessionHistory.Get(-h).Require<TStampComponent>(),
-                                   h => m_SessionHistory.Get(-h).Require<EntityArrayElement>()[index]);
+                _entityIndex = index;
+                RenderInterpolated(renderTimeUs, renderEntities[_entityIndex], _history.Size,
+                                   h => _history.Get(-h).Require<TStampComponent>(),
+                                   h => _history.Get(-h).Require<EntityArrayElement>()[_entityIndex]);
             }
             EntityManager.RenderAll(renderEntities, (visual, entity) => ((EntityVisualBehavior) visual).Render(entity));
         }

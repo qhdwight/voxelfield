@@ -30,6 +30,7 @@ namespace Swihoni.Sessions.Player.Visualization
         private AudioListener m_AudioListener;
         private Camera m_Camera;
         private PlayerVisualsBehaviorBase[] m_Visuals;
+        private Vector3 m_DamageTextOffset;
 
         private Container m_RecentRender;
 
@@ -42,6 +43,7 @@ namespace Swihoni.Sessions.Player.Visualization
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup();
             m_Camera = GetComponentInChildren<Camera>();
             m_AudioListener = GetComponentInChildren<AudioListener>();
+            m_DamageTextOffset = m_DamageText.transform.localPosition;
         }
 
         private readonly StringBuilder m_DamageNotifierBuilder = new StringBuilder();
@@ -78,9 +80,17 @@ namespace Swihoni.Sessions.Player.Visualization
                         if (damageNotifier.elapsedUs > 0u)
                         {
                             m_DamageNotifierBuilder.Clear().Append(damageNotifier.damage.Value).Commit(m_DamageText);
+                            
                             Vector3 GetPosition(int i) => container.Require<PlayerContainerArrayElement>()[i].Require<MoveComponent>().position;
-                            m_DamageText.transform.position = GetPosition(playerId) + new Vector3 {y = 2.4f};
-                            m_DamageText.transform.LookAt(GetPosition(container.Require<LocalPlayerId>()));
+
+                            Vector3 localPosition = GetPosition(container.Require<LocalPlayerId>()),
+                                    textPosition = GetPosition(playerId) + m_DamageTextOffset;
+                            float distanceMultiplier = Mathf.Clamp(Vector3.Distance(localPosition, textPosition) * 0.05f, 1.0f, 5.0f);
+                            var localScale = new Vector2(-distanceMultiplier, distanceMultiplier);
+                            Transform t = m_DamageText.transform;
+                            t.localScale = localScale;
+                            t.position = textPosition;
+                            t.LookAt(localPosition);
                         }
                     }
                 }
