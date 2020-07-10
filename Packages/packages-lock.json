@@ -80,7 +80,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.textmeshpro": {
-      "version": "3.0.0-preview.14",
+      "version": "3.0.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {

@@ -45,7 +45,11 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void Begin(SessionBase session, Container sessionContainer) { }
+        public virtual void Begin(SessionBase session, Container sessionContainer)
+        {
+            if (!session.IsPaused)
+                ForEachActivePlayer(session, sessionContainer, (playerId, player) => SpawnPlayer(session, playerId, player));
+        }
 
         protected virtual void KillPlayer(Container player)
         {
@@ -54,7 +58,7 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
         }
 
-        public virtual void Render(SessionBase session, Container sessionContainer) { }
+        public virtual void Render(SessionBase session, Container sessionContainer) => session.Injector.OnRenderMode(sessionContainer);
 
         public virtual void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
         {
@@ -70,7 +74,7 @@ namespace Swihoni.Sessions.Modes
                 InflictDamage(session, playerId, player, player, playerId, health.Value, "Void");
 
             if (commands.With(out WantedTeamProperty wantedTeam) && AllowTeamSwap(container, player))
-            {
+            { 
                 player.Require<TeamProperty>().Value = wantedTeam;
             }
         }

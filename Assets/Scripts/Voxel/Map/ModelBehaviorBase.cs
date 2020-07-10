@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Voxel.Map
 {
-    public class ModelBehavior : MonoBehaviour
+    public abstract class ModelBehaviorBase : MonoBehaviour
     {
         [SerializeField] private ushort m_Id = default;
         [SerializeField] private string m_ModelName = default;
@@ -22,5 +22,7 @@ namespace Voxel.Map
             Position = position;
             Container = container;
         }
+
+        public abstract void SetVisibility(Container container);
     }
 }

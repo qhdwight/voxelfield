@@ -253,6 +253,8 @@ namespace Voxelfield.Session.Mode
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
+            base.Render(session, sessionContainer);
+            
             if (MapManager.Singleton.Models.Count == 0) return;
             ArrayElement<CurePackageComponent> cures = sessionContainer.Require<ShowdownSessionComponent>().curePackages;
             // TODO:performance

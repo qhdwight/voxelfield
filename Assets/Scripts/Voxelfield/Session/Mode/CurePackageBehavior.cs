@@ -1,5 +1,6 @@
+using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using UnityEngine;
-using Voxel.Map;
 
 namespace Voxelfield.Session.Mode
 {
@@ -15,8 +16,9 @@ namespace Voxelfield.Session.Mode
                 return;
             }
             bool isCureActive = cure.isActive;
-            gameObject.SetActive(true);
             m_Cure.SetActive(isCureActive);
         }
+
+        public override void SetVisibility(Container container) => gameObject.SetActive(IsModeOrDesigner(container, ModeIdProperty.Showdown));
     }
 }

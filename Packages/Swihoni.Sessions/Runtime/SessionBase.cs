@@ -52,6 +52,8 @@ namespace Swihoni.Sessions
 
         protected internal virtual void OnReceive(ServerSessionContainer serverSession) { }
 
+        protected internal virtual void OnRenderMode(Container session) { }
+
         protected internal virtual void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
 
         protected internal virtual void OnHandleNewConnection(ConnectionRequest request) => request.Accept();

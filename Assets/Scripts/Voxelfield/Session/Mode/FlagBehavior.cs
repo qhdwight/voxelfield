@@ -58,6 +58,10 @@ namespace Voxelfield.Session.Mode
             color.a = cosine.Remap(-1.0f, 1.0f, 0.2f, 1.0f);
             m_SpriteMaterial.color = color;
             m_SpriteRenderer.enabled = isIconVisible;
+            
+            gameObject.SetActive(true);
         }
+
+        public override void SetVisibility(Container container) => gameObject.SetActive(IsModeOrDesigner(container, ModeIdProperty.Ctf));
     }
 }

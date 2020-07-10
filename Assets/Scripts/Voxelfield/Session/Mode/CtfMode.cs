@@ -42,6 +42,8 @@ namespace Voxelfield.Session.Mode
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
+            base.Render(session, sessionContainer);
+            
             if (m_FlagBehaviors == null && !session.IsPaused) LinkFlagBehaviors();
             if (m_FlagBehaviors == null) return;
 

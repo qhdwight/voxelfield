@@ -28,7 +28,7 @@
               <e p="MapContainer.cs" t="Include" />
               <e p="MapManager.cs" t="Include" />
               <e p="MapSpawn.cs" t="Include" />
-              <e p="ModelBehavior.cs" t="Include" />
+              <e p="ModelBehaviorBase.cs" t="Include" />
               <e p="ModelsProperty.cs" t="Include" />
             </e>
             <e p="Noise.cs" t="Include" />
@@ -72,6 +72,7 @@
               <e p="SuperPickaxe.cs" t="Include" />
               <e p="VoxelWand.cs" t="Include" />
             </e>
+            <e p="ModelBehavior.cs" t="Include" />
             <e p="Session" t="Include">
               <e p="ClientInjector.cs" t="Include" />
               <e p="Components.cs" t="Include" />
@@ -152,6 +153,10 @@
           </e>
         </e>
         <e p="Swihoni.Components" t="Include">
+          <e p="Editor" t="Include">
+            <e p="StringPropertyDrawer.cs" t="Include" />
+            <e p="Swihoni.Components.Editor.asmdef" t="Include" />
+          </e>
           <e p="Runtime" t="Include">
             <e p="ArrayElement.cs" t="Include" />
             <e p="ComponentBase.cs" t="Include" />
@@ -312,6 +317,7 @@
       </e>
       <e p="Swihoni.Collections.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Components.csproj" t="IncludeRecursive" />
+      <e p="Swihoni.Components.Editor.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Components.Tests.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Session.csproj" t="IncludeRecursive" />
       <e p="Swihoni.Sessions.Tests.csproj" t="IncludeRecursive" />

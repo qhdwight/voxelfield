@@ -22,14 +22,13 @@ namespace Voxel.Map
 
         [SerializeField] private bool m_TruncateDimension = true;
 
-        private Pool<ModelBehavior>[] m_ModelsPool;
+        private Pool<ModelBehaviorBase>[] m_ModelsPool;
         private StringProperty m_WantedMapName;
         private IEnumerator m_ManageActionsRoutine;
 
-        public static ModelBehavior[] ModelPrefabs { get; private set; }
+        public static ModelBehaviorBase[] ModelPrefabs { get; private set; }
 
-        public Predicate<Container> ModelFilter { get; set; }
-        public Dictionary<Position3Int, ModelBehavior> Models { get; } = new Dictionary<Position3Int, ModelBehavior>();
+        public Dictionary<Position3Int, ModelBehaviorBase> Models { get; } = new Dictionary<Position3Int, ModelBehaviorBase>();
         public MapContainer Map { get; private set; } = new MapContainer();
 
         [RuntimeInitializeOnLoadMethod]
@@ -38,7 +37,7 @@ namespace Voxel.Map
             _emptyMapName = new StringProperty();
             _testMapName = new StringProperty("Test");
             _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m);
-            ModelPrefabs = Resources.LoadAll<ModelBehavior>("Models")
+            ModelPrefabs = Resources.LoadAll<ModelBehaviorBase>("Models")
                                     .OrderBy(modifier => modifier.Id).ToArray();
         }
 
@@ -60,13 +59,13 @@ namespace Voxel.Map
 
         private void SetupModelPool() =>
             m_ModelsPool = ModelPrefabs
-                          .Select(modelBehaviorPrefab => new Pool<ModelBehavior>(0, () =>
+                          .Select(modelBehaviorPrefab => new Pool<ModelBehaviorBase>(0, () =>
                            {
-                               ModelBehavior modelInstance = Instantiate(modelBehaviorPrefab);
+                               ModelBehaviorBase modelInstance = Instantiate(modelBehaviorPrefab);
                                modelInstance.Setup(this);
                                modelInstance.name = modelBehaviorPrefab.name;
                                return modelInstance;
-                           }, (modelBehavior, isActive) => modelBehavior.gameObject.SetActive(isActive))).ToArray();
+                           }, (modelBehavior, isActive) => modelBehavior.gameObject.SetActive(false))).ToArray();
 
         private IEnumerator ManageActionsRoutine()
         {
@@ -140,21 +139,18 @@ namespace Voxel.Map
         private void LoadModels(MapContainer map)
         {
             Models.Clear();
-            foreach (Pool<ModelBehavior> pool in m_ModelsPool) pool.ReturnAll();
+            foreach (Pool<ModelBehaviorBase> pool in m_ModelsPool) pool.ReturnAll();
             foreach ((Position3Int position, Container model) in map.models)
                 InstantiateModel(position, model);
         }
 
         private void InstantiateModel(in Position3Int position, Container model)
         {
-            if (ModelFilter == null || ModelFilter(model))
-            {
-                ushort modelId = model.Require<ModelIdProperty>();
-                ModelBehavior modelInstance = m_ModelsPool[modelId].Obtain();
-                modelInstance.Set(position, model);
-                modelInstance.transform.SetPositionAndRotation(position - new Vector3 {y = 0.5f}, Quaternion.identity);
-                Models.Add(position, modelInstance);
-            }
+            ushort modelId = model.Require<ModelIdProperty>();
+            ModelBehaviorBase modelInstance = m_ModelsPool[modelId].Obtain();
+            modelInstance.Set(position, model);
+            modelInstance.transform.SetPositionAndRotation(position - new Vector3 {y = 0.5f}, Quaternion.identity);
+            Models.Add(position, modelInstance);
         }
 
         public void AddModel(in Position3Int position, Container model)
@@ -166,7 +162,7 @@ namespace Voxel.Map
         public void RemoveModel(in Position3Int position)
         {
             Map.models.Remove(position);
-            ModelBehavior model = Models[position];
+            ModelBehaviorBase model = Models[position];
             Models.Remove(position);
             m_ModelsPool[model.Id].Return(model);
         }

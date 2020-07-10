@@ -16,6 +16,7 @@ namespace Swihoni.Sessions
         private StringProperty m_MapNameProperty;
 
         [SerializeField] private string m_MapName = default;
+        // public StringProperty mapName;
         public bool IsDebugMode;
         public UIntProperty RollbackOverrideUs;
         public TickRateProperty TickRate;

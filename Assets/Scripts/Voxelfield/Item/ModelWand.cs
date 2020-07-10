@@ -29,7 +29,7 @@ namespace Voxelfield.Item
             Ray ray = session.GetRayForPlayerId(playerId);
             if (!Physics.Raycast(ray, out RaycastHit hit, m_EditDistance, m_ModelMask)) return;
 
-            var modelBehavior = hit.collider.GetComponentInParent<ModelBehavior>();
+            var modelBehavior = hit.collider.GetComponentInParent<ModelBehaviorBase>();
             if (modelBehavior)
             {
                 MapManager.Singleton.RemoveModel(modelBehavior.Position);

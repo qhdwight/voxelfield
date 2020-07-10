@@ -59,12 +59,13 @@ namespace Voxelfield.Session
             return new Vector3 {y = 8.0f};
         }
 
-        protected override void OnSettingsTick(Container session)
+        protected override void OnRenderMode(Container session)
         {
-            MapManager.Singleton.ModelFilter = container =>
-                container.Without(out ModeIdProperty modeId) || session.Require<ModeIdProperty>() == ModeIdProperty.Designer || modeId == session.Require<ModeIdProperty>();
-            MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
+            foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
+                modelBehavior.SetVisibility(session);
         }
+
+        protected override void OnSettingsTick(Container session) => MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
 
         public override bool IsPaused(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
                                                          || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;

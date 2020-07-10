@@ -1,32 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!65 &5583692429165950269
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 335675083925425830}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1.0999997, y: 1.8000007, z: 1.1000001}
-  m_Center: {x: 0, y: 0.89999986, z: -0.00000011920929}
---- !u!114 &1850780636210577700
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 335675083925425830}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54d554be7e2d401fb407d6e5a805f222, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Id: 4
-  m_ModelName: Barrel
 --- !u!1 &2016277417448332014
 GameObject:
   m_ObjectHideFlags: 0
@@ -71,6 +44,33 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.0999997, y: 1.8000007, z: 1.1000001}
   m_Center: {x: 0, y: 0.89999986, z: -0.00000011920929}
+--- !u!65 &5583692429165950269
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335675083925425830}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.0999997, y: 1.8000007, z: 1.1000001}
+  m_Center: {x: 0, y: 0.89999986, z: -0.00000011920929}
+--- !u!114 &1850780636210577700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335675083925425830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bda59ecfa664439d9f3305a0e0ebb2fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Id: 4
+  m_ModelName: Barrel
 --- !u!1001 &8613525317129885615
 PrefabInstance:
   m_ObjectHideFlags: 0
