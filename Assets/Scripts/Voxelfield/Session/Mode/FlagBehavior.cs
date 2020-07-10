@@ -61,7 +61,7 @@ namespace Voxelfield.Session.Mode
             gameObject.SetActive(true);
         }
 
-        public static Color GetTeamColor(Container flag) => flag.Require<TeamProperty>() == CtfMode.BlueTeam ? Color.blue : Color.red;
+        public static Color GetTeamColor(Container container) => container.Require<TeamProperty>() == CtfMode.BlueTeam ? Color.blue : Color.red;
 
         public override void SetVisibility(Container session) => gameObject.SetActive(IsModeOrDesigner(session, ModeIdProperty.Ctf));
     }

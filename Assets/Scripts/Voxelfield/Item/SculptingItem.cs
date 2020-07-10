@@ -15,6 +15,7 @@ namespace Voxelfield.Item
     {
         [SerializeField] protected float m_EditDistance = 5.0f;
         [SerializeField] protected float m_DestroyRadius = 1.7f;
+        [SerializeField] protected float m_AdditiveRadius = 1.5f;
         [SerializeField] private LayerMask m_ChunkMask = default;
 
         public float EditDistance => m_EditDistance;
@@ -98,8 +99,19 @@ namespace Voxelfield.Item
             var voxelInjector = (VoxelInjector) session.Injector;
             byte texture = session.GetModifyingPayerFromId(playerId).With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
                 ? designer.selectedVoxelId
-                : VoxelId.Stone;
+                : VoxelId.Dirt;
             voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, id = texture});
+        }
+
+        protected override bool CanTernaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
+
+        protected override void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        {
+            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)) return;
+
+            var voxelInjector = (VoxelInjector) session.Injector;
+            var position = (Position3Int) hit.point;
+            voxelInjector.SetVoxelRadius(position, m_AdditiveRadius, additiveChange: new VoxelChangeData {id = VoxelId.Dirt}, isAdditive: true);
         }
     }
 }

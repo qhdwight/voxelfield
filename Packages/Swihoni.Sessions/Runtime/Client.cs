@@ -210,7 +210,11 @@ namespace Swihoni.Sessions
                                      localizedServerTimeUs = serverSession.Require<LocalizedClientStampComponent>().timeUs;
 
                         if (localizedServerTimeUs.WithValue)
-                            localizedServerTimeUs.Value += checked(serverTimeUs - previousServerSession.Require<ServerStampComponent>().timeUs);
+                        {
+                            uint previousTimeUs = previousServerSession.Require<ServerStampComponent>().timeUs;
+                            if (serverTimeUs > previousTimeUs) localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
+                            else Debug.LogError("Should not happen!");
+                        }
                         else localizedServerTimeUs.Value = _timeUs;
 
                         long delta = localizedServerTimeUs.Value - (long) _timeUs;

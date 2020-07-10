@@ -305,7 +305,7 @@ namespace Voxel
                                 if (newDensity > currentDensity)
                                 {
                                     changeData.density = newDensity;
-                                    changeData.Merge(change);
+                                    if (voxel.Value.renderType == VoxelRenderType.Smooth) changeData.Merge(change);
                                 }
                             }
                             else

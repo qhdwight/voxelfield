@@ -10,8 +10,6 @@ namespace Voxelfield.Item
     [CreateAssetMenu(fileName = "Super Pickaxe", menuName = "Item/Super Pickaxe", order = 0)]
     public class SuperPickaxe : SculptingItem
     {
-        protected override bool CanTernaryUse(ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
-
         protected override void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
             if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)) return;

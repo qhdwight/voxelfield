@@ -220,7 +220,7 @@ namespace Voxelfield.Session
         }
 
 #if UNITY_EDITOR
-        [MenuItem("Build/Build Linux Server")]
+        [MenuItem("Build/Linux Server")]
         public static void BuildLinuxServer()
         {
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
@@ -244,7 +244,14 @@ namespace Voxelfield.Session
             }
         }
 
-        [MenuItem("Build/Build Windows IL2CPP Player")]
+        [MenuItem("Build/Git Release")]
+        public static void BuildRelease()
+        {
+            BuildWindowsIl2CppPlayer();
+            BuildLinuxServer();
+        }
+        
+        [MenuItem("Build/Windows IL2CPP Player")]
         public static void BuildWindowsIl2CppPlayer()
         {
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.IL2CPP);
@@ -268,7 +275,7 @@ namespace Voxelfield.Session
             }
         }
 
-        [MenuItem("Build/Build Windows Mono Player")]
+        [MenuItem("Build/Windows Mono Player")]
         public static void BuildWindowsMonoPlayer()
         {
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);

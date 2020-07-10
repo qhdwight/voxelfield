@@ -31,6 +31,7 @@ namespace Voxelfield.Session.Mode
             => m_FlagBehaviors = MapManager.Singleton.Models.Values
                                            .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Flag)
                                            .GroupBy(model => model.Container.Require<TeamProperty>().Value)
+                                           .OrderBy(group => group.Key)
                                            .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray();
 
         public override void Begin(SessionBase session, Container sessionContainer)
@@ -78,7 +79,8 @@ namespace Voxelfield.Session.Mode
                                                                                                     && modelId == ModelsProperty.Spawn
                                                                                                     && modelTuple.Item2.With<TeamProperty>())
                                                              .GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
-                                                             .Select(teamGroup => teamGroup.ToArray())
+                                                             .OrderBy(spawnGroup => spawnGroup.Key)
+                                                             .Select(spawnGroup => spawnGroup.ToArray())
                                                              .ToArray();
             byte team = player.Require<TeamProperty>();
             (Position3Int, Container)[] teamSpawns = spawns[team];

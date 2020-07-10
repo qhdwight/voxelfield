@@ -196,6 +196,7 @@ namespace Voxelfield.Session.Mode
         private static Queue<(Position3Int, Container)>[] FindSpawns(ModelsProperty models)
             => models.Where(modelTuple => modelTuple.Item2.With<TeamProperty>())
                      .GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
+                     .OrderBy(group => group.Key)
                      .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
                      .ToArray();
 
