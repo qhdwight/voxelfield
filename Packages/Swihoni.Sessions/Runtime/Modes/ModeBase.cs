@@ -165,7 +165,8 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer, Container sessionContainer1) => SpawnPlayer(session, sessionContainer, playerId, player);
+        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer, Container sessionContainer1) =>
+            SpawnPlayer(session, sessionContainer, playerId, player);
 
         protected static void ForEachActivePlayer(SessionBase session, Container container, Action<int, Container> action)
         {

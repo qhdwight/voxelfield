@@ -23,6 +23,6 @@ namespace Voxel.Map
             Container = container;
         }
 
-        public abstract void SetVisibility(Container session);
+        public abstract void SetInMode(Container session);
     }
 }

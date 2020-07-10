@@ -30,7 +30,7 @@ namespace Swihoni.Sessions
             m_HostCommands.Zero();
             m_HostCommands.Require<ServerStampComponent>().Clear();
         }
-        
+
         public override Container GetLocalCommands() => m_HostCommands;
 
         protected override void Input(uint timeUs, uint deltaUs)
@@ -131,7 +131,8 @@ namespace Swihoni.Sessions
         }
 
         // TODO:refactor bad
-        public override Container GetModifyingPayerFromId(int playerId, Container session = null) => playerId == HostPlayerId ? m_HostCommands : base.GetModifyingPayerFromId(playerId, session);
+        public override Container GetModifyingPayerFromId(int playerId, Container session = null) =>
+            playerId == HostPlayerId ? m_HostCommands : base.GetModifyingPayerFromId(playerId, session);
 
         public override Ray GetRayForPlayerId(int playerId) => playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
     }

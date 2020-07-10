@@ -14,6 +14,6 @@ namespace Voxelfield
             return mode == modeId || mode == ModeIdProperty.Designer;
         }
 
-        public override void SetVisibility(Container session) => gameObject.SetActive(true);
+        public override void SetInMode(Container session) => gameObject.SetActive(true);
     }
 }

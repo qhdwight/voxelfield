@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using LiteNetLib.Utils;
-using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Components
@@ -59,8 +58,8 @@ namespace Swihoni.Components
                 if (value) m_Flags |= ElementFlags.IsOverride;
                 else m_Flags &= ~ElementFlags.IsOverride;
             }
-        }        
-        
+        }
+
         public bool WithoutValue => !WithValue;
 
         public bool DontSerialize

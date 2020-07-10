@@ -19,6 +19,6 @@ namespace Voxelfield.Session.Mode
             m_Cure.SetActive(isCureActive);
         }
 
-        public override void SetVisibility(Container session) => gameObject.SetActive(IsModeOrDesigner(session, ModeIdProperty.Showdown));
+        public override void SetInMode(Container session) => gameObject.SetActive(IsModeOrDesigner(session, ModeIdProperty.Showdown));
     }
 }

@@ -173,16 +173,16 @@ namespace Swihoni.Sessions
                 int playerId = peer.GetPlayerId();
                 localPlayerProperty.Value = (byte) playerId;
 
-                uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
-                var rollback = checked((int) (tick - lastServerTickAcknowledged));
-                if (lastServerTickAcknowledged == 0u)
-                    // m_SendSession.CopyFrom(serverSession);
-                    CopyToSend(serverSession);
-                else
-                    // TODO:performance serialize and compress at the same time
-                    CompressSession(serverSession, rollback);
+                // uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);
+                // var rollback = checked((int) (tick - lastServerTickAcknowledged));
+                // if (lastServerTickAcknowledged == 0u)
+                //     // m_SendSession.CopyFrom(serverSession);
+                //     CopyToSend(serverSession);
+                // else
+                //     // TODO:performance serialize and compress at the same time
+                //     CompressSession(serverSession, rollback);
 
-                // CopyToSend(serverSession);
+                CopyToSend(serverSession);
 
                 if (player.Require<ClientStampComponent>().tick.WithValue)
                 {

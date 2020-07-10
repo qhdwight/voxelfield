@@ -19,7 +19,7 @@ namespace Voxelfield.Session.Mode
             float baseDamage = base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, in hit);
             return ShowdownMode.CalculateDamageWithMovement(session, inflictingPlayer, weapon, baseDamage);
         }
-        
+
         protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer) => GetRandomSpawn();
 
         public static Vector3 GetRandomSpawn()

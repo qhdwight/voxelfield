@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Input;
 using Swihoni.Components;
@@ -9,7 +8,6 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Voxelfield.Interface.Showdown;
 using Voxelfield.Item;
 using Voxelfield.Session;
 

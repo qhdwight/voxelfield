@@ -163,7 +163,7 @@ namespace Swihoni.Sessions
             Cursor.lockState = desiredLockState;
             Cursor.visible = desiredVisibility;
         }
-        
+
         public bool IsValidLocalPlayer(Container sessionContainer, out Container localPlayer)
         {
             var localPlayerId = sessionContainer.Require<LocalPlayerId>();
@@ -253,7 +253,7 @@ namespace Swihoni.Sessions
         public abstract Container GetLatestSession();
 
         public virtual Container GetLocalCommands() => throw new NotImplementedException();
-        
+
         public static Ray GetRayForPlayer(Container player)
         {
             var camera = player.Require<CameraComponent>();

@@ -45,7 +45,7 @@ namespace Swihoni.Sessions.Player.Visualization
         }
 
         private readonly StringBuilder m_DamageNotifierBuilder = new StringBuilder();
-        
+
         public void Render(SessionBase session, Container container, int playerId, Container player, bool isLocalPlayer)
         {
             bool usesHealth = player.With(out HealthProperty health),

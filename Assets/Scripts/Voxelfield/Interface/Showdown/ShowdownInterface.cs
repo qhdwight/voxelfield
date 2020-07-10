@@ -3,7 +3,6 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
-using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
 using Voxelfield.Session;

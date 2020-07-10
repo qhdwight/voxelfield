@@ -2,10 +2,8 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions;
-using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
 using Swihoni.Util.Math;
-using UnityEngine;
 using Voxel;
 using Voxel.Map;
 
@@ -41,13 +39,13 @@ namespace Voxelfield.Session
 
         protected override void Stop() => MapManager.Singleton.UnloadMap();
 
-        protected override void OnRenderMode(Container session)
+        protected override void OnSettingsTick(Container session)
         {
-            foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
-                modelBehavior.SetVisibility(session);
+            MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
+            if (!IsPaused(session))
+                foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
+                    modelBehavior.SetInMode(session);
         }
-
-        protected override void OnSettingsTick(Container session) => MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
 
         public override bool IsPaused(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
                                                          || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;

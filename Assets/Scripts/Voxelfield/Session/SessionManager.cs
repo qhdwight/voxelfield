@@ -244,13 +244,6 @@ namespace Voxelfield.Session
             }
         }
 
-        [MenuItem("Build/Git Release")]
-        public static void BuildRelease()
-        {
-            BuildWindowsIl2CppPlayer();
-            BuildLinuxServer();
-        }
-        
         [MenuItem("Build/Windows IL2CPP Player")]
         public static void BuildWindowsIl2CppPlayer()
         {
@@ -297,6 +290,13 @@ namespace Voxelfield.Session
                     Debug.Log("Windows Mono player build failed");
                     break;
             }
+        }
+
+        [MenuItem("Build/Git Release")]
+        public static void BuildRelease()
+        {
+            BuildWindowsIl2CppPlayer();
+            BuildLinuxServer();
         }
 #endif
     }

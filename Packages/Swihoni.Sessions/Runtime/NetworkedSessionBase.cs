@@ -16,7 +16,7 @@ namespace Swihoni.Sessions
     public class NeverCompress : Attribute
     {
     }
-    
+
     public abstract class NetworkedSessionBase : SessionBase
     {
         protected const int HistoryCount = 250;
