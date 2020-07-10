@@ -77,7 +77,7 @@ namespace Swihoni.Sessions
             command.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Client");
         }
 
-        public override Container GetPlayerFromId(int playerId, Container session = null) => (session ?? GetLatestSession()).GetPlayer(playerId);
+        public override Container GetModifyingPayerFromId(int playerId, Container session = null) => (session ?? GetLatestSession()).GetPlayer(playerId);
 
         public override Container GetLatestSession() => m_SessionHistory.Peek();
 

@@ -44,7 +44,7 @@ namespace Swihoni.Sessions.Interfaces
                 localHealth = default;
                 var localPlayerId = sessionContainer.Require<LocalPlayerId>();
                 if (localPlayerId.WithoutValue) return false;
-                sessionLocalPlayer = session.GetPlayerFromId(localPlayerId);
+                sessionLocalPlayer = session.GetModifyingPayerFromId(localPlayerId);
                 return sessionLocalPlayer.Without(out localHealth) || localHealth.WithValue && localHealth.IsAlive;
             }
             bool isActive = IsVisible(out Container localPlayer, out HealthProperty health);

@@ -1,0 +1,18 @@
+{
+    "name": "Voxel.Editor",
+    "references": [
+        "GUID:74cc9c6f527046c2833c6ee4c17ae7a2",
+        "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -174,7 +174,7 @@ namespace Swihoni.Sessions
                 localPlayer = default;
                 return false;
             }
-            localPlayer = GetPlayerFromId(localPlayerId);
+            localPlayer = GetModifyingPayerFromId(localPlayerId);
             return localPlayer.Require<HealthProperty>().IsAlive;
         }
 
@@ -281,7 +281,7 @@ namespace Swihoni.Sessions
             return m_Mode = mode;
         }
 
-        public abstract Container GetPlayerFromId(int playerId, Container session = null);
+        public abstract Container GetModifyingPayerFromId(int playerId, Container session = null);
 
         protected void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)
         {

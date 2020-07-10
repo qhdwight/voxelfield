@@ -55,7 +55,7 @@ namespace Voxelfield.Item
 
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
-            Container player = session.GetPlayerFromId(playerId);
+            Container player = session.GetModifyingPayerFromId(playerId);
             if (player.Without<ServerTag>()) return;
             
             var designer = player.Require<DesignerPlayerComponent>();

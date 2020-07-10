@@ -94,8 +94,8 @@ namespace Swihoni.Sessions.Modes
         public virtual void PlayerHit(SessionBase session, int inflictingPlayerId, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit, uint durationUs)
         {
             int hitPlayerId = hitbox.Manager.PlayerId;
-            Container hitPlayer = session.GetPlayerFromId(hitPlayerId),
-                      inflictingPlayer = session.GetPlayerFromId(inflictingPlayerId);
+            Container hitPlayer = session.GetModifyingPayerFromId(hitPlayerId),
+                      inflictingPlayer = session.GetModifyingPayerFromId(inflictingPlayerId);
             if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive && hitPlayer.With<ServerTag>())
             {
                 var damage = checked((byte) Mathf.Clamp(CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit), 0.0f, 255.0f));
@@ -168,7 +168,7 @@ namespace Swihoni.Sessions.Modes
         {
             for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
             {
-                Container player = session.GetPlayerFromId(playerId, container);
+                Container player = session.GetModifyingPayerFromId(playerId, container);
                 if (player.Require<HealthProperty>().WithValue)
                     action(playerId, player);
             }

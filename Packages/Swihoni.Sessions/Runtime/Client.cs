@@ -75,7 +75,7 @@ namespace Swihoni.Sessions
             Container latestSession = GetLatestSession();
             if (!GetLocalPlayerId(latestSession, out int localPlayerId))
                 return;
-            Container player = GetPlayerFromId(localPlayerId, latestSession);
+            Container player = GetModifyingPayerFromId(localPlayerId, latestSession);
             UpdateInputs(player, localPlayerId);
             GetPlayerModifier(player, localPlayerId).ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), player, m_CommandHistory.Peek(), deltaUs);
         }
@@ -128,7 +128,7 @@ namespace Swihoni.Sessions
             if (GetLocalPlayerId(latestSession, out int localPlayerId))
             {
                 m_Injector.OnSettingsTick(latestSession);
-                UpdateInputs(GetPlayerFromId(localPlayerId, latestSession), localPlayerId);
+                UpdateInputs(GetModifyingPayerFromId(localPlayerId, latestSession), localPlayerId);
                 Predict(tick, timeUs, localPlayerId); // Advances commands
             }
             Profiler.EndSample();

@@ -72,7 +72,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         public static bool Throw(SessionBase session, int playerId, string itemName, IdBehavior throwablePrefab, float throwForce)
         {
-            Container player = session.GetPlayerFromId(playerId);
+            Container player = session.GetModifyingPayerFromId(playerId);
             if (player.Without<ServerTag>()) return false;
 
             Ray ray = SessionBase.GetRayForPlayer(player);

@@ -33,7 +33,7 @@ namespace Voxelfield.Session.Mode
             bool isFlagTaken = flag.captureElapsedTimeUs.WithValue && flag.captureElapsedTimeUs > CtfMode.TakeFlagDurationUs;
             if (isFlagTaken)
             {
-                Container capturingPlayer = session.GetPlayerFromId(flag.capturingPlayerId);
+                Container capturingPlayer = session.GetModifyingPayerFromId(flag.capturingPlayerId);
                 spritePosition = capturingPlayer.Require<MoveComponent>().position + new Vector3 {y = 2.7f};
             }
             else spritePosition = transform.position + new Vector3 {y = 2.8f};

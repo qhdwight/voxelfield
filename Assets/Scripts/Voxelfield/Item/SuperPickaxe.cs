@@ -16,7 +16,7 @@ namespace Voxelfield.Item
         {
             if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)) return;
 
-            var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
+            var designer = session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>();
             var voxelInjector = (VoxelInjector) session.Injector;
             var position = (Position3Int) hit.point;
             voxelInjector.SetVoxelRadius(position, designer.editRadius, additiveChange: new VoxelChangeData {id = designer.selectedVoxelId.AsNullable}, isAdditive: true);
@@ -29,6 +29,6 @@ namespace Voxelfield.Item
         }
 
         protected override void SetVoxelRadius(SessionBase session, int playerId, VoxelInjector injector, in Position3Int position)
-            => injector.SetVoxelRadius(position, session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>().editRadius);
+            => injector.SetVoxelRadius(position, session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>().editRadius);
     }
 }

@@ -36,7 +36,7 @@ namespace Voxelfield.Item
                     SetVoxelRadius(session, playerId, voxelInjector, position);
                     break;
             }
-            var brokeVoxelTickProperty = session.GetPlayerFromId(playerId).Require<BrokeVoxelTickProperty>();
+            var brokeVoxelTickProperty = session.GetModifyingPayerFromId(playerId).Require<BrokeVoxelTickProperty>();
             if (brokeVoxelTickProperty.WithValue) brokeVoxelTickProperty.Value++;
             else brokeVoxelTickProperty.Value = 0;
         }
@@ -68,7 +68,7 @@ namespace Voxelfield.Item
 
         protected bool WithoutServerHit(SessionBase session, int playerId, float distance, out RaycastHit hit)
         {
-            if (session.GetPlayerFromId(playerId).Without<ServerTag>())
+            if (session.GetModifyingPayerFromId(playerId).Without<ServerTag>())
             {
                 hit = default;
                 return true;
@@ -79,7 +79,7 @@ namespace Voxelfield.Item
         
         protected bool WithoutClientHit(SessionBase session, int playerId, float distance, out RaycastHit hit)
         {
-            Container player = session.GetPlayerFromId(playerId);
+            Container player = session.GetModifyingPayerFromId(playerId);
             if (player.With<ServerTag>() && player.Without<HostTag>())
             {
                 hit = default;
@@ -96,7 +96,7 @@ namespace Voxelfield.Item
              || WithoutOuterVoxel(hit, out Position3Int position, out Voxel.Voxel _)) return;
 
             var voxelInjector = (VoxelInjector) session.Injector;
-            byte texture = session.GetPlayerFromId(playerId).With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
+            byte texture = session.GetModifyingPayerFromId(playerId).With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
                 ? designer.selectedVoxelId
                 : VoxelId.Stone;
             voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, id = texture});

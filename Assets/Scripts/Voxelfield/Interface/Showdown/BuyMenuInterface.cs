@@ -86,7 +86,7 @@ namespace Voxelfield.Interface.Showdown
             var localPlayerId = sessionContainer.Require<LocalPlayerId>();
             if (localPlayerId.WithoutValue) return false;
 
-            sessionLocalPlayer = session.GetPlayerFromId(localPlayerId);
+            sessionLocalPlayer = session.GetModifyingPayerFromId(localPlayerId);
             return sessionLocalPlayer.Without(out HealthProperty localHealth) || localHealth.WithValue && localHealth.IsAlive;
         }
     }

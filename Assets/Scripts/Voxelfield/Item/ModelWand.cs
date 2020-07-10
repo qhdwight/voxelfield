@@ -24,7 +24,7 @@ namespace Voxelfield.Item
 
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
-            if (session.GetPlayerFromId(playerId).Without<ServerTag>()) return;
+            if (session.GetModifyingPayerFromId(playerId).Without<ServerTag>()) return;
 
             Ray ray = session.GetRayForPlayerId(playerId);
             if (!Physics.Raycast(ray, out RaycastHit hit, m_EditDistance, m_ModelMask)) return;
@@ -42,7 +42,7 @@ namespace Voxelfield.Item
 
             var position = (Position3Int) (hit.point + hit.normal * 0.5f);
 
-            var designer = session.GetPlayerFromId(playerId).Require<DesignerPlayerComponent>();
+            var designer = session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>();
             if (designer.selectedModelId.WithoutValue) return;
 
             MapManager.Singleton.AddModel(position, new Container(new ModelIdProperty(designer.selectedModelId)));

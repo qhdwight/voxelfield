@@ -123,10 +123,10 @@ namespace Voxel.Map
 
             yield return LoadMapSave(map);
 
-            var transaction = new VoxelChangeTransaction();
-            foreach ((Position3Int position, VoxelChangeData change) in map.changedVoxels)
-                transaction.AddChange(position, change);
-            transaction.Commit();
+            // var transaction = new VoxelChangeTransaction(map.changedVoxels.Count);
+            // foreach ((Position3Int position, VoxelChangeData change) in map.changedVoxels)
+            //     transaction.AddChange(position, change);
+            // transaction.Commit();
 
             LoadModels(map);
 

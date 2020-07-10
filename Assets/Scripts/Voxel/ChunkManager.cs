@@ -31,7 +31,7 @@ namespace Voxel
         Generate,
         UpdateMesh
     }
-    
+
     public class ChunkManager : SingletonBehavior<ChunkManager>
     {
         private static readonly VoxelChangeTransaction Transaction = new VoxelChangeTransaction();
@@ -49,7 +49,7 @@ namespace Voxel
         public MapProgressInfo ProgressInfo
         {
             get => m_Progress;
-            set
+            private set
             {
                 ProgressCallback?.Invoke(value);
                 m_Progress = value;
@@ -135,6 +135,9 @@ namespace Voxel
                     }
                 }
             }
+            if (actionType == ChunkActionType.Generate)
+                foreach ((Position3Int position, VoxelChangeData change) in map.changedVoxels)
+                    SetVoxelData(position, change, updateMesh: false, updateMap: false);
         }
 
         /// <summary>
@@ -157,9 +160,7 @@ namespace Voxel
                     m_ChunkPool.Push(chunk);
                 }
                 else if (totalAmountOfChunks > m_PoolSize)
-                {
                     Destroy(m_ChunkPool.Pop().gameObject);
-                }
                 yield return null;
             }
         }
@@ -171,14 +172,14 @@ namespace Voxel
         /// <param name="changeData">Data to change on voxel</param>
         /// <param name="chunk">Chunk that we know it is in. If null, we will try to find it</param>
         /// <param name="updateMesh">Whether or not to actually update the chunk's mesh</param>
-        public void SetVoxelData
-            (in Position3Int worldPosition, in VoxelChangeData changeData, Chunk chunk = null, bool updateMesh = true)
+        /// <param name="updateMap">Whether or not to update map save component</param>
+        public void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData changeData, Chunk chunk = null, bool updateMesh = true, bool updateMap = true)
         {
             if (!chunk) chunk = GetChunkFromWorldPosition(worldPosition);
             if (!chunk) return;
             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
             chunk.SetVoxelDataNoCheck(voxelChunkPosition, changeData);
-            Map.changedVoxels.Set(worldPosition, changeData);
+            if (updateMap) Map.changedVoxels.Set(worldPosition, changeData);
             if (updateMesh) UpdateChunkMesh(chunk, voxelChunkPosition);
         }
 
@@ -215,10 +216,9 @@ namespace Voxel
             return GetChunkFromPosition(chunkPosition);
         }
 
-        public static void UpdateChunkMesh(Chunk chunk) { chunk.UpdateAndApply(); }
+        public static void UpdateChunkMesh(Chunk chunk) => chunk.UpdateAndApply();
 
-        public void AddChunksToUpdateFromVoxel
-            (in Position3Int voxelChunkPosition, Chunk originatingChunk, ICollection<Chunk> chunksToUpdate)
+        public void AddChunksToUpdateFromVoxel(in Position3Int voxelChunkPosition, Chunk originatingChunk, ICollection<Chunk> chunksToUpdate)
         {
             chunksToUpdate.Add(originatingChunk);
 
@@ -237,14 +237,14 @@ namespace Voxel
             AddIfNeeded(voxelChunkPosition.z, new Position3Int {z = 1});
         }
 
-        private static readonly HashSet<Chunk> SUpdateAdjacentChunks = new HashSet<Chunk>();
+        private static readonly HashSet<Chunk> UpdateAdjacentChunks = new HashSet<Chunk>();
 
         private void UpdateChunkMesh(Chunk chunk, in Position3Int voxelChunkPosition)
         {
-            AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, SUpdateAdjacentChunks);
-            foreach (Chunk chunkToUpdate in SUpdateAdjacentChunks)
+            AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, UpdateAdjacentChunks);
+            foreach (Chunk chunkToUpdate in UpdateAdjacentChunks)
                 UpdateChunkMesh(chunkToUpdate);
-            SUpdateAdjacentChunks.Clear();
+            UpdateAdjacentChunks.Clear();
         }
 
         public Chunk GetChunkFromPosition(in Position3Int chunkPosition)
@@ -256,9 +256,7 @@ namespace Voxel
         private void SetPoolSize(MapContainer save)
         {
             Position3Int upper = save.dimension.upperBound, lower = save.dimension.lowerBound;
-            m_PoolSize = (upper.x - lower.x + 1) *
-                         (upper.y - lower.y + 1) *
-                         (upper.z - lower.z + 1);
+            m_PoolSize = (upper.x - lower.x + 1) * (upper.y - lower.y + 1) * (upper.z - lower.z + 1);
         }
 
         private void CommissionChunkFromPoolIntoPosition(in Position3Int newChunkPosition)
@@ -279,7 +277,8 @@ namespace Voxel
         }
 
         public void SetVoxelRadius(in Position3Int worldPositionCenter, float radius,
-                                   bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool additive = false, in VoxelChangeData change = default, ChangedVoxelsProperty changedVoxels = null)
+                                   bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool additive = false, in VoxelChangeData change = default,
+                                   ChangedVoxelsProperty changedVoxels = null)
         {
             int roundedRadius = Mathf.CeilToInt(radius);
             for (int ix = -roundedRadius; ix <= roundedRadius; ix++)

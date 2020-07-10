@@ -41,7 +41,7 @@ namespace Swihoni.Sessions
 
             if (!IsPaused)
             {
-                PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(GetPlayerFromId(HostPlayerId, session), HostPlayerId);
+                PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(GetModifyingPayerFromId(HostPlayerId, session), HostPlayerId);
                 if (hostModifier)
                 {
                     hostModifier.ModifyCommands(this, m_HostCommands);
@@ -131,7 +131,7 @@ namespace Swihoni.Sessions
         }
 
         // TODO:refactor bad
-        public override Container GetPlayerFromId(int playerId, Container session = null) => playerId == HostPlayerId ? m_HostCommands : base.GetPlayerFromId(playerId, session);
+        public override Container GetModifyingPayerFromId(int playerId, Container session = null) => playerId == HostPlayerId ? m_HostCommands : base.GetModifyingPayerFromId(playerId, session);
 
         public override Ray GetRayForPlayerId(int playerId) => playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
     }

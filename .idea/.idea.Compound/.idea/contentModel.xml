@@ -23,6 +23,10 @@
             <e p="ChangedVoxelsProperty.cs" t="Include" />
             <e p="Chunk.cs" t="Include" />
             <e p="ChunkManager.cs" t="Include" />
+            <e p="Editor" t="Include">
+              <e p="ChunkManagerEditor.cs" t="Include" />
+              <e p="Voxel.Editor.asmdef" t="Include" />
+            </e>
             <e p="Map" t="Include">
               <e p="DimensionComponent.cs" t="Include" />
               <e p="MapContainer.cs" t="Include" />
@@ -325,6 +329,7 @@
       <e p="Swihoni.Util.Editor.csproj" t="IncludeRecursive" />
       <e p="Temp\Bin" t="ExcludeRecursive" />
       <e p="Voxel.csproj" t="IncludeRecursive" />
+      <e p="Voxel.Editor.csproj" t="IncludeRecursive" />
       <e p="Voxelfield.csproj" t="IncludeRecursive" />
       <e p="Voxelfield.Editor.csproj" t="IncludeRecursive" />
       <e p="Voxelfield.Interface.csproj" t="IncludeRecursive" />

@@ -153,11 +153,11 @@ namespace Swihoni.Sessions.Entities
                 Collider hitCollider = m_OverlappingColliders[i];
                 if (!hitCollider.TryGetComponent(out PlayerTrigger trigger)) continue;
                 int hitPlayerId = trigger.PlayerId;
-                Container hitPlayer = session.GetPlayerFromId(hitPlayerId);
+                Container hitPlayer = session.GetModifyingPayerFromId(hitPlayerId);
                 if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive)
                 {
                     byte damage = CalculateDamage(hitPlayer, durationUs);
-                    session.GetMode().InflictDamage(session, ThrowerId, session.GetPlayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage, Name);
+                    session.GetMode().InflictDamage(session, ThrowerId, session.GetModifyingPayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage, Name);
                 }
             }
             session.Injector.OnThrowablePopped(this);

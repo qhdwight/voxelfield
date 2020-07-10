@@ -26,7 +26,7 @@ namespace Voxelfield.Interface.Designer
             if (isVisible)
             {
                 int localPlayerId = sessionContainer.Require<LocalPlayerId>();
-                localPlayer = session.GetPlayerFromId(localPlayerId, sessionContainer);
+                localPlayer = session.GetModifyingPayerFromId(localPlayerId, sessionContainer);
                 if (localPlayer.Require<InventoryComponent>().WithItemEquipped(out ItemComponent item)) equippedItemId = item.id;
             }
             if (equippedItemId == ItemId.None || equippedItemId != ItemId.VoxelWand && equippedItemId != ItemId.ModelWand) isVisible = false;

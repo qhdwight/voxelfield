@@ -88,7 +88,7 @@ namespace Voxelfield.Session.Mode
                 if (!m_CachedColliders[i].TryGetComponent(out PlayerTrigger playerTrigger)) continue;
 
                 var playerIdInFlag = (byte) playerTrigger.PlayerId;
-                Container player = session.GetPlayerFromId(playerIdInFlag);
+                Container player = session.GetModifyingPayerFromId(playerIdInFlag);
                 if (player.Require<TeamProperty>() == flagTeam)
                 {
                     TryReturnCapturedFlag(flagTeam, ctf, playerTrigger); // Possibly returning captured enemy flag to friendly flag
@@ -114,7 +114,7 @@ namespace Voxelfield.Session.Mode
             if (ReferenceEquals(enemyTakingIn, null) && flag.capturingPlayerId.WithValue)
             {
                 // Flag is taken, but the capturing player is outside the radius of taking
-                enemyTaking = session.GetPlayerFromId(flag.capturingPlayerId);
+                enemyTaking = session.GetModifyingPayerFromId(flag.capturingPlayerId);
                 // Return flag if capturing player disconnects / dies or if they have not fully taken
                 if (enemyTaking.Require<HealthProperty>().IsInactiveOrDead || flag.captureElapsedTimeUs < TakeFlagDurationUs) enemyTaking = null;
             }

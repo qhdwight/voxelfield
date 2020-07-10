@@ -45,7 +45,7 @@ namespace Swihoni.Sessions
 
         private void OnLatencyUpdated(NetPeer peer, int latency)
         {
-            Container player = GetPlayerFromId(peer.GetPlayerId());
+            Container player = GetModifyingPayerFromId(peer.GetPlayerId());
             var ping = player.Require<ServerPingComponent>();
             ping.latencyUs.Value = checked((uint) latency * 1_000);
             if (player.With(out StatsComponent stats))
@@ -56,7 +56,7 @@ namespace Swihoni.Sessions
         {
             int playerId = peer.GetPlayerId();
             Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
-            Container player = GetPlayerFromId(playerId);
+            Container player = GetModifyingPayerFromId(playerId);
             player.Clear();
             GetPlayerModifier(player, playerId);
         }
@@ -120,7 +120,7 @@ namespace Swihoni.Sessions
         {
             Container serverSession = GetLatestSession();
             int clientId = fromPeer.GetPlayerId();
-            Container serverPlayer = GetPlayerFromId(clientId);
+            Container serverPlayer = GetModifyingPayerFromId(clientId);
             switch (element)
             {
                 case ClientCommandsContainer receivedClientCommands:
@@ -165,7 +165,7 @@ namespace Swihoni.Sessions
 
         protected void SendPeerLatestSession(uint tick, NetPeer peer, Container serverSession)
         {
-            Container player = GetPlayerFromId(peer.GetPlayerId(), serverSession);
+            Container player = GetModifyingPayerFromId(peer.GetPlayerId(), serverSession);
 
             if (player.Require<HealthProperty>().WithValue)
             {
@@ -319,7 +319,7 @@ namespace Swihoni.Sessions
 
         protected override void RollbackHitboxes(int playerId)
         {
-            uint latencyUs = GetPlayerFromId(playerId).Require<ServerPingComponent>().latencyUs;
+            uint latencyUs = GetModifyingPayerFromId(playerId).Require<ServerPingComponent>().latencyUs;
             for (var _modifierId = 0; _modifierId < MaxPlayers; _modifierId++)
             {
                 int modifierId = _modifierId; // Copy for use in lambda
@@ -346,7 +346,7 @@ namespace Swihoni.Sessions
         }
 
         public override void StringCommand(int playerId, string stringCommand)
-            => GetPlayerFromId(playerId).Require<StringCommandProperty>().SetTo(stringCommand);
+            => GetModifyingPayerFromId(playerId).Require<StringCommandProperty>().SetTo(stringCommand);
 
         public override void Dispose()
         {

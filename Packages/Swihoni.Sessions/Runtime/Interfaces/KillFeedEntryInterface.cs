@@ -38,7 +38,7 @@ namespace Swihoni.Sessions.Interfaces
     {
         internal static StringBuilder AppendUsername(this StringBuilder builder, int playerId, Container session)
         {
-            var username = session.Require<PlayerContainerArrayElement>()[playerId].Require<UsernameProperty>();
+            var username = session.GetPlayer(playerId).Require<UsernameProperty>();
             bool isLocalPlayer = session.WithPropertyWithValue(out LocalPlayerId localPlayerId) && playerId == localPlayerId;
             if (isLocalPlayer) builder.Append("<b><i>");
             builder.Append(username.Builder);

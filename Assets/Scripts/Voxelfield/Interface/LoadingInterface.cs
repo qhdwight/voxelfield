@@ -25,16 +25,16 @@ namespace Voxelfield.Interface
             switch (progressInfo.stage)
             {
                 case MapLoadingStage.CleaningUp:
-                    m_Text.SetText("Cleaning up nonsense beforehand...");
+                    m_Text.SetText("Cleaning up...");
                     break;
                 case MapLoadingStage.SettingUp:
                     m_Text.SetText("Setting up...");
                     break;
                 case MapLoadingStage.Generating:
-                    m_Text.SetText("Generating from noise n' stuff...");
+                    m_Text.SetText("Generating terrain from save...");
                     break;
                 case MapLoadingStage.UpdatingMesh:
-                    m_Text.SetText("Putting triangles together in meaningful ways...");
+                    m_Text.SetText("Generating and applying mesh...");
                     break;
             }
             m_ProgressBar.value = progressInfo.progress;
