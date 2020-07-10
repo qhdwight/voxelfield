@@ -14,7 +14,8 @@ namespace Voxelfield.Session
         protected internal override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true) { }
 
         protected internal override void SetVoxelRadius(in Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false,
-                                                        bool destroyBlocks = false, bool isAdditive = false, in VoxelChangeData additiveChange = default, ChangedVoxelsProperty changedVoxels = null)
+                                                        bool destroyBlocks = false, bool isAdditive = false, in VoxelChangeData additiveChange = default,
+                                                        ChangedVoxelsProperty changedVoxels = null)
         {
         }
 

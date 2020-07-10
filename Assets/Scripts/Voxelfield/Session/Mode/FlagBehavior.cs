@@ -5,7 +5,6 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxel.Map;
 
 namespace Voxelfield.Session.Mode
 {
@@ -50,7 +49,7 @@ namespace Voxelfield.Session.Mode
             }
             m_SpriteRenderer.transform.position = spritePosition;
 
-            Color color = Container.Require<TeamProperty>() == CtfMode.BlueTeam ? Color.blue : Color.red;
+            Color color = GetTeamColor(Container);
             float cosine = Mathf.Cos(flag.captureElapsedTimeUs.Else(0u) * TimeConversions.MicrosecondToSecond * m_TakingBlinkRate);
             color.a = cosine.Remap(-1.0f, 1.0f, 0.8f, 1.0f);
             m_Material.color = color;
@@ -58,10 +57,12 @@ namespace Voxelfield.Session.Mode
             color.a = cosine.Remap(-1.0f, 1.0f, 0.2f, 1.0f);
             m_SpriteMaterial.color = color;
             m_SpriteRenderer.enabled = isIconVisible;
-            
+
             gameObject.SetActive(true);
         }
 
-        public override void SetVisibility(Container container) => gameObject.SetActive(IsModeOrDesigner(container, ModeIdProperty.Ctf));
+        public static Color GetTeamColor(Container flag) => flag.Require<TeamProperty>() == CtfMode.BlueTeam ? Color.blue : Color.red;
+
+        public override void SetVisibility(Container session) => gameObject.SetActive(IsModeOrDesigner(session, ModeIdProperty.Ctf));
     }
 }

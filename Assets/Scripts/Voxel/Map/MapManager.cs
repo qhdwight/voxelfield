@@ -73,13 +73,13 @@ namespace Voxel.Map
             {
                 yield return Map.name == m_WantedMapName
                     ? null
-                    : LoadMap(m_WantedMapName);
+                    : LoadNamedMap(m_WantedMapName);
             }
         }
 
         private static string GetMapPath(StringProperty mapName) => Path.ChangeExtension(Path.Combine(GetDirectory(MapSaveFolder), mapName.Builder.ToString()), MapSaveExtension);
 
-        private static MapContainer ReadMapSave(StringProperty mapName)
+        private static MapContainer ReadNamedMap(StringProperty mapName)
         {
             byte[] rawMap;
             if (_defaultMaps.TryGetValue(mapName.Builder.ToString(), out TextAsset textAsset))
@@ -111,10 +111,10 @@ namespace Voxel.Map
 
         public bool SaveCurrentMap() => SaveMapSave(Map);
 
-        private IEnumerator LoadMap(StringProperty mapName)
+        private IEnumerator LoadNamedMap(StringProperty mapName)
         {
             bool isEmpty = mapName.WithoutValue;
-            MapContainer map = isEmpty ? EmptyMap : ReadMapSave(mapName);
+            MapContainer map = isEmpty ? EmptyMap : ReadNamedMap(mapName);
             Debug.Log(isEmpty ? "Unloading map" : $"Starting to load map: {mapName}");
 
 #if UNITY_EDITOR

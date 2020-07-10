@@ -23,7 +23,7 @@ namespace Voxel
         private bool m_InCommission, m_Generating, m_Updating;
         private int m_ChunkSize;
         private Voxel[,,] m_Voxels;
-        
+
         public Position3Int Position => m_Position;
 
         public override int GetHashCode() => m_Position.GetHashCode();
@@ -150,7 +150,7 @@ namespace Voxel
             }
             m_Generating = false;
         }
-        
+
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = m_Generating ? Color.yellow : m_Updating ? Color.red : Color.cyan;

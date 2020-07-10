@@ -34,7 +34,7 @@ namespace Swihoni.Sessions.Modes
             else
             {
                 respawn.Value = 0u;
-                SpawnPlayer(session, playerId, player);
+                SpawnPlayer(session, container, playerId, player);
             }
         }
     }

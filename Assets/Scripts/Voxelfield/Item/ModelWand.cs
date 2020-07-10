@@ -7,6 +7,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
 using Voxelfield.Session;
+using Voxelfield.Session.Mode;
 
 namespace Voxelfield.Item
 {
@@ -44,8 +45,20 @@ namespace Voxelfield.Item
 
             var designer = session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>();
             if (designer.selectedModelId.WithoutValue) return;
+            ushort selectedModelId = designer.selectedModelId;
 
-            MapManager.Singleton.AddModel(position, new Container(new ModelIdProperty(designer.selectedModelId)));
+            var model = new Container(new ModelIdProperty(selectedModelId));
+            switch (selectedModelId)
+            {
+                case ModelsProperty.Flag:
+                case ModelsProperty.Spawn:
+                {
+                    model.Append(new ModeIdProperty(ModeIdProperty.Ctf));
+                    model.Append(new TeamProperty(CtfMode.RedTeam));
+                    break;
+                }
+            }
+            MapManager.Singleton.AddModel(position, model);
         }
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,

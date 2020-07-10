@@ -106,7 +106,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                   speedMultiplier = 1.0f;
 
             if (inputs.GetInput(PlayerInput.Walk)) speedMultiplier *= m_WalkMultiplier;
-            if (inputs.GetInput(PlayerInput.Sprint)) speedMultiplier *= m_SprintMultiplier;
+            if (inputs.GetInput(PlayerInput.Sprint)) speedMultiplier *= m_SprintMultiplier * 4.0f;
 
             m_MoveTransform.Translate(duration * speedMultiplier * m_FlySpeed * new Vector3 {x = right, y = up, z = forwards});
             move.position.Value = m_MoveTransform.position;
@@ -166,12 +166,14 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             Vector3 position = m_MoveTransform.position;
             float radius = m_Controller.radius - 0.01f;
-            int count = Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance}, position + new Vector3 {y = m_Controller.height / 2.0f}, radius,
-                                                       m_CachedContactColliders, m_GroundMask);
-            Physics.RaycastNonAlloc(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
-                                    float.PositiveInfinity, m_GroundMask);
-            float slopeAngle = Vector3.Angle(m_ControllerListener.CachedControllerHit.normal, Vector3.up);
-            bool isGrounded = m_Controller.isGrounded || count == 2, // Always have 1 due to ourselves. 2 means we are touching something else
+            int capsuleCastCount = Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance},
+                                                                  position + new Vector3 {y = m_Controller.height / 2.0f},
+                                                                  radius, m_CachedContactColliders, m_GroundMask);
+            int downwardCastCount = Physics.RaycastNonAlloc(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
+                                                            float.PositiveInfinity, m_GroundMask);
+            float floorDistance = m_CachedGroundHits[0].distance,
+                  slopeAngle = Vector3.Angle(m_ControllerListener.CachedControllerHit.normal, Vector3.up);
+            bool isGrounded = m_Controller.isGrounded || capsuleCastCount == 2, // Always have 1 due to ourselves. 2 means we are touching something else
                  withinAngleLimit = isGrounded && slopeAngle < m_Controller.slopeLimit,
                  applyStick = endingVelocity.y < 0.0f && withinAngleLimit; // Only on way down, if done on way up it negates jump
 
@@ -213,6 +215,12 @@ namespace Swihoni.Sessions.Player.Modifiers
                     endingVelocity.z *= m_MaxAirSpeed / lateralAirSpeed;
                 }
             }
+
+            // Prevent sticking to ceiling
+            if (endingVelocity.y > 0.0f && Physics.RaycastNonAlloc(position + new Vector3 {y = m_Controller.height},
+                                                                   Vector3.up, m_CachedGroundHits, RaycastOffset, m_GroundMask) > 0)
+                endingVelocity.y = 0.0f;
+
             Vector3 motion = (initialVelocity + endingVelocity) / 2.0f * duration;
 
             // Prevent player from walking off the side when crouching
@@ -229,13 +237,12 @@ namespace Swihoni.Sessions.Player.Modifiers
                 }
             }
 
-            if (applyStick)
+            if (applyStick && downwardCastCount > 0)
             {
-                float distance = m_CachedGroundHits[0].distance;
                 // endingVelocity.y = DefaultDownSpeed;
-                if (!inputs.GetInput(PlayerInput.Jump) && distance < m_MaxStickDistance + RaycastOffset)
+                if (!inputs.GetInput(PlayerInput.Jump) && floorDistance < m_MaxStickDistance + RaycastOffset)
                     // m_Controller.Move(new Vector3 {y = -distance - RaycastOffset});
-                    motion.y = -distance - RaycastOffset;
+                    motion.y = -floorDistance - RaycastOffset;
             }
 
             m_Controller.Move(motion);

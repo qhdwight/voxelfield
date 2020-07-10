@@ -13,15 +13,10 @@ namespace Swihoni.Sessions.Modes
     {
         public byte id;
 
-        protected virtual void SpawnPlayer(SessionBase session, int playerId, Container player)
+        protected virtual void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
         {
             Debug.Log("Spawning player");
             // TODO:refactor zeroing
-            if (player.With(out MoveComponent move))
-            {
-                move.Zero();
-                move.position.Value = session.Injector.GetSpawnPosition();
-            }
             player.ZeroIfWith<FrozenProperty>();
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
@@ -43,12 +38,19 @@ namespace Swihoni.Sessions.Modes
                                                           ItemId.Smg,
                                                           ItemId.MissileLauncher);
             }
+            if (player.With(out MoveComponent move))
+            {
+                move.Zero();
+                move.position.Value = session.GetMode().GetSpawnPosition(player, playerId, session, sessionContainer);
+            }
         }
+
+        protected virtual Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer) => new Vector3 {y = 8.0f};
 
         public virtual void Begin(SessionBase session, Container sessionContainer)
         {
             if (!session.IsPaused)
-                ForEachActivePlayer(session, sessionContainer, (playerId, player) => SpawnPlayer(session, playerId, player));
+                ForEachActivePlayer(session, sessionContainer, (playerId, player) => SpawnPlayer(session, sessionContainer, playerId, player));
         }
 
         protected virtual void KillPlayer(Container player)
@@ -74,7 +76,7 @@ namespace Swihoni.Sessions.Modes
                 InflictDamage(session, playerId, player, player, playerId, health.Value, "Void");
 
             if (commands.With(out WantedTeamProperty wantedTeam) && AllowTeamSwap(container, player))
-            { 
+            {
                 player.Require<TeamProperty>().Value = wantedTeam;
             }
         }
@@ -111,7 +113,8 @@ namespace Swihoni.Sessions.Modes
             return damage;
         }
 
-        public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName, bool isHeadShot = false)
+        public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName,
+                                  bool isHeadShot = false)
         {
             checked
             {
@@ -162,7 +165,7 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player) => SpawnPlayer(session, playerId, player);
+        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer, Container sessionContainer1) => SpawnPlayer(session, sessionContainer, playerId, player);
 
         protected static void ForEachActivePlayer(SessionBase session, Container container, Action<int, Container> action)
         {

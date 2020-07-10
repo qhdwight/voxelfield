@@ -76,7 +76,7 @@ namespace Voxelfield.Item
             Ray ray = session.GetRayForPlayerId(playerId);
             return !Physics.Raycast(ray, out hit, distance, m_ChunkMask);
         }
-        
+
         protected bool WithoutClientHit(SessionBase session, int playerId, float distance, out RaycastHit hit)
         {
             Container player = session.GetModifyingPayerFromId(playerId);

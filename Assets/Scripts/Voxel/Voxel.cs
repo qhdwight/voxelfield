@@ -6,16 +6,16 @@ namespace Voxel
     public static class VoxelId
     {
         public const byte Dirt = 1, Grass = 2, Stone = 3, Wood = 4, Last = Wood;
-        
+
         public static string Name(byte id)
         {
             switch (id)
             {
-                case Dirt: return nameof(Dirt);
+                case Dirt:  return nameof(Dirt);
                 case Grass: return nameof(Grass);
                 case Stone: return nameof(Stone);
-                case Wood: return nameof(Wood);
-                default: throw new ArgumentOutOfRangeException(nameof(id), id, null);
+                case Wood:  return nameof(Wood);
+                default:    throw new ArgumentOutOfRangeException(nameof(id), id, null);
             }
         }
     }

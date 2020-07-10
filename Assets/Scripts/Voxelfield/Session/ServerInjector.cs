@@ -21,7 +21,8 @@ namespace Voxelfield.Session
         }
 
         protected internal override void SetVoxelRadius(in Position3Int worldPosition, float radius,
-                                                        bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool isAdditive = false, in VoxelChangeData additiveChange = default,
+                                                        bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool isAdditive = false,
+                                                        in VoxelChangeData additiveChange = default,
                                                         ChangedVoxelsProperty changedVoxels = null)
         {
             var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();

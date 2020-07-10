@@ -1735,7 +1735,7 @@ MonoBehaviour:
     m_Value: 60
   ModeId:
     m_Flags: 1
-    m_Value: 3
+    m_Value: 2
 --- !u!850595691 &607889173
 LightingSettings:
   m_ObjectHideFlags: 0

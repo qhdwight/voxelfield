@@ -20,7 +20,6 @@ namespace Voxelfield.Item
 
         public static void SessionCommand(SessionBase session, int playerId, params string[] commandNames)
         {
-            if (session is Client)
             foreach (string commandName in commandNames)
                 ConsoleCommandExecutor.SetCommand(commandName, args => session.StringCommand(playerId, string.Join(" ", args)));
         }
@@ -35,7 +34,7 @@ namespace Voxelfield.Item
         {
             if (WithoutClientHit(session, playerId, m_EditDistance, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
-            
+
             if (voxel.renderType == VoxelRenderType.Block)
             {
                 var designer = session.GetLocalCommands().Require<DesignerPlayerComponent>();
@@ -57,7 +56,7 @@ namespace Voxelfield.Item
         {
             Container player = session.GetModifyingPayerFromId(playerId);
             if (player.Without<ServerTag>()) return;
-            
+
             var designer = player.Require<DesignerPlayerComponent>();
             DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId, renderType = VoxelRenderType.Block});
         }
@@ -98,7 +97,7 @@ namespace Voxelfield.Item
         private void DimensionFunction(SessionBase session, DesignerPlayerComponent designer, Func<Position3Int, VoxelChangeData> function)
         {
             if (designer.positionOne.WithoutValue || designer.positionTwo.WithoutValue) return;
-            
+
             var voxelInjector = (VoxelInjector) session.Injector;
             Position3Int p1 = designer.positionOne, p2 = designer.positionTwo;
             for (int x = Math.Min(p1.x, p2.x); x <= Math.Max(p1.x, p2.x); x++)

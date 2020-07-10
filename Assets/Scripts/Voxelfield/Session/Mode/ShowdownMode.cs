@@ -185,16 +185,19 @@ namespace Voxelfield.Session.Mode
         private static void StartFirstStage(SessionBase session, Container sessionContainer, ShowdownSessionComponent stage)
         {
             ModelsProperty models = MapManager.Singleton.Map.models;
-            QueuedTeamSpawns spawns = models.Where(modelTuple => modelTuple.Item2.With<TeamProperty>())
-                                            .GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
-                                            .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
-                                            .ToArray();
+            QueuedTeamSpawns spawns = FindSpawns(models);
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
             SetActiveCures(stage);
             ForEachActivePlayer(session, sessionContainer, (playerId, player) => FirstStageSpawn(sessionContainer, playerId, player, spawns));
             Debug.Log("Started first stage");
         }
+
+        private static Queue<(Position3Int, Container)>[] FindSpawns(ModelsProperty models)
+            => models.Where(modelTuple => modelTuple.Item2.With<TeamProperty>())
+                     .GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
+                     .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
+                     .ToArray();
 
         private static void SetActiveCures(ShowdownSessionComponent stage)
         {
@@ -254,7 +257,7 @@ namespace Voxelfield.Session.Mode
         public override void Render(SessionBase session, Container sessionContainer)
         {
             base.Render(session, sessionContainer);
-            
+
             if (MapManager.Singleton.Models.Count == 0) return;
             ArrayElement<CurePackageComponent> cures = sessionContainer.Require<ShowdownSessionComponent>().curePackages;
             // TODO:performance

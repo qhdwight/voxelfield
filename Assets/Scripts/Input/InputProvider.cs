@@ -55,7 +55,7 @@ namespace Input
         public override void DeserializeValue(NetDataReader reader) => Value = (KeyCode) reader.GetUShort();
         public override void SerializeValue(NetDataWriter writer) => writer.Put((ushort) Value);
     }
-    
+
     [Serializable]
     public class InputComponent
     {

@@ -86,7 +86,7 @@ namespace Console.Interface
             m_LogItems.Clear();
             SetLogText();
         }
-        
+
         private void Update()
         {
             InputProvider input = InputProvider.Singleton;

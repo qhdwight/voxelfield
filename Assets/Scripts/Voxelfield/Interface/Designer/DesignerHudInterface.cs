@@ -22,9 +22,9 @@ namespace Voxelfield.Interface.Designer
         private SculptingItem m_SculptingItem;
 
         private void Start() => m_SculptingItem = (SculptingItem) ItemAssetLink.GetModifier(ItemId.SuperPickaxe);
-        
+
         private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
-        
+
         public override void Render(SessionBase session, Container sessionContainer)
         {
             bool isVisible = session.IsValidLocalPlayer(sessionContainer, out Container localPlayer);
@@ -40,7 +40,7 @@ namespace Voxelfield.Interface.Designer
                 {
                     Camera activeCamera = Camera.allCameras.First();
                     Matrix4x4 matrix = Matrix4x4.TRS(m_CachedHits.First().point, Quaternion.identity, Vector3.one * editRadius * 1.5f);
-                    Graphics.DrawMesh(m_SphereMesh, matrix, m_Material, 0, activeCamera, 0, null, ShadowCastingMode.Off, false);   
+                    Graphics.DrawMesh(m_SphereMesh, matrix, m_Material, 0, activeCamera, 0, null, ShadowCastingMode.Off, false);
                 }
             }
             SetInterfaceActive(isVisible);

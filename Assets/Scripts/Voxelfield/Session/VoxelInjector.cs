@@ -19,7 +19,8 @@ namespace Voxelfield.Session
         protected internal virtual void VoxelTransaction(VoxelChangeTransaction uncommitted) => uncommitted.Commit();
 
         protected internal virtual void SetVoxelRadius(in Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false,
-                                                       bool destroyBlocks = false, bool isAdditive = false, in VoxelChangeData additiveChange = default, ChangedVoxelsProperty changedVoxels = null)
+                                                       bool destroyBlocks = false, bool isAdditive = false, in VoxelChangeData additiveChange = default,
+                                                       ChangedVoxelsProperty changedVoxels = null)
             => ChunkManager.Singleton.SetVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, isAdditive, additiveChange, changedVoxels);
 
         private readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
@@ -39,25 +40,6 @@ namespace Voxelfield.Session
         }
 
         protected override void Stop() => MapManager.Singleton.UnloadMap();
-
-        protected override Vector3 GetSpawnPosition()
-        {
-            int chunkSize = ChunkManager.Singleton.ChunkSize;
-            DimensionComponent dimension = MapManager.Singleton.Map.dimension;
-            Position3Int lower = dimension.lowerBound, upper = dimension.upperBound;
-            var position = new Vector3
-            {
-                x = Random.Range(lower.x * chunkSize, (upper.x + 1) * chunkSize),
-                y = 1000.0f,
-                z = Random.Range(lower.z * chunkSize, (upper.z + 1) * chunkSize)
-            };
-            for (var _ = 0; _ < 32; _++)
-            {
-                if (Physics.Raycast(position, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
-                    return hit.point + new Vector3 {y = 0.1f};
-            }
-            return new Vector3 {y = 8.0f};
-        }
 
         protected override void OnRenderMode(Container session)
         {

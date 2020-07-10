@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
@@ -5,6 +6,7 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
 
@@ -43,7 +45,7 @@ namespace Voxelfield.Session.Mode
         public override void Render(SessionBase session, Container sessionContainer)
         {
             base.Render(session, sessionContainer);
-            
+
             if (m_FlagBehaviors == null && !session.IsPaused) LinkFlagBehaviors();
             if (m_FlagBehaviors == null) return;
 
@@ -68,6 +70,20 @@ namespace Voxelfield.Session.Mode
                 HandlePlayersNearFlag(session, flag, flagTeam, flagId, ctf);
                 if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += durationUs;
             }
+        }
+
+        protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer)
+        {
+            (Position3Int, Container)[][] spawns = MapManager.Singleton.Map.models.Where(modelTuple => modelTuple.Item2.With(out ModelIdProperty modelId)
+                                                                                                    && modelId == ModelsProperty.Spawn
+                                                                                                    && modelTuple.Item2.With<TeamProperty>())
+                                                             .GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
+                                                             .Select(teamGroup => teamGroup.ToArray())
+                                                             .ToArray();
+            byte team = player.Require<TeamProperty>();
+            (Position3Int, Container)[] teamSpawns = spawns[team];
+            int spawnIndex = Random.Range(0, teamSpawns.Length);
+            return teamSpawns[spawnIndex].Item1;
         }
 
         protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
@@ -144,10 +160,10 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        protected override void SpawnPlayer(SessionBase session, int playerId, Container player)
+        protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
         {
-            base.SpawnPlayer(session, playerId, player);
             player.Require<TeamProperty>().Value = (byte) (playerId % 2);
+            base.SpawnPlayer(session, sessionContainer, playerId, player);
         }
 
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
