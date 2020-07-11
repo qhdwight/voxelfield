@@ -65,7 +65,10 @@ namespace Swihoni.Sessions
         {
             ClientCommandsContainer commands = m_CommandHistory.Peek();
             GetPlayerModifier(player, localPlayerId).ModifyCommands(this, commands);
-            ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(localPlayerId, this, commands));
+            _int = localPlayerId; // Prevent closure allocation
+            _session = this;
+            _container = commands;
+            ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(_int, _session, _container));
         }
 
         public override Container GetLocalCommands() => m_CommandHistory.Peek();
@@ -80,45 +83,62 @@ namespace Swihoni.Sessions
             GetPlayerModifier(player, localPlayerId).ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), player, m_CommandHistory.Peek(), deltaUs);
         }
 
+        // private static CyclicArray<Container> _predictionHistory;
+
         protected override void Render(uint renderTimeUs)
         {
+            Profiler.BeginSample("Client Render Setup");
             if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
              || m_RenderSession.Without(out LocalPlayerId localPlayer)
              || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
+            {
+                Profiler.EndSample();
                 return;
+            }
 
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (tickRate.WithoutValue) return;
 
             m_RenderSession.CopyFrom(GetLatestSession());
             localPlayer.Value = (byte) localPlayerId;
+            Profiler.EndSample();
 
+            Profiler.BeginSample("Client Render Players");
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
                 bool isLocalPlayer = playerId == localPlayerId;
                 Container renderPlayer = renderPlayers[playerId];
                 if (isLocalPlayer)
                 {
-                    Container GetInHistory(int historyIndex) => m_PlayerPredictionHistory.Get(-historyIndex);
                     uint playerRenderTimeUs = renderTimeUs - tickRate.TickIntervalUs;
-                    RenderInterpolatedPlayer<ClientStampComponent>(playerRenderTimeUs, renderPlayer, m_PlayerPredictionHistory.Size, GetInHistory);
+                    RenderInterpolatedPlayer<ClientStampComponent>(playerRenderTimeUs, renderPlayer, m_PlayerPredictionHistory.Size,
+                                                                   historyIndex => m_PlayerPredictionHistory.Get(-historyIndex));
                     renderPlayer.MergeFrom(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                 }
                 else
                 {
                     int copiedPlayerId = playerId;
-                    Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId];
-
                     uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
-                    RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
+                    RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, 
+                                                                            historyIndex => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId]);
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isLocalPlayer);
             }
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Client Render Interfaces");
             RenderInterfaces(m_RenderSession);
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Client Render Entities");
             RenderEntities<LocalizedClientStampComponent>(renderTimeUs, tickRate.TickIntervalUs * 2u);
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Client Render Mode");
             GetMode(m_RenderSession).Render(this, m_RenderSession);
+            Profiler.EndSample();
         }
 
         protected override void Tick(uint tick, uint timeUs, uint durationUs)
@@ -190,8 +210,7 @@ namespace Swihoni.Sessions
                     }
                     else serverSession = m_SessionHistory.ClaimNext();
 
-                    serverSession.CopyFrom(previousServerSession);
-                    UpdateCurrentSessionFromReceived(serverSession, receivedServerSession);
+                    UpdateCurrentSessionFromReceived(previousServerSession, serverSession, receivedServerSession);
                     Profiler.EndSample();
 
                     m_Injector.OnReceive(serverSession);
@@ -212,8 +231,8 @@ namespace Swihoni.Sessions
                         if (localizedServerTimeUs.WithValue)
                         {
                             uint previousTimeUs = previousServerSession.Require<ServerStampComponent>().timeUs;
-                            if (serverTimeUs > previousTimeUs) localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
-                            else Debug.LogError("Should not happen!");
+                            if (serverTimeUs >= previousTimeUs) localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
+                            else Debug.LogError($"Next server time was greater. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
                         }
                         else localizedServerTimeUs.Value = _timeUs;
 
@@ -244,7 +263,8 @@ namespace Swihoni.Sessions
                         if (localizedServerTimeUs.WithValue)
                         {
                             uint previousTimeUs = previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs;
-                            localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
+                            if (serverTimeUs >= previousTimeUs) localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
+                            else Debug.LogError($"Next server player time was greater. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
                         }
                         else localizedServerTimeUs.Value = _timeUs;
 
@@ -399,9 +419,9 @@ namespace Swihoni.Sessions
             return Navigation.Continue;
         }
 
-        private static void UpdateCurrentSessionFromReceived(ElementBase serverSession, ElementBase receivedServerSession)
+        private static void UpdateCurrentSessionFromReceived(ElementBase previousServerSession, ElementBase serverSession, ElementBase receivedServerSession)
         {
-            ElementExtensions.NavigateZipped((_current, _received) =>
+            ElementExtensions.NavigateZipped((_previous, _current, _received) =>
             {
                 if (_current is PropertyBase _currentProperty && _received is PropertyBase _receivedProperty)
                 {
@@ -410,9 +430,13 @@ namespace Swihoni.Sessions
                         _currentProperty.SetTo(_receivedProperty);
                         _currentProperty.IsOverride = _receivedProperty.IsOverride;
                     }
+                    else
+                    {
+                        _currentProperty.SetTo((PropertyBase) _previous);
+                    }
                 }
                 return Navigation.Continue;
-            }, serverSession, receivedServerSession);
+            }, previousServerSession, serverSession, receivedServerSession);
         }
 
         private static bool GetLocalPlayerId(Container session, out int localPlayerId)

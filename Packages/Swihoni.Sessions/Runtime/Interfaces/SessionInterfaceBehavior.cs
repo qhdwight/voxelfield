@@ -1,10 +1,15 @@
 using Swihoni.Components;
 using Swihoni.Util.Interface;
+using UnityEngine;
 
 namespace Swihoni.Sessions.Interfaces
 {
     public abstract class SessionInterfaceBehavior : InterfaceBehaviorBase
     {
+        [SerializeField] private bool m_IsDuringGame = true;
+
+        public bool IsDuringGame => m_IsDuringGame;
+
         public abstract void Render(SessionBase session, Container sessionContainer);
 
         public virtual void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands) { }
@@ -14,6 +19,6 @@ namespace Swihoni.Sessions.Interfaces
             if (!isActive) SetInterfaceActive(false);
         }
 
-        protected bool NoInterrupting(SessionBase session) => !session.InterruptingInterface || session.InterruptingInterface == this;
+        protected bool NoInterrupting() => !SessionBase.InterruptingInterface || SessionBase.InterruptingInterface == this;
     }
 }

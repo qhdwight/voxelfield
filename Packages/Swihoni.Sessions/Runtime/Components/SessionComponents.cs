@@ -18,6 +18,18 @@ namespace Swihoni.Sessions.Components
     public class ClientCheckedAttribute : Attribute
     {
     }
+    
+    public class ConfigAttribute : Attribute
+    {
+        public string Name { get; }
+        public bool IsServerOnly { get; }
+
+        public ConfigAttribute(string name, bool isServerOnly = false)
+        {
+            Name = name;
+            IsServerOnly = isServerOnly;
+        }
+    }
 
     /* Server */
 

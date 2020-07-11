@@ -30,7 +30,7 @@ namespace Voxel.Map
         public Dictionary<Position3Int, ModelBehaviorBase> Models { get; } = new Dictionary<Position3Int, ModelBehaviorBase>();
         public MapContainer Map { get; private set; } = new MapContainer();
 
-        [RuntimeInitializeOnLoadMethod]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Initialize()
         {
             _emptyMapName = new StringProperty();
@@ -139,8 +139,8 @@ namespace Voxel.Map
         {
             Models.Clear();
             foreach (Pool<ModelBehaviorBase> pool in m_ModelsPool) pool.ReturnAll();
-            foreach ((Position3Int position, Container model) in map.models)
-                InstantiateModel(position, model);
+            foreach (KeyValuePair<Position3Int, Container> pair in map.models.Map)
+                InstantiateModel(pair.Key, pair.Value);
         }
 
         private void InstantiateModel(in Position3Int position, Container model)

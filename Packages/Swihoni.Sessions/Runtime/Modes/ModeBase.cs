@@ -185,6 +185,6 @@ namespace Swihoni.Sessions.Modes
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
 
         public virtual StringBuilder BuildUsername(StringBuilder builder, Container player)
-            => builder.Append(player.Require<UsernameProperty>().Builder);
+            => builder.AppendProperty(player.Require<UsernameProperty>());
     }
 }

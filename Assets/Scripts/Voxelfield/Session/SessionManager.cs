@@ -26,7 +26,6 @@ namespace Voxelfield.Session
     {
         [SerializeField] private int m_ServerPort = 7777;
 
-        private readonly List<NetworkedSessionBase> m_Sessions = new List<NetworkedSessionBase>(1);
         private readonly IPEndPoint m_LocalHost = new IPEndPoint(IPAddress.Loopback, 7777);
 
         private void Start()
@@ -67,74 +66,73 @@ namespace Voxelfield.Session
 #if UNITY_EDITOR
         private void OnApplicationPause(bool pauseStatus)
         {
-            foreach (NetworkedSessionBase session in m_Sessions)
+            foreach (SessionBase session in SessionBase.Sessions)
                 session.SetApplicationPauseState(pauseStatus);
         }
 #endif
 
-        private void StandaloneDisconnectAll()
+        private static void StandaloneDisconnectAll()
         {
 #if !UNITY_EDITOR
             DisconnectAll();
 #endif
         }
 
-        public Host StartEdit(string mapName)
+        private Host StartEdit(string mapName)
         {
             StandaloneDisconnectAll();
             var edit = new Host(VoxelfieldComponents.SessionElements, m_LocalHost, new ServerInjector());
-            return AddSession(edit);
+            return StartSession(edit);
         }
 
-        public Host StartHost()
+        private Host StartHost()
         {
             StandaloneDisconnectAll();
             var host = new Host(VoxelfieldComponents.SessionElements, m_LocalHost, new ServerInjector());
-            return AddSession(host);
+            return StartSession(host);
         }
 
-        public Server StartServer(IPEndPoint ipEndPoint)
+        private static Server StartServer(IPEndPoint ipEndPoint)
         {
             StandaloneDisconnectAll();
             var server = new Server(VoxelfieldComponents.SessionElements, ipEndPoint, new ServerInjector());
-            return AddSession(server);
+            return StartSession(server);
         }
 
-        public Client StartClient(IPEndPoint ipEndPoint)
+        private static Client StartClient(IPEndPoint ipEndPoint)
         {
             StandaloneDisconnectAll();
             var client = new Client(VoxelfieldComponents.SessionElements, ipEndPoint, Version.String, new ClientInjector());
-            return AddSession(client);
+            return StartSession(client);
         }
 
-        private T AddSession<T>(T session) where T : NetworkedSessionBase
+        private static T StartSession<T>(T session) where T : NetworkedSessionBase
         {
             try
             {
                 session.Start();
-                m_Sessions.Add(session);
                 return session;
             }
             catch (Exception exception)
             {
                 Debug.LogError(exception);
-                session.Disconnect();
+                session.Stop();
                 return null;
             }
         }
 
-        public void DisconnectAll()
+        public static void DisconnectAll()
         {
-            foreach (NetworkedSessionBase session in m_Sessions)
-                session.Disconnect();
-            m_Sessions.Clear();
+            foreach (SessionBase session in SessionBase.Sessions.ToArray())
+                session.Stop();
         }
 
         private void Update()
         {
+            SessionBase.HandleCursorLockState();
             try
             {
-                foreach (NetworkedSessionBase session in m_Sessions)
+                foreach (SessionBase session in SessionBase.Sessions)
                     session.Update();
             }
             catch (Exception exception)
@@ -143,7 +141,7 @@ namespace Voxelfield.Session
                 DisconnectAll();
             }
 
-            if (m_Sessions.Any(session => session.InterruptingInterface)) return;
+            if (SessionBase.InterruptingInterface) return;
             if (UnityEngine.Input.GetKeyDown(KeyCode.H))
             {
                 StartHost();
@@ -166,7 +164,7 @@ namespace Voxelfield.Session
         {
             try
             {
-                foreach (NetworkedSessionBase session in m_Sessions)
+                foreach (SessionBase session in SessionBase.Sessions)
                     session.FixedUpdate();
             }
             catch (Exception exception)

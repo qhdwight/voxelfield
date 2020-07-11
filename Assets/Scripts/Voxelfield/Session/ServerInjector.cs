@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions;
@@ -33,8 +34,8 @@ namespace Voxelfield.Session
         protected internal override void VoxelTransaction(VoxelChangeTransaction uncommitted)
         {
             var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();
-            foreach ((Position3Int position, VoxelChangeData change) in uncommitted)
-                changed.Set(position, change);
+            foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in uncommitted.Map)
+                changed.Set(pair.Key, pair.Value);
             m_MasterChanges.AddAllFrom(changed);
             base.VoxelTransaction(uncommitted); // Commit
         }

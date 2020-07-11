@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -30,8 +31,8 @@ namespace Voxelfield.Session
             if (changed.Count > 0)
             {
                 VoxelChangeTransaction transaction = m_Transactions.Obtain();
-                foreach ((Position3Int position, VoxelChangeData change) in changed)
-                    transaction.AddChange(position, change);
+                foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in changed.Map)
+                    transaction.AddChange(pair.Key, pair.Value);
             }
 
             if (m_Pointer.WithoutValue || serverTick - m_Pointer == 1)

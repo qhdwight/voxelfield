@@ -53,7 +53,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public void ModifyCommands(SessionBase session, Container commandsToModify)
         {
-            if (session.InterruptingInterface)
+            if (SessionBase.InterruptingInterface)
             {
                 // TODO:refactor attribute
                 commandsToModify.Require<MouseComponent>().Zero();

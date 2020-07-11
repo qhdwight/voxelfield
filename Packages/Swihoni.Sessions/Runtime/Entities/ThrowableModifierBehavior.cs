@@ -100,7 +100,7 @@ namespace Swihoni.Sessions.Entities
                 bool justPopped = m_LastElapsedUs < throwable.popTimeUs;
 
                 if (m_Damage > 0 && (m_Interval > 0u || justPopped))
-                    HurtNearby(session, durationUs);
+                    HurtNearby(session, durationUs, justPopped);
             }
             else
             {
@@ -113,7 +113,7 @@ namespace Swihoni.Sessions.Entities
                     {
                         throwable.popTimeUs.Value = throwable.thrownElapsedUs;
                         resetContact = false;
-                        HurtNearby(session, durationUs);
+                        HurtNearby(session, durationUs, true);
                     }
                     if (collisionType == CollisionType.World && !m_ExplodeOnContact)
                     {
@@ -145,7 +145,7 @@ namespace Swihoni.Sessions.Entities
                 container.Zero();
         }
 
-        private void HurtNearby(SessionBase session, uint durationUs)
+        private void HurtNearby(SessionBase session, uint durationUs, bool justPopped)
         {
             int count = Physics.OverlapSphereNonAlloc(transform.position, m_Radius, m_OverlappingColliders, m_Mask);
             for (var i = 0; i < count; i++)
@@ -160,7 +160,7 @@ namespace Swihoni.Sessions.Entities
                     session.GetMode().InflictDamage(session, ThrowerId, session.GetModifyingPayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage, Name);
                 }
             }
-            session.Injector.OnThrowablePopped(this);
+            if (justPopped) session.Injector.OnThrowablePopped(this);
         }
 
         private byte CalculateDamage(Container hitPlayer, uint durationUs)

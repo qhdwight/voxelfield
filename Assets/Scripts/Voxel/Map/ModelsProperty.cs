@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Util.Math;
@@ -20,12 +21,12 @@ namespace Voxel.Map
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(m_Map.Count);
-            foreach ((Position3Int position, Container container) in this)
+            foreach (KeyValuePair<Position3Int, Container> pair in m_Map)
             {
-                Position3Int.Serialize(position, writer);
-                var typeCount = (byte) container.Elements.Count;
+                Position3Int.Serialize(pair.Key, writer);
+                var typeCount = (byte) pair.Value.Elements.Count;
                 writer.Put(typeCount);
-                SerializeContainer(container, writer);
+                SerializeContainer(pair.Value, writer);
             }
         }
 

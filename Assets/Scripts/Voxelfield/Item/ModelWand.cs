@@ -66,7 +66,7 @@ namespace Voxelfield.Item
         {
             base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
 
-            if (player.WithoutPropertyOrWithoutValue(out StringCommandProperty command)) return;
+            if (player.WithoutPropertyOrWithoutValue(out StringCommandProperty command) || command.Builder.Length == 0) return;
 
             string[] split = command.Builder.ToString().Split();
             switch (split[0])

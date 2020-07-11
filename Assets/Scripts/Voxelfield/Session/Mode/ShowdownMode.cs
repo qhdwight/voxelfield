@@ -16,7 +16,7 @@ using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
 {
-    using QueuedTeamSpawns = IReadOnlyList<Queue<(Position3Int, Container)>>;
+    using QueuedTeamSpawns = IReadOnlyList<Queue<KeyValuePair<Position3Int, Container>>>;
 
     [CreateAssetMenu(fileName = "Showdown", menuName = "Session/Mode/Showdown", order = 0)]
     public class ShowdownMode : DeathmatchModeBase
@@ -167,7 +167,7 @@ namespace Voxelfield.Session.Mode
             var move = player.Require<MoveComponent>();
             move.Zero();
             // TODO:refactor use rotation
-            (Vector3 position, Container _) = spawns[player.Require<TeamProperty>()].Dequeue();
+            Vector3 position = spawns[player.Require<TeamProperty>()].Dequeue().Key;
             move.position.Value = position;
             player.ZeroIfWith<CameraComponent>();
             player.Require<MoneyComponent>().count.Value = ushort.MaxValue;
@@ -193,11 +193,11 @@ namespace Voxelfield.Session.Mode
             Debug.Log("Started first stage");
         }
 
-        private static Queue<(Position3Int, Container)>[] FindSpawns(ModelsProperty models)
-            => models.Where(modelTuple => modelTuple.Item2.With<TeamProperty>())
-                     .GroupBy(spawnTuple => spawnTuple.Item2.Require<TeamProperty>().Value)
+        private static Queue<KeyValuePair<Position3Int, Container>>[] FindSpawns(ModelsProperty models)
+            => models.Map.Where(modelPair => modelPair.Value.With<TeamProperty>())
+                     .GroupBy(spawnTuple => spawnTuple.Value.Require<TeamProperty>().Value)
                      .OrderBy(group => group.Key)
-                     .Select(teamGroup => new Queue<(Position3Int, Container)>(teamGroup))
+                     .Select(teamGroup => new Queue<KeyValuePair<Position3Int, Container>>(teamGroup))
                      .ToArray();
 
         private static void SetActiveCures(ShowdownSessionComponent stage)

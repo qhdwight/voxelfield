@@ -29,7 +29,7 @@ namespace Voxelfield.Interface.Designer
         }
 
         public override void Render(SessionBase session, Container sessionContainer)
-            => SetInterfaceActive(NoInterrupting(session) && sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer &&
+            => SetInterfaceActive(NoInterrupting() && sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer &&
                                   InputProvider.Singleton.GetInput(InputType.OpenModelSelect));
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)

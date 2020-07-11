@@ -136,8 +136,8 @@ namespace Voxel
                 }
             }
             if (actionType == ChunkActionType.Generate)
-                foreach ((Position3Int position, VoxelChangeData change) in map.changedVoxels)
-                    SetVoxelData(position, change, updateMesh: false, updateMap: false);
+                foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in map.changedVoxels.Map)
+                    SetVoxelData(pair.Key, pair.Value, updateMesh: false, updateMap: false);
         }
 
         /// <summary>

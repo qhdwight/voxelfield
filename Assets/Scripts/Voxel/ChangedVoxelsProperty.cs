@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Util.Math;
@@ -11,10 +12,10 @@ namespace Voxel
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(m_Map.Count);
-            foreach ((Position3Int position, VoxelChangeData change) in this)
+            foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in m_Map)
             {
-                Position3Int.Serialize(position, writer);
-                VoxelChangeData.Serialize(change, writer);
+                Position3Int.Serialize(pair.Key, writer);
+                VoxelChangeData.Serialize(pair.Value, writer);
             }
         }
 
@@ -23,7 +24,10 @@ namespace Voxel
             Clear();
             int count = reader.GetInt();
             for (var _ = 0; _ < count; _++)
-                m_Map.Add(Position3Int.Deserialize(reader), VoxelChangeData.Deserialize(reader));
+            {
+                m_Map.Add(Position3Int.Deserialize(reader),
+                          VoxelChangeData.Deserialize(reader));
+            }
             WithValue = true;
         }
 

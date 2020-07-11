@@ -12,10 +12,10 @@ namespace Swihoni.Components
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(m_Map.Count);
-            foreach ((TKey key, TValue container) in this)
+            foreach (KeyValuePair<TKey, TValue> pair in m_Map)
             {
-                key.Serialize(writer);
-                container.Serialize(writer);
+                pair.Key.Serialize(writer);
+                pair.Value.Serialize(writer);
             }
         }
 
@@ -36,9 +36,11 @@ namespace Swihoni.Components
     }
 
     [Serializable]
-    public abstract class DictPropertyBase<TKey, TValue> : PropertyBase, IEnumerable<(TKey, TValue)>
+    public abstract class DictPropertyBase<TKey, TValue> : PropertyBase
     {
         protected Dictionary<TKey, TValue> m_Map = new Dictionary<TKey, TValue>();
+
+        public Dictionary<TKey, TValue> Map => m_Map;
 
         public int Count => m_Map.Count;
 
@@ -57,30 +59,29 @@ namespace Swihoni.Components
             if (other.WithValue) SetTo(other);
         }
 
-        public IEnumerator<(TKey, TValue)> GetEnumerator()
-        {
-            foreach (KeyValuePair<TKey, TValue> pair in m_Map)
-                yield return (pair.Key, pair.Value);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        // public IEnumerator<(TKey, TValue)> GetEnumerator()
+        // {
+        //     foreach (KeyValuePair<TKey, TValue> pair in m_Map)
+        //         yield return (pair.Key, pair.Value);
+        // }
+        //
+        // IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => throw new Exception("Cannot interpolate dictionary");
-
+        
         public override string ToString() => $"Count: {m_Map.Count}";
 
         public void AddAllFrom(DictPropertyBase<TKey, TValue> other)
         {
-            foreach ((TKey key, TValue value) in other)
-                Set(key, value);
+            foreach (KeyValuePair<TKey, TValue> pair in other.m_Map)
+                Set(pair.Key, pair.Value);
         }
 
         public override void SetTo(PropertyBase other)
         {
             if (!(other is DictPropertyBase<TKey, TValue> otherMap)) throw new ArgumentException("Other was not same type map");
             Clear();
-            foreach ((TKey key, TValue value) in otherMap)
-                Set(key, value);
+            AddAllFrom(otherMap);
             WithValue = true;
         }
 

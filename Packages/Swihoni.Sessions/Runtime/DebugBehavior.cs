@@ -19,12 +19,11 @@ namespace Swihoni.Sessions
         // public StringProperty mapName;
         public bool IsDebugMode;
         public UIntProperty RollbackOverrideUs;
-        public TickRateProperty TickRate;
         public ModeIdProperty ModeId;
 
         public StringProperty MapNameProperty => m_MapNameProperty ?? (m_MapNameProperty = new StringProperty(m_MapName));
 
-        [RuntimeInitializeOnLoadMethod]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize() => _visualizerPrefab = Resources.LoadAll<GameObject>("Players")
                                                                          .First(gameObject => gameObject.GetComponent<PlayerVisualizerBehavior>() != null);
 

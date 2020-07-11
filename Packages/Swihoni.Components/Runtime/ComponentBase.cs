@@ -25,20 +25,12 @@ namespace Swihoni.Components
 
         public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
 
-        public bool WithAttribute<T>() => GetType().IsDefined(typeof(T)) || Field != null && Field.IsDefined(typeof(T));
+        public bool WithAttribute<T>() where T : Attribute => TryAttribute(out T _);
 
-        public bool WithoutAttribute<T>() => !GetType().IsDefined(typeof(T)) && (Field == null || !Field.IsDefined(typeof(T)));
+        public bool WithoutAttribute<T>() where T : Attribute => !WithAttribute<T>();
 
         public bool TryAttribute<T>(out T attribute) where T : Attribute
-        {
-            if (WithAttribute<T>())
-            {
-                attribute = Field.GetCustomAttribute<T>();
-                return true;
-            }
-            attribute = null;
-            return false;
-        }
+            => ReflectionCache.TryAttribute(GetType(), out attribute) || Field != null && ReflectionCache.TryAttribute(Field, out attribute);
     }
 
     /// <summary>

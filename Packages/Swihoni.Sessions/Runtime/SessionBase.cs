@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Console;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -68,15 +69,17 @@ namespace Swihoni.Sessions
 
     public abstract class SessionBase : IDisposable
     {
-        public const int MaxPlayers = 4;
+        public const int MaxPlayers = 6;
+
+        public static readonly List<SessionBase> Sessions = new List<SessionBase>(1);
+        private static InterfaceBehaviorBase[] _interfaces;
 
         protected readonly SessionInjectorBase m_Injector;
-        protected readonly InterfaceBehaviorBase[] m_Interfaces;
         private long m_FixedUpdateTicks, m_RenderTicks;
         private uint m_Tick;
         private Stopwatch m_Stopwatch;
         private ModeBase m_Mode;
-        public InterfaceBehaviorBase InterruptingInterface { get; private set; }
+        public static InterfaceBehaviorBase InterruptingInterface { get; private set; }
 
         public SessionInjectorBase Injector => m_Injector;
         public PlayerManager PlayerManager { get; private set; }
@@ -88,7 +91,13 @@ namespace Swihoni.Sessions
         {
             m_Injector = injector;
             m_Injector.Manager = this;
-            m_Interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
+        }
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void Initialize()
+        {
+            _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
+            ConfigManager.Initialize();
         }
 
         public void SetApplicationPauseState(bool isPaused)
@@ -110,6 +119,14 @@ namespace Swihoni.Sessions
             EntityManager.Setup(this);
 
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(true));
+            
+            Sessions.Add(this);
+        }
+
+        public virtual void Stop()
+        {
+            Sessions.Remove(this);
+            if (!IsDisposed) Dispose();
         }
 
         protected PlayerModifierDispatcherBehavior GetPlayerModifier(Container player, int index)
@@ -123,7 +140,11 @@ namespace Swihoni.Sessions
 
         private void CheckDisposed()
         {
-            if (IsDisposed) throw new ObjectDisposedException("Session was disposed");
+            if (IsDisposed)
+            {
+                Stop();
+                throw new ObjectDisposedException("Session was disposed");
+            }
         }
 
         private static uint GetUsFromTicks(long ticks) => checked((uint) Math.Round(ticks / (double) Stopwatch.Frequency * 1_000_000d));
@@ -132,7 +153,6 @@ namespace Swihoni.Sessions
         {
             CheckDisposed();
 
-            HandleCursorLockState();
             long clockTicks = m_Stopwatch.ElapsedTicks,
                  clockTickDelta = clockTicks - m_RenderTicks;
             m_RenderTicks = clockTicks;
@@ -140,18 +160,18 @@ namespace Swihoni.Sessions
             if (!IsPaused) Input(timeUs, GetUsFromTicks(clockTickDelta));
             if (ShouldRender) Render(timeUs);
         }
-
-        private void HandleCursorLockState()
+        
+        public static void HandleCursorLockState()
         {
             CursorLockMode desiredLockState;
             if (Application.isFocused)
             {
                 desiredLockState = CursorLockMode.Locked;
                 InterruptingInterface = null;
-                foreach (InterfaceBehaviorBase @interface in m_Interfaces)
+                foreach (InterfaceBehaviorBase @interface in _interfaces)
                 {
                     if (@interface.NeedsCursor)
-                        desiredLockState = CursorLockMode.Confined;
+                        desiredLockState = CursorLockMode.None;
                     if (@interface.InterruptsCommands)
                         InterruptingInterface = @interface;
                 }
@@ -183,7 +203,7 @@ namespace Swihoni.Sessions
         {
             Container session = GetLatestSession();
             var tickRate = session.Require<TickRateProperty>();
-            tickRate.SetFromIfWith(DebugBehavior.Singleton.TickRate);
+            tickRate.SetFromIfWith(ConfigManager.Singleton.tickRate);
             session.Require<ModeIdProperty>().SetFromIfWith(DebugBehavior.Singleton.ModeId);
             if (tickRate.WithValue) Time.fixedDeltaTime = 1.0f / tickRate;
         }
@@ -199,9 +219,9 @@ namespace Swihoni.Sessions
             m_FixedUpdateTicks = clockTicks;
             Tick(m_Tick++, GetUsFromTicks(clockTicks), GetUsFromTicks(clockTickDelta));
         }
-        
-        protected static void RenderInterpolated
-            (uint renderTimeUs, Container renderContainer, int maxRollback, Func<int, StampComponent> getTimeInHistory, Func<int, Container> getInHistory)
+
+        protected static void RenderInterpolated(uint renderTimeUs, Container renderContainer, int maxRollback,
+                                                 Func<int, StampComponent> getTimeInHistory, Func<int, Container> getInHistory)
         {
             // Interpolate all remote players
             for (var historyIndex = 0; historyIndex < maxRollback; historyIndex++)
@@ -233,10 +253,10 @@ namespace Swihoni.Sessions
             renderContainer.CopyFrom(getInHistory(1));
         }
 
-        private static Func<int, Container> _getInHistory;
-        
-        protected static void RenderInterpolatedPlayer<TStampComponent>
-            (uint renderTimeUs, Container renderContainer, int maxRollback, Func<int, Container> getInHistory)
+        protected static Func<int, Container> _getInHistory;
+
+        protected static void RenderInterpolatedPlayer<TStampComponent>(uint renderTimeUs, Container renderContainer, int maxRollback,
+                                                                        Func<int, Container> getInHistory)
             where TStampComponent : StampComponent
         {
             _getInHistory = getInHistory; // Prevent allocation in closure
@@ -285,9 +305,9 @@ namespace Swihoni.Sessions
 
         public abstract Container GetModifyingPayerFromId(int playerId, Container session = null);
 
-        protected void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)
+        protected static void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)
         {
-            foreach (InterfaceBehaviorBase @interface in m_Interfaces)
+            foreach (InterfaceBehaviorBase @interface in _interfaces)
                 if (@interface is SessionInterfaceBehavior sessionInterface)
                     action(sessionInterface);
         }
@@ -299,8 +319,6 @@ namespace Swihoni.Sessions
             IsDisposed = true;
             PlayerManager.pool.Return(PlayerManager);
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
-            Cursor.lockState = CursorLockMode.Confined;
-            Cursor.visible = true;
             EntityManager.pool.Return(EntityManager);
             if (m_Mode) m_Mode.End();
             m_Injector.Stop();

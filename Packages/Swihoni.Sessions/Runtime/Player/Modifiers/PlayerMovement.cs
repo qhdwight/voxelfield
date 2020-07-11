@@ -217,8 +217,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
 
             // Prevent sticking to ceiling
-            if (endingVelocity.y > 0.0f && Physics.RaycastNonAlloc(position + new Vector3 {y = m_Controller.height},
-                                                                   Vector3.up, m_CachedGroundHits, RaycastOffset, m_GroundMask) > 0)
+            if (!isGrounded && endingVelocity.y > 0.0f && Physics.RaycastNonAlloc(position + new Vector3 {y = m_Controller.height},
+                                                                                  Vector3.up, m_CachedGroundHits, RaycastOffset, m_GroundMask) > 0)
                 endingVelocity.y = 0.0f;
 
             Vector3 motion = (initialVelocity + endingVelocity) / 2.0f * duration;

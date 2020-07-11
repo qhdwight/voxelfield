@@ -88,11 +88,17 @@ namespace Swihoni.Sessions
             GetMode(m_RenderSession).Render(this, m_RenderSession);
         }
 
-        protected void RenderInterfaces(Container session) => ForEachSessionInterface(sessionInterface => sessionInterface.Render(this, session));
+        protected void RenderInterfaces(Container session)
+        {
+            _session = this;
+            _container = session;
+            ForEachSessionInterface(sessionInterface => sessionInterface.Render(_session, _container));
+        }
 
-
+        protected static SessionBase _session;
+        protected static Container _container;
         private static CyclicArray<ServerSessionContainer> _history;
-        private static int _entityIndex;
+        protected static int _int;
         
         protected void RenderEntities<TStampComponent>(uint currentRenderTimeUs, uint rollbackUs) where TStampComponent : StampComponent
         {
@@ -101,10 +107,10 @@ namespace Swihoni.Sessions
             var renderEntities = m_RenderSession.Require<EntityArrayElement>();
             for (var index = 0; index < renderEntities.Length; index++)
             {
-                _entityIndex = index;
-                RenderInterpolated(renderTimeUs, renderEntities[_entityIndex], _history.Size,
+                _int = index;
+                RenderInterpolated(renderTimeUs, renderEntities[_int], _history.Size,
                                    h => _history.Get(-h).Require<TStampComponent>(),
-                                   h => _history.Get(-h).Require<EntityArrayElement>()[_entityIndex]);
+                                   h => _history.Get(-h).Require<EntityArrayElement>()[_int]);
             }
             EntityManager.RenderAll(renderEntities, (visual, entity) => ((EntityVisualBehavior) visual).Render(entity));
         }
@@ -116,12 +122,7 @@ namespace Swihoni.Sessions
             RollbackHitboxes(playerId);
             base.RollbackHitboxesFor(playerId);
         }
-
-        public virtual void Disconnect()
-        {
-            if (!IsDisposed) Dispose();
-        }
-
+        
         protected static T NewSession<T>(IEnumerable<Type> sessionElements, IEnumerable<Type> playerElements) where T : Container, new()
         {
             var session = new T();

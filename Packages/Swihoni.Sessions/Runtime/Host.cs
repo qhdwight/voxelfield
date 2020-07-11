@@ -7,6 +7,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Swihoni.Sessions
 {
@@ -32,7 +33,7 @@ namespace Swihoni.Sessions
         }
 
         public override Container GetLocalCommands() => m_HostCommands;
-
+        
         protected override void Input(uint timeUs, uint deltaUs)
         {
             Container session = GetLatestSession();
@@ -45,7 +46,9 @@ namespace Swihoni.Sessions
                 if (hostModifier)
                 {
                     hostModifier.ModifyCommands(this, m_HostCommands);
-                    ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(HostPlayerId, this, m_HostCommands));
+                    _container = m_HostCommands; // Prevent closure allocation
+                    _session = this;
+                    ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(HostPlayerId, _session, _container));
                     hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
                     hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
                 }
@@ -59,15 +62,22 @@ namespace Swihoni.Sessions
 
         protected override void Render(uint renderTimeUs)
         {
+            Profiler.BeginSample("Host Render Setup");
             if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
-             || m_RenderSession.Without(out LocalPlayerId localPlayer)) return;
+             || m_RenderSession.Without(out LocalPlayerId localPlayer))
+            {
+                Profiler.EndSample();
+                return;
+            }
 
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (!tickRate.WithValue) return;
 
             m_RenderSession.CopyFrom(GetLatestSession());
             localPlayer.Value = HostPlayerId;
+            Profiler.EndSample();
 
+            Profiler.BeginSample("Host Render Players");
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
                 Container renderPlayer = renderPlayers[playerId];
@@ -87,9 +97,19 @@ namespace Swihoni.Sessions
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, playerId == localPlayer);
             }
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Host Render Interfaces");
             RenderInterfaces(m_RenderSession);
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Host Render Entities");
             RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Host Render Mode");
             GetMode(m_RenderSession).Render(this, m_RenderSession);
+            Profiler.EndSample();
         }
 
         protected override void PreTick(Container tickSession)

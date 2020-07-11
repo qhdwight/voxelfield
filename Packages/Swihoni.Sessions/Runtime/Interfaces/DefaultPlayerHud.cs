@@ -90,7 +90,7 @@ namespace Swihoni.Sessions.Interfaces
                     {
                         ItemComponent item = inventory.items[index];
                         if (item.id == ItemId.None) continue;
-                        if (realizedIndex++ != 0) builder.Append("    ");
+                        if (realizedIndex++ != 0) builder.Append("  ");
                         string itemName = ItemAssetLink.GetModifier(item.id).itemName;
                         // TODO:feature show key bind instead
                         builder.Append("[").Append(index + 1).Append("] ").Append(itemName);

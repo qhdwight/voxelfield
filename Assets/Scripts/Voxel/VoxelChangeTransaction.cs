@@ -1,14 +1,15 @@
-using System.Collections;
 using System.Collections.Generic;
 using Swihoni.Util.Math;
 using Voxel.Map;
 
 namespace Voxel
 {
-    public class VoxelChangeTransaction : IEnumerable<(Position3Int, VoxelChangeData)>
+    public class VoxelChangeTransaction
     {
         private readonly Dictionary<Position3Int, VoxelChangeData> m_Changes;
         private readonly HashSet<Chunk> m_ChunksToUpdate;
+
+        public Dictionary<Position3Int, VoxelChangeData> Map => m_Changes;
 
         public VoxelChangeTransaction() : this(0) { }
 
@@ -41,13 +42,5 @@ namespace Voxel
             m_Changes.Clear();
             m_ChunksToUpdate.Clear();
         }
-
-        public IEnumerator<(Position3Int, VoxelChangeData)> GetEnumerator()
-        {
-            foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in m_Changes)
-                yield return (pair.Key, pair.Value);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -25,7 +25,7 @@ namespace Swihoni.Sessions.Interfaces
                 m_Text.StartBuild()
                       .AppendUsername(feed.killingPlayerId, sessionContainer)
                       .Append(" [")
-                      .Append(feed.weaponName.Builder)
+                      .AppendProperty(feed.weaponName)
                       .Append("] ")
                       .Append(feed.isHeadShot ? "<sprite=0> " : string.Empty)
                       .AppendUsername(feed.killedPlayerId, sessionContainer).Commit(m_Text);

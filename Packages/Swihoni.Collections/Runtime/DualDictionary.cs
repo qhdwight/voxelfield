@@ -1,9 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Swihoni.Collections
 {
-    public class DualDictionary<TKey, TValue> : IEnumerable<(TKey, TValue)>
+    public class DualDictionary<TKey, TValue>
     {
         private readonly Dictionary<TKey, TValue> m_Forward;
         private readonly Dictionary<TValue, TKey> m_Reverse;
@@ -51,13 +50,5 @@ namespace Swihoni.Collections
             m_Forward.Remove(m_Reverse[entry]);
             m_Reverse.Remove(entry);
         }
-
-        public IEnumerator<(TKey, TValue)> GetEnumerator()
-        {
-            foreach (KeyValuePair<TKey, TValue> pair in m_Forward)
-                yield return (pair.Key, pair.Value);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
