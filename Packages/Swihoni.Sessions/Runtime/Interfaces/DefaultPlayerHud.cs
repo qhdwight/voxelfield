@@ -50,10 +50,13 @@ namespace Swihoni.Sessions.Interfaces
             bool isActive = IsVisible(out Container localPlayer, out HealthProperty health);
             if (isActive)
             {
-                if (localPlayer.With<HealthProperty>())
-                    m_HealthText.StartBuild().Append("Health: ").Append(health.Value).Commit(m_HealthText);
+                bool showHealth = localPlayer.With<HealthProperty>();
+                if (showHealth) m_HealthText.StartBuild().Append("Health: ").Append(health.Value).Commit(m_HealthText);
+                m_HealthText.enabled = showHealth;
+                var showItems = false;
                 if (localPlayer.With(out InventoryComponent inventory) && inventory.WithItemEquipped(out ItemComponent equippedItem))
                 {
+                    showItems = true;
                     ItemModifierBase modifier = ItemAssetLink.GetModifier(equippedItem.id);
                     StringBuilder builder = m_AmmoText.StartBuild();
                     switch (modifier)
@@ -75,10 +78,7 @@ namespace Swihoni.Sessions.Interfaces
                             break;
                     }
                     m_AmmoText.SetText(builder);
-
-                    // Color crosshairColor = m_Crosshair.color;
-                    // crosshairColor.a = inventory.adsStatus.id.Else(AdsStatusId.HipAiming) == AdsStatusId.Ads ? 0.0f : 1.0f;
-                    // m_Crosshair.color = crosshairColor;
+                    
                     ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisualPrefab(equippedItem.id);
                     bool isDefaultCrosshair = visualPrefab.Crosshair == null;
                     m_Crosshair.sprite = isDefaultCrosshair ? m_DefaultCrosshair : visualPrefab.Crosshair;
@@ -97,12 +97,8 @@ namespace Swihoni.Sessions.Interfaces
                     }
                     m_InventoryText.SetText(builder);
                 }
-                else
-                {
-                    m_AmmoText.SetText(string.Empty);
-                    m_HealthText.SetText(string.Empty);
-                    m_InventoryText.SetText(string.Empty);
-                }
+                m_HealthText.enabled = showItems;
+                m_InventoryText.enabled = showItems;
                 // TODO:refactor different durations for hit marker and damage notifier
                 if (localPlayer.With(out HitMarkerComponent hitMarker))
                 {
@@ -123,7 +119,6 @@ namespace Swihoni.Sessions.Interfaces
                     }
                 }
             }
-
             SetInterfaceActive(isActive);
         }
     }

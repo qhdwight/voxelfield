@@ -34,11 +34,6 @@ namespace Voxelfield.Session.Mode
                 inventory.Zero();
                 PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.SuperPickaxe, ItemId.VoxelWand, ItemId.ModelWand);
             }
-        }
-
-        public override void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer, Container sessionContainer1)
-        {
-            SpawnPlayer(session, sessionContainer1, playerId, player);
             var designer = player.Require<DesignerPlayerComponent>();
             designer.NavigateProperties(_p =>
             {

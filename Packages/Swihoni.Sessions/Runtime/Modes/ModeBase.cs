@@ -51,8 +51,6 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void Begin(SessionBase session, Container sessionContainer)
         {
-            if (!session.IsPaused)
-                ForEachActivePlayer(session, sessionContainer, (playerId, player) => SpawnPlayer(session, sessionContainer, playerId, player));
         }
 
         protected virtual void KillPlayer(Container player)
@@ -167,7 +165,7 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer, Container sessionContainer1) =>
+        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer) =>
             SpawnPlayer(session, sessionContainer, playerId, player);
 
         protected static void ForEachActivePlayer(SessionBase session, Container container, Action<int, Container> action)

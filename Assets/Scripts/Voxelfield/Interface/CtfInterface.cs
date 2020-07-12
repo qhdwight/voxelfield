@@ -2,6 +2,7 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,13 +19,15 @@ namespace Voxelfield.Interface
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Ctf;
+            bool isVisible = !session.IsPaused && sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Ctf;
             if (isVisible)
             {
                 var ctf = sessionContainer.Require<CtfComponent>();
                 RenderLocalPlayer(session, sessionContainer, ctf);
-                m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], CtfMode.GetTeamColor(CtfMode.BlueTeam), 
-                                        ctf.teamScores[CtfMode.RedTeam], CtfMode.GetTeamColor(CtfMode.RedTeam));
+
+                var mode = (CtfMode) ModeManager.GetMode(ModeIdProperty.Ctf);
+                m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], mode.GetTeamColor(CtfMode.BlueTeam), 
+                                        ctf.teamScores[CtfMode.RedTeam], mode.GetTeamColor(CtfMode.RedTeam));
             }
             SetInterfaceActive(isVisible);
         }

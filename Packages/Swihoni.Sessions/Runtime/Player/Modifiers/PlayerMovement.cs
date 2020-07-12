@@ -1,5 +1,6 @@
 using Input;
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
@@ -86,9 +87,17 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             float duration = durationUs * TimeConversions.MicrosecondToSecond;
 
-            bool flyInput = inputs.GetInput(PlayerInput.Fly);
-            if (flyInput && !m_LastFlyInput) move.type.Value = move.type == MoveType.Grounded ? MoveType.Flying : MoveType.Grounded;
-            m_LastFlyInput = flyInput;
+            if (session.GetLatestSession().Require<AllowCheatsProperty>())
+            {
+                bool flyInput = inputs.GetInput(PlayerInput.Fly);
+                if (flyInput && !m_LastFlyInput) move.type.Value = move.type == MoveType.Grounded ? MoveType.Flying : MoveType.Grounded;
+                m_LastFlyInput = flyInput;   
+            }
+            else
+            {
+                move.type.Value = MoveType.Grounded;
+                m_LastFlyInput = false;
+            }
 
             // Vector3 prePosition = move.position;
             if (move.type == MoveType.Grounded) FullMove(player, move, inputs, duration);

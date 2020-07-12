@@ -130,6 +130,8 @@ namespace Swihoni.Sessions.Player.Components
         public ByteStatusComponent status;
         public UShortProperty ammoInMag, ammoInReserve;
 
+        private static ItemModifierBase _modifier;
+
         // Embedded item components are only explicitly interpolated, since usually it only needs to be done on equipped item
         public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
         {
@@ -138,12 +140,12 @@ namespace Swihoni.Sessions.Player.Components
                 this.CopyFrom(i1);
                 return;
             }
-            ItemModifierBase modifier = ItemAssetLink.GetModifier(i1.id);
+            _modifier = ItemAssetLink.GetModifier(i1.id);
             ammoInMag.SetTo(i2.ammoInMag);
             ammoInReserve.SetTo(i2.ammoInReserve);
             id.Value = i2.id.Value;
             status.InterpolateFrom(i1.status, i2.status, interpolation,
-                                   statusId => InventoryComponent.VisualDuration(modifier.GetStatusModifierProperties(statusId)));
+                                   statusId => InventoryComponent.VisualDuration(_modifier.GetStatusModifierProperties(statusId)));
         }
     }
 

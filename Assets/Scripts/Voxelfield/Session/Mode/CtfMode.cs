@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
+using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
 {
@@ -23,10 +25,19 @@ namespace Voxelfield.Session.Mode
 
         [SerializeField] private LayerMask m_PlayerMask = default;
         [SerializeField] private float m_CaptureRadius = 3.0f;
-
+        [SerializeField] private Color m_BlueColor = new Color(0.1764705882f, 0.5098039216f, 0.8509803922f),
+                                       m_RedColor = new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
+        private string m_BlueHex, m_RedHex;
+        
         // private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
         private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
         private FlagBehavior[][] m_FlagBehaviors;
+
+        private void OnEnable()
+        {
+            m_BlueHex = ColorUtility.ToHtmlStringRGB(m_BlueColor);
+            m_RedHex = ColorUtility.ToHtmlStringRGB(m_RedColor);
+        }
 
         private void LinkFlagBehaviors()
             => m_FlagBehaviors = MapManager.Singleton.Models.Values
@@ -48,6 +59,7 @@ namespace Voxelfield.Session.Mode
         {
             base.Render(session, sessionContainer);
 
+            if (session.IsPaused) return;
             if (m_FlagBehaviors == null && !session.IsPaused) LinkFlagBehaviors();
             if (m_FlagBehaviors == null) return;
 
@@ -169,18 +181,16 @@ namespace Voxelfield.Session.Mode
             base.SpawnPlayer(session, sessionContainer, playerId, player);
         }
 
-        // TODO:performance garbage generator
         public override StringBuilder BuildUsername(StringBuilder builder, Container player)
-            => builder.AppendFormat("<color=#{0}>{1}</color>",
-                                    ColorUtility.ToHtmlStringRGB(GetTeamColor(player)),
-                                    player.Require<UsernameProperty>().Builder);
+        {
+            string hex = player.Require<TeamProperty>() == BlueTeam ? m_BlueHex : m_RedHex;
+            return builder.Append("<color=#").Append(hex).Append(">").AppendProperty(player.Require<UsernameProperty>()).Append("</color>");
+        }
 
-        public static Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());
+        public Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());
 
-        public static Color GetTeamColor(byte teamId) => teamId == BlueTeam
-            ? new Color(0.1764705882f, 0.5098039216f, 0.8509803922f)
-            : new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
-
+        public Color GetTeamColor(byte teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;
+        
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);

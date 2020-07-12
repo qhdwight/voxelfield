@@ -8,6 +8,7 @@ using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 
 namespace Swihoni.Sessions
@@ -20,6 +21,7 @@ namespace Swihoni.Sessions
     public abstract class NetworkedSessionBase : SessionBase
     {
         protected const int HistoryCount = 250;
+        protected const byte ClientCommandsCode = 0, ServerSessionCode = 1, DebugClientViewCode = 2;
 
         protected readonly CyclicArray<ServerSessionContainer> m_SessionHistory;
         protected readonly ClientCommandsContainer m_EmptyClientCommands;
@@ -34,6 +36,12 @@ namespace Swihoni.Sessions
         protected NetworkedSessionBase(SessionElements elements, IPEndPoint ipEndPoint, SessionInjectorBase injector) : base(elements, injector)
         {
             IpEndPoint = ipEndPoint;
+            IpEndPoint = ipEndPoint;
+            // Type[] prefixElements = {typeof(ClientStampComponent), typeof(AcknowledgedServerTickProperty)};
+            // IReadOnlyCollection<Type> sharedPlayerElements = prefixElements.Concat(elements.playerElements)
+            //                                                                .Append(typeof(ServerStampComponent)).ToArray(),
+            //                           clientCommandElements = prefixElements.Concat(elements.playerElements)
+            //                                                                 .Concat(elements.commandElements).ToArray();
             IReadOnlyCollection<Type> sharedPlayerElements = elements.playerElements
                                                                      .Append(typeof(ClientStampComponent))
                                                                      .Append(typeof(AcknowledgedServerTickProperty))
@@ -54,6 +62,17 @@ namespace Swihoni.Sessions
             m_EmptyDebugClientView = new DebugClientView(sharedPlayerElements);
         }
 
+        private static T NewSession<T>(IEnumerable<Type> sessionElements, IEnumerable<Type> playerElements) where T : Container, new()
+        {
+            var session = new T();
+            session.RegisterAppend(sessionElements);
+            session.Require<PlayerContainerArrayElement>().SetAll(() => new Container(playerElements));
+            // TODO:refactor standard entity components
+            session.Require<EntityArrayElement>().SetAll(() => new EntityContainer(typeof(ThrowableComponent)).Zero());
+            session.ZeroIfWith<KillFeedElement>();
+            return session;
+        }
+
         protected void ForEachPlayer(Action<Container> action)
         {
             foreach (ServerSessionContainer serverSession in m_SessionHistory)
@@ -61,11 +80,11 @@ namespace Swihoni.Sessions
                 action(player);
         }
 
-        protected void RegisterMessages(ComponentSocketBase socket)
+        protected static void RegisterMessages(ComponentSocketBase socket)
         {
-            socket.RegisterContainer(typeof(ClientCommandsContainer), m_EmptyClientCommands, 0);
-            socket.RegisterContainer(typeof(ServerSessionContainer), m_EmptyServerSession, 1);
-            socket.RegisterContainer(typeof(DebugClientView), m_EmptyDebugClientView, 2);
+            socket.Register(typeof(ClientCommandsContainer), 0, ClientCommandsCode);
+            socket.Register(typeof(ServerSessionContainer), 1, ServerSessionCode);
+            socket.Register(typeof(DebugClientView), 2, DebugClientViewCode);
         }
 
         protected static void ZeroCommand(Container command)
@@ -95,22 +114,22 @@ namespace Swihoni.Sessions
             ForEachSessionInterface(sessionInterface => sessionInterface.Render(_session, _container));
         }
 
-        protected static SessionBase _session;
-        protected static Container _container;
-        private static CyclicArray<ServerSessionContainer> _history;
         protected static int _int;
-        
+        protected static Container _container;
+        protected static SessionBase _session;
+        protected static CyclicArray<ServerSessionContainer> _serverHistory;
+
         protected void RenderEntities<TStampComponent>(uint currentRenderTimeUs, uint rollbackUs) where TStampComponent : StampComponent
         {
-            _history = m_SessionHistory; // Prevent allocation in closure
+            _serverHistory = m_SessionHistory; // Prevent allocation in closure
             uint renderTimeUs = currentRenderTimeUs - rollbackUs;
             var renderEntities = m_RenderSession.Require<EntityArrayElement>();
             for (var index = 0; index < renderEntities.Length; index++)
             {
                 _int = index;
-                RenderInterpolated(renderTimeUs, renderEntities[_int], _history.Size,
-                                   h => _history.Get(-h).Require<TStampComponent>(),
-                                   h => _history.Get(-h).Require<EntityArrayElement>()[_int]);
+                RenderInterpolated(renderTimeUs, renderEntities[_int], _serverHistory.Size,
+                                   h => _serverHistory.Get(-h).Require<TStampComponent>(),
+                                   h => _serverHistory.Get(-h).Require<EntityArrayElement>()[_int]);
             }
             EntityManager.RenderAll(renderEntities, (visual, entity) => ((EntityVisualBehavior) visual).Render(entity));
         }
@@ -122,21 +141,12 @@ namespace Swihoni.Sessions
             RollbackHitboxes(playerId);
             base.RollbackHitboxesFor(playerId);
         }
-        
-        protected static T NewSession<T>(IEnumerable<Type> sessionElements, IEnumerable<Type> playerElements) where T : Container, new()
-        {
-            var session = new T();
-            session.RegisterAppend(sessionElements);
-            session.Require<PlayerContainerArrayElement>().SetAll(() => new Container(playerElements));
-            // TODO:refactor standard entity components
-            session.Require<EntityArrayElement>().SetAll(() => new EntityContainer(typeof(ThrowableComponent)).Zero());
-            session.ZeroIfWith<KillFeedElement>();
-            return session;
-        }
     }
 
     internal static class NetworkSessionExtensions
     {
         internal static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
+        
+        internal static ModeBase GetRenderMode(this Container session) => ModeManager.GetMode(session.Require<ModeIdProperty>());
     }
 }

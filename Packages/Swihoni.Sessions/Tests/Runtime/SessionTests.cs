@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using LiteNetLib;
+using LiteNetLib.Utils;
 using NUnit.Framework;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
@@ -67,6 +68,21 @@ namespace Swihoni.Sessions.Tests
         //     Assert.AreEqual(p1.stamp.tick, p2.stamp.tick);
         // }
 
+        private class ServerSessionReceiver : IReceiver
+        {
+            internal int count;
+            internal ServerSessionContainer serverSession;
+
+            public void OnReceive(NetPeer peer, NetDataReader reader, byte code)
+            {
+                var received = new ServerSessionContainer(serverSession.ElementTypes);
+                received.Deserialize(reader);
+                Assert.AreEqual(serverSession.Require<ServerStampComponent>().timeUs.Value,
+                                received.Require<ServerStampComponent>().timeUs.Value, 1e-6f);
+                count++;
+            }
+        }
+
         [Test]
         public void TestSessionNetworking()
         {
@@ -83,31 +99,35 @@ namespace Swihoni.Sessions.Tests
             using (var server = new ComponentServerSocket(localHost))
             using (var client = new ComponentClientSocket(localHost))
             {
-                server.RegisterContainer(typeof(ServerSessionContainer), session);
-                client.RegisterContainer(typeof(ServerSessionContainer), session);
+                server.Register(typeof(ServerSessionContainer), 0, 0);
+                client.Register(typeof(ServerSessionContainer), 0, 0);
 
                 server.PollEvents();
                 client.PollEvents();
 
                 client.SendToServer(session, DeliveryMethod.Unreliable);
-
-                var received = 0;
-
+                
                 Thread.Sleep(100);
 
-                server.OnReceive = (peer, component) =>
-                {
-                    switch (component)
-                    {
-                        case ServerSessionContainer container:
-                            Assert.AreEqual(time, container.Require<ServerStampComponent>().timeUs.Value, 1e-6f);
-                            received++;
-                            break;
-                    }
-                };
+                var receiver = new ServerSessionReceiver {serverSession = session};
+                server.Receiver = receiver;
                 server.PollEvents();
 
-                Assert.AreEqual(1, received);
+                Assert.AreEqual(1, receiver.count);
+            }
+        }
+
+        private class CommandReceiver : IReceiver
+        {
+            internal int count;
+            internal ClientCommandsContainer clientCommands;
+
+            public void OnReceive(NetPeer peer, NetDataReader reader, byte code)
+            {
+                var command = new ClientCommandsContainer(clientCommands.ElementTypes);
+                command.Deserialize(reader);
+                Assert.IsTrue(clientCommands.EqualTo(command));
+                count++;
             }
         }
 
@@ -127,8 +147,8 @@ namespace Swihoni.Sessions.Tests
             using (var server = new ComponentServerSocket(localHost))
             using (var client = new ComponentClientSocket(localHost))
             {
-                server.RegisterContainer(typeof(ClientCommandsContainer), clientCommands);
-                client.RegisterContainer(typeof(ClientCommandsContainer), clientCommands);
+                server.Register(typeof(ClientCommandsContainer), 0, 0);
+                client.Register(typeof(ClientCommandsContainer), 0, 0);
 
                 server.PollEvents();
                 client.PollEvents();
@@ -138,23 +158,13 @@ namespace Swihoni.Sessions.Tests
                 for (var i = 0; i < send; i++)
                     client.SendToServer(clientCommands, DeliveryMethod.Unreliable);
 
-                var received = 0;
-
                 Thread.Sleep(100);
 
-                server.OnReceive = (ipEndPoint, component) =>
-                {
-                    switch (component)
-                    {
-                        case ClientCommandsContainer command:
-                            Assert.IsTrue(clientCommands.EqualTo(command));
-                            received++;
-                            break;
-                    }
-                };
+                var receiver = new CommandReceiver {clientCommands = clientCommands};
+                server.Receiver = receiver;
                 server.PollEvents();
 
-                Assert.AreEqual(send, received);
+                Assert.AreEqual(send, receiver.count);
             }
         }
     }

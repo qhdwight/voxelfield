@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using LiteNetLib;
+using LiteNetLib.Utils;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
@@ -14,7 +15,7 @@ using UnityEngine.Profiling;
 
 namespace Swihoni.Sessions
 {
-    public sealed class Client : NetworkedSessionBase
+    public sealed class Client : NetworkedSessionBase, IReceiver
     {
         private readonly string m_ConnectKey;
         private readonly CyclicArray<ClientCommandsContainer> m_CommandHistory;
@@ -50,7 +51,7 @@ namespace Swihoni.Sessions
             base.Start();
             m_Socket = new ComponentClientSocket(IpEndPoint, m_ConnectKey);
             m_Socket.Listener.PeerDisconnectedEvent += OnDisconnect;
-            m_Socket.OnReceive = OnReceive;
+            m_Socket.Receiver = this;
             RegisterMessages(m_Socket);
         }
 
@@ -85,6 +86,8 @@ namespace Swihoni.Sessions
 
         // private static CyclicArray<Container> _predictionHistory;
 
+        private static CyclicArray<Container> _predictionHistory;
+
         protected override void Render(uint renderTimeUs)
         {
             Profiler.BeginSample("Client Render Setup");
@@ -111,17 +114,20 @@ namespace Swihoni.Sessions
                 if (isLocalPlayer)
                 {
                     uint playerRenderTimeUs = renderTimeUs - tickRate.TickIntervalUs;
+                    _predictionHistory = m_PlayerPredictionHistory;
                     RenderInterpolatedPlayer<ClientStampComponent>(playerRenderTimeUs, renderPlayer, m_PlayerPredictionHistory.Size,
-                                                                   historyIndex => m_PlayerPredictionHistory.Get(-historyIndex));
+                                                                   historyIndex => _predictionHistory.Get(-historyIndex));
                     renderPlayer.MergeFrom(m_CommandHistory.Peek());
                     // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                 }
                 else
                 {
-                    int copiedPlayerId = playerId;
                     uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
-                    RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, 
-                                                                            historyIndex => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId]);
+                    _serverHistory = m_SessionHistory;
+                    _int = playerId;
+                    RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size,
+                                                                            historyIndex =>
+                                                                                _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_int]);
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isLocalPlayer);
@@ -174,14 +180,17 @@ namespace Swihoni.Sessions
 
         private static uint _timeUs;
 
-        private void OnReceive(NetPeer fromPeer, ElementBase message)
+        void IReceiver.OnReceive(NetPeer fromPeer, NetDataReader reader, byte code)
         {
-            switch (message)
+            switch (code)
             {
-                case ServerSessionContainer receivedServerSession:
+                case ServerSessionCode:
                 {
                     Profiler.BeginSample("Client Receive Setup");
                     ServerSessionContainer previousServerSession = m_SessionHistory.Peek();
+
+                    m_EmptyServerSession.Deserialize(reader);
+                    ServerSessionContainer receivedServerSession = m_EmptyServerSession;
 
                     uint serverTick = receivedServerSession.Require<ServerStampComponent>().tick;
                     UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
@@ -352,6 +361,18 @@ namespace Swihoni.Sessions
             }
         }
 
+        // private static NetDataWriter _writer;
+        //
+        // private void SendCommand() => m_Socket.SendToServer(m_CommandHistory.Peek(), DeliveryMethod.ReliableUnordered, (element, writer) =>
+        // {
+        //     _writer = writer; // Prevent closure allocation
+        //     element.Navigate(_element =>
+        //     {
+        //         if (_element.WithAttribute<ClientTrustedAttribute>()) _element.Serialize(_writer);
+        //         return Navigation.Continue;
+        //     });
+        // });
+
         private void SendCommand() => m_Socket.SendToServer(m_CommandHistory.Peek(), DeliveryMethod.ReliableUnordered);
 
         private static bool _predictionIsAccurate; // Prevents heap allocation in closure
@@ -413,7 +434,8 @@ namespace Swihoni.Sessions
                                                                          && !v1.CheckWithinTolerance(v2, vPredictionToleranceAttribute.tolerance):
                 case PropertyBase p1 when _server is PropertyBase p2 && !p1.Equals(p2):
                     _predictionIsAccurate = false;
-                    Debug.LogWarning($"Error with predicted: {_predicted} and verified: {_server}");
+                    if (Debug.isDebugBuild)
+                        Debug.LogWarning($"Error with predicted: {_predicted} and verified: {_server}");
                     return Navigation.Exit;
             }
             return Navigation.Continue;

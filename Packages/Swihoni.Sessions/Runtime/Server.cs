@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using LiteNetLib;
+using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
@@ -16,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Swihoni.Sessions
 {
-    public class Server : NetworkedSessionBase
+    public class Server : NetworkedSessionBase, IReceiver
     {
         private ComponentServerSocket m_Socket;
         private readonly Container m_SendSession;
@@ -37,7 +38,7 @@ namespace Swihoni.Sessions
             m_Socket = new ComponentServerSocket(IpEndPoint, m_Injector.OnHandleNewConnection);
             m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
             m_Socket.Listener.NetworkLatencyUpdateEvent += OnLatencyUpdated;
-            m_Socket.OnReceive = OnReceive;
+            m_Socket.Receiver = this;
             RegisterMessages(m_Socket);
 
             Physics.autoSimulation = false;
@@ -116,26 +117,29 @@ namespace Swihoni.Sessions
 
         protected virtual void ServerTick(Container serverSession, uint timeUs, uint durationUs) { }
 
-        private void OnReceive(NetPeer fromPeer, ElementBase element)
+        void IReceiver.OnReceive(NetPeer fromPeer, NetDataReader reader, byte code)
         {
             Container serverSession = GetLatestSession();
             int clientId = fromPeer.GetPlayerId();
             Container serverPlayer = GetModifyingPayerFromId(clientId);
-            switch (element)
+            switch (code)
             {
-                case ClientCommandsContainer receivedClientCommands:
+                case ClientCommandsCode:
                 {
-                    if (serverPlayer.Require<HealthProperty>().WithoutValue)
+                    m_EmptyClientCommands.Deserialize(reader);
+                    if (!IsPaused &&serverPlayer.Require<HealthProperty>().WithoutValue)
                     {
                         Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {fromPeer.GetPlayerId()}");
                         SetupNewPlayer(serverSession, clientId, serverPlayer, serverSession);
                     }
-                    HandleClientCommand(clientId, receivedClientCommands, serverSession, serverPlayer);
+                    HandleClientCommand(clientId, m_EmptyClientCommands, serverSession, serverPlayer);
                     break;
                 }
-                case DebugClientView receivedDebugClientView:
+                case DebugClientViewCode:
                 {
-                    DebugBehavior.Singleton.Render(this, clientId, receivedDebugClientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
+                    var clientView = new ClientCommandsContainer(m_EmptyDebugClientView.ElementTypes);
+                    clientView.Deserialize(reader);
+                    DebugBehavior.Singleton.Render(this, clientId, clientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
                     break;
                 }
             }
@@ -147,9 +151,11 @@ namespace Swihoni.Sessions
             m_Socket.PollEvents();
             Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
 
-            void IterateEntity(ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs);
-            EntityManager.ModifyAll(serverSession, IterateEntity);
-            GetMode(serverSession).Modify(this, serverSession, durationUs);
+            if (!IsPaused)
+            {
+                EntityManager.ModifyAll(serverSession, (ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs));
+                GetMode(serverSession).Modify(this, serverSession, durationUs);
+            }
 
             SendServerSession(tick, serverSession);
         }
@@ -305,7 +311,7 @@ namespace Swihoni.Sessions
 
         protected void SetupNewPlayer(Container session, int playerId, Container player, Container sessionContainer)
         {
-            GetMode(session).SetupNewPlayer(this, playerId, player, sessionContainer, sessionContainer);
+            GetMode(session).SetupNewPlayer(this, playerId, player, sessionContainer);
             // TODO:refactor zeroing
 
             player.ZeroIfWith<StatsComponent>();

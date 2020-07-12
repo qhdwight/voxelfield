@@ -8,6 +8,11 @@ using UnityEngine;
 
 namespace Swihoni.Components.Networking
 {
+    public interface IReceiver
+    {
+        void OnReceive(NetPeer peer, NetDataReader reader, byte code);
+    }
+    
     public abstract class ComponentSocketBase : IDisposable
     {
         private const int InitialBufferSize = 1 << 16;
@@ -16,11 +21,10 @@ namespace Swihoni.Components.Networking
 
         private readonly DualDictionary<Type, byte> m_Codes = new DualDictionary<Type, byte>();
         private readonly Dictionary<byte, byte> m_CodeToChannel = new Dictionary<byte, byte>();
-        private readonly Dictionary<Type, Pool<ElementBase>> m_MessagePools = new Dictionary<Type, Pool<ElementBase>>();
         private readonly NetDataWriter m_Writer = new NetDataWriter(true, InitialBufferSize);
         private readonly float m_StartTime;
         protected readonly EventBasedNetListener m_Listener = new EventBasedNetListener();
-        public Action<NetPeer, ElementBase> OnReceive { get; set; }
+        public IReceiver Receiver { get; set; }
         public NetManager NetworkManager => m_NetworkManager;
         public EventBasedNetListener Listener => m_Listener;
 
@@ -50,11 +54,7 @@ namespace Swihoni.Components.Networking
         private void Receive(NetPeer fromPeer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
             byte code = reader.GetByte();
-            Type type = m_Codes.GetReverse(code);
-            ElementBase message = m_MessagePools[type].Obtain();
-            message.Deserialize(reader);
-            OnReceive?.Invoke(fromPeer, message);
-            m_MessagePools[message.GetType()].Return(message);
+            Receiver?.OnReceive(fromPeer, reader, code);
             reader.Recycle();
         }
 
@@ -64,33 +64,22 @@ namespace Swihoni.Components.Networking
         /// Register element type for serialization over network.
         /// Assigns an ID to each type. Order of registration is important.
         /// </summary>
-        public void RegisterSimpleElement(Type registerType, byte channel = 0)
+        public byte Register(Type registerType, byte channel, byte code)
         {
-            var code = (byte) m_Codes.Length;
             m_Codes.Add(registerType, code);
             m_CodeToChannel.Add(code, channel);
-            m_MessagePools[registerType] = new Pool<ElementBase>(1, () => (ElementBase) Activator.CreateInstance(registerType));
+            return code;
         }
 
-        /// <summary>
-        /// <see cref="RegisterSimpleElement"/>
-        /// </summary>
-        public void RegisterContainer(Type registerType, Container container, byte channel = 0)
-        {
-            var code = (byte) m_Codes.Length;
-            m_Codes.Add(registerType, code);
-            m_CodeToChannel.Add(code, channel);
-            m_MessagePools[registerType] = new Pool<ElementBase>(1, container.Clone);
-        }
-
-        public bool Send(ElementBase element, NetPeer peer, DeliveryMethod deliveryMethod)
+        public bool Send(ElementBase element, NetPeer peer, DeliveryMethod deliveryMethod, Action<ElementBase, NetDataWriter> serializeAction = null)
         {
             try
             {
                 byte code = m_Codes.GetForward(element.GetType());
                 m_Writer.Reset();
                 m_Writer.Put(code);
-                element.Serialize(m_Writer);
+                if (serializeAction == null) element.Serialize(m_Writer);
+                else serializeAction(element, m_Writer);
                 peer.Send(m_Writer, m_CodeToChannel[code], deliveryMethod);
                 return true;
             }
@@ -113,7 +102,7 @@ namespace Swihoni.Components.Networking
             m_Listener.ClearPeerDisconnectedEvent();
             m_Listener.ClearNetworkLatencyUpdateEvent();
             m_NetworkManager.Stop();
-            OnReceive = null;
+            Receiver = null;
         }
     }
 }

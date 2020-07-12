@@ -58,8 +58,8 @@ namespace Swihoni.Components
         {
             if (m_Elements != null) return;
 
-            m_Elements = new List<ElementBase>();
             IReadOnlyList<FieldInfo> fieldInfos = ReflectionCache.GetFieldInfo(GetType());
+            m_Elements = new List<ElementBase>(fieldInfos.Count);
             foreach (FieldInfo field in fieldInfos)
             {
                 object fieldValue = field.GetValue(this);

@@ -1,6 +1,7 @@
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
@@ -49,7 +50,8 @@ namespace Voxelfield.Session.Mode
             }
             m_SpriteRenderer.transform.position = spritePosition;
 
-            Color color = CtfMode.GetTeamColor(Container);
+            var mode = (CtfMode) ModeManager.GetMode(ModeIdProperty.Ctf);
+            Color color = mode.GetTeamColor(Container);
             float cosine = Mathf.Cos(flag.captureElapsedTimeUs.Else(0u) * TimeConversions.MicrosecondToSecond * m_TakingBlinkRate);
             color.a = cosine.Remap(-1.0f, 1.0f, 0.8f, 1.0f);
             m_Material.color = color;

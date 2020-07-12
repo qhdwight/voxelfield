@@ -83,21 +83,26 @@ namespace Swihoni.Components
 
     public static class Interpolator
     {
+        private static float _interpolation;
+        
         public static void InterpolateInto<T>(T e1, T e2, T ed, float interpolation) where T : ElementBase
         {
+            _interpolation = interpolation; // Prevent closure allocation
             ElementExtensions.NavigateZipped((_e1, _e2, _ed) =>
             {
                 switch (_e1)
                 {
                     case PropertyBase p1 when _e2 is PropertyBase p2 && _ed is PropertyBase pd:
                     {
-                        pd.InterpolateFromIfWith(p1, p2, interpolation);
+                        pd.InterpolateFromIfWith(p1, p2, _interpolation);
                         break;
                     }
                     case ComponentBase c1 when _e2 is ComponentBase c2 && _ed is ComponentBase cd:
-                        cd.InterpolateFrom(c1, c2, interpolation);
                         if (c1.WithAttribute<CustomInterpolationAttribute>())
+                        {
+                            cd.InterpolateFrom(c1, c2, _interpolation);
                             return Navigation.SkipDescendents;
+                        }
                         break;
                 }
                 return Navigation.Continue;

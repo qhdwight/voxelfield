@@ -3,6 +3,7 @@ using System.Net;
 using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
@@ -28,12 +29,11 @@ namespace Swihoni.Sessions
                                                    .Concat(elements.commandElements)
                                                    .Append(typeof(ServerTag))
                                                    .Append(typeof(HostTag)));
-            m_HostCommands.Zero();
-            m_HostCommands.Require<ServerStampComponent>().Clear();
+            m_HostCommands.Zero().Require<ServerStampComponent>().Clear();
         }
 
         public override Container GetLocalCommands() => m_HostCommands;
-        
+
         protected override void Input(uint timeUs, uint deltaUs)
         {
             Container session = GetLatestSession();
@@ -88,11 +88,11 @@ namespace Swihoni.Sessions
                 }
                 else
                 {
-                    int copiedPlayerId = playerId;
-                    Container GetInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[copiedPlayerId];
-
                     uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
-                    RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size, GetInHistory);
+                    _int = playerId;
+                    _serverHistory = m_SessionHistory;
+                    RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size,
+                                                                   historyIndex => _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_int]);
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, playerId == localPlayer);
@@ -108,7 +108,7 @@ namespace Swihoni.Sessions
             Profiler.EndSample();
 
             Profiler.BeginSample("Host Render Mode");
-            GetMode(m_RenderSession).Render(this, m_RenderSession);
+            ModeManager.GetMode(m_RenderSession.Require<ModeIdProperty>()).Render(this, m_RenderSession);
             Profiler.EndSample();
         }
 

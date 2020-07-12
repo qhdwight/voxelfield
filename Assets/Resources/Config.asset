@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tickRate:
     m_Flags: 1
-    m_Value: 5
+    m_Value: 16

@@ -7,7 +7,7 @@ namespace Swihoni.Components
     public class NoSerialization : Attribute
     {
     }
-
+    
     public static class Serializer
     {
         private static NetDataWriter _writer;
@@ -30,7 +30,7 @@ namespace Swihoni.Components
         /// <summary>
         /// Deserializes into element from stream.
         /// </summary>
-        public static void Deserialize(this ElementBase element, NetDataReader reader)
+        public static ElementBase Deserialize(this ElementBase element, NetDataReader reader)
         {
             _reader = reader;
             element.Navigate(_element =>
@@ -43,6 +43,7 @@ namespace Swihoni.Components
                 }
                 return Navigation.Continue;
             });
+            return element;
         }
     }
 }

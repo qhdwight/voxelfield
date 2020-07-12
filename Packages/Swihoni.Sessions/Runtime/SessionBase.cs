@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using Console;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -28,7 +27,7 @@ namespace Swihoni.Sessions
         {
             elements = new List<Type>
             {
-                typeof(TickRateProperty), typeof(ModeIdProperty),
+                typeof(TickRateProperty), typeof(ModeIdProperty), typeof(AllowCheatsProperty),
                 typeof(PlayerContainerArrayElement), typeof(LocalPlayerId), typeof(EntityArrayElement),
                 typeof(StampComponent), typeof(KillFeedElement)
             },
@@ -119,7 +118,7 @@ namespace Swihoni.Sessions
             EntityManager.Setup(this);
 
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(true));
-            
+
             Sessions.Add(this);
         }
 
@@ -160,7 +159,7 @@ namespace Swihoni.Sessions
             if (!IsPaused) Input(timeUs, GetUsFromTicks(clockTickDelta));
             if (ShouldRender) Render(timeUs);
         }
-        
+
         public static void HandleCursorLockState()
         {
             CursorLockMode desiredLockState;
@@ -202,9 +201,11 @@ namespace Swihoni.Sessions
         protected virtual void Tick(uint tick, uint timeUs, uint durationUs)
         {
             Container session = GetLatestSession();
-            var tickRate = session.Require<TickRateProperty>();
-            tickRate.SetFromIfWith(ConfigManager.Singleton.tickRate);
+            foreach (ElementBase element in session.Elements)
+                if (element is PropertyBase property && ConfigManager.Configs.TryGetValue(property.GetType(), out PropertyBase configProperty))
+                    property.SetFromIfWith(configProperty);
             session.Require<ModeIdProperty>().SetFromIfWith(DebugBehavior.Singleton.ModeId);
+            var tickRate = session.Require<TickRateProperty>();
             if (tickRate.WithValue) Time.fixedDeltaTime = 1.0f / tickRate;
         }
 
@@ -255,13 +256,18 @@ namespace Swihoni.Sessions
 
         protected static Func<int, Container> _getInHistory;
 
+        protected interface IHistory
+        {
+            Container Get(int index);
+        }
+
         protected static void RenderInterpolatedPlayer<TStampComponent>(uint renderTimeUs, Container renderContainer, int maxRollback,
                                                                         Func<int, Container> getInHistory)
             where TStampComponent : StampComponent
         {
             _getInHistory = getInHistory; // Prevent allocation in closure
             RenderInterpolated(renderTimeUs, renderContainer, maxRollback,
-                               historyIndex => _getInHistory(historyIndex).Require<TStampComponent>(), getInHistory);
+                               historyIndex => _getInHistory(historyIndex).Require<TStampComponent>(), _getInHistory);
         }
 
         public abstract Ray GetRayForPlayerId(int playerId);

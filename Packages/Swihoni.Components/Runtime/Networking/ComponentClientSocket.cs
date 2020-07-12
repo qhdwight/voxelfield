@@ -1,5 +1,7 @@
+using System;
 using System.Net;
 using LiteNetLib;
+using LiteNetLib.Utils;
 
 namespace Swihoni.Components.Networking
 {
@@ -11,9 +13,7 @@ namespace Swihoni.Components.Networking
             m_NetworkManager.Connect(ip, key);
         }
 
-        public bool SendToServer(ElementBase element, DeliveryMethod deliveryMethod)
-        {
-            return m_NetworkManager.FirstPeer != null && Send(element, m_NetworkManager.FirstPeer, deliveryMethod);
-        }
+        public bool SendToServer(ElementBase element, DeliveryMethod deliveryMethod, Action<ElementBase, NetDataWriter> serializeAction = null)
+            => m_NetworkManager.FirstPeer != null && Send(element, m_NetworkManager.FirstPeer, deliveryMethod, serializeAction);
     }
 }
