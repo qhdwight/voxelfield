@@ -54,6 +54,16 @@ namespace Input
         public override bool ValueEquals(PropertyBase<KeyCode> other) => other.Value == Value;
         public override void DeserializeValue(NetDataReader reader) => Value = (KeyCode) reader.GetUShort();
         public override void SerializeValue(NetDataWriter writer) => writer.Put((ushort) Value);
+
+        public override bool TryParseValue(string @string)
+        {
+            if (Enum.TryParse(@string, out KeyCode keyCode))
+            {
+                Value = keyCode;
+                return true;
+            }
+            return false;
+        }
     }
 
     [Serializable]

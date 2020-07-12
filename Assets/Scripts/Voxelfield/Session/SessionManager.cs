@@ -24,9 +24,12 @@ namespace Voxelfield.Session
 {
     public class SessionManager : SingletonBehavior<SessionManager>
     {
-        [SerializeField] private int m_ServerPort = 7777;
+        [SerializeField] private int m_ServerPort = DefaultPort;
 
-        private readonly IPEndPoint m_LocalHost = new IPEndPoint(IPAddress.Loopback, 7777);
+        private static IPAddress DefaultAddress => IPAddress.Loopback;
+        private static int DefaultPort => 7777;
+        private static readonly IPEndPoint DefaultEndPoint = new IPEndPoint(DefaultAddress, DefaultPort);
+        private static readonly string[] IpSeparator = {":"};
 
         private void Start()
         {
@@ -36,20 +39,26 @@ namespace Voxelfield.Session
             ConsoleCommandExecutor.SetCommand("host", args => StartHost());
             ConsoleCommandExecutor.SetCommand("edit", args => StartEdit(args[1]));
             ConsoleCommandExecutor.SetCommand("save", args => MapManager.Singleton.SaveCurrentMap());
-            ConsoleCommandExecutor.SetCommand("serve", args => StartServer(m_LocalHost));
+            ConsoleCommandExecutor.SetCommand("serve", args => StartServer(DefaultEndPoint));
             ConsoleCommandExecutor.SetCommand("connect", args =>
             {
-                Client client;
                 try
                 {
-                    client = StartClient(new IPEndPoint(IPAddress.Parse(args[1]), int.Parse(args[2])));
+                    string[] colonSplit = args.Length > 1 ? args[1].Split(IpSeparator, StringSplitOptions.RemoveEmptyEntries) : null;
+                    if (colonSplit?.Length == 2) args = args.Take(1).Concat(colonSplit).ToArray();
+                    
+                    IPAddress address = args.Length > 1 ? IPAddress.Parse(args[1]) : DefaultAddress;
+                    int port = args.Length > 2 ? int.Parse(args[2]) : DefaultPort;
+                    var endPoint = new IPEndPoint(address, port);
+                    Client client = StartClient(endPoint);
+                    Debug.Log($"Started client at {client.IpEndPoint}");
                 }
                 catch (Exception)
                 {
-                    client = StartClient(m_LocalHost);
+                    Debug.LogError("Could not start client with given parameters");
                 }
-                Debug.Log($"Started client at {client.IpEndPoint}");
             });
+            ConsoleCommandExecutor.SetAlias("wsl_connect", $"connect 172.18.41.211 {DefaultPort}");
             ConsoleCommandExecutor.SetCommand("disconnect", args => DisconnectAll());
 
             if (Application.isBatchMode)
@@ -81,14 +90,14 @@ namespace Voxelfield.Session
         private Host StartEdit(string mapName)
         {
             StandaloneDisconnectAll();
-            var edit = new Host(VoxelfieldComponents.SessionElements, m_LocalHost, new ServerInjector());
+            var edit = new Host(VoxelfieldComponents.SessionElements, DefaultEndPoint, new ServerInjector());
             return StartSession(edit);
         }
 
         private Host StartHost()
         {
             StandaloneDisconnectAll();
-            var host = new Host(VoxelfieldComponents.SessionElements, m_LocalHost, new ServerInjector());
+            var host = new Host(VoxelfieldComponents.SessionElements, DefaultEndPoint, new ServerInjector());
             return StartSession(host);
         }
 
@@ -148,11 +157,11 @@ namespace Voxelfield.Session
             }
             if (UnityEngine.Input.GetKeyDown(KeyCode.Y))
             {
-                StartServer(m_LocalHost);
+                StartServer(DefaultEndPoint);
             }
             if (UnityEngine.Input.GetKeyDown(KeyCode.J))
             {
-                StartClient(m_LocalHost);
+                StartClient(DefaultEndPoint);
             }
             if (UnityEngine.Input.GetKeyDown(KeyCode.K))
             {

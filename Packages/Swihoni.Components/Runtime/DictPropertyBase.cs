@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using LiteNetLib.Utils;
 
@@ -58,14 +57,6 @@ namespace Swihoni.Components
         {
             if (other.WithValue) SetTo(other);
         }
-
-        // public IEnumerator<(TKey, TValue)> GetEnumerator()
-        // {
-        //     foreach (KeyValuePair<TKey, TValue> pair in m_Map)
-        //         yield return (pair.Key, pair.Value);
-        // }
-        //
-        // IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => throw new Exception("Cannot interpolate dictionary");
         

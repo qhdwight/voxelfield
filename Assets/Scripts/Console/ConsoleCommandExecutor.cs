@@ -47,6 +47,8 @@ namespace Console
 
         public static void SetCommand(string commandName, Action<string[]> command) => _commands[commandName] = command;
 
+        public static void SetAlias(string alias, string realCommand) => _commands[alias] = args => ExecuteCommand(realCommand);
+        
         public static string GetAutocomplete(string stub) => _commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
 
         public static void ExecuteCommand(string fullCommand)
@@ -60,7 +62,7 @@ namespace Console
                 else Debug.LogWarning($"Command \"{commandName}\" not found!");
             }
         }
-
+        
         public static void RemoveCommand(string command) => _commands.Remove(command);
 
         public static void RemoveCommands(params string[] commands)

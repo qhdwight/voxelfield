@@ -79,7 +79,9 @@ namespace Swihoni.Components
         public abstract void SetFromIfWith(PropertyBase other);
         public abstract void SetTo(PropertyBase other);
         public abstract void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation);
+        
         public virtual void Clear() => WithValue = false;
+        public virtual bool TryParseValue(string @string) => throw new NotSupportedException($"Parsing this property is not supported. Override {nameof(TryParseValue)} if this is not intentional");
     }
 
     public class WithoutValueException : Exception

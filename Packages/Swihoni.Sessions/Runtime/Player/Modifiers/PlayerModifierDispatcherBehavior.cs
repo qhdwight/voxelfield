@@ -1,5 +1,6 @@
 using System;
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -38,6 +39,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs, int tickDelta = 1)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs, tickDelta);
+            ConfigManager.TryCommand(playerToModify.Require<StringCommandProperty>());
         }
 
         public void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)

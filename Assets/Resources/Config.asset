@@ -15,3 +15,6 @@ MonoBehaviour:
   tickRate:
     m_Flags: 1
     m_Value: 16
+  allowCheats:
+    m_Flags: 1
+    m_Value: 1

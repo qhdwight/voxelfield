@@ -22,6 +22,16 @@ namespace Swihoni.Components
             decimal d1 = u1, d2 = u2, i = (decimal) interpolation;
             return (uint) Math.Round(d1 + (d2 - d1) * i);
         }
+
+        public override bool TryParseValue(string @string)
+        {
+            if (uint.TryParse(@string, out uint @uint))
+            {
+                Value = @uint;
+                return true;
+            }
+            return false;
+        }
     }
 
     /// <summary>
@@ -50,6 +60,16 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetInt();
         public override bool ValueEquals(PropertyBase<int> other) => other.Value == Value;
+
+        public override bool TryParseValue(string @string)
+        {
+            if (int.TryParse(@string, out int @int))
+            {
+                Value = @int;
+                return true;
+            }
+            return false;
+        }
     }
 
     [Serializable]
@@ -60,6 +80,16 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUShort();
         public override bool ValueEquals(PropertyBase<ushort> other) => other.Value == Value;
+
+        public override bool TryParseValue(string @string)
+        {
+            if (ushort.TryParse(@string, out ushort @ushort))
+            {
+                Value = @ushort;
+                return true;
+            }
+            return false;
+        }
     }
 
     [Serializable]
@@ -70,6 +100,16 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetShort();
         public override bool ValueEquals(PropertyBase<short> other) => other.Value == Value;
+
+        public override bool TryParseValue(string @string)
+        {
+            if (short.TryParse(@string, out short @short))
+            {
+                Value = @short;
+                return true;
+            }
+            return false;
+        }
     }
 
     [Serializable]
@@ -80,6 +120,16 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetSByte();
         public override bool ValueEquals(PropertyBase<sbyte> other) => other.Value == Value;
+
+        public override bool TryParseValue(string @string)
+        {
+            if (sbyte.TryParse(@string, out sbyte @sbyte))
+            {
+                Value = @sbyte;
+                return true;
+            }
+            return false;
+        }
     }
 
     [Serializable]
@@ -90,6 +140,16 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetByte();
         public override bool ValueEquals(PropertyBase<byte> other) => other.Value == Value;
+
+        public override bool TryParseValue(string @string)
+        {
+            if (byte.TryParse(@string, out byte @byte))
+            {
+                Value = @byte;
+                return true;
+            }
+            return false;
+        }
     }
 
     [Serializable]
@@ -117,6 +177,16 @@ namespace Swihoni.Components
         public override bool ValueEquals(PropertyBase<bool> other) => other.Value == Value;
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetBool();
+
+        public override bool TryParseValue(string @string)
+        {
+            if (bool.TryParse(@string, out bool @bool))
+            {
+                Value = @bool;
+                return true;
+            }
+            return false;
+        }
     }
 
     [Serializable]
@@ -171,6 +241,16 @@ namespace Swihoni.Components
             }
             if (float.IsPositiveInfinity(f1) || float.IsPositiveInfinity(f2)) Value = float.PositiveInfinity;
             else Value = Mathf.Lerp(f1, f2, interpolation);
+        }
+
+        public override bool TryParseValue(string @string)
+        {
+            if (float.TryParse(@string, out float @float))
+            {
+                Value = @float;
+                return true;
+            }
+            return false;
         }
     }
 

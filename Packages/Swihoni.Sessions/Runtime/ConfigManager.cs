@@ -12,11 +12,11 @@ namespace Swihoni.Sessions
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
     public class ConfigManager : ScriptableObject
     {
-        public static Dictionary<Type, PropertyBase> Configs { get; private set; }
+        public static Dictionary<Type, PropertyBase> TypeToConfig { get; private set; }
 
         public static ConfigManager Singleton { get; private set; }
 
-        public static Dictionary<string, PropertyBase> Variables { get; private set; }
+        public static Dictionary<string, PropertyBase> NameToConfig { get; private set; }
 
         public static void Initialize()
         {
@@ -24,32 +24,35 @@ namespace Swihoni.Sessions
             if (!Singleton) throw new Exception("No config asset was found in resources");
             IReadOnlyList<FieldInfo> fields = Singleton.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
                                                        .Where(field => field.IsDefined(typeof(ConfigAttribute))).ToArray();
-            Variables = fields.ToDictionary(field => field.GetCustomAttribute<ConfigAttribute>().Name, field => (PropertyBase) field.GetValue(Singleton));
-            Configs = fields.ToDictionary(field => field.FieldType, field => (PropertyBase) field.GetValue(Singleton));
-            foreach (KeyValuePair<string, PropertyBase> pair in Variables)
+            NameToConfig = fields.ToDictionary(field => field.GetCustomAttribute<ConfigAttribute>().Name, field => (PropertyBase) field.GetValue(Singleton));
+            TypeToConfig = fields.ToDictionary(field => field.FieldType, field => (PropertyBase) field.GetValue(Singleton));
+            foreach (KeyValuePair<string, PropertyBase> pair in NameToConfig)
             {
                 ConsoleCommandExecutor.SetCommand(pair.Key, args =>
                 {
-                    if (args.Length <= 1) return;
-                    foreach (SessionBase session in SessionBase.Sessions)
+                    if (args.Length == 2)
                     {
-                        session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
-                    }
-                    switch (pair.Value)
-                    {
-                        case ByteProperty byteProperty when byte.TryParse(args[1], out byte @byte):
-                        {
-                            byteProperty.Value = @byte;
-                            break;
-                        }
-                        case BoolProperty boolProperty when bool.TryParse(args[1], out bool @bool):
-                        {
-                            boolProperty.Value = @bool;
-                            break;
-                        }
+                        foreach (Client session in SessionBase.Sessions.OfType<Client>())
+                            session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
+                        HandleArgs(args);
                     }
                 });
             }
+        }
+
+        public static void TryCommand(StringCommandProperty command)
+        {
+            if (command.Builder.Length > 0)
+            {
+                string[] split = command.Builder.ToString().Trim().Split();
+                HandleArgs(split);
+            }
+        }
+
+        private static void HandleArgs(IReadOnlyList<string> split)
+        {
+            if (split.Count == 2 && NameToConfig.TryGetValue(split[0], out PropertyBase property) && property.TryParseValue(split[1]))
+                Debug.Log($"Set {split[0]} to {split[1]}");
         }
 
         [Config("tick_rate", true)] public TickRateProperty tickRate;

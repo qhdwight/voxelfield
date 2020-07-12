@@ -131,6 +131,7 @@ namespace Swihoni.Sessions
             if (hostPlayer.Require<HealthProperty>().WithValue) return;
             // Set up new player component data
             SetupNewPlayer(tickSession, HostPlayerId, hostPlayer, tickSession);
+            tickSession.Require<LocalPlayerId>().Value = HostPlayerId;
             m_HostCommands.CopyFrom(hostPlayer);
             m_HostCommands.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Host");
         }

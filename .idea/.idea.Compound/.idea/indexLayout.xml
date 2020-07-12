@@ -8,7 +8,6 @@
     <explicitIncludes>
       <Path>Library/PackageCache/com.unity.ext.nunit@1.0.0</Path>
       <Path>Library/PackageCache/com.unity.ide.rider@2.0.5</Path>
-      <Path>Library/PackageCache/com.unity.playablegraph-visualizer@0.2.1-preview.3</Path>
       <Path>Library/PackageCache/com.unity.postprocessing@2.3.0</Path>
       <Path>Library/PackageCache/com.unity.quicksearch@1.5.4</Path>
       <Path>Library/PackageCache/com.unity.test-framework@1.1.14</Path>

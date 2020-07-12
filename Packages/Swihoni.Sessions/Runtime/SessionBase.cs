@@ -202,7 +202,7 @@ namespace Swihoni.Sessions
         {
             Container session = GetLatestSession();
             foreach (ElementBase element in session.Elements)
-                if (element is PropertyBase property && ConfigManager.Configs.TryGetValue(property.GetType(), out PropertyBase configProperty))
+                if (element is PropertyBase property && ConfigManager.TypeToConfig.TryGetValue(property.GetType(), out PropertyBase configProperty))
                     property.SetFromIfWith(configProperty);
             session.Require<ModeIdProperty>().SetFromIfWith(DebugBehavior.Singleton.ModeId);
             var tickRate = session.Require<TickRateProperty>();

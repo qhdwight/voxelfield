@@ -127,7 +127,7 @@ namespace Swihoni.Sessions
                 case ClientCommandsCode:
                 {
                     m_EmptyClientCommands.Deserialize(reader);
-                    if (!IsPaused &&serverPlayer.Require<HealthProperty>().WithoutValue)
+                    if (!IsPaused && serverPlayer.Require<HealthProperty>().WithoutValue)
                     {
                         Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {fromPeer.GetPlayerId()}");
                         SetupNewPlayer(serverSession, clientId, serverPlayer, serverSession);
@@ -153,7 +153,8 @@ namespace Swihoni.Sessions
 
             if (!IsPaused)
             {
-                EntityManager.ModifyAll(serverSession, (ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs));
+                EntityManager.ModifyAll(serverSession,
+                                        (ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs));
                 GetMode(serverSession).Modify(this, serverSession, durationUs);
             }
 
