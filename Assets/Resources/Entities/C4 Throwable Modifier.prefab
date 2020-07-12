@@ -66,6 +66,11 @@ PrefabInstance:
       propertyPath: m_IsSticky
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7530670241173920196, guid: 15f1e88241ffddcd1939d23f0ffdd3a3,
+        type: 3}
+      propertyPath: m_Damage
+      value: 120
+      objectReference: {fileID: 0}
     - target: {fileID: 7530670241173920217, guid: 15f1e88241ffddcd1939d23f0ffdd3a3,
         type: 3}
       propertyPath: m_Name

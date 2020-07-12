@@ -283,7 +283,7 @@ namespace Swihoni.Sessions
         public abstract Container GetLatestSession();
 
         public virtual Container GetLocalCommands() => throw new NotImplementedException();
-
+        
         public static Ray GetRayForPlayer(Container player)
         {
             var camera = player.Require<CameraComponent>();
@@ -291,11 +291,13 @@ namespace Swihoni.Sessions
             Vector3 direction = camera.GetForward();
             var move = player.Require<MoveComponent>();
             // TODO:refactor magic numbers
-            Vector3 position = move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
+            Vector3 position = GetPlayerEyePosition(move);
 
             var ray = new Ray(position, direction);
             return ray;
         }
+
+        public static Vector3 GetPlayerEyePosition(MoveComponent move) => move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
 
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public virtual ModeBase GetMode(Container session = null)

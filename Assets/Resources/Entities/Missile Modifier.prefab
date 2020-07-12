@@ -147,7 +147,7 @@ MonoBehaviour:
   m_PopTimeUs: 2000000
   m_PopDurationUs: 500000
   m_Radius: 4
-  m_Damage: 70
+  m_Damage: 120
   m_Interval: 0
   m_Mask:
     serializedVersion: 2

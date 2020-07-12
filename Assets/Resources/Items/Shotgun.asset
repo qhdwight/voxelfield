@@ -38,9 +38,9 @@ MonoBehaviour:
   - durationUs: 4294967295
     isPersistent: 0
   m_Damage: 50
-  m_PlayerMask:
+  m_RaycastMask:
     serializedVersion: 2
-    m_Bits: 2048
+    m_Bits: 182273
   m_DropOff:
     serializedVersion: 2
     m_Curve:

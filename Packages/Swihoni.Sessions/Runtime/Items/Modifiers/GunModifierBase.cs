@@ -37,9 +37,13 @@ namespace Swihoni.Sessions.Items.Modifiers
         {
             bool reloadInput = inputs.GetInput(PlayerInput.Reload);
             if ((reloadInput || item.ammoInMag == 0) && CanReload(item, inventory) && item.status.id == ItemStatusId.Idle)
-                StartStatus(session, playerId, item, GunStatusId.Reloading, durationUs);
+                StartStatus(session, playerId, inventory, item, GunStatusId.Reloading, durationUs);
             else if (inputs.GetInput(PlayerInput.UseOne) && item.ammoInMag == 0 && item.ammoInReserve == 0 && item.status.id == ItemStatusId.Idle)
-                StartStatus(session, playerId, item, GunStatusId.DryFiring, durationUs);
+                StartStatus(session, playerId, inventory, item, GunStatusId.DryFiring, durationUs);
+            
+            if (inventory.tracerTimeUs > durationUs) inventory.tracerTimeUs.Value -= durationUs;
+            else inventory.tracerTimeUs.Value = 0u;
+            
             base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
         }
 
@@ -66,11 +70,12 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
             item.ammoInMag > 0 && base.CanPrimaryUse(item, inventory, justFinishedUse);
 
-        protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) => Fire(playerId, session, item, durationUs);
+        protected override void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
+            => Fire(playerId, session, inventory, item, durationUs);
 
         private readonly HashSet<PlayerHitboxManager> m_HitPlayers = new HashSet<PlayerHitboxManager>();
 
-        protected virtual void Fire(int playerId, SessionBase session, ItemComponent item, uint durationUs)
+        protected virtual void Fire(int playerId, SessionBase session, InventoryComponent inventory, ItemComponent item, uint durationUs)
         {
             if (item.ammoInMag == 0) return;
 
@@ -78,9 +83,9 @@ namespace Swihoni.Sessions.Items.Modifiers
 
             Ray ray = session.GetRayForPlayerId(playerId);
             session.RollbackHitboxesFor(playerId);
-
+            
             ModeBase mode = session.GetMode();
-            int hitCount = Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_PlayerMask);
+            int hitCount = Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_RaycastMask);
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)
             {
                 RaycastHit hit = RaycastHits[hitIndex];
@@ -90,12 +95,16 @@ namespace Swihoni.Sessions.Items.Modifiers
                 mode.PlayerHit(session, playerId, hitbox, this, hit, durationUs);
             }
             m_HitPlayers.Clear();
+            
+            inventory.tracerStart.Value = ray.origin;
+            inventory.tracerEnd.Value = hitCount > 0 ? RaycastHits[0].point : ray.GetPoint(300.0f);
+            inventory.tracerTimeUs.Value = 1_000_000u;
         }
 
-        protected internal override void OnUnequip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        protected internal override void OnUnequip(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
         {
             if (item.status.id == GunStatusId.Reloading)
-                StartStatus(session, playerId, item, ItemStatusId.Idle, durationUs);
+                StartStatus(session, playerId, inventory, item, ItemStatusId.Idle, durationUs);
         }
 
         protected abstract void ReloadAmmo(ItemComponent item);

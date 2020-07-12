@@ -41,7 +41,7 @@ namespace Voxelfield.Session.Mode
             var isIconVisible = true;
             if (session.IsValidLocalPlayer(sessionContainer, out Container localPlayer))
             {
-                Vector3 localPosition = localPlayer.Require<MoveComponent>().position + new Vector3 {y = 1.8f};
+                Vector3 localPosition = SessionBase.GetPlayerEyePosition(localPlayer.Require<MoveComponent>());
                 m_SpriteRenderer.transform.LookAt(localPosition);
                 float distanceMultiplier = Mathf.Clamp(Vector3.Distance(localPosition, spritePosition) * 0.05f, 1.0f, 5.0f);
                 spritePosition += new Vector3 {y = distanceMultiplier};

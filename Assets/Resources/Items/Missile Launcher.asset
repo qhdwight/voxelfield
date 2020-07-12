@@ -38,9 +38,9 @@ MonoBehaviour:
   - durationUs: 4294967295
     isPersistent: 0
   m_Damage: 30
-  m_PlayerMask:
+  m_RaycastMask:
     serializedVersion: 2
-    m_Bits: 2048
+    m_Bits: 182273
   m_DropOff:
     serializedVersion: 2
     m_Curve:
@@ -65,6 +65,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  m_HeadShotMultiplier: 1
   m_MagSize: 1
   m_StartingAmmoInReserve: 3
   m_AdsModifierProperties:

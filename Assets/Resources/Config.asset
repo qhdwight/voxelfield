@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tickRate:
     m_Flags: 1
-    m_Value: 16
+    m_Value: 60
   allowCheats:
     m_Flags: 1
-    m_Value: 1
+    m_Value: 0

@@ -69,11 +69,11 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (notFrozen)
             {
                 if (inputs.GetInput(PlayerInput.UseOne) && CanPrimaryUse(item, inventory))
-                    StartStatus(session, playerId, item, GetUseStatus(inputs), durationUs);
+                    StartStatus(session, playerId, inventory, item, GetUseStatus(inputs), durationUs);
                 else if (inputs.GetInput(PlayerInput.UseTwo) && CanSecondaryUse(session, playerId, item, inventory))
-                    StartStatus(session, playerId, item, ItemStatusId.SecondaryUsing, durationUs);
+                    StartStatus(session, playerId, inventory, item, ItemStatusId.SecondaryUsing, durationUs);
                 else if (inputs.GetInput(PlayerInput.UseThree) && CanTernaryUse(session, playerId, item, inventory))
-                    StartStatus(session, playerId, item, ItemStatusId.TernaryUsing, durationUs);
+                    StartStatus(session, playerId, inventory, item, ItemStatusId.TernaryUsing, durationUs);
             }
             ModifyStatus(session, playerId, item, inventory, inputs, durationUs);
         }
@@ -81,7 +81,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         private void ModifyStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, uint durationUs)
         {
             item.status.elapsedUs.Value += durationUs;
-            StatusTick(session, playerId, item, inputs, durationUs);
+            StatusTick(session, playerId, inventory, item, inputs, durationUs);
             EndStatus(session, playerId, item, inventory, inputs, durationUs);
         }
 
@@ -96,7 +96,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                     if (modifierProperties.isPersistent) break;
                     uint statusElapsedUs = status.elapsedUs;
                     byte? nextStatus = FinishStatus(session, playerId, item, inventory, inputs);
-                    StartStatus(session, playerId, item, nextStatus ?? ItemStatusId.Idle, durationUs, statusElapsedUs - modifierProperties.durationUs);
+                    StartStatus(session, playerId, inventory, item, nextStatus ?? ItemStatusId.Idle, durationUs, statusElapsedUs - modifierProperties.durationUs);
                     if (nextStatus == ItemStatusId.RequestRemoval) break;
                 }
             }
@@ -107,16 +107,17 @@ namespace Swihoni.Sessions.Items.Modifiers
             }
         }
 
-        protected virtual void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, uint durationUs) { }
+        protected virtual void StatusTick(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs, uint durationUs) { }
 
-        protected void StartStatus(SessionBase session, int playerId, ItemComponent item, byte statusId, uint durationUs, uint elapsedUs = 0u)
+        protected void StartStatus(SessionBase session, int playerId, InventoryComponent inventory, 
+                                   ItemComponent item, byte statusId, uint durationUs, uint elapsedUs = 0u)
         {
             item.status.id.Value = statusId;
             item.status.elapsedUs.Value = elapsedUs;
             switch (statusId)
             {
                 case ItemStatusId.PrimaryUsing:
-                    PrimaryUse(session, playerId, item, durationUs);
+                    PrimaryUse(session, playerId, inventory, item, durationUs);
                     break;
                 case ItemStatusId.SecondaryUsing:
                     SecondaryUse(session, playerId, durationUs);
@@ -156,7 +157,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual void SecondaryUse(SessionBase session, int playerId, uint durationUs) { }
 
-        protected virtual void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
+        protected virtual void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs) { }
 
         protected virtual void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
 
@@ -164,6 +165,6 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected internal virtual void OnEquip(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
 
-        protected internal virtual void OnUnequip(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
+        protected internal virtual void OnUnequip(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs) { }
     }
 }

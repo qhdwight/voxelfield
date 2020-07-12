@@ -32,7 +32,7 @@ namespace Swihoni.Sessions.Player.Visualization
         private Camera m_Camera;
         private PlayerVisualsBehaviorBase[] m_Visuals;
         private Vector3 m_DamageTextOffset, m_UsernameTextOffset;
-        private StringBuilder m_UsernameBuilder = new StringBuilder();
+        private readonly StringBuilder m_UsernameBuilder = new StringBuilder();
 
         private Container m_RecentRender;
 
@@ -51,7 +51,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         private readonly StringBuilder m_DamageNotifierBuilder = new StringBuilder();
 
-        private static Vector3 GetPosition(Container session, int playerId) => session.GetPlayer(playerId).Require<MoveComponent>().position;
+        private static Vector3 GetPosition(Container session, int playerId) => SessionBase.GetPlayerEyePosition(session.GetPlayer(playerId).Require<MoveComponent>());
 
         public void Render(SessionBase session, Container sessionContainer, int playerId, Container player, bool isLocalPlayer)
         {

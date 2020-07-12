@@ -21,7 +21,6 @@ namespace Swihoni.Sessions.Items.Visuals
             public uint timeUs;
             public AudioSource audio;
             public ParticleSystem particleSystem;
-            public GameObject tracer;
         }
 
         public AnimationClip animationClip;

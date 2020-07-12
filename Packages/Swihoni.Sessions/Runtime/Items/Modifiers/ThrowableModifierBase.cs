@@ -16,10 +16,10 @@ namespace Swihoni.Sessions.Items.Modifiers
         [Header("Throwable"), SerializeField] private float m_ThrowForce = default;
         [SerializeField] protected ThrowableModifierBehavior m_ThrowablePrefab = default;
 
-        protected override void StatusTick(SessionBase session, int playerId, ItemComponent item, InputFlagProperty inputs, uint durationUs)
+        protected override void StatusTick(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs, uint durationUs)
         {
             if (item.status.id == ThrowableStatusId.Cooking && !inputs.GetInput(PlayerInput.UseOne))
-                StartStatus(session, playerId, item, ItemStatusId.PrimaryUsing, durationUs);
+                StartStatus(session, playerId, inventory, item, ItemStatusId.PrimaryUsing, durationUs);
         }
 
         protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
@@ -43,7 +43,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected override bool CanSecondaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory)
             => base.CanPrimaryUse(item, inventory) && item.status.id != ThrowableStatusId.Cooking;
 
-        protected override void PrimaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
+        protected override void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs) { }
 
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
         {
@@ -89,10 +89,10 @@ namespace Swihoni.Sessions.Items.Modifiers
             return true;
         }
 
-        protected internal override void OnUnequip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        protected internal override void OnUnequip(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
         {
             if (item.status.id == ThrowableStatusId.Cooking)
-                StartStatus(session, playerId, item, ItemStatusId.Idle, durationUs);
+                StartStatus(session, playerId, inventory, item, ItemStatusId.Idle, durationUs);
         }
     }
 }

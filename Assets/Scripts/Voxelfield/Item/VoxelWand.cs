@@ -27,7 +27,7 @@ namespace Voxelfield.Item
         protected override void OnEquip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
             => SessionCommand(session, playerId, Commands);
 
-        protected override void OnUnequip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        protected override void OnUnequip(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
             => ConsoleCommandExecutor.RemoveCommands(Commands);
 
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)

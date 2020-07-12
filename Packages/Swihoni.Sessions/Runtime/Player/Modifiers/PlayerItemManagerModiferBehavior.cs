@@ -77,7 +77,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 else if (equipStatus.id == ItemEquipStatusId.Unequipping)
                 {
                     equipStatus.id.Value = ItemEquipStatusId.Unequipped;
-                    modifier.OnUnequip(session, playerId, inventory.EquippedItemComponent, durationUs);
+                    modifier.OnUnequip(session, playerId, inventory, inventory.EquippedItemComponent, durationUs);
                 }
                 equipStatus.elapsedUs.Value -= modifierProperties.durationUs;
             }
