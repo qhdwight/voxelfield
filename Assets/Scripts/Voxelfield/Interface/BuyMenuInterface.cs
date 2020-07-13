@@ -3,13 +3,14 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
 
-namespace Voxelfield.Interface.Showdown
+namespace Voxelfield.Interface
 {
     public class BuyMenuInterface : SessionInterfaceBehavior
     {
@@ -61,7 +62,7 @@ namespace Voxelfield.Interface.Showdown
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isActive = ShouldBeActive(session, sessionContainer, out Container localPlayer, out ShowdownSessionComponent showdown);
+            bool isActive = ShouldBeActive(session, sessionContainer, out Container localPlayer);
 
             if (isActive && InputProvider.Singleton.GetInputDown(InputType.Buy)) m_PlayerWantsVisible = !m_PlayerWantsVisible;
             isActive = isActive && m_PlayerWantsVisible;
@@ -73,21 +74,18 @@ namespace Voxelfield.Interface.Showdown
             SetInterfaceActive(isActive);
         }
 
-        private static bool ShouldBeActive(SessionBase session, Container sessionContainer, out Container sessionLocalPlayer, out ShowdownSessionComponent sessionShowdown)
+        private static bool ShouldBeActive(SessionBase session, Container sessionContainer, out Container sessionLocalPlayer)
         {
             sessionLocalPlayer = default;
-            sessionShowdown = default;
-
-            if (sessionContainer.Require<ModeIdProperty>() != ModeIdProperty.Showdown) return false;
-
-            sessionShowdown = sessionContainer.Require<ShowdownSessionComponent>();
-            if (sessionShowdown.number.WithValue && sessionShowdown.remainingUs <= ShowdownMode.FightTimeUs) return false;
-
             var localPlayerId = sessionContainer.Require<LocalPlayerId>();
             if (localPlayerId.WithoutValue) return false;
 
-            sessionLocalPlayer = session.GetModifyingPayerFromId(localPlayerId);
-            return sessionLocalPlayer.Without(out HealthProperty localHealth) || localHealth.WithValue && localHealth.IsAlive;
+            if (ModeManager.GetMode(sessionContainer) is IModeWithBuying buyingMode && buyingMode.CanBuy(session, sessionContainer))
+            {
+                sessionLocalPlayer = session.GetModifyingPayerFromId(localPlayerId);
+                return sessionLocalPlayer.Without(out HealthProperty localHealth) || localHealth.IsActiveAndAlive;
+            }
+            return false;
         }
     }
 }

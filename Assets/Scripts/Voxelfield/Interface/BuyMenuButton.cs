@@ -3,7 +3,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Voxelfield.Interface.Showdown
+namespace Voxelfield.Interface
 {
     public class BuyMenuButton : MonoBehaviour, IPointerEnterHandler
     {

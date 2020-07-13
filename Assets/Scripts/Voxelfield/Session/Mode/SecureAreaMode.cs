@@ -1,8 +1,6 @@
-using System;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
-using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
@@ -11,7 +9,7 @@ using Voxel.Map;
 namespace Voxelfield.Session.Mode
 {
     [CreateAssetMenu(fileName = "Secure Area", menuName = "Session/Mode/Secure Area", order = 0)]
-    public class SecureAreaMode : ModeBase
+    public class SecureAreaMode : DeathmatchMode, IModeWithBuying
     {
         private SiteBehavior[] m_SiteBehaviors;
         private VoxelMapNameProperty m_LastMapName;
@@ -99,25 +97,13 @@ namespace Voxelfield.Session.Mode
 
                 if (canAdvance)
                 {
-                    if (secureArea.roundTime > durationUs)
-                    {
-                        secureArea.roundTime.Value -= durationUs;
-                    }
-                    else
-                    {
-                        NextRound(session, sessionContainer, secureArea);
-                    }
+                    if (secureArea.roundTime > durationUs) secureArea.roundTime.Value -= durationUs;
+                    else NextRound(session, sessionContainer, secureArea);
                 }
                 else
                 {
-                    if (secureArea.roundTime > m_RoundEndDurationUs && secureArea.roundTime - m_RoundEndDurationUs > durationUs)
-                    {
-                        secureArea.roundTime.Value -= durationUs;
-                    }
-                    else
-                    {
-                        secureArea.roundTime.Value = m_RoundEndDurationUs;
-                    }
+                    if (secureArea.roundTime > m_RoundEndDurationUs && secureArea.roundTime - m_RoundEndDurationUs > durationUs) secureArea.roundTime.Value -= durationUs;
+                    else secureArea.roundTime.Value = m_RoundEndDurationUs;
                 }
             }
             else
@@ -140,13 +126,23 @@ namespace Voxelfield.Session.Mode
 
         private void NextRound(SessionBase session, Container sessionContainer, SecureAreaComponent secureArea)
         {
-            secureArea.roundTime.Value = m_RoundDurationUs + m_RoundEndDurationUs + m_BuyDurationUs;
+            bool isFirstRound = secureArea.roundTime.WithoutValue;
+            secureArea.roundTime.Value = m_RoundEndDurationUs + m_RoundDurationUs + m_BuyDurationUs;
             foreach (SiteComponent site in secureArea.sites)
             {
                 site.Zero();
                 site.timeUs.Value = m_SecureDurationUs;
             }
-            ForEachActivePlayer(session, sessionContainer, (playerId, player) => SpawnPlayer(session, sessionContainer, playerId, player));
+            ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
+            {
+                SpawnPlayer(session, sessionContainer, playerId, player);
+                if (isFirstRound)
+                {
+                    var money = player.Require<MoneyComponent>();
+                    money.count.Value = 800;
+                    money.wantedBuyItemId.Clear();
+                }
+            });
         }
 
         public override void Render(SessionBase session, Container sessionContainer)
@@ -157,6 +153,12 @@ namespace Voxelfield.Session.Mode
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
             for (var siteIndex = 0; siteIndex < secureArea.sites.Length; siteIndex++)
                 siteBehaviors[siteIndex].Render(secureArea.sites[siteIndex]);
+        }
+
+        public bool CanBuy(SessionBase session, Container sessionContainer)
+        {
+            var secureArea = sessionContainer.Require<SecureAreaComponent>();
+            return secureArea.roundTime.WithValue && secureArea.roundTime > m_RoundEndDurationUs + m_RoundDurationUs;
         }
     }
 }

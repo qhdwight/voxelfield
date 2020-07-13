@@ -51,6 +51,8 @@
               <e p="Voxelfield.Editor.asmdef" t="Include" />
             </e>
             <e p="Interface" t="Include">
+              <e p="BuyMenuButton.cs" t="Include" />
+              <e p="BuyMenuInterface.cs" t="Include" />
               <e p="CtfInterface.cs" t="Include" />
               <e p="Designer" t="Include">
                 <e p="DesignerHudInterface.cs" t="Include" />
@@ -66,8 +68,6 @@
               <e p="ScoreboardInterface.cs" t="Include" />
               <e p="SecureAreaInterface.cs" t="Include" />
               <e p="Showdown" t="Include">
-                <e p="BuyMenuButton.cs" t="Include" />
-                <e p="BuyMenuInterface.cs" t="Include" />
                 <e p="RoundInterfaceBase.cs" t="Include" />
                 <e p="ShowdownInterface.cs" t="Include" />
               </e>

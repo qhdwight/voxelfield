@@ -18,8 +18,13 @@ namespace Voxelfield.Session.Mode
 {
     using QueuedTeamSpawns = IReadOnlyList<Queue<KeyValuePair<Position3Int, Container>>>;
 
+    public interface IModeWithBuying
+    {
+        bool CanBuy(SessionBase session, Container sessionContainer);
+    }
+
     [CreateAssetMenu(fileName = "Showdown", menuName = "Session/Mode/Showdown", order = 0)]
-    public class ShowdownMode : DeathmatchModeBase
+    public class ShowdownMode : DeathmatchModeBase, IModeWithBuying
     {
         // public const uint BuyTimeUs = 15_000_000u, FightTimeUs = 300_000_000u;
         // public const uint BuyTimeUs = 60_000_000u, FightTimeUs = 300_000_000u;
@@ -225,7 +230,7 @@ namespace Voxelfield.Session.Mode
                 stage.curePackages[index].isActive.Value = true;
             }
         }
-        
+
         private static bool InWarmup(Container session) => session.Require<ShowdownSessionComponent>().number.WithoutValue;
 
         protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer,
@@ -274,5 +279,8 @@ namespace Voxelfield.Session.Mode
         //         player.Require<TeamProperty>().Value = 
         //     }
         // }
+
+        public bool CanBuy(SessionBase session, Container sessionContainer)
+            => sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
     }
 }
