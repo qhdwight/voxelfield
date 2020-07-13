@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
@@ -18,11 +17,6 @@ namespace Voxelfield.Session.Mode
 {
     using QueuedTeamSpawns = IReadOnlyList<Queue<KeyValuePair<Position3Int, Container>>>;
 
-    public interface IModeWithBuying
-    {
-        bool CanBuy(SessionBase session, Container sessionContainer);
-    }
-
     [CreateAssetMenu(fileName = "Showdown", menuName = "Session/Mode/Showdown", order = 0)]
     public class ShowdownMode : DeathmatchModeBase, IModeWithBuying
     {
@@ -36,28 +30,6 @@ namespace Voxelfield.Session.Mode
         [SerializeField] private LayerMask m_ModelMask = default;
         private CurePackageBehavior[] m_CurePackages;
         private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
-
-        private static ushort GetCost(byte itemId)
-        {
-            switch (itemId)
-            {
-                case ItemId.Rifle:
-                    return 2000;
-                case ItemId.Shotgun:
-                    return 1300;
-                case ItemId.Sniper:
-                    return 5000;
-                case ItemId.Deagle:
-                    return 700;
-                case ItemId.Grenade:
-                    return 150;
-                case ItemId.Molotov:
-                    return 400;
-                case ItemId.C4:
-                    return 600;
-            }
-            throw new ArgumentException("Can't buy this item id");
-        }
 
         public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
         {
@@ -102,19 +74,7 @@ namespace Voxelfield.Session.Mode
             }
             else
             {
-                ByteProperty wantedBuyItemId = player.Require<MoneyComponent>().wantedBuyItemId;
-                if (wantedBuyItemId.WithValue)
-                {
-                    UShortProperty money = player.Require<MoneyComponent>().count;
-                    Debug.Log($"Trying to buy requested item: {wantedBuyItemId.Value}");
-                    ushort cost = GetCost(wantedBuyItemId);
-                    if (cost < money)
-                    {
-                        var inventory = player.Require<InventoryComponent>();
-                        PlayerItemManagerModiferBehavior.AddItem(inventory, wantedBuyItemId);
-                        money.Value -= cost;
-                    }
-                }
+                BuyingMode.HandleBuying(player);
             }
         }
 

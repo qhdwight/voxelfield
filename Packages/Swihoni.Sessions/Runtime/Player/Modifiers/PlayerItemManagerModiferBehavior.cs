@@ -187,7 +187,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             foreach (byte itemId in itemIds) AddItem(inventory, itemId);
         }
 
-        public static void AddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
+        public static bool AddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
         {
             bool isAnOpenSlot;
             if (ItemAssetLink.GetModifier(itemId) is ThrowableModifierBase &&
@@ -199,6 +199,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
             else isAnOpenSlot = FindEmpty(inventory, out index);
             if (isAnOpenSlot) SetItemAtIndex(inventory, itemId, index, count);
+            return isAnOpenSlot;
         }
 
         public static void SetItemAtIndex(InventoryComponent inventory, byte itemId, int index, ushort count = 1)

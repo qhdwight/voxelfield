@@ -1,8 +1,13 @@
+using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Modifiers;
+using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
 
@@ -42,6 +47,12 @@ namespace Voxelfield.Session.Mode
             secureArea.roundTime.Clear();
             secureArea.teamScores.Clear();
             secureArea.sites.Clear();
+        }
+
+        protected override void HandleRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, uint durationUs)
+        {
+            if (container.Require<SecureAreaComponent>().roundTime.WithoutValue)
+                base.HandleRespawn(session, container, playerId, player, health, durationUs);
         }
 
         public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
@@ -118,10 +129,60 @@ namespace Voxelfield.Session.Mode
             }
         }
 
+        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
+        {
+            TimeUsProperty roundTime = container.Require<SecureAreaComponent>().roundTime;
+            bool isBuyTime = roundTime.WithValue && roundTime > m_RoundEndDurationUs + m_RoundDurationUs;
+            if (isBuyTime)
+                BuyingMode.HandleBuying(player);
+            player.Require<FrozenProperty>().Value = isBuyTime;
+            
+            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
+        }
+
         protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
         {
             player.Require<TeamProperty>().Value = (byte) (playerId % 2 + 1);
-            base.SpawnPlayer(session, sessionContainer, playerId, player);
+            var secureArea = sessionContainer.Require<SecureAreaComponent>();
+            if (secureArea.roundTime.WithValue)
+            {
+                var health = player.Require<HealthProperty>();
+                if (health.IsDead)
+                {
+                    var inventory = player.Require<InventoryComponent>();
+                    ArrayElement<ItemComponent> items = inventory.items;
+                    for (var i = 1; i < items.Length; i++) items[i].Zero(); // Clear except for pickaxe
+                    inventory.equippedIndex.Value = 1;
+                    inventory.equipStatus.Zero();
+                }
+
+                var move = player.Require<MoveComponent>();
+                move.Zero();
+                move.position.Value = GetSpawnPosition(player, playerId, session, sessionContainer);
+                player.ZeroIfWith<CameraComponent>();
+                health.Value = 100;
+                player.ZeroIfWith<HitMarkerComponent>();
+                player.ZeroIfWith<DamageNotifierComponent>();
+            }
+            else
+            {
+                base.SpawnPlayer(session, sessionContainer, playerId, player);
+            }
+        }
+        
+        protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer)
+        {
+            KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
+                                                                                                              && modelId == ModelsProperty.Spawn
+                                                                                                              && pair.Value.With<TeamProperty>())
+                                                                         .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
+                                                                         .OrderBy(spawnGroup => spawnGroup.Key)
+                                                                         .Select(spawnGroup => spawnGroup.ToArray())
+                                                                         .ToArray();
+            byte team = player.Require<TeamProperty>();
+            KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
+            int spawnIndex = Random.Range(0, teamSpawns.Length);
+            return teamSpawns[spawnIndex].Key;
         }
 
         private void NextRound(SessionBase session, Container sessionContainer, SecureAreaComponent secureArea)
@@ -141,9 +202,18 @@ namespace Voxelfield.Session.Mode
                     var money = player.Require<MoneyComponent>();
                     money.count.Value = 800;
                     money.wantedBuyItemId.Clear();
+                    InventoryComponent inventory = player.Require<InventoryComponent>().Zero();
+                    PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Shovel, ItemId.Pistol);
                 }
             });
         }
+        
+        private static Queue<KeyValuePair<Position3Int, Container>>[] FindSpawns(ModelsProperty models)
+            => models.Map.Where(modelPair => modelPair.Value.With<TeamProperty>())
+                     .GroupBy(spawnTuple => spawnTuple.Value.Require<TeamProperty>().Value)
+                     .OrderBy(group => group.Key)
+                     .Select(teamGroup => new Queue<KeyValuePair<Position3Int, Container>>(teamGroup))
+                     .ToArray();
 
         public override void Render(SessionBase session, Container sessionContainer)
         {

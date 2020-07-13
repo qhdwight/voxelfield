@@ -86,6 +86,7 @@
               <e p="ClientInjector.cs" t="Include" />
               <e p="Components.cs" t="Include" />
               <e p="Mode" t="Include">
+                <e p="BuyingMode.cs" t="Include" />
                 <e p="CtfMode.cs" t="Include" />
                 <e p="CurePackageBehavior.cs" t="Include" />
                 <e p="DeathmatchMode.cs" t="Include" />
