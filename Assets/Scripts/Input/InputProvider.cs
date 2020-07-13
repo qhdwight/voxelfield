@@ -34,6 +34,7 @@ namespace Input
         ItemEight,
         ItemNine,
         ItemTen,
+        ItemLast,
         Ads,
         ToggleConsole,
         ConsoleCommand,
@@ -118,6 +119,7 @@ namespace Input
                     [InputType.ItemEight] = KeyCode.Alpha8,
                     [InputType.ItemNine] = KeyCode.Alpha9,
                     [InputType.ItemTen] = KeyCode.Alpha0,
+                    [InputType.ItemLast] = KeyCode.Q,
                     [InputType.Ads] = KeyCode.Mouse1,
                     [InputType.ToggleConsole] = KeyCode.BackQuote,
                     [InputType.ConsoleCommand] = KeyCode.Slash,
@@ -137,8 +139,6 @@ namespace Input
     public class InputProvider : SingletonBehavior<InputProvider>
     {
         private InputSettings m_Settings = InputSettings.Defaults();
-
-        public float Sensitivity { get; set; } = 2.0f;
 
         public bool GetInput(InputType type) => UnityEngine.Input.GetKey(m_Settings.Get(type));
 

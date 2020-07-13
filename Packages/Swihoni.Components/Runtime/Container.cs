@@ -114,9 +114,9 @@ namespace Swihoni.Components
                 object child = Elements[m_TypeToIndex[typeof(TElement)]];
                 return (TElement) child;
             }
-            catch (KeyNotFoundException exception)
+            catch (KeyNotFoundException)
             {
-                throw new ArgumentException($"Container does not have {typeof(TElement).Name}", exception);
+                throw new ArgumentException($"Container does not have {typeof(TElement).Name}");
             }
         }
 

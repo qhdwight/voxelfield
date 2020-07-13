@@ -28,10 +28,11 @@ namespace Voxelfield.Session.Mode
         [SerializeField] private Color m_BlueColor = new Color(0.1764705882f, 0.5098039216f, 0.8509803922f),
                                        m_RedColor = new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
         private string m_BlueHex, m_RedHex;
-        
+
         // private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
         private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
         private FlagBehavior[][] m_FlagBehaviors;
+        private readonly VoxelMapNameProperty m_LastMapName = new VoxelMapNameProperty();
 
         private void OnEnable()
         {
@@ -39,20 +40,23 @@ namespace Voxelfield.Session.Mode
             m_RedHex = ColorUtility.ToHtmlStringRGB(m_RedColor);
         }
 
-        private void LinkFlagBehaviors()
-            => m_FlagBehaviors = MapManager.Singleton.Models.Values
-                                           .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Flag)
-                                           .GroupBy(model => model.Container.Require<TeamProperty>().Value)
-                                           .OrderBy(group => group.Key)
-                                           .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray();
+        private FlagBehavior[][] GetFlagBehaviors(StringProperty mapName)
+        {
+            if (m_LastMapName == mapName) return m_FlagBehaviors;
+            m_LastMapName.SetTo(mapName);
+            return m_FlagBehaviors = MapManager.Singleton.Models.Values
+                                               .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Flag)
+                                               .GroupBy(model => model.Container.Require<TeamProperty>().Value)
+                                               .OrderBy(group => group.Key)
+                                               .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray();
+        }
 
         public override void Begin(SessionBase session, Container sessionContainer)
         {
-            Debug.Log("Starting capture the flag game mode");
+            base.Begin(session, sessionContainer);
             var ctf = sessionContainer.Require<CtfComponent>();
             ctf.teamScores.Zero();
             ctf.teamFlags.Clear();
-            m_FlagBehaviors = null;
         }
 
         public override void Render(SessionBase session, Container sessionContainer)
@@ -60,25 +64,24 @@ namespace Voxelfield.Session.Mode
             base.Render(session, sessionContainer);
 
             if (session.IsPaused) return;
-            if (m_FlagBehaviors == null && !session.IsPaused) LinkFlagBehaviors();
-            if (m_FlagBehaviors == null) return;
 
+            FlagBehavior[][] flagBehaviors = GetFlagBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
             ArrayElement<FlagArrayElement> flags = sessionContainer.Require<CtfComponent>().teamFlags;
-            for (var flagTeam = 0; flagTeam < m_FlagBehaviors.Length; flagTeam++)
-            for (var flagId = 0; flagId < m_FlagBehaviors[flagTeam].Length; flagId++)
-                m_FlagBehaviors[flagTeam][flagId].Render(session, sessionContainer, flags[flagTeam][flagId]);
+            for (var flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
+            for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
+                flagBehaviors[flagTeam][flagId].Render(session, sessionContainer, flags[flagTeam][flagId]);
         }
 
-        public override void Modify(SessionBase session, Container container, uint durationUs)
+        public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
         {
-            base.Modify(session, container, durationUs);
+            base.Modify(session, sessionContainer, durationUs);
 
-            if (m_FlagBehaviors == null && !session.IsPaused) LinkFlagBehaviors();
-            if (m_FlagBehaviors == null) return;
+            if (session.IsPaused) return;
 
-            var ctf = container.Require<CtfComponent>();
-            for (byte flagTeam = 0; flagTeam < m_FlagBehaviors.Length; flagTeam++)
-            for (var flagId = 0; flagId < m_FlagBehaviors[flagTeam].Length; flagId++)
+            var ctf = sessionContainer.Require<CtfComponent>();
+            FlagBehavior[][] flagBehaviors = GetFlagBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
+            for (byte flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
+            for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
             {
                 FlagComponent flag = ctf.teamFlags[flagTeam][flagId];
                 HandlePlayersNearFlag(session, flag, flagTeam, flagId, ctf);
@@ -190,7 +193,7 @@ namespace Voxelfield.Session.Mode
         public Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());
 
         public Color GetTeamColor(byte teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;
-        
+
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);

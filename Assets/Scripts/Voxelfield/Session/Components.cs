@@ -25,6 +25,8 @@ namespace Voxelfield.Session
         public ArrayElement<CurePackageComponent> curePackages = new ArrayElement<CurePackageComponent>(9);
     }
 
+    /* Capture the flag */
+    
     [Serializable]
     public class FlagComponent : ComponentBase
     {
@@ -43,6 +45,25 @@ namespace Voxelfield.Session
     {
         public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
         public ArrayElement<FlagArrayElement> teamFlags = new ArrayElement<FlagArrayElement>(2);
+    }
+    
+    /* Secure area */
+    
+    [Serializable]
+    public class SiteComponent : FlagComponent
+    {
+    }
+
+    [Serializable]
+    public class SiteElement : FlagArrayElement
+    {
+    }
+
+    [Serializable]
+    public class SecureAreaComponent : ComponentBase
+    {
+        public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
+        public SiteElement sites = new SiteElement();
     }
 
     [Serializable]
@@ -94,7 +115,7 @@ namespace Voxelfield.Session
         static VoxelfieldComponents()
         {
             SessionElements = SessionElements.NewStandardSessionElements();
-            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(MoneyComponent), typeof(BrokeVoxelTickProperty));
+            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent), typeof(BrokeVoxelTickProperty));
             // SessionElements.commandElements.AppendAll(typeof(TeamProperty));
             SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty), typeof(CtfComponent), typeof(ShowdownSessionComponent));
         }

@@ -27,7 +27,12 @@ namespace Swihoni.Sessions
         public Server(SessionElements elements, IPEndPoint ipEndPoint, SessionInjectorBase injector)
             : base(elements, ipEndPoint, injector)
         {
-            ForEachPlayer(player => player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent), typeof(HasSentInitialData)));
+            foreach (ServerSessionContainer serverSession in m_SessionHistory)
+            {
+                serverSession.RegisterAppend(typeof(ServerTag));
+                foreach (Container player in serverSession.Require<PlayerContainerArrayElement>())
+                    player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent), typeof(HasSentInitialData));
+            }
             m_SendSession = m_EmptyServerSession.Clone();
         }
 
@@ -155,7 +160,7 @@ namespace Swihoni.Sessions
             {
                 EntityManager.ModifyAll(serverSession,
                                         (ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs));
-                GetMode(serverSession).Modify(this, serverSession, durationUs);
+                GetModifyingMode(serverSession).Modify(this, serverSession, durationUs);
             }
 
             SendServerSession(tick, serverSession);
@@ -262,7 +267,7 @@ namespace Swihoni.Sessions
                     // Make sure this is the newest tick
                     var tickDelta = checked((int) (clientStamp.tick - (long) serverPlayerClientStamp.tick));
                     bool isLatestTick = tickDelta >= 1;
-                    ModeBase mode = GetMode(serverSession);
+                    ModeBase mode = GetModifyingMode(serverSession);
                     if (isLatestTick)
                     {
                         checked
@@ -312,7 +317,7 @@ namespace Swihoni.Sessions
 
         protected void SetupNewPlayer(Container session, int playerId, Container player, Container sessionContainer)
         {
-            GetMode(session).SetupNewPlayer(this, playerId, player, sessionContainer);
+            GetModifyingMode(session).SetupNewPlayer(this, playerId, player, sessionContainer);
             // TODO:refactor zeroing
 
             player.ZeroIfWith<StatsComponent>();

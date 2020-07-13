@@ -89,7 +89,9 @@
                 <e p="DesignerMode.cs" t="Include" />
                 <e p="DominationMode.cs" t="Include" />
                 <e p="FlagBehavior.cs" t="Include" />
+                <e p="SecureAreaMode.cs" t="Include" />
                 <e p="ShowdownMode.cs" t="Include" />
+                <e p="SiteBehavior.cs" t="Include" />
                 <e p="SpawnBehavior.cs" t="Include" />
               </e>
               <e p="Player" t="Include">

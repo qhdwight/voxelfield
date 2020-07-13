@@ -201,12 +201,16 @@ namespace Swihoni.Sessions
         protected virtual void Tick(uint tick, uint timeUs, uint durationUs)
         {
             Container session = GetLatestSession();
+            UpdateConfig(session);
+            var tickRate = session.Require<TickRateProperty>();
+            if (tickRate.WithValue) Time.fixedDeltaTime = 1.0f / tickRate;
+        }
+
+        private static void UpdateConfig(ComponentBase session)
+        {
             foreach (ElementBase element in session.Elements)
                 if (element is PropertyBase property && ConfigManager.TypeToConfig.TryGetValue(property.GetType(), out PropertyBase configProperty))
                     property.SetFromIfWith(configProperty);
-            session.Require<ModeIdProperty>().SetFromIfWith(DebugBehavior.Singleton.ModeId);
-            var tickRate = session.Require<TickRateProperty>();
-            if (tickRate.WithValue) Time.fixedDeltaTime = 1.0f / tickRate;
         }
 
         protected virtual void Input(uint timeUs, uint deltaUs) { }
@@ -300,9 +304,9 @@ namespace Swihoni.Sessions
         public static Vector3 GetPlayerEyePosition(MoveComponent move) => move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
 
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
-        public virtual ModeBase GetMode(Container session = null)
+        public virtual ModeBase GetModifyingMode(Container session = null)
         {
-            ModeBase mode = ModeManager.GetMode((session ?? GetLatestSession()).Require<ModeIdProperty>());
+            ModeBase mode = ModeManager.GetMode(session ?? GetLatestSession());
             if (!m_Mode || m_Mode != mode)
             {
                 if (m_Mode) m_Mode.End();
@@ -336,6 +340,6 @@ namespace Swihoni.Sessions
         public abstract void StringCommand(int playerId, string stringCommand);
 
         public static StringBuilder BuildUsername(Container sessionContainer, StringBuilder builder, Container player)
-            => ModeManager.GetMode(sessionContainer.Require<ModeIdProperty>()).BuildUsername(builder, player);
+            => ModeManager.GetMode(sessionContainer).BuildUsername(builder, player);
     }
 }

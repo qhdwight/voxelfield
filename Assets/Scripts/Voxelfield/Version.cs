@@ -15,6 +15,6 @@ namespace Voxelfield
             Debug.Log(separator);
         }
         
-        public const string String = "0.0.6";
+        public const string String = "0.0.7";
     }
 }

@@ -20,27 +20,6 @@ namespace Console
             _commands = new Dictionary<string, Action<string[]>>
             {
                 ["clear"] = args => ConsoleInterface.Singleton.ClearConsole(),
-                ["sensitivity"] = args =>
-                {
-                    if (float.TryParse(args[1], out float sensitivity))
-                        InputProvider.Singleton.Sensitivity = sensitivity;
-                    else
-                        Debug.LogWarning($"Could not parse {args[1]} as float sensitivity");
-                },
-                ["volume"] = args =>
-                {
-                    if (float.TryParse(args[1], out float volume) && volume >= 0.0f && volume <= 1.0f)
-                        AudioListener.volume = volume;
-                    else
-                        Debug.LogWarning($"Could not parse {args[1]} as volume");
-                },
-                ["target_fps"] = args =>
-                {
-                    if (int.TryParse(args[1], out int targetFps) && targetFps >= 0)
-                        Application.targetFrameRate = targetFps;
-                    else
-                        Debug.LogWarning($"Could not parse {args[1]} as target FPS");
-                },
                 ["quit"] = _ => Application.Quit()
             };
         }

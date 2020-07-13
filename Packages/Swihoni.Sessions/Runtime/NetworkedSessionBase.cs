@@ -72,14 +72,7 @@ namespace Swihoni.Sessions
             session.ZeroIfWith<KillFeedElement>();
             return session;
         }
-
-        protected void ForEachPlayer(Action<Container> action)
-        {
-            foreach (ServerSessionContainer serverSession in m_SessionHistory)
-            foreach (Container player in serverSession.Require<PlayerContainerArrayElement>())
-                action(player);
-        }
-
+        
         protected static void RegisterMessages(ComponentSocketBase socket)
         {
             socket.Register(typeof(ClientCommandsContainer), 0, ClientCommandsCode);
@@ -104,7 +97,7 @@ namespace Swihoni.Sessions
         {
             Container latestSession = GetLatestSession();
             RenderInterfaces(latestSession);
-            GetMode(m_RenderSession).Render(this, m_RenderSession);
+            ModeManager.GetMode(m_RenderSession).Render(this, m_RenderSession);
         }
 
         protected void RenderInterfaces(Container session)
@@ -146,7 +139,5 @@ namespace Swihoni.Sessions
     internal static class NetworkSessionExtensions
     {
         internal static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
-        
-        internal static ModeBase GetRenderMode(this Container session) => ModeManager.GetMode(session.Require<ModeIdProperty>());
     }
 }

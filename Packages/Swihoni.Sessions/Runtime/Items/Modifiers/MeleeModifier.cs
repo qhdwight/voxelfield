@@ -21,7 +21,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (count == 0) return;
             RaycastHit hit = RaycastHits[0];
             if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId) return;
-            session.GetMode().PlayerHit(session, playerId, hitbox, this, hit, durationUs);
+            session.GetModifyingMode().PlayerHit(session, playerId, hitbox, this, hit, durationUs);
         }
     }
 }

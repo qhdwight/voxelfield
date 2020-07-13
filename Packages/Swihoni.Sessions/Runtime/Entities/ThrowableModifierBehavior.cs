@@ -157,7 +157,7 @@ namespace Swihoni.Sessions.Entities
                 if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive)
                 {
                     byte damage = CalculateDamage(hitPlayer, durationUs);
-                    session.GetMode().InflictDamage(session, ThrowerId, session.GetModifyingPayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage, Name);
+                    session.GetModifyingMode().InflictDamage(session, ThrowerId, session.GetModifyingPayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage, Name);
                 }
             }
             if (justPopped) session.Injector.OnThrowablePopped(this);

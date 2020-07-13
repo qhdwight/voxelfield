@@ -34,8 +34,6 @@ namespace Voxelfield.Session
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
-            Application.targetFrameRate = 200;
-            AudioListener.volume = 0.5f;
             ConsoleCommandExecutor.SetCommand("host", args => StartHost());
             ConsoleCommandExecutor.SetCommand("edit", args => StartEdit(args[1]));
             ConsoleCommandExecutor.SetCommand("save", args => MapManager.Singleton.SaveCurrentMap());
@@ -60,6 +58,11 @@ namespace Voxelfield.Session
             });
             ConsoleCommandExecutor.SetAlias("wsl_connect", $"connect 172.18.41.211 {DefaultPort}");
             ConsoleCommandExecutor.SetCommand("disconnect", args => DisconnectAll());
+            ConsoleCommandExecutor.SetCommand("update_chunks", args =>
+            {
+                foreach (Chunk chunk in ChunkManager.Singleton.Chunks.Values)
+                    chunk.UpdateAndApply();
+            });
 
             if (Application.isBatchMode)
             {
@@ -70,6 +73,7 @@ namespace Voxelfield.Session
             ConsoleCommandExecutor.SetCommand("r", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
 
             Debug.Log("Started session manager");
+            AnalysisLogger.Reset(string.Empty);
         }
 
 #if UNITY_EDITOR
@@ -139,6 +143,8 @@ namespace Voxelfield.Session
         private void Update()
         {
             SessionBase.HandleCursorLockState();
+            Application.targetFrameRate = ConfigManager.Singleton.targetFps;
+            AudioListener.volume = ConfigManager.Singleton.volume;
             try
             {
                 foreach (SessionBase session in SessionBase.Sessions)
@@ -183,7 +189,11 @@ namespace Voxelfield.Session
             }
         }
 
-        private void OnApplicationQuit() => DisconnectAll();
+        private void OnApplicationQuit()
+        {
+            DisconnectAll();
+            AnalysisLogger.FlushAll();
+        }
 
         public static void SaveTestMap()
         {

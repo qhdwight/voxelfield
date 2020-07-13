@@ -9,6 +9,18 @@ using UnityEngine;
 
 namespace Swihoni.Sessions
 {
+    public class ConfigAttribute : Attribute
+    {
+        public string Name { get; }
+        public bool IsSession { get; }
+
+        public ConfigAttribute(string name, bool isSession = false)
+        {
+            Name = name;
+            IsSession = isSession;
+        }
+    }
+
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
     public class ConfigManager : ScriptableObject
     {
@@ -25,15 +37,17 @@ namespace Swihoni.Sessions
             IReadOnlyList<FieldInfo> fields = Singleton.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
                                                        .Where(field => field.IsDefined(typeof(ConfigAttribute))).ToArray();
             NameToConfig = fields.ToDictionary(field => field.GetCustomAttribute<ConfigAttribute>().Name, field => (PropertyBase) field.GetValue(Singleton));
-            TypeToConfig = fields.ToDictionary(field => field.FieldType, field => (PropertyBase) field.GetValue(Singleton));
-            foreach (KeyValuePair<string, PropertyBase> pair in NameToConfig)
+            TypeToConfig = fields.Where(field => field.GetCustomAttribute<ConfigAttribute>().IsSession)
+                                 .ToDictionary(field => field.FieldType, field => (PropertyBase) field.GetValue(Singleton));
+            foreach (ConfigAttribute attribute in fields.Select(field => field.GetCustomAttribute<ConfigAttribute>()))
             {
-                ConsoleCommandExecutor.SetCommand(pair.Key, args =>
+                ConsoleCommandExecutor.SetCommand(attribute.Name, args =>
                 {
                     if (args.Length == 2)
                     {
-                        foreach (Client session in SessionBase.Sessions.OfType<Client>())
-                            session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
+                        if (attribute.IsSession)
+                            foreach (Client session in SessionBase.Sessions.OfType<Client>())
+                                session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
                         HandleArgs(args);
                     }
                 });
@@ -55,7 +69,13 @@ namespace Swihoni.Sessions
                 Debug.Log($"Set {split[0]} to {split[1]}");
         }
 
-        [Config("tick_rate", true)] public TickRateProperty tickRate;
+        [Config("tick_rate", true)] public TickRateProperty tickRate = new TickRateProperty(60);
         [Config("allow_cheats", true)] public AllowCheatsProperty allowCheats;
+        [Config("mode_id", true)] public ModeIdProperty modeId;
+        
+        [Config("fov")] public ByteProperty fov = new ByteProperty(60);
+        [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
+        [Config("volume")] public FloatProperty volume = new FloatProperty(0.5f);
+        [Config("sensitivity")] public FloatProperty sensitivity = new FloatProperty(2.0f);
     }
 }

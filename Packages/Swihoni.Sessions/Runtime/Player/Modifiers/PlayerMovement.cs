@@ -125,7 +125,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs) { }
 
-        public override void ModifyCommands(SessionBase session, Container commands)
+        public override void ModifyCommands(SessionBase session, Container commands, int playerId)
         {
             if (commands.Without(out InputFlagProperty input)) return;
 

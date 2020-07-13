@@ -11,7 +11,7 @@ namespace Swihoni.Sessions.Player.Visualization
         private LineRenderer m_Tracer;
         private GradientAlphaKey[] m_AlphaKeys;
         private GradientColorKey[] m_ColorKeys;
-        private Gradient m_Gradient = new Gradient();
+        private readonly Gradient m_Gradient = new Gradient();
 
         internal override void Setup()
         {

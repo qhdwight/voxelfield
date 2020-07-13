@@ -156,8 +156,8 @@ namespace Swihoni.Sessions.Player.Components
         public ByteStatusComponent equipStatus, adsStatus;
         public ArrayElement<ItemComponent> items = new ArrayElement<ItemComponent>(10);
 
-        public TimeUsProperty tracerTimeUs;
-        public VectorProperty tracerStart, tracerEnd;
+        [ClientNonChecked] public TimeUsProperty tracerTimeUs;
+        [ClientNonChecked] public VectorProperty tracerStart, tracerEnd;
         
         public ItemComponent EquippedItemComponent => items[equippedIndex - 1];
         public bool HasItemEquipped => !HasNoItemEquipped;

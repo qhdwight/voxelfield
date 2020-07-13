@@ -22,11 +22,11 @@ namespace Swihoni.Sessions.Player.Modifiers
             bool isAds = inventory.HasItemEquipped && inventory.adsStatus.id == AdsStatusId.Ads;
             float multiplier = isAds ? ItemAssetLink.GetVisualPrefab(inventory.EquippedItemComponent.id).FovMultiplier : 1.0f;
 
-            playerCamera.yaw.Value = Mathf.Repeat(playerCamera.yaw + mouse.mouseDeltaX * InputProvider.Singleton.Sensitivity * multiplier, 360.0f);
-            playerCamera.pitch.Value = Mathf.Clamp(playerCamera.pitch - mouse.mouseDeltaY * InputProvider.Singleton.Sensitivity * multiplier, -90.0f, 90.0f);
+            playerCamera.yaw.Value = Mathf.Repeat(playerCamera.yaw + mouse.mouseDeltaX * ConfigManager.Singleton.sensitivity * multiplier, 360.0f);
+            playerCamera.pitch.Value = Mathf.Clamp(playerCamera.pitch - mouse.mouseDeltaY * ConfigManager.Singleton.sensitivity * multiplier, -90.0f, 90.0f);
         }
 
-        public override void ModifyCommands(SessionBase session, Container commands)
+        public override void ModifyCommands(SessionBase session, Container commands, int playerId)
         {
             if (commands.Without(out MouseComponent mouse)) return;
             mouse.mouseDeltaX.Value = InputProvider.GetMouseInput(MouseMovement.X);

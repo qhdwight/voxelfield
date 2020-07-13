@@ -23,7 +23,6 @@ namespace Swihoni.Sessions.Player.Visualization
         [SerializeField] private Renderer m_FpvArmsRenderer = default;
         [SerializeField] private Camera m_FpvCamera = default;
 
-        private float m_FieldOfView;
         private Animator m_Animator;
         private PlayableGraph m_Graph;
         private ItemVisualBehavior m_ItemVisual;
@@ -40,7 +39,6 @@ namespace Swihoni.Sessions.Player.Visualization
             m_Animator = GetComponent<Animator>();
             m_Graph = PlayableGraph.Create($"{transform.root.name} {m_GraphName} Item Animator");
             m_Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
-            if (m_FpvCamera) m_FieldOfView = m_FpvCamera.fieldOfView;
             AnimationPlayableOutput.Create(m_Graph, $"{transform.root.name} {m_GraphName} Output", m_Animator);
         }
 
@@ -143,6 +141,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void AnimateAim(InventoryComponent inventory)
         {
+            int fieldOfView = Math.Max(Math.Min(ConfigManager.Singleton.fov, (byte) 90), (byte) 50);
             Transform t = transform;
             if (m_ItemVisual is GunVisualBehavior gunVisuals && m_ItemVisual.ModiferProperties is GunWithMagazineModifier)
             {
@@ -154,11 +153,11 @@ namespace Swihoni.Sessions.Player.Visualization
                 Vector3 adsPosition = targetRotation * -t.InverseTransformPoint(gunVisuals.AdsTarget.position);
                 t.localPosition = Vector3.Slerp(m_ItemVisual.FpvOffset, adsPosition, adsInterpolation);
 
-                m_FpvCamera.fieldOfView = Mathf.Lerp(m_FieldOfView, m_FieldOfView * m_ItemVisual.FovMultiplier, adsInterpolation);
+                m_FpvCamera.fieldOfView = Mathf.Lerp(fieldOfView, fieldOfView * m_ItemVisual.FovMultiplier, adsInterpolation);
             }
             else
             {
-                m_FpvCamera.fieldOfView = m_FieldOfView;
+                m_FpvCamera.fieldOfView = fieldOfView;
                 t.localRotation = Quaternion.identity;
                 t.localPosition = m_ItemVisual.FpvOffset;
             }

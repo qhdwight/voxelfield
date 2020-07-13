@@ -45,14 +45,14 @@ namespace Swihoni.Sessions
                 PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(GetModifyingPayerFromId(HostPlayerId, session), HostPlayerId);
                 if (hostModifier)
                 {
-                    hostModifier.ModifyCommands(this, m_HostCommands);
+                    hostModifier.ModifyCommands(this, m_HostCommands, HostPlayerId);
                     _container = m_HostCommands; // Prevent closure allocation
                     _session = this;
                     ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(HostPlayerId, _session, _container));
                     hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
                     hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
                 }
-                GetMode(session).ModifyPlayer(this, session, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+                GetModifyingMode(session).ModifyPlayer(this, session, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
             }
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.timeUs.Value = timeUs;
@@ -108,7 +108,7 @@ namespace Swihoni.Sessions
             Profiler.EndSample();
 
             Profiler.BeginSample("Host Render Mode");
-            ModeManager.GetMode(m_RenderSession.Require<ModeIdProperty>()).Render(this, m_RenderSession);
+            ModeManager.GetMode(m_RenderSession).Render(this, m_RenderSession);
             Profiler.EndSample();
         }
 

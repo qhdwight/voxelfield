@@ -7,9 +7,11 @@ using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
+using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -65,7 +67,7 @@ namespace Swihoni.Sessions
         private void UpdateInputs(Container player, int localPlayerId)
         {
             ClientCommandsContainer commands = m_CommandHistory.Peek();
-            GetPlayerModifier(player, localPlayerId).ModifyCommands(this, commands);
+            GetPlayerModifier(player, localPlayerId).ModifyCommands(this, commands, localPlayerId);
             _int = localPlayerId; // Prevent closure allocation
             _session = this;
             _container = commands;
@@ -143,7 +145,7 @@ namespace Swihoni.Sessions
             Profiler.EndSample();
 
             Profiler.BeginSample("Client Render Mode");
-            GetMode(m_RenderSession).Render(this, m_RenderSession);
+            ModeManager.GetMode(m_RenderSession).Render(this, m_RenderSession);
             Profiler.EndSample();
         }
 
@@ -251,6 +253,7 @@ namespace Swihoni.Sessions
                             ResetErrors++;
                             localizedServerTimeUs.Value = _timeUs;
                         }
+                        AnalysisLogger.AddDataPoint(string.Empty, localizedServerTimeUs.Value, _timeUs, serverTimeUs.Value);
                     }
 
                     Profiler.BeginSample("Client Update Players");
@@ -377,6 +380,8 @@ namespace Swihoni.Sessions
 
         private static bool _predictionIsAccurate; // Prevents heap allocation in closure
 
+        private static readonly Func<ElementBase, ElementBase, ElementBase, Navigation> VisitPredictedFunction = VisitPredicted;
+
         private void CheckPrediction(Container serverPlayer, int localPlayerId)
         {
             UIntProperty targetTick = serverPlayer.Require<ClientStampComponent>().tick;
@@ -390,7 +395,7 @@ namespace Swihoni.Sessions
                 /* We are checking predicted */
                 _predictionIsAccurate = true;
                 Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
-                ElementExtensions.NavigateZipped(VisitPredicted, predictedPlayer, latestPredictedPlayer, serverPlayer);
+                ElementExtensions.NavigateZipped(VisitPredictedFunction, predictedPlayer, latestPredictedPlayer, serverPlayer);
                 if (_predictionIsAccurate) break;
                 /* We did not predict properly */
                 PredictionErrors++;
@@ -425,7 +430,7 @@ namespace Swihoni.Sessions
                 _latestPredicted.MergeFrom(_server);
                 return Navigation.SkipDescendents;
             }
-            if (_predicted.WithAttribute<ClientTrustedAttribute>()) return Navigation.SkipDescendents;
+            if (_predicted.WithAttribute<ClientTrustedAttribute>() || _predicted.WithAttribute<ClientNonCheckedAttribute>()) return Navigation.SkipDescendents;
             switch (_predicted)
             {
                 case FloatProperty f1 when _server is FloatProperty f2 && f1.TryAttribute(out PredictionToleranceAttribute fPredictionToleranceAttribute)
@@ -441,12 +446,13 @@ namespace Swihoni.Sessions
             return Navigation.Continue;
         }
 
-        private static void UpdateCurrentSessionFromReceived(ElementBase previousServerSession, ElementBase serverSession, ElementBase receivedServerSession)
+        private static void UpdateCurrentSessionFromReceived(Container previousServerSession, Container serverSession, ElementBase receivedServerSession)
         {
             ElementExtensions.NavigateZipped((_previous, _current, _received) =>
             {
-                if (_current is PropertyBase _currentProperty && _received is PropertyBase _receivedProperty)
+                if (_current is PropertyBase _currentProperty)
                 {
+                    var _receivedProperty = (PropertyBase) _received;
                     if (_current.WithAttribute<SingleTick>() || !_receivedProperty.WasSame)
                     {
                         _currentProperty.SetTo(_receivedProperty);
@@ -459,6 +465,12 @@ namespace Swihoni.Sessions
                 }
                 return Navigation.Continue;
             }, previousServerSession, serverSession, receivedServerSession);
+            // TODO:refactor need some sort of zip longest
+            serverSession.Require<LocalizedClientStampComponent>().CopyFrom(previousServerSession.Require<LocalizedClientStampComponent>());
+            var previousArray = previousServerSession.Require<PlayerContainerArrayElement>();
+            var array = serverSession.Require<PlayerContainerArrayElement>();
+            for (var playerIndex = 0; playerIndex < array.Length; playerIndex++)
+                array[playerIndex].Require<LocalizedClientStampComponent>().CopyFrom(previousArray[playerIndex].Require<LocalizedClientStampComponent>());
         }
 
         private static bool GetLocalPlayerId(Container session, out int localPlayerId)

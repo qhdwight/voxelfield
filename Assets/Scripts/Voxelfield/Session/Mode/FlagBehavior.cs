@@ -34,14 +34,14 @@ namespace Voxelfield.Session.Mode
             if (isFlagTaken)
             {
                 Container capturingPlayer = session.GetModifyingPayerFromId(flag.capturingPlayerId);
-                spritePosition = capturingPlayer.Require<MoveComponent>().position + new Vector3 {y = 2.7f};
+                spritePosition = SessionBase.GetPlayerEyePosition(capturingPlayer.Require<MoveComponent>()) + new Vector3 {y = 0.2f};
             }
             else spritePosition = transform.position + new Vector3 {y = 2.8f};
 
             var isIconVisible = true;
             if (session.IsValidLocalPlayer(sessionContainer, out Container localPlayer))
             {
-                Vector3 localPosition = SessionBase.GetPlayerEyePosition(localPlayer.Require<MoveComponent>());
+                Vector3 localPosition = SessionBase.GetPlayerEyePosition(localPlayer.Require<MoveComponent>()) + new Vector3 {y = 0.2f};
                 m_SpriteRenderer.transform.LookAt(localPosition);
                 float distanceMultiplier = Mathf.Clamp(Vector3.Distance(localPosition, spritePosition) * 0.05f, 1.0f, 5.0f);
                 spritePosition += new Vector3 {y = distanceMultiplier};

@@ -6,7 +6,6 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
-using Swihoni.Util.Interface;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Modes
@@ -43,7 +42,7 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out MoveComponent move))
             {
                 move.Zero();
-                move.position.Value = session.GetMode().GetSpawnPosition(player, playerId, session, sessionContainer);
+                move.position.Value = GetSpawnPosition(player, playerId, session, sessionContainer);
             }
         }
 
@@ -51,6 +50,7 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void Begin(SessionBase session, Container sessionContainer)
         {
+            ForEachActivePlayer(session, sessionContainer, (playerId, player) => SpawnPlayer(session, sessionContainer, playerId, player));
         }
 
         protected virtual void KillPlayer(Container player)
@@ -83,9 +83,9 @@ namespace Swihoni.Sessions.Modes
 
         public virtual bool AllowTeamSwap(Container container, Container player) => true;
 
-        public virtual void Modify(SessionBase session, Container container, uint durationUs)
+        public virtual void Modify(SessionBase session, Container sessionContainer, uint durationUs)
         {
-            if (container.With(out KillFeedElement killFeed))
+            if (sessionContainer.With(out KillFeedElement killFeed))
             {
                 foreach (KillFeedComponent kill in killFeed)
                     if (kill.elapsedUs > durationUs) kill.elapsedUs.Value -= durationUs;
@@ -165,8 +165,8 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer) =>
-            SpawnPlayer(session, sessionContainer, playerId, player);
+        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer)
+            => SpawnPlayer(session, sessionContainer, playerId, player);
 
         protected static void ForEachActivePlayer(SessionBase session, Container container, Action<int, Container> action)
         {

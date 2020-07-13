@@ -14,21 +14,13 @@ namespace Swihoni.Sessions.Components
     public class ClientTrustedAttribute : Attribute
     {
     }
+    
+    public class ClientNonCheckedAttribute : Attribute
+    {
+    }
 
     public class ClientCheckedAttribute : Attribute
     {
-    }
-    
-    public class ConfigAttribute : Attribute
-    {
-        public string Name { get; }
-        public bool IsServerOnly { get; }
-
-        public ConfigAttribute(string name, bool isServerOnly = false)
-        {
-            Name = name;
-            IsServerOnly = isServerOnly;
-        }
     }
 
     /* Server */
@@ -133,6 +125,9 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class TickRateProperty : ByteProperty
     {
+        public TickRateProperty(byte value) : base(value) { }
+        public TickRateProperty() { }
+
         public float TickInterval => 1.0f / Value;
 
         public uint TickIntervalUs => TimeConversions.GetUsFromSecond(TickInterval);
@@ -150,7 +145,7 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class ModeIdProperty : ByteProperty
     {
-        public const byte Deathmatch = 0, Showdown = 1, Ctf = 2, Designer = 3;
+        public const byte Deathmatch = 0, Showdown = 1, Ctf = 2, SecureArea = 3, Designer = 4;
 
         public ModeIdProperty(byte value) : base(value) { }
         public ModeIdProperty() { }
@@ -159,7 +154,8 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class StampComponent : ComponentBase
     {
-        public UIntProperty tick, timeUs, durationUs;
+        public UIntProperty tick;
+        public ElapsedUsProperty timeUs, durationUs;
 
         public override string ToString() => $"Tick: {tick}, Time: {timeUs}, Duration: {durationUs}";
     }

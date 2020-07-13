@@ -39,7 +39,8 @@ namespace Swihoni.Sessions.Player.Modifiers
         public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs, int tickDelta = 1)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs, tickDelta);
-            ConfigManager.TryCommand(playerToModify.Require<StringCommandProperty>());
+            if (playerToModify.With<ServerTag>() || playerToModify.Without<HostTag>())
+                ConfigManager.TryCommand(playerToModify.Require<StringCommandProperty>());
         }
 
         public void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)
@@ -53,7 +54,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.SynchronizeBehavior(player);
         }
 
-        public void ModifyCommands(SessionBase session, Container commandsToModify)
+        public void ModifyCommands(SessionBase session, Container commandsToModify, int playerId)
         {
             if (SessionBase.InterruptingInterface)
             {
@@ -62,7 +63,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 commandsToModify.Require<InputFlagProperty>().Zero();
                 return;
             }
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify, playerId);
         }
 
         public void EvaluateHitboxes(SessionBase session, int playerId, Container player) => m_HitboxManager.Evaluate(session, playerId, player);
@@ -90,7 +91,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public virtual void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container player, Container commands, uint durationUs) =>
             SynchronizeBehavior(trustedPlayer);
 
-        public virtual void ModifyCommands(SessionBase session, Container commands) { }
+        public virtual void ModifyCommands(SessionBase session, Container commands, int playerId) { }
 
         protected internal virtual void SynchronizeBehavior(Container player) { }
     }

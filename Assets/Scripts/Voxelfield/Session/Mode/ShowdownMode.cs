@@ -54,17 +54,17 @@ namespace Voxelfield.Session.Mode
             throw new ArgumentException("Can't buy this item id");
         }
 
-        public override void Modify(SessionBase session, Container container, uint durationUs)
+        public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
         {
-            base.Modify(session, container, durationUs);
-            var stage = container.Require<ShowdownSessionComponent>();
+            base.Modify(session, sessionContainer, durationUs);
+            var stage = sessionContainer.Require<ShowdownSessionComponent>();
             if (stage.number.WithoutValue) // If in warmup
             {
-                int playerCount = GetPlayerCount(container);
+                int playerCount = GetPlayerCount(sessionContainer);
                 if (playerCount == 1)
                     // if (playerCount == TotalPlayers)
                 {
-                    StartFirstStage(session, container, stage);
+                    StartFirstStage(session, sessionContainer, stage);
                 }
             }
             if (stage.number.WithValue)

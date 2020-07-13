@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
@@ -81,18 +82,18 @@ namespace Swihoni.Sessions.Items.Modifiers
 
             item.ammoInMag.Value--;
 
+
             Ray ray = session.GetRayForPlayerId(playerId);
             session.RollbackHitboxesFor(playerId);
             
-            ModeBase mode = session.GetMode();
             int hitCount = Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_RaycastMask);
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)
             {
                 RaycastHit hit = RaycastHits[hitIndex];
                 if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
                 m_HitPlayers.Add(hitbox.Manager);
-                // Debug.Log($"Player: {playerId} hit player: {hitbox.Manager.PlayerId}");
-                mode.PlayerHit(session, playerId, hitbox, this, hit, durationUs);
+                if (session.GetModifyingPayerFromId(playerId).With<ServerTag>())
+                    session.GetModifyingMode().PlayerHit(session, playerId, hitbox, this, hit, durationUs);
             }
             m_HitPlayers.Clear();
             

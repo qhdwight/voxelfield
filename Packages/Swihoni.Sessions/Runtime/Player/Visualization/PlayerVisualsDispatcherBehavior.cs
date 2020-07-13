@@ -31,7 +31,6 @@ namespace Swihoni.Sessions.Player.Visualization
         private AudioListener m_AudioListener;
         private Camera m_Camera;
         private PlayerVisualsBehaviorBase[] m_Visuals;
-        private Vector3 m_DamageTextOffset, m_UsernameTextOffset;
         private readonly StringBuilder m_UsernameBuilder = new StringBuilder();
 
         private Container m_RecentRender;
@@ -45,8 +44,6 @@ namespace Swihoni.Sessions.Player.Visualization
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Setup();
             m_Camera = GetComponentInChildren<Camera>();
             m_AudioListener = GetComponentInChildren<AudioListener>();
-            m_DamageTextOffset = m_DamageText.transform.localPosition;
-            m_UsernameTextOffset = m_UsernameText.transform.localPosition;
         }
 
         private readonly StringBuilder m_DamageNotifierBuilder = new StringBuilder();
@@ -88,7 +85,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
                         if (damageNotifier.elapsedUs > 0u)
                         {
-                            LookAtPlayer(m_DamageText, sessionContainer, playerId, m_DamageTextOffset);
+                            LookAtPlayer(m_DamageText, sessionContainer, playerId, new Vector3 {y = 0.2f});
                             m_DamageNotifierBuilder.Clear().Append(damageNotifier.damage.Value).Commit(m_DamageText);
                         }
                     }
@@ -97,9 +94,9 @@ namespace Swihoni.Sessions.Player.Visualization
                 showUsername = !isLocalPlayer && localPlayer.Require<TeamProperty>() == player.Require<TeamProperty>();
                 if (showUsername)
                 {
-                    LookAtPlayer(m_UsernameText, sessionContainer, playerId, m_UsernameTextOffset);
+                    LookAtPlayer(m_UsernameText, sessionContainer, playerId, new Vector3 {y = 0.2f});
                     m_UsernameBuilder.Clear();
-                    ModeManager.GetMode(sessionContainer.Require<ModeIdProperty>()).BuildUsername(m_UsernameBuilder, player).Commit(m_UsernameText);
+                    ModeManager.GetMode(sessionContainer).BuildUsername(m_UsernameBuilder, player).Commit(m_UsernameText);
                 }
             }
             m_UsernameText.enabled = showUsername;

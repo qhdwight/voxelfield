@@ -1,5 +1,6 @@
 using System;
 using LiteNetLib.Utils;
+using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 
@@ -43,6 +44,8 @@ namespace Swihoni.Components
     {
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation)
             => Value = p2.Value > p1.Value ? InterpolateUInt(p1.Value, p2.Value, interpolation) : p2.Value;
+
+        public override string ToString() => WithValue ? $"Microseconds: {Value}, Seconds: {Value * TimeConversions.MicrosecondToSecond:F3}" : "No Value";
     }
 
     [Serializable]

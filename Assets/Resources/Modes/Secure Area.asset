@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b06c38dfe7454bd1aae86dcf6da4d002, type: 3}
-  m_Name: Designer
+  m_Script: {fileID: 11500000, guid: d2c332ddb4474eeea50b56f528fb0cc5, type: 3}
+  m_Name: Secure Area
   m_EditorClassIdentifier: 
-  id: 4
+  id: 3

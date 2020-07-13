@@ -19,7 +19,6 @@ namespace Swihoni.Sessions
         // public StringProperty mapName;
         public bool IsDebugMode;
         public UIntProperty RollbackOverrideUs;
-        public ModeIdProperty ModeId;
 
         public StringProperty MapNameProperty => m_MapNameProperty ?? (m_MapNameProperty = new StringProperty(m_MapName));
 

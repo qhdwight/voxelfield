@@ -1,4 +1,6 @@
 using System.Linq;
+using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Modes
@@ -19,5 +21,7 @@ namespace Swihoni.Sessions.Modes
         }
 
         public static ModeBase GetMode(byte modeId) => Modes[modeId];
+
+        public static ModeBase GetMode(Container session) => GetMode(session.Require<ModeIdProperty>());
     }
 }

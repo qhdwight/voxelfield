@@ -130,7 +130,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        public override void ModifyCommands(SessionBase session, Container commands)
+        public override void ModifyCommands(SessionBase session, Container commands, int playerId)
         {
             if (commands.Without(out InputFlagProperty inputs)) return;
             InputProvider provider = InputProvider.Singleton;
@@ -152,6 +152,11 @@ namespace Swihoni.Sessions.Player.Modifiers
             else if (provider.GetInput(InputType.ItemEight)) itemIndex.Value = 8;
             else if (provider.GetInput(InputType.ItemNine)) itemIndex.Value = 9;
             else if (provider.GetInput(InputType.ItemTen)) itemIndex.Value = 10;
+            else if (provider.GetInput(InputType.ItemLast))
+            {
+                ByteProperty previousEquipped = commands.Require<InventoryComponent>().previousEquippedIndex;
+                if (previousEquipped.WithValue) itemIndex.Value = previousEquipped;
+            }
         }
 
         private static bool FindItem(InventoryComponent inventory, Predicate<ItemComponent> predicate, out byte index)
