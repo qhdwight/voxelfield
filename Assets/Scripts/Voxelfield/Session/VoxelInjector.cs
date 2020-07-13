@@ -37,6 +37,14 @@ namespace Voxelfield.Session
             else request.Accept();
         }
 
+        protected override void OnRenderMode(Container session)
+        {
+            base.OnRenderMode(session);
+            if (!IsLoading(session))
+                foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
+                    modelBehavior.RenderContainer();
+        }
+
         protected override void Stop() => MapManager.Singleton.UnloadMap();
 
         protected override void OnSettingsTick(Container session)

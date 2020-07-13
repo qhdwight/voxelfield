@@ -1,3 +1,4 @@
+using System.Linq;
 using Swihoni.Util;
 using UnityEngine;
 
@@ -18,9 +19,10 @@ namespace Swihoni.Sessions
 
         private void LateUpdate()
         {
-            if (Camera.allCamerasCount > 1)
+            int count = Camera.allCameras.Count(activeCamera => !activeCamera.targetTexture);
+            if (count > 1)
                 SetEnabled(false);
-            else if (Camera.allCamerasCount < 1)
+            else if (count < 1)
                 SetEnabled(true);
         }
 

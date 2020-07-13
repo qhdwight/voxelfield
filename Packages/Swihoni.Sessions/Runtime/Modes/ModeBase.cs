@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Swihoni.Components;
@@ -13,8 +14,19 @@ namespace Swihoni.Sessions.Modes
 {
     public abstract class ModeBase : ScriptableObject
     {
+        private static readonly Dictionary<Color, string> CachedHex = new Dictionary<Color, string>();
+        
         public byte id;
 
+        public static string GetHexColor(in Color color)
+        {
+            if (CachedHex.TryGetValue(color, out string hex))
+                return hex;
+            hex = ColorUtility.ToHtmlStringRGB(color);
+            CachedHex.Add(color, hex);
+            return hex;
+        }
+        
         protected virtual void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
         {
             Debug.Log("Spawning player");
@@ -47,6 +59,8 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
+        public virtual Color GetTeamColor(int teamId) => Color.white;
+
         protected virtual Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer) => new Vector3 {y = 8.0f};
 
         public virtual void BeginModify(SessionBase session, Container sessionContainer)
@@ -54,7 +68,7 @@ namespace Swihoni.Sessions.Modes
             ForEachActivePlayer(session, sessionContainer, (playerId, player) => SpawnPlayer(session, sessionContainer, playerId, player));
         }
 
-        protected virtual void KillPlayer(Container player)
+        protected virtual void KillPlayer(Container player, Container killer)
         {
             player.ZeroIfWith<HealthProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
@@ -127,7 +141,7 @@ namespace Swihoni.Sessions.Modes
                 bool isKilling = damage >= health;
                 if (isKilling)
                 {
-                    KillPlayer(hitPlayer);
+                    KillPlayer(hitPlayer, inflictingPlayer);
 
                     if (!isSelfInflicting && inflictingPlayer.With(out StatsComponent stats))
                         stats.kills.Value++;

@@ -2,6 +2,7 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEditor;
 using UnityEngine;
+using Voxelfield.Session;
 
 namespace Voxelfield.Editor
 {
@@ -9,6 +10,7 @@ namespace Voxelfield.Editor
     public class ModelBehaviorEditor : UnityEditor.Editor
     {
         private int? m_Team, m_ModeId;
+        private Vector3? m_Extents;
 
         public override void OnInspectorGUI()
         {
@@ -19,10 +21,13 @@ namespace Voxelfield.Editor
                     m_Team = EditorGUILayout.IntField("Team", m_Team.GetValueOrDefault(teamProperty.Value));
                 if (model.Container.With(out ModeIdProperty modeIdProperty))
                     m_ModeId = EditorGUILayout.IntField("Mode", m_ModeId.GetValueOrDefault(modeIdProperty.Value));
+                if (model.Container.With(out ExtentsProperty extentsProperty))
+                    m_Extents = EditorGUILayout.Vector3Field("Extents", m_Extents.GetValueOrDefault(extentsProperty.Value));
                 if (GUILayout.Button("Apply"))
                 {
-                    teamProperty.Value = (byte) m_Team;
-                    modeIdProperty.Value = (byte) m_ModeId;
+                    if (m_Team is int team) teamProperty.Value = (byte) team;
+                    if (m_ModeId is int modeId) modeIdProperty.Value = (byte) modeId;
+                    if (m_Extents is Vector3 extents) extentsProperty.Value = extents;
                 }
             }
         }

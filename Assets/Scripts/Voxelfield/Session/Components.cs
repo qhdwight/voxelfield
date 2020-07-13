@@ -26,6 +26,12 @@ namespace Voxelfield.Session
         public ArrayElement<CurePackageComponent> curePackages = new ArrayElement<CurePackageComponent>(9);
     }
 
+    [Serializable]
+    public class DualScoresComponent : ArrayElement<ByteProperty>
+    {
+        public DualScoresComponent() : base(2) { }
+    }
+
     /* Capture the flag */
 
     [Serializable]
@@ -44,7 +50,6 @@ namespace Voxelfield.Session
     [Serializable]
     public class CtfComponent : ComponentBase
     {
-        public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
         public ArrayElement<FlagArrayElement> teamFlags = new ArrayElement<FlagArrayElement>(2);
     }
 
@@ -66,7 +71,6 @@ namespace Voxelfield.Session
     [Serializable]
     public class SecureAreaComponent : ComponentBase
     {
-        public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
         public SiteElement sites = new SiteElement();
         public TimeUsProperty roundTime;
 
@@ -123,11 +127,19 @@ namespace Voxelfield.Session
     {
     }
 
+    [Serializable]
+    public class ExtentsProperty : VectorProperty
+    {
+        public ExtentsProperty() { }
+        public ExtentsProperty(float x, float y, float z) : base(x, y, z) { }
+    }
+
     public static class VoxelfieldComponents
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Initialize() =>
-            SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(IdProperty), typeof(TeamProperty), typeof(VectorProperty), typeof(ModeIdProperty));
+            SerializationRegistrar.RegisterAll(typeof(ModelIdProperty), typeof(IdProperty), typeof(TeamProperty), typeof(VectorProperty), typeof(ModeIdProperty),
+                                               typeof(ExtentsProperty));
 
         public static readonly SessionElements SessionElements;
 
@@ -138,7 +150,7 @@ namespace Voxelfield.Session
                                                      typeof(BrokeVoxelTickProperty));
             // SessionElements.commandElements.AppendAll(typeof(TeamProperty));
             SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty),
-                                               typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent));
+                                               typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent), typeof(DualScoresComponent));
         }
     }
 }

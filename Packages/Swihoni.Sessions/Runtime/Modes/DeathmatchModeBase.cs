@@ -7,9 +7,9 @@ namespace Swihoni.Sessions.Modes
     [CreateAssetMenu(fileName = "Deathmatch", menuName = "Session/Mode/Deathmatch", order = 0)]
     public class DeathmatchModeBase : ModeBase
     {
-        protected override void KillPlayer(Container player)
+        protected override void KillPlayer(Container player, Container killer)
         {
-            base.KillPlayer(player);
+            base.KillPlayer(player, killer);
 
             // TODO:refactor variable
             if (player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = 2_000_000u;
@@ -21,7 +21,7 @@ namespace Swihoni.Sessions.Modes
 
             if (commands.Without(out InputFlagProperty inputs) || player.Without(out HealthProperty health) || health.WithoutValue) return;
 
-            if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive) KillPlayer(player);
+            if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive) KillPlayer(player, player);
 
             HandleRespawn(session, container, playerId, player, health, durationUs);
         }

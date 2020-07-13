@@ -26,8 +26,9 @@ namespace Voxelfield.Interface
                 RenderLocalPlayer(session, sessionContainer, ctf);
 
                 var mode = (CtfMode) ModeManager.GetMode(ModeIdProperty.Ctf);
-                m_ScoreInterface.Render(ctf.teamScores[CtfMode.BlueTeam], mode.GetTeamColor(CtfMode.BlueTeam), 
-                                        ctf.teamScores[CtfMode.RedTeam], mode.GetTeamColor(CtfMode.RedTeam));
+                var teamScores = sessionContainer.Require<DualScoresComponent>();
+                m_ScoreInterface.Render(teamScores[CtfMode.BlueTeam], mode.GetTeamColor(CtfMode.BlueTeam), 
+                                        teamScores[CtfMode.RedTeam], mode.GetTeamColor(CtfMode.RedTeam));
             }
             SetInterfaceActive(isVisible);
         }

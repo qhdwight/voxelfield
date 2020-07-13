@@ -62,6 +62,8 @@
               </e>
               <e p="LoadingInterface.cs" t="Include" />
               <e p="MainMenuInterface.cs" t="Include" />
+              <e p="MiniMapCamera.cs" t="Include" />
+              <e p="MinimapInterface.cs" t="Include" />
               <e p="PlayerHud.cs" t="Include" />
               <e p="ProgressInterface.cs" t="Include" />
               <e p="ScoreboardEntryInterface.cs" t="Include" />

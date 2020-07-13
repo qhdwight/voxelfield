@@ -1,4 +1,3 @@
-using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using UnityEngine;
@@ -16,6 +15,15 @@ namespace Voxelfield.Session.Mode
 
         public override void SetInMode(Container session) => gameObject.SetActive(IsModeOrDesigner(session, ModeIdProperty.SecureArea));
 
-        public void Render(SiteComponent site) {  }
+        public void Render(SiteComponent site)
+        {
+
+        }
+
+        public override void RenderContainer()
+        {
+            Vector3 extents = Container.Require<ExtentsProperty>();
+            transform.localScale = extents;
+        }
     }
 }

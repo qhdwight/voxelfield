@@ -60,6 +60,7 @@ namespace Voxelfield.Item
                 case ModelsProperty.Site:
                 {
                     model.Append(new ModeIdProperty(ModeIdProperty.SecureArea));
+                    model.Append(new ExtentsProperty(1, 1, 1));
                     break;
                 }
             }

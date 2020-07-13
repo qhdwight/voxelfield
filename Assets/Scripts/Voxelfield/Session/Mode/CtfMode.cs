@@ -25,19 +25,12 @@ namespace Voxelfield.Session.Mode
         [SerializeField] private float m_CaptureRadius = 3.0f;
         [SerializeField] private Color m_BlueColor = new Color(0.1764705882f, 0.5098039216f, 0.8509803922f),
                                        m_RedColor = new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
-        private string m_BlueHex, m_RedHex;
 
         // private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
         private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
         private FlagBehavior[][] m_FlagBehaviors;
         private VoxelMapNameProperty m_LastMapName;
-
-        private void OnEnable()
-        {
-            m_BlueHex = ColorUtility.ToHtmlStringRGB(m_BlueColor);
-            m_RedHex = ColorUtility.ToHtmlStringRGB(m_RedColor);
-        }
-
+        
         public override void Clear() => m_LastMapName = new VoxelMapNameProperty(); 
 
         private FlagBehavior[][] GetFlagBehaviors(StringProperty mapName)
@@ -55,7 +48,7 @@ namespace Voxelfield.Session.Mode
         {
             base.BeginModify(session, sessionContainer);
             var ctf = sessionContainer.Require<CtfComponent>();
-            ctf.teamScores.Zero();
+            sessionContainer.Require<DualScoresComponent>().Zero();
             ctf.teamFlags.Clear();
         }
 
@@ -84,10 +77,12 @@ namespace Voxelfield.Session.Mode
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
             {
                 FlagComponent flag = ctf.teamFlags[flagTeam][flagId];
-                HandlePlayersNearFlag(session, flag, flagTeam, flagId, ctf);
+                HandlePlayersNearFlag(session, flag, flagTeam, flagId, ctf, sessionContainer.Require<DualScoresComponent>());
                 if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += durationUs;
             }
         }
+        
+        
 
         protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer)
         {
@@ -113,7 +108,7 @@ namespace Voxelfield.Session.Mode
             return ShowdownMode.CalculateDamageWithMovement(session, inflictingPlayer, weapon, baseDamage);
         }
 
-        private void HandlePlayersNearFlag(SessionBase session, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf)
+        private void HandlePlayersNearFlag(SessionBase session, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresComponent scores)
         {
             int count = Physics.OverlapSphereNonAlloc(m_FlagBehaviors[flagTeam][flagId].transform.position, m_CaptureRadius, m_CachedColliders, m_PlayerMask);
             Container enemyTakingIn = null;
@@ -125,7 +120,7 @@ namespace Voxelfield.Session.Mode
                 Container player = session.GetModifyingPayerFromId(playerIdInFlag);
                 if (player.Require<TeamProperty>() == flagTeam)
                 {
-                    TryReturnCapturedFlag(flagTeam, ctf, playerTrigger); // Possibly returning captured enemy flag to friendly flag
+                    TryReturnCapturedFlag(flagTeam, scores, ctf, playerTrigger); // Possibly returning captured enemy flag to friendly flag
                 }
                 else
                 {
@@ -160,7 +155,7 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        private static void TryReturnCapturedFlag(byte playerTeam, CtfComponent ctf, PlayerTrigger player)
+        private static void TryReturnCapturedFlag(byte playerTeam, DualScoresComponent scores, CtfComponent ctf, PlayerTrigger player)
         {
             for (var flagTeam = 0; flagTeam < ctf.teamFlags.Length; flagTeam++)
             {
@@ -172,7 +167,7 @@ namespace Voxelfield.Session.Mode
                                                               && enemyFlag.captureElapsedTimeUs > TakeFlagDurationUs) // Test if friendly returning enemy flag
                     {
                         enemyFlag.Clear();
-                        ctf.teamScores[playerTeam].Value++;
+                        scores[playerTeam].Value++;
                     }
                 }
             }
@@ -184,19 +179,14 @@ namespace Voxelfield.Session.Mode
             base.SpawnPlayer(session, sessionContainer, playerId, player);
         }
 
+        public Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());
+
         public override StringBuilder BuildUsername(StringBuilder builder, Container player)
         {
-            string hex = player.Require<TeamProperty>() == BlueTeam ? m_BlueHex : m_RedHex;
+            string hex = GetHexColor(GetTeamColor(player.Require<TeamProperty>()));
             return builder.Append("<color=#").Append(hex).Append(">").AppendProperty(player.Require<UsernameProperty>()).Append("</color>");
         }
 
-        public Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());
-
-        public Color GetTeamColor(byte teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;
-
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
-        {
-            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
-        }
+        public override Color GetTeamColor(int teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;
     }
 }

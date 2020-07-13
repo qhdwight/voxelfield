@@ -20,7 +20,7 @@ MonoBehaviour:
     m_Value: 1
   modeId:
     m_Flags: 1
-    m_Value: 3
+    m_Value: 4
   fov:
     m_Flags: 1
     m_Value: 60
@@ -35,3 +35,6 @@ MonoBehaviour:
     m_Value: 2
   mapName:
     m_Flags: 1
+  enableMiniMap:
+    m_Flags: 1
+    m_Value: 0

@@ -11,9 +11,10 @@ namespace Voxelfield.Session.Mode
 
         private void Awake() => m_Material = GetComponentInChildren<SkinnedMeshRenderer>().material;
 
-        public override void SetInMode(Container session)
+        public override void SetInMode(Container session) => gameObject.SetActive(session.Require<ModeIdProperty>() == ModeIdProperty.Designer);
+
+        public override void RenderContainer()
         {
-            gameObject.SetActive(session.Require<ModeIdProperty>() == ModeIdProperty.Designer);
             var mode = (CtfMode) ModeManager.GetMode(ModeIdProperty.Ctf);
             m_Material.color = mode.GetTeamColor(Container);
         }
