@@ -44,6 +44,7 @@
             <e p="VoxelRenderer.cs" t="Include" />
           </e>
           <e p="Voxelfield" t="Include">
+            <e p="ConfigManager.cs" t="Include" />
             <e p="Editor" t="Include">
               <e p="ModelBehaviorEditor.cs" t="Include" />
               <e p="SessionManagerEditor.cs" t="Include" />
@@ -63,9 +64,11 @@
               <e p="ProgressInterface.cs" t="Include" />
               <e p="ScoreboardEntryInterface.cs" t="Include" />
               <e p="ScoreboardInterface.cs" t="Include" />
+              <e p="SecureAreaInterface.cs" t="Include" />
               <e p="Showdown" t="Include">
                 <e p="BuyMenuButton.cs" t="Include" />
                 <e p="BuyMenuInterface.cs" t="Include" />
+                <e p="RoundInterfaceBase.cs" t="Include" />
                 <e p="ShowdownInterface.cs" t="Include" />
               </e>
               <e p="UpperScoreInterface.cs" t="Include" />
@@ -206,7 +209,7 @@
             <e p="Components" t="Include">
               <e p="SessionComponents.cs" t="Include" />
             </e>
-            <e p="ConfigManager.cs" t="Include" />
+            <e p="ConfigManagerBase.cs" t="Include" />
             <e p="DebugBehavior.cs" t="Include" />
             <e p="Entities" t="Include">
               <e p="EntityComponents.cs" t="Include" />

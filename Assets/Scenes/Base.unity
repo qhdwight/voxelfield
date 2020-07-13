@@ -1801,7 +1801,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75bfa6a2e5724c1c818772ff876c90cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_MapName: Test
   IsDebugMode: 0
   RollbackOverrideUs:
     m_Flags: 0
@@ -3581,19 +3580,16 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'you thought I would have made a main menu?
-
-    sike press <b>~</b> for
-    console.
+  m_text: 'press <b>~</b> for console.
 
 
-    <i>connect <ip default 127.0.0.1> <port default 7777></i>
+    h key: quick host match
+
+    k key:
+    disconnect
 
 
-    h
-    key: quick host match
-
-    k key: disconnect'
+    <i>connect <ip default 127.0.0.1> <port default 7777></i>'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 9af0fd227593ec144964a51d5da7d78d, type: 2}
   m_sharedMaterial: {fileID: -5242082869675537677, guid: 9af0fd227593ec144964a51d5da7d78d,
@@ -4839,7 +4835,7 @@ MonoBehaviour:
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 6
-  m_RegexValue: ^[\w \.]+$
+  m_RegexValue: ^[\w \.:]+$
   m_GlobalPointSize: 14
   m_CharacterLimit: 0
   m_OnEndEdit:

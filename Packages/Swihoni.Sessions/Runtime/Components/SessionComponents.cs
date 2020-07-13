@@ -14,7 +14,7 @@ namespace Swihoni.Sessions.Components
     public class ClientTrustedAttribute : Attribute
     {
     }
-    
+
     public class ClientNonCheckedAttribute : Attribute
     {
     }
@@ -140,6 +140,8 @@ namespace Swihoni.Sessions.Components
     [Serializable]
     public class AllowCheatsProperty : BoolProperty
     {
+        public AllowCheatsProperty() { }
+        public AllowCheatsProperty(bool value) : base(value) { }
     }
 
     [Serializable]

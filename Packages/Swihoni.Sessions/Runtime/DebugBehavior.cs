@@ -13,15 +13,10 @@ namespace Swihoni.Sessions
         private static GameObject _visualizerPrefab;
 
         private StrictPool<PlayerVisualizerBehavior> m_Pool;
-        private StringProperty m_MapNameProperty;
-
-        [SerializeField] private string m_MapName = default;
-        // public StringProperty mapName;
+        
         public bool IsDebugMode;
         public UIntProperty RollbackOverrideUs;
-
-        public StringProperty MapNameProperty => m_MapNameProperty ?? (m_MapNameProperty = new StringProperty(m_MapName));
-
+        
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize() => _visualizerPrefab = Resources.LoadAll<GameObject>("Players")
                                                                          .First(gameObject => gameObject.GetComponent<PlayerVisualizerBehavior>() != null);

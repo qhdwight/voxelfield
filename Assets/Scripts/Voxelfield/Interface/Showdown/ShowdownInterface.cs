@@ -1,20 +1,14 @@
-using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Interfaces;
 using Swihoni.Util.Interface;
-using UnityEngine;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
 
 namespace Voxelfield.Interface.Showdown
 {
-    public class ShowdownInterface : SessionInterfaceBehavior
+    public class ShowdownInterface : RoundInterfaceBase
     {
-        [SerializeField] private BufferedTextGui m_UpperText = default;
-        [SerializeField] private ProgressInterface m_SecuringProgress = default;
-
         public override void Render(SessionBase session, Container sessionContainer)
         {
             bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Showdown;
@@ -47,19 +41,11 @@ namespace Voxelfield.Interface.Showdown
         {
             if (showdown.number.WithValue)
             {
-                uint totalUs = showdown.remainingUs;
-                bool isBuyPhase = totalUs > ShowdownMode.FightTimeUs;
-                if (isBuyPhase) totalUs -= ShowdownMode.FightTimeUs;
-                uint minutes = totalUs / 60_000_000u, seconds = totalUs / 1_000_000u % 60u;
-                StringBuilder builder = m_UpperText.StartBuild();
-                void AppendTime(string prefix)
-                {
-                    builder.Append(prefix).Append(minutes).Append(":");
-                    if (seconds < 10) builder.Append("0");
-                    builder.Append(seconds);
-                }
-                AppendTime(isBuyPhase ? "Buy! Time remaining until first stage: " : "Time to secure the cure: ");
-                m_UpperText.SetText(builder);
+                uint displayTimeUs = showdown.remainingUs;
+                bool isBuyPhase = displayTimeUs > ShowdownMode.FightTimeUs;
+                if (isBuyPhase) displayTimeUs -= ShowdownMode.FightTimeUs;
+
+                m_UpperText.StartBuild().Append(isBuyPhase ? "Buy! Time remaining until first stage: " : "Time to secure the cure: ").AppendTime(displayTimeUs).Commit(m_UpperText);
             }
             else
             {

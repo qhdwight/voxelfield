@@ -96,7 +96,7 @@ namespace Swihoni.Sessions
         private static void Initialize()
         {
             _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
-            ConfigManager.Initialize();
+            ConfigManagerBase.Initialize();
         }
 
         public void SetApplicationPauseState(bool isPaused)
@@ -209,7 +209,7 @@ namespace Swihoni.Sessions
         private static void UpdateConfig(ComponentBase session)
         {
             foreach (ElementBase element in session.Elements)
-                if (element is PropertyBase property && ConfigManager.TypeToConfig.TryGetValue(property.GetType(), out PropertyBase configProperty))
+                if (element is PropertyBase property && ConfigManagerBase.TypeToConfig.TryGetValue(property.GetType(), out PropertyBase configProperty))
                     property.SetFromIfWith(configProperty);
         }
 
@@ -310,7 +310,7 @@ namespace Swihoni.Sessions
             if (!m_Mode || m_Mode != mode)
             {
                 if (m_Mode) m_Mode.End();
-                mode.Begin(this, session);
+                mode.BeginModify(this, session);
             }
             return m_Mode = mode;
         }

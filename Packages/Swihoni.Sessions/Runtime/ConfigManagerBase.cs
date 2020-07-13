@@ -6,6 +6,7 @@ using Console;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Swihoni.Sessions
 {
@@ -22,17 +23,17 @@ namespace Swihoni.Sessions
     }
 
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
-    public class ConfigManager : ScriptableObject
+    public class ConfigManagerBase : ScriptableObject
     {
         public static Dictionary<Type, PropertyBase> TypeToConfig { get; private set; }
 
-        public static ConfigManager Singleton { get; private set; }
+        public static ConfigManagerBase Singleton { get; private set; }
 
         public static Dictionary<string, PropertyBase> NameToConfig { get; private set; }
 
         public static void Initialize()
         {
-            Singleton = Resources.Load<ConfigManager>("Config");
+            Singleton = Resources.Load<ConfigManagerBase>("Config");
             if (!Singleton) throw new Exception("No config asset was found in resources");
             IReadOnlyList<FieldInfo> fields = Singleton.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
                                                        .Where(field => field.IsDefined(typeof(ConfigAttribute))).ToArray();
@@ -70,8 +71,8 @@ namespace Swihoni.Sessions
         }
 
         [Config("tick_rate", true)] public TickRateProperty tickRate = new TickRateProperty(60);
-        [Config("allow_cheats", true)] public AllowCheatsProperty allowCheats;
-        [Config("mode_id", true)] public ModeIdProperty modeId;
+        [Config("allow_cheats", true)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
+        [Config("mode_id", true)] public ModeIdProperty modeId = new ModeIdProperty();
         
         [Config("fov")] public ByteProperty fov = new ByteProperty(60);
         [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);

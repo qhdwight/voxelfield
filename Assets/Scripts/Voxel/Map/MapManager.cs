@@ -15,7 +15,7 @@ namespace Voxel.Map
     {
         private const string MapSaveExtension = "vfm", MapSaveFolder = "Maps";
 
-        private static StringProperty _testMapName, _emptyMapName;
+        private static StringProperty _emptyMapName;
         private static readonly MapContainer EmptyMap = new MapContainer().Zero();
         private static Dictionary<string, TextAsset> _defaultMaps;
 
@@ -34,7 +34,6 @@ namespace Voxel.Map
         public static void Initialize()
         {
             _emptyMapName = new StringProperty();
-            _testMapName = new StringProperty("Test");
             _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m);
             ModelPrefabs = Resources.LoadAll<ModelBehaviorBase>("Models")
                                     .OrderBy(modifier => modifier.Id).ToArray();
@@ -94,21 +93,18 @@ namespace Voxel.Map
             return map;
         }
 
-        public static bool SaveMapSave(MapContainer map)
+        public static bool SaveMapSave(MapContainer map, string fileName = null)
         {
-            string mapPath = GetMapPath(map.name);
-#if UNITY_EDITOR
-            if (map.name == _testMapName) mapPath = @"Assets/Resources/Maps/Test.bytes";
-#else
-            if (map.name == _testMapName) mapPath = @"C:/Users/qhdwi/Projects/Programming/Unity/Compound/Assets/Resources/Maps/Test.bytes";
-#endif
+            if (fileName != null) map.name.SetTo(fileName);
+            string mapPath = $"C:/Users/qhdwi/Projects/Programming/Unity/Compound/Assets/Resources/Maps/{map.name}.bytes";
             var writer = new NetDataWriter();
             map.Serialize(writer);
             File.WriteAllBytes(mapPath, writer.CopyData());
+            Debug.Log($"Saved map to {mapPath}");
             return true;
         }
 
-        public bool SaveCurrentMap() => SaveMapSave(Map);
+        public bool SaveCurrentMap(string fileName = null) => SaveMapSave(Map, fileName);
 
         private IEnumerator LoadNamedMap(StringProperty mapName)
         {

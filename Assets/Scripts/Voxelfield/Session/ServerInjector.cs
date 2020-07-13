@@ -45,11 +45,5 @@ namespace Voxelfield.Session
             var changedVoxels = sendSession.Require<ChangedVoxelsProperty>();
             changedVoxels.SetTo(m_MasterChanges);
         }
-
-        protected override void OnSettingsTick(Container serverSession)
-        {
-            serverSession.Require<VoxelMapNameProperty>().SetTo(DebugBehavior.Singleton.MapNameProperty);
-            base.OnSettingsTick(serverSession); // Set map
-        }
     }
 }

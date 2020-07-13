@@ -7,6 +7,7 @@ using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
@@ -35,8 +36,16 @@ namespace Voxelfield.Session
         {
             QualitySettings.vSyncCount = 0;
             ConsoleCommandExecutor.SetCommand("host", args => StartHost());
-            ConsoleCommandExecutor.SetCommand("edit", args => StartEdit(args[1]));
-            ConsoleCommandExecutor.SetCommand("save", args => MapManager.Singleton.SaveCurrentMap());
+            ConsoleCommandExecutor.SetCommand("edit", args => StartEdit(args));
+            ConsoleCommandExecutor.SetCommand("save", args =>
+            {
+                string newFile = args.Length > 1 ? args[1] : null;
+                if (newFile != null)
+                {
+                    SessionBase.Sessions.First().GetLatestSession().Require<VoxelMapNameProperty>().SetTo(newFile);
+                }
+                MapManager.Singleton.SaveCurrentMap(newFile);
+            });
             ConsoleCommandExecutor.SetCommand("serve", args => StartServer(DefaultEndPoint));
             ConsoleCommandExecutor.SetCommand("connect", args =>
             {
@@ -44,10 +53,10 @@ namespace Voxelfield.Session
                 {
                     string[] colonSplit = args.Length > 1 ? args[1].Split(IpSeparator, StringSplitOptions.RemoveEmptyEntries) : null;
                     if (colonSplit?.Length == 2) args = args.Take(1).Concat(colonSplit).ToArray();
-                    
                     IPAddress address = args.Length > 1 ? IPAddress.Parse(args[1]) : DefaultAddress;
                     int port = args.Length > 2 ? int.Parse(args[2]) : DefaultPort;
                     var endPoint = new IPEndPoint(address, port);
+
                     Client client = StartClient(endPoint);
                     Debug.Log($"Started client at {client.IpEndPoint}");
                 }
@@ -91,14 +100,19 @@ namespace Voxelfield.Session
 #endif
         }
 
-        private Host StartEdit(string mapName)
+        private static Host StartEdit(IReadOnlyList<string> args)
         {
             StandaloneDisconnectAll();
             var edit = new Host(VoxelfieldComponents.SessionElements, DefaultEndPoint, new ServerInjector());
+
+            var config = (ConfigManager) ConfigManagerBase.Singleton;
+            if (args.Count > 1) config.mapName.SetTo(args[1]);
+            config.modeId.Value = ModeIdProperty.Designer;
+
             return StartSession(edit);
         }
 
-        private Host StartHost()
+        private static Host StartHost()
         {
             StandaloneDisconnectAll();
             var host = new Host(VoxelfieldComponents.SessionElements, DefaultEndPoint, new ServerInjector());

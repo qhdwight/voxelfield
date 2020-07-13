@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -48,7 +49,7 @@ namespace Swihoni.Sessions.Modes
 
         protected virtual Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer) => new Vector3 {y = 8.0f};
 
-        public virtual void Begin(SessionBase session, Container sessionContainer)
+        public virtual void BeginModify(SessionBase session, Container sessionContainer)
         {
             ForEachActivePlayer(session, sessionContainer, (playerId, player) => SpawnPlayer(session, sessionContainer, playerId, player));
         }
@@ -184,5 +185,8 @@ namespace Swihoni.Sessions.Modes
 
         public virtual StringBuilder BuildUsername(StringBuilder builder, Container player)
             => builder.AppendProperty(player.Require<UsernameProperty>());
+
+        protected static int GetPlayerCount(Container session)
+            => session.Require<PlayerContainerArrayElement>().Count(player => player.Require<HealthProperty>().WithValue);
     }
 }

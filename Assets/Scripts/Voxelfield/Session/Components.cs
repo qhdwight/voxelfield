@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -14,6 +15,7 @@ namespace Voxelfield.Session
     [Serializable]
     public class VoxelMapNameProperty : StringProperty
     {
+        public VoxelMapNameProperty(string @string) : base(@string, 16) { }
         public VoxelMapNameProperty() : base(16) { }
     }
 
@@ -26,7 +28,7 @@ namespace Voxelfield.Session
     }
 
     /* Capture the flag */
-    
+
     [Serializable]
     public class FlagComponent : ComponentBase
     {
@@ -46,17 +48,20 @@ namespace Voxelfield.Session
         public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
         public ArrayElement<FlagArrayElement> teamFlags = new ArrayElement<FlagArrayElement>(2);
     }
-    
+
     /* Secure area */
-    
+
     [Serializable]
-    public class SiteComponent : FlagComponent
+    public class SiteComponent : ComponentBase
     {
+        public TimeUsProperty timeUs;
+        public BoolProperty isRedInside, isBlueInside;
     }
 
     [Serializable]
-    public class SiteElement : FlagArrayElement
+    public class SiteElement : ArrayElement<SiteComponent>
     {
+        public SiteElement() : base(2) { }
     }
 
     [Serializable]
@@ -64,6 +69,22 @@ namespace Voxelfield.Session
     {
         public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
         public SiteElement sites = new SiteElement();
+        public TimeUsProperty roundTime;
+        public ByteProperty roundNumber;
+
+        public bool Contested(out SiteComponent element)
+        {
+            foreach (SiteComponent site in sites)
+            {
+                if (site.isRedInside && !site.isBlueInside)
+                {
+                    element = site;
+                    return true;
+                }
+            }
+            element = default;
+            return false;
+        }
     }
 
     [Serializable]
@@ -115,7 +136,8 @@ namespace Voxelfield.Session
         static VoxelfieldComponents()
         {
             SessionElements = SessionElements.NewStandardSessionElements();
-            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent), typeof(BrokeVoxelTickProperty));
+            SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent),
+                                                     typeof(BrokeVoxelTickProperty));
             // SessionElements.commandElements.AppendAll(typeof(TeamProperty));
             SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty), typeof(CtfComponent), typeof(ShowdownSessionComponent));
         }

@@ -53,6 +53,12 @@ namespace Swihoni.Components
     {
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation)
             => Value = p2.Value < p1.Value ? InterpolateUInt(p1.Value, p2.Value, interpolation) : p2.Value;
+
+        public void Subtract(uint durationUs)
+        {
+            if (Value > durationUs) Value -= durationUs;
+            else Value = 0u;
+        }
     }
 
     [Serializable]

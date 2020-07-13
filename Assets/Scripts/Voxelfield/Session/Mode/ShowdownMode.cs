@@ -225,11 +225,7 @@ namespace Voxelfield.Session.Mode
                 stage.curePackages[index].isActive.Value = true;
             }
         }
-
-        // TODO:performance LINQ creates too much garbage?
-        private static int GetPlayerCount(Container session)
-            => session.Require<PlayerContainerArrayElement>().Count(player => player.Require<HealthProperty>().WithValue);
-
+        
         private static bool InWarmup(Container session) => session.Require<ShowdownSessionComponent>().number.WithoutValue;
 
         protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer,

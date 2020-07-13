@@ -40,7 +40,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs, tickDelta);
             if (playerToModify.With<ServerTag>() || playerToModify.Without<HostTag>())
-                ConfigManager.TryCommand(playerToModify.Require<StringCommandProperty>());
+                ConfigManagerBase.TryCommand(playerToModify.Require<StringCommandProperty>());
         }
 
         public void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)

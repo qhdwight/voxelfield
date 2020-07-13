@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +11,6 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
-using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
 {
@@ -51,9 +49,9 @@ namespace Voxelfield.Session.Mode
                                                .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray();
         }
 
-        public override void Begin(SessionBase session, Container sessionContainer)
+        public override void BeginModify(SessionBase session, Container sessionContainer)
         {
-            base.Begin(session, sessionContainer);
+            base.BeginModify(session, sessionContainer);
             var ctf = sessionContainer.Require<CtfComponent>();
             ctf.teamScores.Zero();
             ctf.teamFlags.Clear();
