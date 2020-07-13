@@ -57,6 +57,11 @@ namespace Voxelfield.Item
                     model.Append(new TeamProperty(CtfMode.RedTeam));
                     break;
                 }
+                case ModelsProperty.Site:
+                {
+                    model.Append(new ModeIdProperty(ModeIdProperty.SecureArea));
+                    break;
+                }
             }
             MapManager.Singleton.AddModel(position, model);
         }

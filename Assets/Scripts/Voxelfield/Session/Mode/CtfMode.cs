@@ -30,13 +30,15 @@ namespace Voxelfield.Session.Mode
         // private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
         private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
         private FlagBehavior[][] m_FlagBehaviors;
-        private readonly VoxelMapNameProperty m_LastMapName = new VoxelMapNameProperty();
+        private VoxelMapNameProperty m_LastMapName;
 
         private void OnEnable()
         {
             m_BlueHex = ColorUtility.ToHtmlStringRGB(m_BlueColor);
             m_RedHex = ColorUtility.ToHtmlStringRGB(m_RedColor);
         }
+
+        public override void Clear() => m_LastMapName = new VoxelMapNameProperty(); 
 
         private FlagBehavior[][] GetFlagBehaviors(StringProperty mapName)
         {
@@ -61,7 +63,7 @@ namespace Voxelfield.Session.Mode
         {
             base.Render(session, sessionContainer);
 
-            if (session.IsPaused) return;
+            if (session.IsLoading) return;
 
             FlagBehavior[][] flagBehaviors = GetFlagBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
             ArrayElement<FlagArrayElement> flags = sessionContainer.Require<CtfComponent>().teamFlags;
@@ -74,7 +76,7 @@ namespace Voxelfield.Session.Mode
         {
             base.Modify(session, sessionContainer, durationUs);
 
-            if (session.IsPaused) return;
+            if (session.IsLoading) return;
 
             var ctf = sessionContainer.Require<CtfComponent>();
             FlagBehavior[][] flagBehaviors = GetFlagBehaviors(sessionContainer.Require<VoxelMapNameProperty>());

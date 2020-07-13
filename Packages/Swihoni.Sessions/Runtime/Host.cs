@@ -40,7 +40,7 @@ namespace Swihoni.Sessions
             if (session.Without(out ServerStampComponent serverStamp) || serverStamp.tick.WithoutValue)
                 return;
 
-            if (!IsPaused)
+            if (!IsLoading)
             {
                 PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(GetModifyingPayerFromId(HostPlayerId, session), HostPlayerId);
                 if (hostModifier)
@@ -115,7 +115,7 @@ namespace Swihoni.Sessions
         protected override void PreTick(Container tickSession)
         {
             // Set up new player component data
-            if (IsPaused) return;
+            if (IsLoading) return;
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
             if (hostPlayer.Require<HealthProperty>().WithValue)
             {
@@ -126,7 +126,7 @@ namespace Swihoni.Sessions
 
         protected override void PostTick(Container tickSession)
         {
-            if (IsPaused) return;
+            if (IsLoading) return;
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
             if (hostPlayer.Require<HealthProperty>().WithValue) return;
             // Set up new player component data

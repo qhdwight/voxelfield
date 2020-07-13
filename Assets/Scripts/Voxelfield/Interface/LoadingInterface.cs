@@ -38,7 +38,7 @@ namespace Voxelfield.Interface
                     break;
             }
             m_ProgressBar.value = progressInfo.progress;
-            SetInterfaceActive(session.IsPaused);
+            SetInterfaceActive(session.IsLoading);
         }
     }
 }

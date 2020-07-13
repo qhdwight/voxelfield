@@ -5,22 +5,22 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Modes
 {
-    public static class ModeId
-    {
-        public const byte Warmup = 0;
-    }
-
     public static class ModeManager
     {
-        private static readonly ModeBase[] Modes;
+        private static ModeBase[] _modes;
 
-        static ModeManager()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Initialize()
         {
-            Modes = Resources.LoadAll<ModeBase>("Modes")
-                             .OrderBy(modifier => modifier.id).ToArray();
+            _modes = Resources.LoadAll<ModeBase>("Modes")
+                             .OrderBy(modifier =>
+                              {
+                                  modifier.Clear();
+                                  return modifier.id;
+                              }).ToArray();
         }
 
-        public static ModeBase GetMode(byte modeId) => Modes[modeId];
+        public static ModeBase GetMode(byte modeId) => _modes[modeId];
 
         public static ModeBase GetMode(Container session) => GetMode(session.Require<ModeIdProperty>());
     }

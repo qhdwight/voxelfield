@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -70,13 +69,12 @@ namespace Voxelfield.Session
         public ArrayElement<ByteProperty> teamScores = new ArrayElement<ByteProperty>(2);
         public SiteElement sites = new SiteElement();
         public TimeUsProperty roundTime;
-        public ByteProperty roundNumber;
 
-        public bool Contested(out SiteComponent element)
+        public bool RedInside(out SiteComponent element)
         {
             foreach (SiteComponent site in sites)
             {
-                if (site.isRedInside && !site.isBlueInside)
+                if (site.isRedInside)
                 {
                     element = site;
                     return true;
@@ -139,7 +137,8 @@ namespace Voxelfield.Session
             SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent),
                                                      typeof(BrokeVoxelTickProperty));
             // SessionElements.commandElements.AppendAll(typeof(TeamProperty));
-            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty), typeof(CtfComponent), typeof(ShowdownSessionComponent));
+            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty),
+                                               typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent));
         }
     }
 }

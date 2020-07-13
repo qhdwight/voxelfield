@@ -42,12 +42,12 @@ namespace Voxelfield.Session
         protected override void OnSettingsTick(Container session)
         {
             MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
-            if (!IsPaused(session))
+            if (!IsLoading(session))
                 foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
                     modelBehavior.SetInMode(session);
         }
 
-        public override bool IsPaused(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
+        public override bool IsLoading(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
                                                          || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
 
         public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)

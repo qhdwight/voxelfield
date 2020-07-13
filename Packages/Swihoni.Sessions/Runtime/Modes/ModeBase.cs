@@ -188,5 +188,7 @@ namespace Swihoni.Sessions.Modes
 
         protected static int GetPlayerCount(Container session)
             => session.Require<PlayerContainerArrayElement>().Count(player => player.Require<HealthProperty>().WithValue);
+
+        public virtual void Clear() { }
     }
 }

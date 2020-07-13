@@ -132,7 +132,7 @@ namespace Swihoni.Sessions
                 case ClientCommandsCode:
                 {
                     m_EmptyClientCommands.Deserialize(reader);
-                    if (!IsPaused && serverPlayer.Require<HealthProperty>().WithoutValue)
+                    if (!IsLoading && serverPlayer.Require<HealthProperty>().WithoutValue)
                     {
                         Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {fromPeer.GetPlayerId()}");
                         SetupNewPlayer(serverSession, clientId, serverPlayer, serverSession);
@@ -156,7 +156,7 @@ namespace Swihoni.Sessions
             m_Socket.PollEvents();
             Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
 
-            if (!IsPaused)
+            if (!IsLoading)
             {
                 EntityManager.ModifyAll(serverSession,
                                         (ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs));
@@ -281,7 +281,7 @@ namespace Swihoni.Sessions
                                 serverPlayerTimeUs.Value = serverStamp.timeUs;
                             }
                         }
-                        if (!IsPaused)
+                        if (!IsLoading)
                         {
                             MergeTrustedFromCommands(serverPlayer, receivedClientCommands);
                             // serverPlayer.MergeFrom(receivedClientCommands);
@@ -289,7 +289,7 @@ namespace Swihoni.Sessions
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
 
-                    if (!IsPaused)
+                    if (!IsLoading)
                     {
                         GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs, tickDelta);
                         mode.ModifyPlayer(this, serverSession, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs, tickDelta);

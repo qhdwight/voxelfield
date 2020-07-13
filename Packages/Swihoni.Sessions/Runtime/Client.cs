@@ -337,7 +337,7 @@ namespace Swihoni.Sessions
             predictedPlayer.CopyFrom(previousPredictedPlayer);
             commands.CopyFrom(previousCommand);
 
-            if (IsPaused)
+            if (IsLoading)
             {
                 commands.Require<ClientStampComponent>().Clear();
             }
@@ -356,7 +356,7 @@ namespace Swihoni.Sessions
                 // Inject trusted component
                 commands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
                 predictedPlayer.MergeFrom(commands);
-                if (!IsPaused && predictedStamp.durationUs.WithValue)
+                if (!IsLoading && predictedStamp.durationUs.WithValue)
                 {
                     PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
                     if (modifier) modifier.ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.durationUs);

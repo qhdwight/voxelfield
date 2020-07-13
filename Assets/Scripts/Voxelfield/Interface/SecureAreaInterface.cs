@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions;
@@ -23,12 +22,12 @@ namespace Voxelfield.Interface
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Showdown;
+            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.SecureArea;
             if (isVisible)
             {
                 var secureArea = sessionContainer.Require<SecureAreaComponent>();
                 BuildUpperText(secureArea);
-                BuildProgress(secureArea);
+                BuildProgress(secureArea);    
             }
             SetInterfaceActive(isVisible);
         }
@@ -36,9 +35,9 @@ namespace Voxelfield.Interface
         private void BuildProgress(SecureAreaComponent secureArea)
         {
             var isProgressVisible = false;
-            if (secureArea.roundNumber.WithValue && secureArea.Contested(out SiteComponent site))
+            if (secureArea.roundTime.WithValue && secureArea.RedInside(out SiteComponent site))
             {
-                if (site.timeUs < m_SecureAreaMode.SecureDurationUs)
+                if (site.timeUs < m_SecureAreaMode.SecureDurationUs && site.timeUs > 0u)
                 {
                     isProgressVisible = true;
                     m_SecuringProgress.Set(site.timeUs, m_SecureAreaMode.SecureDurationUs);
@@ -49,7 +48,7 @@ namespace Voxelfield.Interface
 
         private void BuildUpperText(SecureAreaComponent secureArea)
         {
-            if (secureArea.roundNumber.WithValue)
+            if (secureArea.roundTime.WithValue)
             {
                 uint buyTimeEndUs = m_SecureAreaMode.RoundEndDurationUs + m_SecureAreaMode.RoundDurationUs, displayTimeUs;
                 StringBuilder builder = m_UpperText.StartBuild();
@@ -58,11 +57,11 @@ namespace Voxelfield.Interface
                     displayTimeUs = secureArea.roundTime - buyTimeEndUs;
                     builder.Append("Buy! Time remaining until round start: ");
                 }
-                else if (secureArea.roundTime > m_SecureAreaMode.RoundEndDurationUs)
+                else if (secureArea.roundTime >= m_SecureAreaMode.RoundEndDurationUs)
                 {
                     displayTimeUs = secureArea.roundTime - m_SecureAreaMode.RoundEndDurationUs;
                     const string text = "Round time left: ";
-                    if (displayTimeUs < 10_000_000u) builder.Append(text);
+                    if (displayTimeUs > 10_000_000u) builder.Append(text);
                     else builder.Append("<color=red>").Append(text).Append("</color>");
                 }
                 else

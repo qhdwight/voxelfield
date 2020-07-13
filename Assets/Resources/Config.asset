@@ -20,7 +20,7 @@ MonoBehaviour:
     m_Value: 1
   modeId:
     m_Flags: 1
-    m_Value: 4
+    m_Value: 3
   fov:
     m_Flags: 1
     m_Value: 60

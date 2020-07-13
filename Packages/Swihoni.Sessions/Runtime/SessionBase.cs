@@ -61,7 +61,7 @@ namespace Swihoni.Sessions
 
         protected internal virtual void Stop() { }
 
-        public virtual bool IsPaused(Container session) => false;
+        public virtual bool IsLoading(Container session) => false;
 
         public virtual void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior) { }
     }
@@ -156,7 +156,7 @@ namespace Swihoni.Sessions
                  clockTickDelta = clockTicks - m_RenderTicks;
             m_RenderTicks = clockTicks;
             uint timeUs = GetUsFromTicks(clockTicks);
-            if (!IsPaused) Input(timeUs, GetUsFromTicks(clockTickDelta));
+            if (!IsLoading) Input(timeUs, GetUsFromTicks(clockTickDelta));
             if (ShouldRender) Render(timeUs);
         }
 
@@ -324,7 +324,7 @@ namespace Swihoni.Sessions
                     action(sessionInterface);
         }
 
-        public virtual bool IsPaused => m_Injector.IsPaused(GetLatestSession());
+        public virtual bool IsLoading => m_Injector.IsLoading(GetLatestSession());
 
         public virtual void Dispose()
         {
