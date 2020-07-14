@@ -258,7 +258,7 @@ namespace Voxelfield.Session
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = new[] {"Assets/Scenes/Base.unity"},
-                locationPathName = "Builds/Voxelfield/Linux/Voxelfield", target = BuildTarget.StandaloneLinux64, options = BuildOptions.EnableHeadlessMode,
+                locationPathName = "Builds/Linux/Voxelfield", target = BuildTarget.StandaloneLinux64, options = BuildOptions.EnableHeadlessMode,
             };
 
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
@@ -282,7 +282,7 @@ namespace Voxelfield.Session
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = new[] {"Assets/Scenes/Base.unity"},
-                locationPathName = "Builds/Voxelfield/Windows/Voxelfield.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.AutoRunPlayer,
+                locationPathName = "Builds/Windows/Voxelfield.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.AutoRunPlayer,
             };
 
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);

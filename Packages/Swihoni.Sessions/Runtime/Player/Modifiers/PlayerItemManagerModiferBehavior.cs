@@ -18,6 +18,16 @@ namespace Swihoni.Sessions.Player.Modifiers
             var input = commands.Require<InputFlagProperty>();
             var wantedItemIndex = commands.Require<WantedItemIndexProperty>();
 
+            if (input.GetInput(PlayerInput.DropItem) && inventory.equippedIndex != 1 && inventory.equipStatus.id == ItemEquipStatusId.Equipped
+             && inventory.WithItemEquipped(out ItemComponent item))
+            {
+                // Could set status to request removal but then one tick passes
+                item.id.Value = ItemId.None;
+                inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
+                inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
+                inventory.equipStatus.elapsedUs.Value = 0u;
+            }
+
             ModifyEquipStatus(session, playerId, inventory, wantedItemIndex, durationUs);
 
             if (inventory.HasNoItemEquipped) return;
@@ -34,7 +44,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             {
                 equippedItem.id.Value = ItemId.None;
                 inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
-                inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
                 inventory.equipStatus.elapsedUs.Value = 0u;
             }
         }
@@ -141,6 +151,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             inputs.SetInput(PlayerInput.Fly, provider.GetInput(InputType.Fly));
             inputs.SetInput(PlayerInput.Ads, provider.GetInput(InputType.Ads));
             inputs.SetInput(PlayerInput.Throw, provider.GetInput(InputType.Throw));
+            inputs.SetInput(PlayerInput.DropItem, provider.GetInput(InputType.DropItem));
             if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
             if (provider.GetInput(InputType.ItemOne)) itemIndex.Value = 1;
             else if (provider.GetInput(InputType.ItemTwo)) itemIndex.Value = 2;

@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Net;
+using LiteNetLib;
 using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -89,10 +90,10 @@ namespace Swihoni.Sessions
                 else
                 {
                     uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
-                    _int = playerId;
+                    _indexer = playerId;
                     _serverHistory = m_SessionHistory;
                     RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size,
-                                                                   historyIndex => _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_int]);
+                                                                   historyIndex => _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_indexer]);
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, playerId == localPlayer);
@@ -151,10 +152,13 @@ namespace Swihoni.Sessions
             else base.RollbackHitboxes(playerId);
         }
 
-        // TODO:refactor bad
-        public override Container GetModifyingPayerFromId(int playerId, Container session = null) =>
-            playerId == HostPlayerId ? m_HostCommands : base.GetModifyingPayerFromId(playerId, session);
+        protected override int GetPeerPlayerId(NetPeer peer) => base.GetPeerPlayerId(peer) + 1; // Reserve zero for host player
 
-        public override Ray GetRayForPlayerId(int playerId) => playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
+        // TODO:refactor bad
+        public override Container GetModifyingPayerFromId(int playerId, Container session = null)
+            => playerId == HostPlayerId ? m_HostCommands : base.GetModifyingPayerFromId(playerId, session);
+
+        public override Ray GetRayForPlayerId(int playerId)
+            => playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
     }
 }

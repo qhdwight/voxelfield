@@ -23,7 +23,7 @@ namespace Voxelfield.Session.Mode
         public override void RenderContainer()
         {
             Vector3 extents = Container.Require<ExtentsProperty>();
-            transform.localScale = extents;
+            transform.localScale = extents * 0.99f;
         }
     }
 }

@@ -7,14 +7,14 @@ using UnityEngine;
 
 namespace Swihoni.Components
 {
-    internal static class ReflectionCache
+    public static class ReflectionCache
     {
         private static readonly Dictionary<Type, FieldInfo[]> FieldCache = new Dictionary<Type, FieldInfo[]>();
         private static readonly Dictionary<MemberInfo, Dictionary<Type, Attribute>> AttributeCache = new Dictionary<MemberInfo, Dictionary<Type, Attribute>>();
         private static readonly Dictionary<MemberInfo, HashSet<Type>> AttributeTypeCache = new Dictionary<MemberInfo, HashSet<Type>>();
 
         /// <returns>Ordered list by declaring type of fields. This places fields belonging to base classes first.</returns>
-        internal static IReadOnlyList<FieldInfo> GetFieldInfo(Type type)
+        public static IReadOnlyList<FieldInfo> GetFieldInfo(Type type)
         {
             if (!FieldCache.ContainsKey(type))
                 FieldCache.Add(type,
@@ -28,7 +28,7 @@ namespace Swihoni.Components
             return FieldCache[type];
         }
 
-        internal static bool TryAttribute<T>(MemberInfo member, out T attribute) where T : Attribute
+        public static bool TryAttribute<T>(MemberInfo member, out T attribute) where T : Attribute
         {
             Type attributeType = typeof(T);
             if (!AttributeTypeCache.TryGetValue(member, out HashSet<Type> types))

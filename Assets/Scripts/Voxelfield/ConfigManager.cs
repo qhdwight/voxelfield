@@ -10,5 +10,6 @@ namespace Voxelfield
     {
         [Config("map_name", true)] public VoxelMapNameProperty mapName = new VoxelMapNameProperty("Castle");
         [Config("enable_mini_map")] public BoolProperty enableMiniMap = new BoolProperty();
+        [Config("force_start")] public BoolProperty forceStart = new BoolProperty();
     }
 }

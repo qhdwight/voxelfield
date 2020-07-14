@@ -41,7 +41,7 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
-                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Shovel,
+                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe,
                                                           ItemId.Rifle,
                                                           ItemId.Shotgun,
                                                           ItemId.Sniper,

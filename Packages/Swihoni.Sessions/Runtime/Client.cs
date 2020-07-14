@@ -68,10 +68,10 @@ namespace Swihoni.Sessions
         {
             ClientCommandsContainer commands = m_CommandHistory.Peek();
             GetPlayerModifier(player, localPlayerId).ModifyCommands(this, commands, localPlayerId);
-            _int = localPlayerId; // Prevent closure allocation
+            _indexer = localPlayerId; // Prevent closure allocation
             _session = this;
             _container = commands;
-            ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(_int, _session, _container));
+            ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(_indexer, _session, _container));
         }
 
         public override Container GetLocalCommands() => m_CommandHistory.Peek();
@@ -126,10 +126,10 @@ namespace Swihoni.Sessions
                 {
                     uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
                     _serverHistory = m_SessionHistory;
-                    _int = playerId;
+                    _indexer = playerId;
                     RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size,
                                                                             historyIndex =>
-                                                                                _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_int]);
+                                                                                _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_indexer]);
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isLocalPlayer);

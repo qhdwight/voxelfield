@@ -128,6 +128,8 @@ namespace Swihoni.Sessions
             if (!IsDisposed) Dispose();
         }
 
+        protected virtual int GetPeerPlayerId(NetPeer peer) => peer.Id;
+
         protected PlayerModifierDispatcherBehavior GetPlayerModifier(Container player, int index)
         {
             var modifier = (PlayerModifierDispatcherBehavior) PlayerManager.GetModifierAtIndex(player, index, out bool isNewlyObtained);
@@ -206,12 +208,7 @@ namespace Swihoni.Sessions
             if (tickRate.WithValue) Time.fixedDeltaTime = 1.0f / tickRate;
         }
 
-        private static void UpdateConfig(ComponentBase session)
-        {
-            foreach (ElementBase element in session.Elements)
-                if (element is PropertyBase property && ConfigManagerBase.TypeToConfig.TryGetValue(property.GetType(), out PropertyBase configProperty))
-                    property.SetFromIfWith(configProperty);
-        }
+        private static void UpdateConfig(ComponentBase session) => ConfigManagerBase.UpdateConfig(session);
 
         protected virtual void Input(uint timeUs, uint deltaUs) { }
 

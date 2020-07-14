@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                           Molotov = 3,
                           Shotgun = 4,
                           C4 = 5,
-                          Shovel = 6,
+                          Pickaxe = 6,
                           Pistol = 7,
                           Sniper = 8,
                           VoxelWand = 9,

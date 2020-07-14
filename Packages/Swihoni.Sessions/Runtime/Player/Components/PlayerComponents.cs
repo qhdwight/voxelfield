@@ -159,7 +159,7 @@ namespace Swihoni.Sessions.Player.Components
         [ClientNonChecked] public TimeUsProperty tracerTimeUs;
         [ClientNonChecked] public VectorProperty tracerStart, tracerEnd;
         
-        public ItemComponent EquippedItemComponent => items[equippedIndex - 1];
+        public ItemComponent EquippedItemComponent => this[equippedIndex];
         public bool HasItemEquipped => !HasNoItemEquipped;
         public bool HasNoItemEquipped => equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex;
 

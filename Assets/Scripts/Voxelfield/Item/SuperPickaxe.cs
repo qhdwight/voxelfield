@@ -1,3 +1,4 @@
+using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
@@ -27,6 +28,10 @@ namespace Voxelfield.Item
         }
 
         protected override void RemoveVoxelRadius(SessionBase session, int playerId, VoxelInjector injector, in Position3Int position)
-            => injector.SetVoxelRadius(position, session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>().editRadius);
+        {
+            float radius = session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>().editRadius;
+            if (radius > Mathf.Epsilon)
+                injector.SetVoxelRadius(position, radius);
+        }
     }
 }

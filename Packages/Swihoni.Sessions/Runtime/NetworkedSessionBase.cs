@@ -107,7 +107,7 @@ namespace Swihoni.Sessions
             ForEachSessionInterface(sessionInterface => sessionInterface.Render(_session, _container));
         }
 
-        protected static int _int;
+        protected static int _indexer;
         protected static Container _container;
         protected static SessionBase _session;
         protected static CyclicArray<ServerSessionContainer> _serverHistory;
@@ -119,10 +119,10 @@ namespace Swihoni.Sessions
             var renderEntities = m_RenderSession.Require<EntityArrayElement>();
             for (var index = 0; index < renderEntities.Length; index++)
             {
-                _int = index;
-                RenderInterpolated(renderTimeUs, renderEntities[_int], _serverHistory.Size,
+                _indexer = index;
+                RenderInterpolated(renderTimeUs, renderEntities[_indexer], _serverHistory.Size,
                                    h => _serverHistory.Get(-h).Require<TStampComponent>(),
-                                   h => _serverHistory.Get(-h).Require<EntityArrayElement>()[_int]);
+                                   h => _serverHistory.Get(-h).Require<EntityArrayElement>()[_indexer]);
             }
             EntityManager.RenderAll(renderEntities, (visual, entity) => ((EntityVisualBehavior) visual).Render(entity));
         }

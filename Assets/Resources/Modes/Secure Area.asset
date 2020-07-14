@@ -18,8 +18,8 @@ MonoBehaviour:
   m_PlayerTriggerMask:
     serializedVersion: 2
     m_Bits: 65536
-  m_RoundEndDurationUs: 2000000
-  m_RoundDurationUs: 5000000
-  m_BuyDurationUs: 5000000
-  m_SecureDurationUs: 3000000
-  m_Players: 1
+  m_RoundEndDurationUs: 6000000
+  m_RoundDurationUs: 240000000
+  m_BuyDurationUs: 10000000
+  m_SecureDurationUs: 20000000
+  m_Players: 2

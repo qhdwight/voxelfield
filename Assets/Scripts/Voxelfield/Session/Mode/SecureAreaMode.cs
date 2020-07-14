@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
+using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
 {
@@ -80,15 +82,36 @@ namespace Voxelfield.Session.Mode
             if (secureArea.roundTime.WithValue)
             {
                 bool canAdvance = true,
+                     redJustSecured = false,
                      isFightTime = secureArea.roundTime < m_RoundEndDurationUs + m_RoundDurationUs;
+                
+                var players = sessionContainer.Require<PlayerContainerArrayElement>();
+                int redAlive = 0, blueAlive = 0;
+                foreach (Container player in players)
+                {
+                    if (player.Require<HealthProperty>().IsActiveAndAlive)
+                    {
+                        byte team = player.Require<TeamProperty>();
+                        if (team == RedTeam) redAlive++;
+                        else if (team == BlueTeam) blueAlive++;
+                    }
+                }
+                
                 if (isFightTime && (secureArea.roundTime > m_RoundEndDurationUs || secureArea.RedInside(out SiteComponent _)))
                 {
+                    if (redAlive == 0) sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
+                    if (blueAlive == 0) sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
+                    if (redAlive == 0 || blueAlive == 0)
+                    {
+                        secureArea.roundTime.Value = m_RoundEndDurationUs;
+                    }
+                    
                     for (var siteIndex = 0; siteIndex < secureArea.sites.Length; siteIndex++)
                     {
                         SiteBehavior siteBehavior = siteBehaviors[siteIndex];
                         SiteComponent site = secureArea.sites[siteIndex];
-                        Bounds bounds = siteBehavior.Trigger.bounds;
-                        int playersInsideCount = Physics.OverlapBoxNonAlloc(bounds.center, bounds.extents, m_CachedColliders, siteBehavior.transform.rotation, m_PlayerTriggerMask);
+                        Vector3 bounds = siteBehavior.Container.Require<ExtentsProperty>();
+                        int playersInsideCount = Physics.OverlapBoxNonAlloc(siteBehavior.Position, bounds, m_CachedColliders, siteBehavior.transform.rotation, m_PlayerTriggerMask);
                         bool isRedInside = false, isBlueInside = false;
                         for (var i = 0; i < playersInsideCount; i++)
                         {
@@ -96,6 +119,8 @@ namespace Voxelfield.Session.Mode
                             if (collider.TryGetComponent(out PlayerTrigger playerTrigger))
                             {
                                 Container player = session.GetModifyingPayerFromId(playerTrigger.PlayerId);
+                                if (player.Require<HealthProperty>().IsInactiveOrDead) continue;
+                                
                                 byte team = player.Require<TeamProperty>();
                                 if (team == RedTeam) isRedInside = true;
                                 else if (team == BlueTeam) isBlueInside = true;
@@ -114,7 +139,7 @@ namespace Voxelfield.Session.Mode
                                 secureArea.roundTime.Value = m_RoundEndDurationUs;
                                 sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
                             }
-                            canAdvance = site.timeUs == 0u;
+                            canAdvance = redJustSecured = site.timeUs == 0u;
                         }
                         if (isRedInside && isBlueInside) canAdvance = false; // Both in site
                     }
@@ -124,7 +149,7 @@ namespace Voxelfield.Session.Mode
                 {
                     if (secureArea.roundTime > durationUs)
                     {
-                        if (secureArea.roundTime >= m_RoundEndDurationUs && secureArea.roundTime - durationUs < m_RoundEndDurationUs)
+                        if (!redJustSecured && secureArea.roundTime >= m_RoundEndDurationUs && secureArea.roundTime - durationUs < m_RoundEndDurationUs)
                         {
                             // Round just ended without contesting
                             sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
@@ -142,8 +167,18 @@ namespace Voxelfield.Session.Mode
             else
             {
                 // Waiting for players
-                int playerCount = GetPlayerCount(sessionContainer);
-                if (playerCount == m_Players)
+                bool ForceStart()
+                {
+                    BoolProperty forceStart = Extensions.GetConfig().forceStart;
+                    if (forceStart)
+                    {
+                        forceStart.Value = false;
+                        return true;
+                    }
+                    return false;
+                }
+                bool start = GetPlayerCount(sessionContainer) == m_Players || ForceStart();
+                if (start)
                 {
                     NextRound(session, sessionContainer, secureArea);
                     sessionContainer.Require<DualScoresComponent>().Zero();
@@ -164,7 +199,7 @@ namespace Voxelfield.Session.Mode
 
         protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
         {
-            player.Require<TeamProperty>().Value = (byte) (playerId % 2 + 1);
+            player.Require<TeamProperty>().Value = (byte) ((playerId + 1) % 2);
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
             if (secureArea.roundTime.WithValue)
             {
@@ -172,10 +207,9 @@ namespace Voxelfield.Session.Mode
                 if (health.IsDead)
                 {
                     var inventory = player.Require<InventoryComponent>();
-                    ArrayElement<ItemComponent> items = inventory.items;
-                    for (var i = 1; i < items.Length; i++) items[i].Zero(); // Clear except for pickaxe
-                    inventory.equippedIndex.Value = 1;
-                    inventory.equipStatus.Zero();
+                    inventory.Zero();
+                    PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
+                    PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 2);
                 }
 
                 var move = player.Require<MoveComponent>();
@@ -225,7 +259,7 @@ namespace Voxelfield.Session.Mode
                     money.count.Value = 800;
                     money.wantedBuyItemId.Clear();
                     InventoryComponent inventory = player.Require<InventoryComponent>().Zero();
-                    PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Shovel, ItemId.Pistol);
+                    PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
                 }
             });
         }
@@ -240,6 +274,8 @@ namespace Voxelfield.Session.Mode
         public override void Render(SessionBase session, Container sessionContainer)
         {
             if (session.IsLoading) return;
+
+            base.Render(session, sessionContainer);
 
             SiteBehavior[] siteBehaviors = GetSiteBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
             var secureArea = sessionContainer.Require<SecureAreaComponent>();

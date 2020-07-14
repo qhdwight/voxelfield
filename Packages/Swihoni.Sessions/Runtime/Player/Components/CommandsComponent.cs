@@ -23,7 +23,7 @@ namespace Swihoni.Sessions.Player.Components
                           Reload = 14,
                           Fly = 15,
                           Throw = 16,
-                          LastItem = 17;
+                          DropItem = 17;
     }
 
     [Serializable, NoSerialization]

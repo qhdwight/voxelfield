@@ -51,7 +51,7 @@ namespace Swihoni.Sessions
 
         private void OnLatencyUpdated(NetPeer peer, int latency)
         {
-            Container player = GetModifyingPayerFromId(peer.GetPlayerId());
+            Container player = GetModifyingPayerFromId(GetPeerPlayerId(peer));
             var ping = player.Require<ServerPingComponent>();
             ping.latencyUs.Value = checked((uint) latency * 1_000);
             if (player.With(out StatsComponent stats))
@@ -60,7 +60,7 @@ namespace Swihoni.Sessions
 
         private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnect)
         {
-            int playerId = peer.GetPlayerId();
+            int playerId = GetPeerPlayerId(peer);
             Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
             Container player = GetModifyingPayerFromId(playerId);
             player.Clear();
@@ -125,7 +125,7 @@ namespace Swihoni.Sessions
         void IReceiver.OnReceive(NetPeer fromPeer, NetDataReader reader, byte code)
         {
             Container serverSession = GetLatestSession();
-            int clientId = fromPeer.GetPlayerId();
+            int clientId = GetPeerPlayerId(fromPeer);
             Container serverPlayer = GetModifyingPayerFromId(clientId);
             switch (code)
             {
@@ -134,7 +134,7 @@ namespace Swihoni.Sessions
                     m_EmptyClientCommands.Deserialize(reader);
                     if (!IsLoading && serverPlayer.Require<HealthProperty>().WithoutValue)
                     {
-                        Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {fromPeer.GetPlayerId()}");
+                        Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {clientId}");
                         SetupNewPlayer(serverSession, clientId, serverPlayer, serverSession);
                     }
                     HandleClientCommand(clientId, m_EmptyClientCommands, serverSession, serverPlayer);
@@ -177,12 +177,12 @@ namespace Swihoni.Sessions
 
         protected void SendPeerLatestSession(uint tick, NetPeer peer, Container serverSession)
         {
-            Container player = GetModifyingPayerFromId(peer.GetPlayerId(), serverSession);
+            int playerId = GetPeerPlayerId(peer);
+            Container player = GetModifyingPayerFromId(playerId, serverSession);
 
             if (player.Require<HealthProperty>().WithValue)
             {
                 var localPlayerProperty = serverSession.Require<LocalPlayerId>();
-                int playerId = peer.GetPlayerId();
                 localPlayerProperty.Value = (byte) playerId;
 
                 // uint lastServerTickAcknowledged = player.Require<AcknowledgedServerTickProperty>().Else(0u);

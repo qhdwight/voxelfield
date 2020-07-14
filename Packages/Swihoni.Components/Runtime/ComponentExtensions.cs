@@ -1,10 +1,9 @@
-using LiteNetLib;
 using LiteNetLib.Utils;
 using UnityEngine;
 
 namespace Swihoni.Components
 {
-    public static class Extensions
+    public static class ComponentExtensions
     {
         public static Vector3 GetVector3(this NetDataReader reader) => new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
 
@@ -24,7 +23,5 @@ namespace Swihoni.Components
             writer.Put(quaternion.z);
             writer.Put(quaternion.w);
         }
-
-        public static int GetPlayerId(this NetPeer peer) { return peer.Id + 1; }
     }
 }

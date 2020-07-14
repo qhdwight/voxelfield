@@ -142,7 +142,7 @@ namespace Voxelfield.Session.Mode
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
-                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Shovel, ItemId.Pistol);
+                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
             }
             player.Require<ShowdownPlayerComponent>().Zero();
         }
