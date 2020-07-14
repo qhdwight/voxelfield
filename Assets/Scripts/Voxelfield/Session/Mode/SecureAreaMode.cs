@@ -60,6 +60,11 @@ namespace Voxelfield.Session.Mode
             secureArea.sites.Clear();
         }
 
+        public override void EndModify(SessionBase session, Container sessionContainer)
+        {
+            ForEachActivePlayer(session, sessionContainer, (playerId, player) => player.Require<FrozenProperty>().Value = false);
+        }
+
         protected override void HandleRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, uint durationUs)
         {
             if (container.Require<SecureAreaComponent>().roundTime.WithoutValue)
@@ -134,7 +139,7 @@ namespace Voxelfield.Session.Mode
                         {
                             secureArea.roundTime.Value = m_RoundEndDurationUs;
                             endedWithKills = true;
-                        }   
+                        }
                     }
 
                     for (var siteIndex = 0; siteIndex < secureArea.sites.Length; siteIndex++)
@@ -152,7 +157,7 @@ namespace Voxelfield.Session.Mode
                             {
                                 Container player = session.GetModifyingPayerFromId(playerTrigger.PlayerId);
                                 if (player.Require<HealthProperty>().IsInactiveOrDead) continue;
-                                
+
                                 byte team = player.Require<TeamProperty>();
                                 if (team == RedTeam) isRedInside = true;
                                 else if (team == BlueTeam) isBlueInside = true;
@@ -285,10 +290,7 @@ namespace Voxelfield.Session.Mode
             bool isLastRound = secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_MaxRounds;
             if (isLastRound)
             {
-                ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
-                {
-                    player.Require<FrozenProperty>().Value = true;
-                });
+                ForEachActivePlayer(session, sessionContainer, (playerId, player) => player.Require<FrozenProperty>().Value = true);
             }
             else
             {

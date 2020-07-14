@@ -194,7 +194,7 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void End() { }
+        public virtual void EndModify(SessionBase session, Container sessionContainer) { }
 
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
 

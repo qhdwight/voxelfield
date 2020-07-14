@@ -173,10 +173,11 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
+        public override void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer)
         {
             player.Require<TeamProperty>().Value = (byte) (playerId % 2);
-            base.SpawnPlayer(session, sessionContainer, playerId, player);
+            base.SetupNewPlayer(session, playerId, player, sessionContainer);
+            
         }
 
         public Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());

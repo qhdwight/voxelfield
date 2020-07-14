@@ -203,12 +203,9 @@ namespace Swihoni.Sessions
         protected virtual void Tick(uint tick, uint timeUs, uint durationUs)
         {
             Container session = GetLatestSession();
-            UpdateConfig(session);
             var tickRate = session.Require<TickRateProperty>();
             if (tickRate.WithValue) Time.fixedDeltaTime = 1.0f / tickRate;
         }
-
-        private static void UpdateConfig(ComponentBase session) => ConfigManagerBase.UpdateConfig(session);
 
         protected virtual void Input(uint timeUs, uint deltaUs) { }
 
@@ -306,7 +303,7 @@ namespace Swihoni.Sessions
             ModeBase mode = ModeManager.GetMode(session ?? GetLatestSession());
             if (!m_Mode || m_Mode != mode)
             {
-                if (m_Mode) m_Mode.End();
+                if (m_Mode) m_Mode.EndModify(this, session);
                 mode.BeginModify(this, session);
             }
             return m_Mode = mode;
@@ -329,7 +326,6 @@ namespace Swihoni.Sessions
             PlayerManager.pool.Return(PlayerManager);
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
             EntityManager.pool.Return(EntityManager);
-            if (m_Mode) m_Mode.End();
             m_Injector.Stop();
             m_Stopwatch.Stop();
         }
