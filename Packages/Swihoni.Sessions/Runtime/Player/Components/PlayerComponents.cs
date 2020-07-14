@@ -78,7 +78,7 @@ namespace Swihoni.Sessions.Player.Components
         public TeamProperty() { }
     }
 
-    [Serializable]
+    [Serializable, SingleTick]
     public class WantedTeamProperty : ByteProperty
     {
     }

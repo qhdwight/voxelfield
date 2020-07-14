@@ -34,7 +34,7 @@ namespace Swihoni.Sessions
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(HistoryCount, () => m_EmptyClientCommands.Clone());
             // TODO:refactor zeroing
-            ZeroCommand(m_CommandHistory.Peek());
+            SetFirstCommand(m_CommandHistory.Peek());
             m_PlayerPredictionHistory = new CyclicArray<Container>(HistoryCount, () => new Container(elements.playerElements.Append(typeof(ClientStampComponent))));
             Container firstPrediction = m_PlayerPredictionHistory.Peek();
             firstPrediction.Zero();

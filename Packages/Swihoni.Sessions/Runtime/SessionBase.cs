@@ -40,7 +40,7 @@ namespace Swihoni.Sessions
             },
             commandElements = new List<Type>
             {
-                typeof(InputFlagProperty), typeof(WantedItemIndexProperty), typeof(MouseComponent)
+                typeof(InputFlagProperty), typeof(WantedItemIndexProperty), typeof(MouseComponent), typeof(WantedTeamProperty)
             }
         };
     }

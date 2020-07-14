@@ -46,13 +46,10 @@ namespace Swihoni.Sessions
                 if (property.WithoutValue) property.Zero();
                 ConsoleCommandExecutor.SetCommand(attribute.Name, args =>
                 {
-                    if (args.Length == 2)
-                    {
-                        if (attribute.IsSession)
-                            foreach (Client session in SessionBase.Sessions.OfType<Client>())
-                                session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
-                        HandleArgs(args);
-                    }
+                    if (attribute.IsSession)
+                        foreach (Client session in SessionBase.Sessions.OfType<Client>())
+                            session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
+                    HandleArgs(args);
                 });
             }
         }
@@ -68,8 +65,20 @@ namespace Swihoni.Sessions
 
         private static void HandleArgs(IReadOnlyList<string> split)
         {
-            if (split.Count == 2 && NameToConfig.TryGetValue(split[0], out (PropertyBase, ConfigAttribute) tuple) && tuple.Item1.TryParseValue(split[1]))
-                Debug.Log($"Set {split[0]} to {split[1]}");
+            if (NameToConfig.TryGetValue(split[0], out (PropertyBase, ConfigAttribute) tuple))
+            {
+                switch (split.Count)
+                {
+                    case 2:
+                        tuple.Item1.TryParseValue(split[1]);
+                        Debug.Log($"Set {split[0]} to {split[1]}");
+                        break;
+                    case 1 when tuple.Item1 is BoolProperty boolProperty:
+                        boolProperty.Value = true;
+                        Debug.Log($"Set {split[0]}");
+                        break;
+                }
+            }
         }
 
         [Config("tick_rate", true)] public TickRateProperty tickRate = new TickRateProperty(60);

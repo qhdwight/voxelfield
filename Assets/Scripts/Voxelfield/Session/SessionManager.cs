@@ -72,6 +72,11 @@ namespace Voxelfield.Session
                 foreach (Chunk chunk in ChunkManager.Singleton.Chunks.Values)
                     chunk.UpdateAndApply();
             });
+            ConsoleCommandExecutor.SetCommand("switch_teams", args =>
+            {
+                if (args.Length > 1 && byte.TryParse(args[1], out byte team))
+                    SessionBase.Sessions.First().GetLocalCommands().Require<WantedTeamProperty>().Value = team;
+            });
 
             if (Application.isBatchMode)
             {

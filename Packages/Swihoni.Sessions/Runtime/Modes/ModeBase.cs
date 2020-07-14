@@ -90,9 +90,10 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
                 InflictDamage(session, playerId, player, player, playerId, health.Value, "Void");
 
-            if (commands.With(out WantedTeamProperty wantedTeam) && AllowTeamSwap(container, player))
+            if (commands.WithPropertyWithValue(out WantedTeamProperty wantedTeam) && wantedTeam != player.Require<TeamProperty>() && AllowTeamSwap(container, player))
             {
                 player.Require<TeamProperty>().Value = wantedTeam;
+                SpawnPlayer(session, container, playerId, player);
             }
         }
 
@@ -200,7 +201,7 @@ namespace Swihoni.Sessions.Modes
         public virtual StringBuilder BuildUsername(StringBuilder builder, Container player)
             => builder.AppendProperty(player.Require<UsernameProperty>());
 
-        protected static int GetPlayerCount(Container session)
+        protected static int GetActivePlayerCount(Container session)
             => session.Require<PlayerContainerArrayElement>().Count(player => player.Require<HealthProperty>().WithValue);
 
         public virtual void Clear() { }

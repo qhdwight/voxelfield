@@ -11,6 +11,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 using Voxel.Map;
 using Random = UnityEngine.Random;
 
@@ -30,6 +31,8 @@ namespace Voxelfield.Session.Mode
         [SerializeField] private LayerMask m_PlayerTriggerMask = default;
         [SerializeField] private uint m_RoundEndDurationUs = default, m_RoundDurationUs = default, m_BuyDurationUs = default, m_SecureDurationUs = default;
         [SerializeField] private byte m_Players = default;
+        [SerializeField] private ushort m_RoundWinMoney = 3000, m_RoundLoseMoney = 2000, m_KillMoney = 800;
+        [SerializeField] private byte m_MaxRounds = 10;
 
         public uint SecureDurationUs => m_SecureDurationUs;
         public uint RoundDurationUs => m_RoundDurationUs;
@@ -52,6 +55,7 @@ namespace Voxelfield.Session.Mode
             base.BeginModify(session, sessionContainer);
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
             secureArea.roundTime.Clear();
+            secureArea.lastWinningTeam.Clear();
             sessionContainer.Require<DualScoresComponent>().Clear();
             secureArea.sites.Clear();
         }
@@ -67,7 +71,11 @@ namespace Voxelfield.Session.Mode
             base.KillPlayer(player, killer);
 
             if (player.Require<TeamProperty>() != killer.Require<TeamProperty>())
-                killer.Require<MoneyComponent>().count.Value += 500;
+            {
+                UShortProperty money = killer.Require<MoneyComponent>().count;
+                money.Value += m_KillMoney;
+                if (money.Value > 7000) money.Value = 7000;
+            }
         }
 
         public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
@@ -76,15 +84,23 @@ namespace Voxelfield.Session.Mode
 
             if (session.IsLoading) return;
 
+            BoolProperty restartMode = Extensions.GetConfig().restartMode;
+            if (restartMode)
+            {
+                BeginModify(session, sessionContainer);
+                restartMode.Value = false;
+            }
+
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
+            int activePlayerCount = GetActivePlayerCount(sessionContainer);
 
             SiteBehavior[] siteBehaviors = GetSiteBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
             if (secureArea.roundTime.WithValue)
             {
                 bool canAdvance = true,
                      redJustSecured = false,
-                     isFightTime = secureArea.roundTime < m_RoundEndDurationUs + m_RoundDurationUs;
-                
+                     isBuyTime = secureArea.roundTime > m_RoundEndDurationUs + m_RoundDurationUs;
+
                 var players = sessionContainer.Require<PlayerContainerArrayElement>();
                 int redAlive = 0, blueAlive = 0;
                 foreach (Container player in players)
@@ -96,22 +112,38 @@ namespace Voxelfield.Session.Mode
                         else if (team == BlueTeam) blueAlive++;
                     }
                 }
-                
-                if (isFightTime && (secureArea.roundTime > m_RoundEndDurationUs || secureArea.RedInside(out SiteComponent _)))
+
+                bool inRegularFightTime = secureArea.roundTime > m_RoundEndDurationUs,
+                     inRealizedFightTime = !isBuyTime && (inRegularFightTime || secureArea.RedInside(out SiteComponent _)),
+                     endedWithKills = false;
+                if (inRealizedFightTime)
                 {
-                    if (redAlive == 0) sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
-                    if (blueAlive == 0) sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
-                    if (redAlive == 0 || blueAlive == 0)
+                    if (inRegularFightTime && activePlayerCount > 1)
                     {
-                        secureArea.roundTime.Value = m_RoundEndDurationUs;
+                        if (redAlive == 0)
+                        {
+                            sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
+                            secureArea.lastWinningTeam.Value = BlueTeam;
+                        }
+                        if (blueAlive == 0)
+                        {
+                            sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
+                            secureArea.lastWinningTeam.Value = RedTeam;
+                        }
+                        if (redAlive == 0 || blueAlive == 0)
+                        {
+                            secureArea.roundTime.Value = m_RoundEndDurationUs;
+                            endedWithKills = true;
+                        }   
                     }
-                    
+
                     for (var siteIndex = 0; siteIndex < secureArea.sites.Length; siteIndex++)
                     {
                         SiteBehavior siteBehavior = siteBehaviors[siteIndex];
+                        Transform siteTransform = siteBehavior.transform;
                         SiteComponent site = secureArea.sites[siteIndex];
                         Vector3 bounds = siteBehavior.Container.Require<ExtentsProperty>();
-                        int playersInsideCount = Physics.OverlapBoxNonAlloc(siteBehavior.Position, bounds, m_CachedColliders, siteBehavior.transform.rotation, m_PlayerTriggerMask);
+                        int playersInsideCount = Physics.OverlapBoxNonAlloc(siteTransform.position, bounds / 2, m_CachedColliders, siteTransform.rotation, m_PlayerTriggerMask);
                         bool isRedInside = false, isBlueInside = false;
                         for (var i = 0; i < playersInsideCount; i++)
                         {
@@ -138,6 +170,7 @@ namespace Voxelfield.Session.Mode
                                 site.timeUs.Value = 0u;
                                 secureArea.roundTime.Value = m_RoundEndDurationUs;
                                 sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
+                                secureArea.lastWinningTeam.Value = RedTeam;
                             }
                             canAdvance = redJustSecured = site.timeUs == 0u;
                         }
@@ -149,7 +182,7 @@ namespace Voxelfield.Session.Mode
                 {
                     if (secureArea.roundTime > durationUs)
                     {
-                        if (!redJustSecured && secureArea.roundTime >= m_RoundEndDurationUs && secureArea.roundTime - durationUs < m_RoundEndDurationUs)
+                        if (!redJustSecured && !endedWithKills && secureArea.roundTime >= m_RoundEndDurationUs && secureArea.roundTime - durationUs < m_RoundEndDurationUs)
                         {
                             // Round just ended without contesting
                             sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
@@ -177,7 +210,7 @@ namespace Voxelfield.Session.Mode
                     }
                     return false;
                 }
-                bool start = GetPlayerCount(sessionContainer) == m_Players || ForceStart();
+                bool start = activePlayerCount == m_Players || ForceStart();
                 if (start)
                 {
                     NextRound(session, sessionContainer, secureArea);
@@ -197,9 +230,14 @@ namespace Voxelfield.Session.Mode
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
         }
 
-        protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
+        public override void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer)
         {
             player.Require<TeamProperty>().Value = (byte) ((playerId + 1) % 2);
+            base.SetupNewPlayer(session, playerId, player, sessionContainer);
+        }
+
+        protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
+        {
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
             if (secureArea.roundTime.WithValue)
             {
@@ -243,25 +281,43 @@ namespace Voxelfield.Session.Mode
 
         private void NextRound(SessionBase session, Container sessionContainer, SecureAreaComponent secureArea)
         {
-            bool isFirstRound = secureArea.roundTime.WithoutValue;
-            secureArea.roundTime.Value = m_RoundEndDurationUs + m_RoundDurationUs + m_BuyDurationUs;
-            foreach (SiteComponent site in secureArea.sites)
+            var scores = sessionContainer.Require<DualScoresComponent>();
+            bool isLastRound = secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_MaxRounds;
+            if (isLastRound)
             {
-                site.Zero();
-                site.timeUs.Value = m_SecureDurationUs;
-            }
-            ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
-            {
-                SpawnPlayer(session, sessionContainer, playerId, player);
-                if (isFirstRound)
+                ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
                 {
-                    var money = player.Require<MoneyComponent>();
-                    money.count.Value = 800;
-                    money.wantedBuyItemId.Clear();
-                    InventoryComponent inventory = player.Require<InventoryComponent>().Zero();
-                    PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
+                    player.Require<FrozenProperty>().Value = true;
+                });
+            }
+            else
+            {
+                bool isFirstRound = secureArea.roundTime.WithoutValue;
+                secureArea.roundTime.Value = m_RoundEndDurationUs + m_RoundDurationUs + m_BuyDurationUs;
+                foreach (SiteComponent site in secureArea.sites)
+                {
+                    site.Zero();
+                    site.timeUs.Value = m_SecureDurationUs;
                 }
-            });
+                ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
+                {
+                    SpawnPlayer(session, sessionContainer, playerId, player);
+                    if (isFirstRound)
+                    {
+                        var money = player.Require<MoneyComponent>();
+                        money.count.Value = 800;
+                        money.wantedBuyItemId.Clear();
+                        InventoryComponent inventory = player.Require<InventoryComponent>().Zero();
+                        PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
+                    }
+                    if (secureArea.lastWinningTeam.WithValue)
+                    {
+                        UShortProperty money = player.Require<MoneyComponent>().count;
+                        money.Value += player.Require<TeamProperty>() == secureArea.lastWinningTeam ? m_RoundWinMoney : m_RoundLoseMoney;
+                        if (money.Value > 7000) money.Value = 7000;
+                    }
+                });
+            }
         }
 
         private static Queue<KeyValuePair<Position3Int, Container>>[] FindSpawns(ModelsProperty models)

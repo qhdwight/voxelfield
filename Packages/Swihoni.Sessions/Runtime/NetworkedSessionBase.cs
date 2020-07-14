@@ -80,13 +80,14 @@ namespace Swihoni.Sessions
             socket.Register(typeof(DebugClientView), 2, DebugClientViewCode);
         }
 
-        protected static void ZeroCommand(Container command)
+        protected static void SetFirstCommand(Container command)
         {
             command.Require<MouseComponent>().Zero();
             command.Require<CameraComponent>().Zero();
             command.Require<InputFlagProperty>().Zero();
             command.Require<WantedItemIndexProperty>().Zero();
             command.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Client");
+            command.Require<WantedTeamProperty>().Clear();
         }
 
         public override Container GetModifyingPayerFromId(int playerId, Container session = null) => (session ?? GetLatestSession()).GetPlayer(playerId);

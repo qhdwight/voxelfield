@@ -37,7 +37,7 @@ namespace Voxelfield.Session.Mode
             var stage = sessionContainer.Require<ShowdownSessionComponent>();
             if (stage.number.WithoutValue) // If in warmup
             {
-                int playerCount = GetPlayerCount(sessionContainer);
+                int playerCount = GetActivePlayerCount(sessionContainer);
                 if (playerCount == 1)
                     // if (playerCount == TotalPlayers)
                 {

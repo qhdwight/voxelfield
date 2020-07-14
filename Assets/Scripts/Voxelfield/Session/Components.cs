@@ -73,6 +73,7 @@ namespace Voxelfield.Session
     {
         public SiteElement sites = new SiteElement();
         public TimeUsProperty roundTime;
+        [NonSerialized] public ByteProperty lastWinningTeam;
 
         public bool RedInside(out SiteComponent element)
         {
