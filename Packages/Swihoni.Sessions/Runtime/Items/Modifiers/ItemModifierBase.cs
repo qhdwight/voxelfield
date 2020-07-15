@@ -40,7 +40,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           GrenadeLauncher = 12,
                           MissileLauncher = 13,
                           Smg = 14,
-                          SuperPickaxe = 15;
+                          SuperPickaxe = 15,
+                          ImpactGrenade = 16;
     }
 
     [Serializable]

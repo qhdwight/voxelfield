@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Console;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
@@ -85,6 +87,17 @@ namespace Swihoni.Sessions.Player.Modifiers
         /// </summary>
         public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta) => SynchronizeBehavior(player);
 
+        public static bool ServerTryCommands(Container player, out IEnumerable<string[]> commands)
+        {
+            if (player.Without<ServerTag>() || player.WithoutPropertyOrWithoutValue(out StringCommandProperty command) || command.Builder.Length == 0)
+            {
+                commands = default;
+                return false;
+            }
+            commands = ConsoleCommandExecutor.GetArgs(command.Builder.ToString());
+            return true;
+        }
+        
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>

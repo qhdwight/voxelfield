@@ -59,7 +59,7 @@ MonoBehaviour:
       m_Value: 20000000
     playerCount:
       m_Flags: 1
-      m_Value: 1
+      m_Value: 2
     roundWinMoney:
       m_Flags: 1
       m_Value: 3000

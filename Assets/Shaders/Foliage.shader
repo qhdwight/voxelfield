@@ -10,8 +10,8 @@
 
     SubShader {
         Tags { 
-            "IgnoreProjector" = "True"
-            "RenderType" = "TransparentCutout"
+            "IgnoreProjector"="True"
+            "RenderType"="TransparentCutout"
         }
         
         LOD 200
@@ -23,6 +23,10 @@
         
         float _LateralScale, _VerticalScale;
 
+        struct Input {
+            float2 uv_MainTex;
+        };
+
         void vert (inout appdata_full v) {
             float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
             v.vertex.x += sin(_Time * _LateralScale + worldPos.x) * _VerticalScale * v.texcoord.y;
@@ -32,19 +36,11 @@
 
         sampler2D _MainTex;
 
-        struct Input {
-            float2 uv_MainTex;
-        };
-
         fixed4 _Color;
-
-        UNITY_INSTANCING_BUFFER_START(Props)
-        UNITY_INSTANCING_BUFFER_END(Props)
 
         void surf(Input IN, inout SurfaceOutputStandard o) {
             fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
             o.Albedo = c.rgb;
-            // Multiply alpha by value between 0 and 1
             o.Alpha = c.a;
         }
         ENDCG

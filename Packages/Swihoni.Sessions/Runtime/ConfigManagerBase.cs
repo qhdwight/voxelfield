@@ -54,15 +54,16 @@ namespace Swihoni.Sessions
                             break;
                         case PropertyBase property:
                             string fullName = string.Join(".", names.Append(config.Name));
-                            Debug.Log(fullName);
                             NameToConfig.Add(fullName, (property, config));
                             if (config.IsSession) TypeToConfig.Add(property.GetType(), (property, config));
                             ConsoleCommandExecutor.SetCommand(fullName, args =>
                             {
-                                if (config.IsSession)
-                                    foreach (Client session in SessionBase.Sessions.OfType<Client>())
+                                foreach (SessionBase session in SessionBase.Sessions)
+                                {
+                                    if (session is Client && config.IsSession)
                                         session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
-                                HandleArgs(args);
+                                    else HandleArgs(args);
+                                }
                             });
                             break;
                     }

@@ -1,7 +1,6 @@
 using Swihoni.Components;
 using Swihoni.Sessions;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
 
@@ -14,6 +13,6 @@ namespace Voxelfield
         [Config("enable_mini_map")] public BoolProperty enableMiniMap = new BoolProperty();
         [Config("force_start")] public BoolProperty forceStart = new BoolProperty();
         [Config("restart_mode")] public BoolProperty restartMode = new BoolProperty();
-        [FormerlySerializedAs("m_SecureAreaConfig")] public SecureAreaConfig secureAreaConfig = default;
+        public SecureAreaConfig secureAreaConfig = new SecureAreaConfig();
     }
 }

@@ -1,9 +1,10 @@
 using System;
-using Console;
+using System.Collections.Generic;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
@@ -16,19 +17,8 @@ namespace Voxelfield.Item
     {
         private readonly VoxelChangeTransaction m_Transaction = new VoxelChangeTransaction();
 
-        private static readonly string[] Commands = {"set", "revert", "breakable"};
-
-        public static void SessionCommand(SessionBase session, int playerId, params string[] commandNames)
-        {
-            foreach (string commandName in commandNames)
-                ConsoleCommandExecutor.SetCommand(commandName, args => session.StringCommand(playerId, string.Join(" ", args)));
-        }
-
-        protected override void OnEquip(SessionBase session, int playerId, ItemComponent item, uint durationUs)
-            => SessionCommand(session, playerId, Commands);
-
-        protected override void OnUnequip(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
-            => ConsoleCommandExecutor.RemoveCommands(Commands);
+        [RuntimeInitializeOnLoadMethod]
+        private static void InitializeCommands() => SessionBase.RegisterSessionCommand("set", "revert", "breakable");
 
         protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {
@@ -66,30 +56,33 @@ namespace Voxelfield.Item
         {
             base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
 
-            if (player.Without<ServerTag>() || player.WithoutPropertyOrWithoutValue(out StringCommandProperty command) || command.Builder.Length == 0) return;
-
-            string[] split = command.Builder.ToString().Split();
-            switch (split[0])
+            if (PlayerModifierBehaviorBase.ServerTryCommands(player, out IEnumerable<string[]> commands))
             {
-                case "set":
+                foreach (string[] args in commands)
                 {
-                    var designer = player.Require<DesignerPlayerComponent>();
-                    if (split.Length > 1 && byte.TryParse(split[1], out byte blockId))
-                        designer.selectedVoxelId.ValueOverride = blockId;
-                    DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId.AsNullable, renderType = VoxelRenderType.Block});
-                    break;
-                }
-                case "revert":
-                {
-                    DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => ChunkManager.Singleton.GetMapSaveVoxel(position).Value);
-                    break;
-                }
-                case "breakable":
-                {
-                    var breakable = true;
-                    if (split.Length > 1 && bool.TryParse(split[1], out bool parsedBreakable)) breakable = parsedBreakable;
-                    DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => new VoxelChangeData {breakable = breakable});
-                    break;
+                    switch (args[0])
+                    {
+                        case "set":
+                        {
+                            var designer = player.Require<DesignerPlayerComponent>();
+                            if (args.Length > 1 && byte.TryParse(args[1], out byte blockId))
+                                designer.selectedVoxelId.ValueOverride = blockId;
+                            DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId.AsNullable, renderType = VoxelRenderType.Block});
+                            break;
+                        }
+                        case "revert":
+                        {
+                            DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => ChunkManager.Singleton.GetMapSaveVoxel(position).Value);
+                            break;
+                        }
+                        case "breakable":
+                        {
+                            var breakable = true;
+                            if (args.Length > 1 && bool.TryParse(args[1], out bool parsedBreakable)) breakable = parsedBreakable;
+                            DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => new VoxelChangeData {breakable = breakable});
+                            break;
+                        }
+                    }
                 }
             }
         }

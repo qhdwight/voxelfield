@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
+using Console;
 using Input;
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
+using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Modifiers
 {
@@ -11,10 +15,15 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         public const byte NoneIndex = 0;
 
+        [RuntimeInitializeOnLoadMethod]
+        private static void InitializeCommands() => ConsoleCommandExecutor.SetCommand("give_item", SessionBase.IssueCommand);
+
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
             if (!player.With(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
+            HandleCommands(player);
+            
             var input = commands.Require<InputFlagProperty>();
             var wantedItemIndex = commands.Require<WantedItemIndexProperty>();
 
@@ -46,6 +55,24 @@ namespace Swihoni.Sessions.Player.Modifiers
                 inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
                 inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
                 inventory.equipStatus.elapsedUs.Value = 0u;
+            }
+        }
+
+        private static void HandleCommands(Container player)
+        {
+            if (ServerTryCommands(player, out IEnumerable<string[]> commands))
+            {
+                foreach (string[] args in commands)
+                {
+                    if (args[0] == "give_item")
+                    {
+                        if (args.Length > 1 && byte.TryParse(args[1], out byte itemId))
+                        {
+                            ushort count = args.Length > 2 && ushort.TryParse(args[2], out ushort parsedCount) ? parsedCount : (ushort) 1;
+                            AddItem(player.Require<InventoryComponent>(), itemId, count);
+                        }
+                    }   
+                }
             }
         }
 

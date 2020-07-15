@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Console;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -102,6 +103,18 @@ namespace Swihoni.Sessions
         private static void InitializeConfig()
         {
             ConfigManagerBase.Initialize();
+        }
+
+        public static void RegisterSessionCommand(params string[] commands)
+        {
+            foreach (string command in commands)
+                ConsoleCommandExecutor.SetCommand(command, IssueCommand);
+        }
+
+        public static void IssueCommand(string[] args)
+        {
+            foreach (SessionBase session in Sessions)
+                session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
         }
 
         public void SetApplicationPauseState(bool isPaused)

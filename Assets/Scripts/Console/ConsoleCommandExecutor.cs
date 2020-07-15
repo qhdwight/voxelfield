@@ -31,14 +31,18 @@ namespace Console
 
         public static void ExecuteCommand(string fullCommand)
         {
-            string[] commands = fullCommand.Split(CommandSeparator, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string command in commands)
+            foreach (string[] args in GetArgs(fullCommand))
             {
-                string[] args = command.Trim().Split();
-                string commandName = args.First();
+                string commandName = args.First().Replace("?", string.Empty);
                 if (_commands.ContainsKey(commandName)) _commands[commandName](args);
-                else Debug.LogWarning($"Command \"{commandName}\" not found!");
+                else Debug.LogWarning($"Command \"{args[0]}\" not found!");
             }
+        }
+
+        public static IEnumerable<string[]> GetArgs(string fullCommand)
+        {
+            string[] commands = fullCommand.Split(CommandSeparator, StringSplitOptions.RemoveEmptyEntries);
+            return commands.Select(command => command.Trim().Split()).ToList();
         }
 
         public static void RemoveCommand(string command) => _commands.Remove(command);

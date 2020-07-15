@@ -18,13 +18,4 @@ MonoBehaviour:
   m_PlayerTriggerMask:
     serializedVersion: 2
     m_Bits: 65536
-  m_RoundEndDurationUs: 6000000
-  m_RoundDurationUs: 240000000
-  m_BuyDurationUs: 10000000
-  m_SecureDurationUs: 20000000
-  m_Players: 2
-  m_RoundWinMoney: 3000
-  m_RoundLoseMoney: 2000
-  m_KillMoney: 800
-  m_MaxRounds: 10
-  m_ItemPrices: c409c8002c01a40684030000000024130000000058029411a00f14050000
+  m_ItemPrices: c40996002c01a40684030000000024130000000058029411a00f14050000fa00
