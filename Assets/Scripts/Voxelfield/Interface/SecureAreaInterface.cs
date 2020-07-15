@@ -27,7 +27,7 @@ namespace Voxelfield.Interface
             {
                 var secureArea = sessionContainer.Require<SecureAreaComponent>();
                 BuildUpperText(secureArea);
-                BuildProgress(secureArea);    
+                BuildProgress(secureArea);
             }
             SetInterfaceActive(isVisible);
         }

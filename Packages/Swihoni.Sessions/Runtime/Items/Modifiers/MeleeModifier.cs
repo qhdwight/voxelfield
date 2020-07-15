@@ -11,7 +11,10 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         [SerializeField] private float m_Distance = 2.0f;
 
-        protected override void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs) { Swing(session, playerId, item, durationUs); }
+        protected override void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
+        {
+            Swing(session, playerId, item, durationUs);
+        }
 
         protected virtual void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
         {

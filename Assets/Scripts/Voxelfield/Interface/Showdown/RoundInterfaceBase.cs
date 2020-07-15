@@ -9,8 +9,6 @@ namespace Voxelfield.Interface.Showdown
     {
         [SerializeField] protected BufferedTextGui m_UpperText = default;
         [SerializeField] protected ProgressInterface m_SecuringProgress = default;
-
-
     }
 
     internal static class RoundInterfaceExtensions

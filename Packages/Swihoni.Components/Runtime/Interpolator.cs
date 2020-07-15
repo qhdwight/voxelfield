@@ -84,7 +84,7 @@ namespace Swihoni.Components
     public static class Interpolator
     {
         private static float _interpolation;
-        
+
         public static void InterpolateInto<T>(T e1, T e2, T ed, float interpolation) where T : ElementBase
         {
             _interpolation = interpolation; // Prevent closure allocation

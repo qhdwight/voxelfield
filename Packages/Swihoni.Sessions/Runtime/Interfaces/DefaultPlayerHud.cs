@@ -78,7 +78,7 @@ namespace Swihoni.Sessions.Interfaces
                             break;
                     }
                     m_AmmoText.SetText(builder);
-                    
+
                     ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisualPrefab(equippedItem.id);
                     bool isDefaultCrosshair = visualPrefab.Crosshair == null;
                     m_Crosshair.sprite = isDefaultCrosshair ? m_DefaultCrosshair : visualPrefab.Crosshair;

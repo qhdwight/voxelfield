@@ -13,11 +13,11 @@ namespace Swihoni.Sessions.Modes
         private static void Initialize()
         {
             _modes = Resources.LoadAll<ModeBase>("Modes")
-                             .OrderBy(modifier =>
-                              {
-                                  modifier.Clear();
-                                  return modifier.id;
-                              }).ToArray();
+                              .OrderBy(modifier =>
+                               {
+                                   modifier.Clear();
+                                   return modifier.id;
+                               }).ToArray();
         }
 
         public static ModeBase GetMode(byte modeId) => _modes[modeId];

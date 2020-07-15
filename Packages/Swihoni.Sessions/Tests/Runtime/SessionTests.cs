@@ -106,7 +106,7 @@ namespace Swihoni.Sessions.Tests
                 client.PollEvents();
 
                 client.SendToServer(session, DeliveryMethod.Unreliable);
-                
+
                 Thread.Sleep(100);
 
                 var receiver = new ServerSessionReceiver {serverSession = session};

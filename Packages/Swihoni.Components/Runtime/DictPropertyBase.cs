@@ -59,7 +59,7 @@ namespace Swihoni.Components
         }
 
         public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => throw new Exception("Cannot interpolate dictionary");
-        
+
         public override string ToString() => $"Count: {m_Map.Count}";
 
         public void AddAllFrom(DictPropertyBase<TKey, TValue> other)

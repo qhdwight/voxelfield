@@ -57,7 +57,7 @@ namespace Voxelfield.Session
         }
 
         public override bool IsLoading(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
-                                                         || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
+                                                          || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
 
         public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
         {

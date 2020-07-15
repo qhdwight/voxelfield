@@ -15,7 +15,7 @@ namespace Swihoni.Sessions.Modes
     public abstract class ModeBase : ScriptableObject
     {
         private static readonly Dictionary<Color, string> CachedHex = new Dictionary<Color, string>();
-        
+
         public byte id;
 
         public static string GetHexColor(in Color color)
@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Modes
             CachedHex.Add(color, hex);
             return hex;
         }
-        
+
         protected virtual void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
         {
             Debug.Log("Spawning player");

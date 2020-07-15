@@ -72,7 +72,7 @@ namespace Swihoni.Sessions
             session.ZeroIfWith<KillFeedElement>();
             return session;
         }
-        
+
         protected static void RegisterMessages(ComponentSocketBase socket)
         {
             socket.Register(typeof(ClientCommandsContainer), 0, ClientCommandsCode);

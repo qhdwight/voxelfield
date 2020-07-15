@@ -109,7 +109,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual void StatusTick(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs, uint durationUs) { }
 
-        protected void StartStatus(SessionBase session, int playerId, InventoryComponent inventory, 
+        protected void StartStatus(SessionBase session, int playerId, InventoryComponent inventory,
                                    ItemComponent item, byte statusId, uint durationUs, uint elapsedUs = 0u)
         {
             item.status.id.Value = statusId;

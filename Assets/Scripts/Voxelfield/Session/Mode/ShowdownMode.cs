@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
@@ -243,6 +244,6 @@ namespace Voxelfield.Session.Mode
         public bool CanBuy(SessionBase session, Container sessionContainer)
             => sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
 
-        public ushort GetCost(int itemId) => throw new System.NotImplementedException();
+        public ushort GetCost(int itemId) => throw new NotImplementedException();
     }
 }

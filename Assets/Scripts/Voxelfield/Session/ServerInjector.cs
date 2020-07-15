@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using LiteNetLib;
 using Swihoni.Components;
-using Swihoni.Sessions;
 using Swihoni.Util.Math;
 using Voxel;
 using Voxel.Map;

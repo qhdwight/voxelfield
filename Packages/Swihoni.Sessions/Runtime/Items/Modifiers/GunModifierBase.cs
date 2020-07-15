@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
@@ -41,10 +40,10 @@ namespace Swihoni.Sessions.Items.Modifiers
                 StartStatus(session, playerId, inventory, item, GunStatusId.Reloading, durationUs);
             else if (inputs.GetInput(PlayerInput.UseOne) && item.ammoInMag == 0 && item.ammoInReserve == 0 && item.status.id == ItemStatusId.Idle)
                 StartStatus(session, playerId, inventory, item, GunStatusId.DryFiring, durationUs);
-            
+
             if (inventory.tracerTimeUs > durationUs) inventory.tracerTimeUs.Value -= durationUs;
             else inventory.tracerTimeUs.Value = 0u;
-            
+
             base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
         }
 
@@ -82,10 +81,9 @@ namespace Swihoni.Sessions.Items.Modifiers
 
             item.ammoInMag.Value--;
 
-
             Ray ray = session.GetRayForPlayerId(playerId);
             session.RollbackHitboxesFor(playerId);
-            
+
             int hitCount = Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_RaycastMask);
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)
             {
@@ -96,7 +94,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                     session.GetModifyingMode().PlayerHit(session, playerId, hitbox, this, hit, durationUs);
             }
             m_HitPlayers.Clear();
-            
+
             inventory.tracerStart.Value = ray.origin;
             inventory.tracerEnd.Value = hitCount > 0 ? RaycastHits[0].point : ray.GetPoint(300.0f);
             inventory.tracerTimeUs.Value = 1_000_000u;

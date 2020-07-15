@@ -6,11 +6,8 @@ namespace Swihoni.Sessions.Interfaces
     public class SwitchTeamsInterface : SessionInterfaceBehavior
     {
         private byte? m_WantedTeam;
-        
-        public override void Render(SessionBase session, Container sessionContainer)
-        {
-            
-        }
+
+        public override void Render(SessionBase session, Container sessionContainer) { }
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
@@ -18,7 +15,7 @@ namespace Swihoni.Sessions.Interfaces
             {
                 commands.Require<WantedTeamProperty>().Value = wantedTeam;
                 m_WantedTeam = null;
-            }   
+            }
         }
     }
 }

@@ -91,7 +91,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             {
                 bool flyInput = inputs.GetInput(PlayerInput.Fly);
                 if (flyInput && !m_LastFlyInput) move.type.Value = move.type == MoveType.Grounded ? MoveType.Flying : MoveType.Grounded;
-                m_LastFlyInput = flyInput;   
+                m_LastFlyInput = flyInput;
             }
             else
             {

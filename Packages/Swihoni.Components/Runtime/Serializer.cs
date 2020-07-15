@@ -7,7 +7,7 @@ namespace Swihoni.Components
     public class NoSerialization : Attribute
     {
     }
-    
+
     public static class Serializer
     {
         private static NetDataWriter _writer;

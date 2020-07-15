@@ -30,8 +30,8 @@ namespace Voxelfield.Session.Mode
         private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
         private FlagBehavior[][] m_FlagBehaviors;
         private VoxelMapNameProperty m_LastMapName;
-        
-        public override void Clear() => m_LastMapName = new VoxelMapNameProperty(); 
+
+        public override void Clear() => m_LastMapName = new VoxelMapNameProperty();
 
         private FlagBehavior[][] GetFlagBehaviors(StringProperty mapName)
         {
@@ -81,8 +81,6 @@ namespace Voxelfield.Session.Mode
                 if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += durationUs;
             }
         }
-        
-        
 
         protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer)
         {
@@ -177,7 +175,6 @@ namespace Voxelfield.Session.Mode
         {
             player.Require<TeamProperty>().Value = (byte) (playerId % 2);
             base.SetupNewPlayer(session, playerId, player, sessionContainer);
-            
         }
 
         public Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());

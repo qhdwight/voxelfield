@@ -1,4 +1,3 @@
-using System;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Modes;
@@ -14,8 +13,7 @@ namespace Voxelfield.Interface
     public class BuyMenuButton : MonoBehaviour, IPointerEnterHandler
     {
         [SerializeField] private byte m_ItemId = default;
-        [SerializeField] private TextMeshProUGUI m_NameText = default;
-        [SerializeField] private TextMeshProUGUI m_CostText = default;
+        [SerializeField] private TextMeshProUGUI m_NameText = default, m_CostText = default;
         private Button m_Button;
 
         public byte ItemId => m_ItemId;

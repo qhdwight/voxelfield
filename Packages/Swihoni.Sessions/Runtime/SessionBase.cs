@@ -281,7 +281,7 @@ namespace Swihoni.Sessions
         public abstract Container GetLatestSession();
 
         public virtual Container GetLocalCommands() => throw new NotImplementedException();
-        
+
         public static Ray GetRayForPlayer(Container player)
         {
             var camera = player.Require<CameraComponent>();

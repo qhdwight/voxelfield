@@ -6,7 +6,7 @@ namespace Voxelfield.Interface
     public class MiniMapCamera : MonoBehaviour
     {
         [SerializeField] private Shader m_Replacement = default;
-        
+
         private Camera m_Camera;
 
         private void Start()

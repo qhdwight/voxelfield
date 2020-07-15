@@ -13,7 +13,7 @@ namespace Voxelfield.Session.Mode
 
         ushort GetCost(int itemId);
     }
-    
+
     public static class BuyingMode
     {
         public static void HandleBuying(ModeBase mode, Container player)
@@ -32,7 +32,7 @@ namespace Voxelfield.Session.Mode
                         if (PlayerItemManagerModiferBehavior.AddItem(inventory, wantedBuyItemId))
                             money.Value -= cost;
                     }
-                }   
+                }
             }
         }
     }

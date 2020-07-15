@@ -12,7 +12,7 @@ namespace Swihoni.Components.Networking
     {
         void OnReceive(NetPeer peer, NetDataReader reader, byte code);
     }
-    
+
     public abstract class ComponentSocketBase : IDisposable
     {
         private const int InitialBufferSize = 1 << 16;

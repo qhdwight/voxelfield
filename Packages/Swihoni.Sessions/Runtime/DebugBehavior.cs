@@ -1,7 +1,6 @@
 using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
-using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player;
 using Swihoni.Util;
 using UnityEngine;
@@ -13,10 +12,10 @@ namespace Swihoni.Sessions
         private static GameObject _visualizerPrefab;
 
         private StrictPool<PlayerVisualizerBehavior> m_Pool;
-        
+
         public bool IsDebugMode;
         public UIntProperty RollbackOverrideUs;
-        
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize() => _visualizerPrefab = Resources.LoadAll<GameObject>("Players")
                                                                          .First(gameObject => gameObject.GetComponent<PlayerVisualizerBehavior>() != null);
