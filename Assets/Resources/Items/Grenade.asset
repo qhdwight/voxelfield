@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Grenade
   m_EditorClassIdentifier: 
   id: 2
-  itemName: HE Grenade
+  itemName: Grenade
   movementFactor: 1
   m_StatusModiferProperties:
   - durationUs: 2000000

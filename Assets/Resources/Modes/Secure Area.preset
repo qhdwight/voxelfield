@@ -1,0 +1,168 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Secure Area
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: d2c332ddb4474eeea50b56f528fb0cc5,
+      type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: id
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_BlueColor.r
+    value: 0.1764706
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_BlueColor.g
+    value: 0.50980395
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_BlueColor.b
+    value: 0.8509804
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_BlueColor.a
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_RedColor.r
+    value: 0.81960785
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_RedColor.g
+    value: 0.21568628
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_RedColor.b
+    value: 0.19607843
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_RedColor.a
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_PlayerTriggerMask.m_Bits
+    value: 65536
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_RoundEndDurationUs
+    value: 6000000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_RoundDurationUs
+    value: 240000000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_BuyDurationUs
+    value: 10000000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_SecureDurationUs
+    value: 20000000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Players
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_RoundWinMoney
+    value: 3000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_RoundLoseMoney
+    value: 2000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_KillMoney
+    value: 800
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_MaxRounds
+    value: 10
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.size
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[0]
+    value: 2500
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[1]
+    value: 200
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[2]
+    value: 300
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[3]
+    value: 1700
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[4]
+    value: 900
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[5]
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[6]
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[7]
+    value: 4900
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[8]
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[9]
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[10]
+    value: 600
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[11]
+    value: 3000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[12]
+    value: 3000
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[13]
+    value: 1300
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_ItemPrices.Array.data[14]
+    value: 0
+    objectReference: {fileID: 0}
+  m_ExcludedProperties: []

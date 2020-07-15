@@ -4,6 +4,7 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Entities;
 using Swihoni.Util.Math;
+using UnityEngine;
 using Voxel;
 using Voxel.Map;
 
@@ -33,7 +34,7 @@ namespace Voxelfield.Session
             }
             int nextPeerId = ((NetworkedSessionBase) Manager).Socket.NetworkManager.PeekNextId();
             if (nextPeerId >= SessionBase.MaxPlayers - 1) Reject("Too many players are already connected to the server!");
-            else if (request.Data.TryGetString(out string result) && result != Version.String) Reject("Your version does not match that of the server.");
+            else if (request.Data.TryGetString(out string result) && result != Application.version) Reject("Your version does not match that of the server.");
             else request.Accept();
         }
 

@@ -10,7 +10,7 @@ namespace Voxelfield.Interface
         private void Awake()
         {
             m_Text = GetComponent<TextMeshProUGUI>();
-            m_Text.SetText($"Version {Version.String} on Unity {Application.unityVersion}");
+            m_Text.SetText($"Version {Application.version} on Unity {Application.unityVersion}");
         }
     }
 }

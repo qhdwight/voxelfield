@@ -156,7 +156,6 @@ namespace Swihoni.Sessions
             if (GetLocalPlayerId(latestSession, out int localPlayerId))
             {
                 m_Injector.OnSettingsTick(latestSession);
-                UpdateInputs(GetModifyingPayerFromId(localPlayerId, latestSession), localPlayerId);
                 Predict(tick, timeUs, localPlayerId); // Advances commands
             }
             Profiler.EndSample();

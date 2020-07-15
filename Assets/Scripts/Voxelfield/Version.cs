@@ -8,13 +8,11 @@ namespace Voxelfield
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void Initialize()
         {
-            string message = $"Starting voxelfield version v{String}",
+            string message = $"Starting voxelfield version v{Application.version}",
                    separator = string.Concat(Enumerable.Repeat("=", message.Length));
             Debug.Log(separator);
             Debug.Log(message);
             Debug.Log(separator);
         }
-        
-        public const string String = "0.0.7";
     }
 }

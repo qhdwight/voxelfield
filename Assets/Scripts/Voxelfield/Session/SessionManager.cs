@@ -134,7 +134,7 @@ namespace Voxelfield.Session
         private static Client StartClient(IPEndPoint ipEndPoint)
         {
             StandaloneDisconnectAll();
-            var client = new Client(VoxelfieldComponents.SessionElements, ipEndPoint, Version.String, new ClientInjector());
+            var client = new Client(VoxelfieldComponents.SessionElements, ipEndPoint, Application.version, new ClientInjector());
             return StartSession(client);
         }
 

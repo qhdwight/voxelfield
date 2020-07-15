@@ -74,7 +74,7 @@ namespace Voxelfield.Session.Mode
             }
             else
             {
-                BuyingMode.HandleBuying(player);
+                BuyingMode.HandleBuying(this, player);
             }
         }
 
@@ -242,5 +242,7 @@ namespace Voxelfield.Session.Mode
 
         public bool CanBuy(SessionBase session, Container sessionContainer)
             => sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
+
+        public ushort GetCost(int itemId) => throw new System.NotImplementedException();
     }
 }

@@ -19,7 +19,9 @@ namespace Voxel.Map
         private static readonly MapContainer EmptyMap = new MapContainer().Zero();
         private static Dictionary<string, TextAsset> _defaultMaps;
 
+#if UNITY_EDITOR
         [SerializeField] private bool m_TruncateDimension = true;
+#endif
 
         private Pool<ModelBehaviorBase>[] m_ModelsPool;
         private StringProperty m_WantedMapName;

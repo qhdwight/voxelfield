@@ -23,3 +23,8 @@ MonoBehaviour:
   m_BuyDurationUs: 10000000
   m_SecureDurationUs: 20000000
   m_Players: 2
+  m_RoundWinMoney: 3000
+  m_RoundLoseMoney: 2000
+  m_KillMoney: 800
+  m_MaxRounds: 10
+  m_ItemPrices: c409c8002c01a4068403000000002413000000005802b80bb80b14050000

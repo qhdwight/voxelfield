@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,9 +10,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
-using UnityEngine.Experimental.GlobalIllumination;
 using Voxel.Map;
-using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
 {
@@ -33,11 +30,13 @@ namespace Voxelfield.Session.Mode
         [SerializeField] private byte m_Players = default;
         [SerializeField] private ushort m_RoundWinMoney = 3000, m_RoundLoseMoney = 2000, m_KillMoney = 800;
         [SerializeField] private byte m_MaxRounds = 10;
+        [SerializeField] private ushort[] m_ItemPrices = default;
 
         public uint SecureDurationUs => m_SecureDurationUs;
         public uint RoundDurationUs => m_RoundDurationUs;
         public uint BuyDurationUs => m_BuyDurationUs;
         public uint RoundEndDurationUs => m_RoundEndDurationUs;
+        public ushort[] ItemPrices => m_ItemPrices;
 
         public override void Clear() => m_LastMapName = new VoxelMapNameProperty();
 
@@ -228,8 +227,7 @@ namespace Voxelfield.Session.Mode
         {
             TimeUsProperty roundTime = container.Require<SecureAreaComponent>().roundTime;
             bool isBuyTime = roundTime.WithValue && roundTime > m_RoundEndDurationUs + m_RoundDurationUs;
-            if (isBuyTime)
-                BuyingMode.HandleBuying(player);
+            if (isBuyTime) BuyingMode.HandleBuying(this, player);
             player.Require<FrozenProperty>().Value = isBuyTime;
 
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
@@ -346,6 +344,8 @@ namespace Voxelfield.Session.Mode
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
             return secureArea.roundTime.WithValue && secureArea.roundTime > m_RoundEndDurationUs + m_RoundDurationUs;
         }
+
+        public ushort GetCost(int itemId) => m_ItemPrices[itemId - 1];
 
         public override StringBuilder BuildUsername(StringBuilder builder, Container player)
         {
