@@ -9,6 +9,14 @@ namespace Swihoni.Components
     // Thank you lack of compile time C# meta-programming for all this manual code!
 
     [Serializable]
+    public class ColorProperty : PropertyBase<Color>
+    {
+        public override bool ValueEquals(PropertyBase<Color> other) => other.Value == Value;
+        public override void SerializeValue(NetDataWriter writer) => writer.PutColor(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetColor();
+    }
+    
+    [Serializable]
     public class UIntProperty : PropertyBase<uint>
     {
         public UIntProperty(uint value) : base(value) { }

@@ -10,14 +10,14 @@ namespace Swihoni.Sessions.Modes
         private static ModeBase[] _modes;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void Initialize()
-        {
+        private static void Initialize() =>
             _modes = Resources.LoadAll<ModeBase>("Modes")
-                              .OrderBy(modifier =>
-                               {
-                                   modifier.Clear();
-                                   return modifier.id;
-                               }).ToArray();
+                              .OrderBy(modifier => modifier.id).ToArray();
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void InitializeModes()
+        {
+            foreach (ModeBase mode in _modes) mode.Initialize();
         }
 
         public static ModeBase GetMode(byte modeId) => _modes[modeId];

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,9 +12,24 @@ using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
+using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
 {
+    [Serializable, Config("sa")]
+    public class SecureAreaConfig : ComponentBase
+    {
+        [Config("end_duration")] public UIntProperty roundEndDurationUs;
+        [Config("duration")] public UIntProperty roundDurationUs;
+        [Config("buy_duration")] public UIntProperty buyDurationUs;
+        [Config("secure_duration")] public UIntProperty secureDurationUs;
+        [Config("player_count")] public ByteProperty playerCount;
+        [Config("win_bonus")] public UShortProperty roundWinMoney;
+        [Config("lose_bonus")] public UShortProperty roundLoseMoney;
+        [Config("kill_bonus")] public UShortProperty killMoney;
+        [Config("max_rounds")] public ByteProperty maxRounds;
+    }
+
     [CreateAssetMenu(fileName = "Secure Area", menuName = "Session/Mode/Secure Area", order = 0)]
     public class SecureAreaMode : DeathmatchMode, IModeWithBuying
     {
@@ -26,19 +42,19 @@ namespace Voxelfield.Session.Mode
         [SerializeField] private Color m_BlueColor = new Color(0.1764705882f, 0.5098039216f, 0.8509803922f),
                                        m_RedColor = new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
         [SerializeField] private LayerMask m_PlayerTriggerMask = default;
-        [SerializeField] private uint m_RoundEndDurationUs = default, m_RoundDurationUs = default, m_BuyDurationUs = default, m_SecureDurationUs = default;
-        [SerializeField] private byte m_Players = default;
-        [SerializeField] private ushort m_RoundWinMoney = 3000, m_RoundLoseMoney = 2000, m_KillMoney = 800;
-        [SerializeField] private byte m_MaxRounds = 10;
         [SerializeField] private ushort[] m_ItemPrices = default;
+        private SecureAreaConfig m_Config;
 
-        public uint SecureDurationUs => m_SecureDurationUs;
-        public uint RoundDurationUs => m_RoundDurationUs;
-        public uint BuyDurationUs => m_BuyDurationUs;
-        public uint RoundEndDurationUs => m_RoundEndDurationUs;
-        public ushort[] ItemPrices => m_ItemPrices;
+        public uint SecureDurationUs => m_Config.secureDurationUs;
+        public uint RoundDurationUs => m_Config.roundDurationUs;
+        public uint BuyDurationUs => m_Config.buyDurationUs;
+        public uint RoundEndDurationUs => m_Config.roundEndDurationUs;
 
-        public override void Clear() => m_LastMapName = new VoxelMapNameProperty();
+        public override void Initialize()
+        {
+            m_LastMapName = new VoxelMapNameProperty();
+            m_Config = Extensions.GetConfig().secureAreaConfig;
+        }
 
         private SiteBehavior[] GetSiteBehaviors(StringProperty mapName)
         {
@@ -77,7 +93,7 @@ namespace Voxelfield.Session.Mode
             if (player.Require<TeamProperty>() != killer.Require<TeamProperty>())
             {
                 UShortProperty money = killer.Require<MoneyComponent>().count;
-                money.Value += m_KillMoney;
+                money.Value += m_Config.killMoney;
                 if (money.Value > 7000) money.Value = 7000;
             }
         }
@@ -103,7 +119,7 @@ namespace Voxelfield.Session.Mode
             {
                 bool canAdvance = true,
                      redJustSecured = false,
-                     isBuyTime = secureArea.roundTime > m_RoundEndDurationUs + m_RoundDurationUs;
+                     isBuyTime = secureArea.roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
 
                 var players = sessionContainer.Require<PlayerContainerArrayElement>();
                 int redAlive = 0, blueAlive = 0;
@@ -117,7 +133,7 @@ namespace Voxelfield.Session.Mode
                     }
                 }
 
-                bool inRegularFightTime = secureArea.roundTime > m_RoundEndDurationUs,
+                bool inRegularFightTime = secureArea.roundTime > m_Config.roundEndDurationUs,
                      inRealizedFightTime = !isBuyTime && (inRegularFightTime || secureArea.RedInside(out SiteComponent _)),
                      endedWithKills = false;
                 if (inRealizedFightTime)
@@ -136,7 +152,7 @@ namespace Voxelfield.Session.Mode
                         }
                         if (redAlive == 0 || blueAlive == 0)
                         {
-                            secureArea.roundTime.Value = m_RoundEndDurationUs;
+                            secureArea.roundTime.Value = m_Config.roundEndDurationUs;
                             endedWithKills = true;
                         }
                     }
@@ -168,11 +184,11 @@ namespace Voxelfield.Session.Mode
                         {
                             // Red securing with no opposition
                             if (site.timeUs > durationUs) site.timeUs.Value -= durationUs;
-                            else if (secureArea.roundTime >= m_RoundEndDurationUs)
+                            else if (secureArea.roundTime >= m_Config.roundEndDurationUs)
                             {
                                 // Round ended, site was secured by red
                                 site.timeUs.Value = 0u;
-                                secureArea.roundTime.Value = m_RoundEndDurationUs;
+                                secureArea.roundTime.Value = m_Config.roundEndDurationUs;
                                 sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
                                 secureArea.lastWinningTeam.Value = RedTeam;
                             }
@@ -186,7 +202,8 @@ namespace Voxelfield.Session.Mode
                 {
                     if (secureArea.roundTime > durationUs)
                     {
-                        if (!redJustSecured && !endedWithKills && secureArea.roundTime >= m_RoundEndDurationUs && secureArea.roundTime - durationUs < m_RoundEndDurationUs)
+                        if (!redJustSecured && !endedWithKills && secureArea.roundTime >= m_Config.roundEndDurationUs &&
+                            secureArea.roundTime - durationUs < m_Config.roundEndDurationUs)
                         {
                             // Round just ended without contesting
                             sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
@@ -197,8 +214,9 @@ namespace Voxelfield.Session.Mode
                 }
                 else
                 {
-                    if (secureArea.roundTime > m_RoundEndDurationUs && secureArea.roundTime - m_RoundEndDurationUs > durationUs) secureArea.roundTime.Value -= durationUs;
-                    else secureArea.roundTime.Value = m_RoundEndDurationUs;
+                    if (secureArea.roundTime > m_Config.roundEndDurationUs && secureArea.roundTime - m_Config.roundEndDurationUs > durationUs)
+                        secureArea.roundTime.Value -= durationUs;
+                    else secureArea.roundTime.Value = m_Config.roundEndDurationUs;
                 }
             }
             else
@@ -214,7 +232,7 @@ namespace Voxelfield.Session.Mode
                     }
                     return false;
                 }
-                bool start = activePlayerCount == m_Players || ForceStart();
+                bool start = activePlayerCount == m_Config.playerCount || ForceStart();
                 if (start)
                 {
                     NextRound(session, sessionContainer, secureArea);
@@ -226,7 +244,7 @@ namespace Voxelfield.Session.Mode
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
             TimeUsProperty roundTime = container.Require<SecureAreaComponent>().roundTime;
-            bool isBuyTime = roundTime.WithValue && roundTime > m_RoundEndDurationUs + m_RoundDurationUs;
+            bool isBuyTime = roundTime.WithValue && roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
             if (isBuyTime) BuyingMode.HandleBuying(this, player);
             player.Require<FrozenProperty>().Value = isBuyTime;
 
@@ -285,7 +303,7 @@ namespace Voxelfield.Session.Mode
         private void NextRound(SessionBase session, Container sessionContainer, SecureAreaComponent secureArea)
         {
             var scores = sessionContainer.Require<DualScoresComponent>();
-            bool isLastRound = secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_MaxRounds;
+            bool isLastRound = secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_Config.maxRounds;
             if (isLastRound)
             {
                 ForEachActivePlayer(session, sessionContainer, (playerId, player) => player.Require<FrozenProperty>().Value = true);
@@ -293,11 +311,11 @@ namespace Voxelfield.Session.Mode
             else
             {
                 bool isFirstRound = secureArea.roundTime.WithoutValue;
-                secureArea.roundTime.Value = m_RoundEndDurationUs + m_RoundDurationUs + m_BuyDurationUs;
+                secureArea.roundTime.Value = m_Config.roundEndDurationUs + m_Config.roundDurationUs + m_Config.buyDurationUs;
                 foreach (SiteComponent site in secureArea.sites)
                 {
                     site.Zero();
-                    site.timeUs.Value = m_SecureDurationUs;
+                    site.timeUs.Value = m_Config.secureDurationUs;
                 }
                 ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
                 {
@@ -313,7 +331,7 @@ namespace Voxelfield.Session.Mode
                     if (secureArea.lastWinningTeam.WithValue)
                     {
                         UShortProperty money = player.Require<MoneyComponent>().count;
-                        money.Value += player.Require<TeamProperty>() == secureArea.lastWinningTeam ? m_RoundWinMoney : m_RoundLoseMoney;
+                        money.Value += player.Require<TeamProperty>() == secureArea.lastWinningTeam ? m_Config.roundWinMoney : m_Config.roundLoseMoney;
                         if (money.Value > 7000) money.Value = 7000;
                     }
                 });
@@ -342,7 +360,7 @@ namespace Voxelfield.Session.Mode
         public bool CanBuy(SessionBase session, Container sessionContainer)
         {
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
-            return secureArea.roundTime.WithValue && secureArea.roundTime > m_RoundEndDurationUs + m_RoundDurationUs;
+            return secureArea.roundTime.WithValue && secureArea.roundTime > m_Config.roundWinMoney + m_Config.roundDurationUs;
         }
 
         public ushort GetCost(int itemId) => m_ItemPrices[itemId - 1];

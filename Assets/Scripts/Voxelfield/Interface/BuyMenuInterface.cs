@@ -57,7 +57,6 @@ namespace Voxelfield.Interface
             var itemId = checked((byte) m_WantedBuyItemId.Value);
             commands.Require<MoneyComponent>().wantedBuyItemId.Value = itemId;
             m_WantedBuyItemId = null;
-            Debug.Log($"Requesting item ID: {itemId}");
         }
 
         public override void Render(SessionBase session, Container sessionContainer)

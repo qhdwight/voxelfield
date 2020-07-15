@@ -52,7 +52,7 @@ namespace Voxelfield.Item
         protected static bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
             // TODO:refactor similar to outer
-            position = (Position3Int) (hit.point - hit.normal * 0.5f);
+            position = (Position3Int) (hit.point - hit.normal * 0.1f);
             Voxel.Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
             voxel = optionalVoxel ?? default;
             return !optionalVoxel.HasValue || !voxel.breakable;
@@ -60,7 +60,7 @@ namespace Voxelfield.Item
 
         protected static bool WithoutOuterVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
-            position = (Position3Int) (hit.point + hit.normal * 0.5f);
+            position = (Position3Int) (hit.point + hit.normal * 0.1f);
             Voxel.Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
             voxel = optionalVoxel ?? default;
             return !optionalVoxel.HasValue || !voxel.breakable;

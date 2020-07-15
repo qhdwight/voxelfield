@@ -31,7 +31,7 @@ namespace Voxelfield.Session.Mode
         private FlagBehavior[][] m_FlagBehaviors;
         private VoxelMapNameProperty m_LastMapName;
 
-        public override void Clear() => m_LastMapName = new VoxelMapNameProperty();
+        public override void Initialize() => m_LastMapName = new VoxelMapNameProperty();
 
         private FlagBehavior[][] GetFlagBehaviors(StringProperty mapName)
         {

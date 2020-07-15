@@ -24,7 +24,6 @@ namespace Voxelfield.Session.Mode
                 if (wantedBuyItemId.WithValue)
                 {
                     UShortProperty money = player.Require<MoneyComponent>().count;
-                    Debug.Log($"Trying to buy requested item: {wantedBuyItemId.Value}");
                     ushort cost = buyingMode.GetCost(wantedBuyItemId);
                     if (cost < money)
                     {

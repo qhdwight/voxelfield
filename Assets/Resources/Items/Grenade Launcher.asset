@@ -66,8 +66,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   m_HeadShotMultiplier: 1
-  m_MagSize: 30
-  m_StartingAmmoInReserve: 90
+  m_MagSize: 6
+  m_StartingAmmoInReserve: 6
   m_AdsModifierProperties:
   - durationUs: 4294967295
     isPersistent: 0

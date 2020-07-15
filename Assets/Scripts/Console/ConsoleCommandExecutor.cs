@@ -12,7 +12,7 @@ namespace Console
 
         private static Dictionary<string, Action<string[]>> _commands;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void Initialize()
         {
             // Conform with https://docs.unity3d.com/Manual/DomainReloading.html

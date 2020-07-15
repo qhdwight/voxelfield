@@ -96,6 +96,11 @@ namespace Swihoni.Sessions
         private static void Initialize()
         {
             _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void InitializeConfig()
+        {
             ConfigManagerBase.Initialize();
         }
 

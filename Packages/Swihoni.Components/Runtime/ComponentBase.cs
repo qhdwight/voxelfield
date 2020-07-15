@@ -103,7 +103,7 @@ namespace Swihoni.Components
         /// </summary>
         public virtual void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation) { }
 
-        public IEnumerator<ElementBase> GetEnumerator() => m_Elements.GetEnumerator();
+        public IEnumerator<ElementBase> GetEnumerator() => Elements.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }

@@ -20,7 +20,7 @@ MonoBehaviour:
     m_Value: 1
   modeId:
     m_Flags: 1
-    m_Value: 2
+    m_Value: 3
   fov:
     m_Flags: 1
     m_Value: 60
@@ -42,5 +42,33 @@ MonoBehaviour:
     m_Flags: 1
     m_Value: 0
   restartMode:
-    m_Flags: 0
+    m_Flags: 1
     m_Value: 0
+  secureAreaConfig:
+    roundEndDurationUs:
+      m_Flags: 1
+      m_Value: 20
+    roundDurationUs:
+      m_Flags: 1
+      m_Value: 240000000
+    buyDurationUs:
+      m_Flags: 1
+      m_Value: 10000000
+    secureDurationUs:
+      m_Flags: 1
+      m_Value: 20000000
+    playerCount:
+      m_Flags: 1
+      m_Value: 1
+    roundWinMoney:
+      m_Flags: 1
+      m_Value: 3000
+    roundLoseMoney:
+      m_Flags: 1
+      m_Value: 2000
+    killMoney:
+      m_Flags: 1
+      m_Value: 800
+    maxRounds:
+      m_Flags: 1
+      m_Value: 10

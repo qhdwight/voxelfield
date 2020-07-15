@@ -32,25 +32,47 @@ namespace Swihoni.Sessions
 
         public static void Initialize()
         {
-            Singleton = Resources.Load<ConfigManagerBase>("Config");
+            Singleton = Instantiate(Resources.Load<ConfigManagerBase>("Config"));
             if (!Singleton) throw new Exception("No config asset was found in resources");
-            IReadOnlyList<FieldInfo> fields = Singleton.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
-                                                       .Where(field => field.IsDefined(typeof(ConfigAttribute))).ToArray();
 
-            (PropertyBase, ConfigAttribute) ValueSelector(FieldInfo field) => ((PropertyBase) field.GetValue(Singleton), field.GetCustomAttribute<ConfigAttribute>());
-            NameToConfig = fields.ToDictionary(field => field.GetCustomAttribute<ConfigAttribute>().Name, ValueSelector);
-            TypeToConfig = NameToConfig.Values.Where(tuple => tuple.Item2.IsSession)
-                                       .ToDictionary(tuple => tuple.Item1.GetType(), tuple => tuple);
-            foreach ((PropertyBase property, ConfigAttribute attribute) in NameToConfig.Values)
+            NameToConfig = new Dictionary<string, (PropertyBase, ConfigAttribute)>();
+            TypeToConfig = new Dictionary<Type, (PropertyBase, ConfigAttribute)>();
+
+            var names = new Stack<string>();
+            void Recurse(ElementBase element)
             {
-                if (property.WithoutValue) property.Zero();
-                ConsoleCommandExecutor.SetCommand(attribute.Name, args =>
+                bool isConfig = element.TryAttribute(out ConfigAttribute config);
+                if (isConfig)
                 {
-                    if (attribute.IsSession)
-                        foreach (Client session in SessionBase.Sessions.OfType<Client>())
-                            session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
-                    HandleArgs(args);
-                });
+                    switch (element)
+                    {
+                        case ComponentBase component:
+                            names.Push(config.Name);
+                            foreach (ElementBase childElement in component)
+                                Recurse(childElement);
+                            names.Pop();
+                            break;
+                        case PropertyBase property:
+                            string fullName = string.Join(".", names.Append(config.Name));
+                            Debug.Log(fullName);
+                            NameToConfig.Add(fullName, (property, config));
+                            if (config.IsSession) TypeToConfig.Add(property.GetType(), (property, config));
+                            ConsoleCommandExecutor.SetCommand(fullName, args =>
+                            {
+                                if (config.IsSession)
+                                    foreach (Client session in SessionBase.Sessions.OfType<Client>())
+                                        session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
+                                HandleArgs(args);
+                            });
+                            break;
+                    }
+                }
+            }
+            foreach (FieldInfo field in Singleton.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
+            {
+                var element = (ElementBase) field.GetValue(Singleton);
+                element.Field = field;
+                Recurse(element);
             }
         }
 

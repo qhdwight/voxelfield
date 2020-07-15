@@ -1,4 +1,5 @@
 ﻿using LiteNetLib.Utils;
+using Swihoni.Components;
 using Swihoni.Util;
 using UnityEngine;
 
@@ -38,7 +39,7 @@ namespace Voxel
             if (changeData.orientation.HasValue) writer.Put(changeData.orientation.Value);
             if (changeData.breakable.HasValue) writer.Put(changeData.breakable.Value);
             if (changeData.natural.HasValue) writer.Put(changeData.natural.Value);
-            if (changeData.color.HasValue) PutColor(writer, changeData.color.Value);
+            if (changeData.color.HasValue) writer.PutColor32(changeData.color.Value);
         }
 
         public static VoxelChangeData Deserialize(NetDataReader reader)
@@ -51,7 +52,7 @@ namespace Voxel
             if (FlagUtil.HasFlag(flags, OrientationFlagIndex)) data.orientation = reader.GetByte();
             if (FlagUtil.HasFlag(flags, BreakableFlagIndex)) data.breakable = reader.GetBool();
             if (FlagUtil.HasFlag(flags, NaturalFlagIndex)) data.natural = reader.GetBool();
-            if (FlagUtil.HasFlag(flags, ColorFlagIndex)) data.color = GetColor32(reader);
+            if (FlagUtil.HasFlag(flags, ColorFlagIndex)) data.color = reader.GetColor32();
             return data;
         }
 
@@ -65,16 +66,5 @@ namespace Voxel
             if (newChange.natural.HasValue) natural = newChange.natural.Value;
             if (newChange.color.HasValue) color = newChange.color.Value;
         }
-
-        private static void PutColor(NetDataWriter writer, in Color32 color)
-        {
-            writer.Put(color.r);
-            writer.Put(color.g);
-            writer.Put(color.b);
-            writer.Put(color.a);
-        }
-
-        public static Color32 GetColor32(NetDataReader reader)
-            => new Color32(reader.GetByte(), reader.GetByte(), reader.GetByte(), reader.GetByte());
     }
 }
