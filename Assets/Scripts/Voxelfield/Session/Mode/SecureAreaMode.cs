@@ -54,6 +54,7 @@ namespace Voxelfield.Session.Mode
         {
             m_LastMapName = new VoxelMapNameProperty();
             m_Config = Extensions.GetConfig().secureAreaConfig;
+            SessionBase.RegisterSessionCommand("give_money");
         }
 
         private SiteBehavior[] GetSiteBehaviors(StringProperty mapName)
@@ -248,6 +249,19 @@ namespace Voxelfield.Session.Mode
             bool isBuyTime = roundTime.WithValue && roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
             if (isBuyTime) BuyingMode.HandleBuying(this, player, commands);
             player.Require<FrozenProperty>().Value = isBuyTime;
+            
+            if (PlayerModifierBehaviorBase.TryServerCommands(player, out IEnumerable<string[]> stringCommands))
+            {
+                foreach (string[] args in stringCommands)
+                    switch (args[0])
+                    {
+                        case "give_money" when args.Length > 1 && ConfigManagerBase.Singleton.allowCheats && ushort.TryParse(args[1].Expand(), out ushort bonus):
+                        {
+                            player.Require<MoneyComponent>().count.Value += bonus;
+                            break;
+                        }
+                    }
+            }
 
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
         }

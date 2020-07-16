@@ -15,7 +15,7 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.PutColor(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetColor();
     }
-    
+
     [Serializable]
     public class UIntProperty : PropertyBase<uint>
     {
@@ -34,12 +34,9 @@ namespace Swihoni.Components
 
         public override bool TryParseValue(string @string)
         {
-            if (uint.TryParse(@string, out uint @uint))
-            {
-                Value = @uint;
-                return true;
-            }
-            return false;
+            if (!uint.TryParse(@string.Expand(), out uint @uint)) return false;
+            Value = @uint;
+            return true;
         }
     }
 
@@ -80,12 +77,9 @@ namespace Swihoni.Components
 
         public override bool TryParseValue(string @string)
         {
-            if (int.TryParse(@string, out int @int))
-            {
-                Value = @int;
-                return true;
-            }
-            return false;
+            if (!int.TryParse(@string, out int @int)) return false;
+            Value = @int;
+            return true;
         }
     }
 
@@ -100,12 +94,9 @@ namespace Swihoni.Components
 
         public override bool TryParseValue(string @string)
         {
-            if (ushort.TryParse(@string, out ushort @ushort))
-            {
-                Value = @ushort;
-                return true;
-            }
-            return false;
+            if (!ushort.TryParse(@string, out ushort @ushort)) return false;
+            Value = @ushort;
+            return true;
         }
     }
 
@@ -120,12 +111,9 @@ namespace Swihoni.Components
 
         public override bool TryParseValue(string @string)
         {
-            if (short.TryParse(@string, out short @short))
-            {
-                Value = @short;
-                return true;
-            }
-            return false;
+            if (!short.TryParse(@string, out short @short)) return false;
+            Value = @short;
+            return true;
         }
     }
 
@@ -140,12 +128,9 @@ namespace Swihoni.Components
 
         public override bool TryParseValue(string @string)
         {
-            if (sbyte.TryParse(@string, out sbyte @sbyte))
-            {
-                Value = @sbyte;
-                return true;
-            }
-            return false;
+            if (!sbyte.TryParse(@string, out sbyte @sbyte)) return false;
+            Value = @sbyte;
+            return true;
         }
     }
 
@@ -160,12 +145,9 @@ namespace Swihoni.Components
 
         public override bool TryParseValue(string @string)
         {
-            if (byte.TryParse(@string, out byte @byte))
-            {
-                Value = @byte;
-                return true;
-            }
-            return false;
+            if (!byte.TryParse(@string, out byte @byte)) return false;
+            Value = @byte;
+            return true;
         }
     }
 
@@ -197,12 +179,9 @@ namespace Swihoni.Components
 
         public override bool TryParseValue(string @string)
         {
-            if (bool.TryParse(@string, out bool @bool))
-            {
-                Value = @bool;
-                return true;
-            }
-            return false;
+            if (!bool.TryParse(@string, out bool @bool)) return false;
+            Value = @bool;
+            return true;
         }
     }
 
@@ -262,12 +241,9 @@ namespace Swihoni.Components
 
         public override bool TryParseValue(string @string)
         {
-            if (float.TryParse(@string, out float @float))
-            {
-                Value = @float;
-                return true;
-            }
-            return false;
+            if (!float.TryParse(@string, out float @float)) return false;
+            Value = @float;
+            return true;
         }
     }
 

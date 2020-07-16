@@ -16,7 +16,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public const byte NoneIndex = 0;
 
         [RuntimeInitializeOnLoadMethod]
-        private static void InitializeCommands() => ConsoleCommandExecutor.SetCommand("give_item", SessionBase.IssueCommand);
+        private static void InitializeCommands() => SessionBase.RegisterSessionCommand("give_item");
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {

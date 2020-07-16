@@ -242,7 +242,7 @@ namespace Swihoni.Sessions
                         {
                             uint previousTimeUs = previousServerSession.Require<ServerStampComponent>().timeUs;
                             if (serverTimeUs >= previousTimeUs) localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
-                            else Debug.LogError($"Next server time was greater. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
+                            else Debug.LogError($"Updated server session time was less. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
                         }
                         else localizedServerTimeUs.Value = _timeUs;
 
@@ -275,7 +275,7 @@ namespace Swihoni.Sessions
                         {
                             uint previousTimeUs = previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs;
                             if (serverTimeUs >= previousTimeUs) localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
-                            else Debug.LogError($"Next server player time was greater. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
+                            else Debug.LogError($"Updated server player time was greater. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
                         }
                         else localizedServerTimeUs.Value = _timeUs;
 

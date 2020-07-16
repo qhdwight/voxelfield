@@ -20,10 +20,13 @@ MonoBehaviour:
     m_Value: 1
   modeId:
     m_Flags: 1
-    m_Value: 2
+    m_Value: 3
   respawnDuration:
     m_Flags: 1
-    m_Value: 3000000
+    m_Value: 5000000
+  playerHealth:
+    m_Flags: 1
+    m_Value: 100
   fov:
     m_Flags: 1
     m_Value: 60
