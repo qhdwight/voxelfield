@@ -86,7 +86,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
-            if (player.Without(out MoveComponent move)) return;
+            if (tickDelta < 1 || player.Without(out MoveComponent move)) return;
 
             base.ModifyChecked(session, playerId, player, commands, durationUs, tickDelta); // Synchronize game object
 

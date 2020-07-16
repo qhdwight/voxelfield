@@ -80,14 +80,17 @@ namespace Swihoni.Sessions.Modes
         {
             if (player.Without(out HealthProperty health) || health.WithoutValue) return;
 
-            if (player.With(out HitMarkerComponent hitMarker))
-                if (hitMarker.elapsedUs.Value > durationUs) hitMarker.elapsedUs.Value -= durationUs;
-                else hitMarker.elapsedUs.Value = 0u;
-            if (player.With(out DamageNotifierComponent damageNotifier))
-                if (damageNotifier.elapsedUs.Value > durationUs) damageNotifier.elapsedUs.Value -= durationUs;
-                else damageNotifier.elapsedUs.Value = 0u;
-            if (player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
-                InflictDamage(session, playerId, player, player, playerId, health.Value, "Void");
+            if (tickDelta >= 1)
+            {
+                if (player.With(out HitMarkerComponent hitMarker))
+                    if (hitMarker.elapsedUs.Value > durationUs) hitMarker.elapsedUs.Value -= durationUs;
+                    else hitMarker.elapsedUs.Value = 0u;
+                if (player.With(out DamageNotifierComponent damageNotifier))
+                    if (damageNotifier.elapsedUs.Value > durationUs) damageNotifier.elapsedUs.Value -= durationUs;
+                    else damageNotifier.elapsedUs.Value = 0u;
+                if (player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
+                    InflictDamage(session, playerId, player, player, playerId, health.Value, "Void");   
+            }
 
             if (commands.WithPropertyWithValue(out WantedTeamProperty wantedTeam) && wantedTeam != player.Require<TeamProperty>() && AllowTeamSwap(container, player))
             {

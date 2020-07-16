@@ -58,7 +58,7 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
+        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
         {
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
 
@@ -69,9 +69,11 @@ namespace Voxelfield.Session.Mode
             player.Require<FrozenProperty>().Value = !isFightTime;
             if (isFightTime)
             {
-                var showdownPlayer = player.Require<ShowdownPlayerComponent>();
-
-                PlayerSecuring(player, commands, showdownPlayer, stage, durationUs);
+                if (tickDelta >= 1)
+                {
+                    var showdownPlayer = player.Require<ShowdownPlayerComponent>();
+                    PlayerSecuring(player, commands, showdownPlayer, stage, durationUs);   
+                }
             }
             else
             {

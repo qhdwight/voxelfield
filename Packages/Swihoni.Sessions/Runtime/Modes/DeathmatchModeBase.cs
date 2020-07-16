@@ -14,15 +14,15 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Singleton.respawnDuration;
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
+        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
         {
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
 
             if (commands.Without(out InputFlagProperty inputs) || player.Without(out HealthProperty health) || health.WithoutValue) return;
 
             if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive) InflictDamage(session, playerId, player, player, playerId, health, "Suicide");
-
-            HandleAutoRespawn(session, container, playerId, player, health, commands, durationUs);
+            
+            if (tickDelta >= 1) HandleAutoRespawn(session, container, playerId, player, health, commands, durationUs);
         }
 
         protected virtual void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,

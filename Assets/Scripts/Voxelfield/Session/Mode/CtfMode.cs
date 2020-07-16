@@ -83,7 +83,7 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
+        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
         {
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
 

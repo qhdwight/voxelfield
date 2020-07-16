@@ -20,7 +20,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
         {
-            if (!player.With(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
+            if (tickDelta < 1 || !player.With(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
             HandleCommands(player);
             
