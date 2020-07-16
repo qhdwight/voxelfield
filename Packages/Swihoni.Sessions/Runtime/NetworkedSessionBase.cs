@@ -100,11 +100,18 @@ namespace Swihoni.Sessions
             ModeManager.GetMode(m_RenderSession).Render(this, m_RenderSession);
         }
 
+        private static bool _isInGame;
+
         protected void RenderInterfaces(Container session)
         {
             _session = this;
             _container = session;
-            ForEachSessionInterface(sessionInterface => sessionInterface.Render(_session, _container));
+            _isInGame = !IsLoading;
+            ForEachSessionInterface(sessionInterface =>
+            {
+                if (!sessionInterface.IsDuringGame || _isInGame)
+                    sessionInterface.Render(_session, _container);
+            });
         }
 
         protected static int _indexer;

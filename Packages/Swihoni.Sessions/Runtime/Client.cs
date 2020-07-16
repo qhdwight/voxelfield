@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Net;
-using Console;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Swihoni.Collections;
@@ -94,7 +93,7 @@ namespace Swihoni.Sessions
         protected override void Render(uint renderTimeUs)
         {
             Profiler.BeginSample("Client Render Setup");
-            if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
+            if (IsLoading || m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
              || m_RenderSession.Without(out LocalPlayerId localPlayer)
              || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
             {
@@ -140,7 +139,7 @@ namespace Swihoni.Sessions
             Profiler.BeginSample("Client Render Interfaces");
             RenderInterfaces(m_RenderSession);
             Profiler.EndSample();
-
+            
             Profiler.BeginSample("Client Render Entities");
             RenderEntities<LocalizedClientStampComponent>(renderTimeUs, tickRate.TickIntervalUs * 2u);
             Profiler.EndSample();
@@ -433,10 +432,16 @@ namespace Swihoni.Sessions
             if (_predicted.WithAttribute<ClientTrustedAttribute>() || _predicted.WithAttribute<ClientNonCheckedAttribute>()) return Navigation.SkipDescendents;
             switch (_predicted)
             {
-                case FloatProperty f1 when _server is FloatProperty f2 && f1.TryAttribute(out PredictionToleranceAttribute fPredictionToleranceAttribute)
-                                                                       && !f1.CheckWithinTolerance(f2, fPredictionToleranceAttribute.tolerance):
-                case VectorProperty v1 when _server is VectorProperty v2 && v1.TryAttribute(out PredictionToleranceAttribute vPredictionToleranceAttribute)
-                                                                         && !v1.CheckWithinTolerance(v2, vPredictionToleranceAttribute.tolerance):
+                case FloatProperty f1 when _server is FloatProperty f2 &&
+                                           (f1.WithValue && f2.WithValue
+                                                         && f1.TryAttribute(out PredictionToleranceAttribute fTolerance)
+                                                         && !f1.CheckWithinTolerance(f2, fTolerance.tolerance)
+                                         || f1.WithoutValue && f2.WithValue || f1.WithValue && f2.WithoutValue):
+                case VectorProperty v1 when _server is VectorProperty v2 &&
+                                            (v1.WithValue && v2.WithValue
+                                                          && v1.TryAttribute(out PredictionToleranceAttribute vTolerance)
+                                                          && !v1.CheckWithinTolerance(v2, vTolerance.tolerance)
+                                          || v1.WithoutValue && v2.WithValue || v1.WithValue && v2.WithoutValue):
                 case PropertyBase p1 when _server is PropertyBase p2 && !p1.Equals(p2):
                     _predictionIsAccurate = false;
                     if (Debug.isDebugBuild)

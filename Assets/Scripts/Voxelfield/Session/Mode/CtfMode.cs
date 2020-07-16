@@ -87,6 +87,8 @@ namespace Voxelfield.Session.Mode
         {
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
 
+            if (player.Require<HealthProperty>().IsAlive) return;
+            
             var wantedItem = commands.Require<WantedItemComponent>();
             if (wantedItem.id.WithValue && wantedItem.index.WithValue)
             {

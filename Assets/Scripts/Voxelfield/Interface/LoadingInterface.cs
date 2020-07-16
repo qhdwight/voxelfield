@@ -1,3 +1,4 @@
+using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Interfaces;
@@ -7,7 +8,7 @@ using Voxel;
 
 namespace Voxelfield.Interface
 {
-    public class LoadingInterface : SessionInterfaceBehavior
+    public class LoadingInterface : InterfaceBehaviorBase
     {
         private BufferedTextGui m_Text;
         private Slider m_ProgressBar;
@@ -19,26 +20,30 @@ namespace Voxelfield.Interface
             base.Awake();
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        private void Update()
         {
-            MapProgressInfo progressInfo = ChunkManager.Singleton.ProgressInfo;
-            switch (progressInfo.stage)
+            bool isVisible = SessionBase.Sessions.Any(session => session.IsLoading);
+            if (isVisible)
             {
-                case MapLoadingStage.CleaningUp:
-                    m_Text.SetText("Cleaning up...");
-                    break;
-                case MapLoadingStage.SettingUp:
-                    m_Text.SetText("Setting up...");
-                    break;
-                case MapLoadingStage.Generating:
-                    m_Text.SetText("Generating terrain from save...");
-                    break;
-                case MapLoadingStage.UpdatingMesh:
-                    m_Text.SetText("Generating and applying mesh...");
-                    break;
+                MapProgressInfo progressInfo = ChunkManager.Singleton.ProgressInfo;
+                switch (progressInfo.stage)
+                {
+                    case MapLoadingStage.CleaningUp:
+                        m_Text.SetText("Cleaning up...");
+                        break;
+                    case MapLoadingStage.SettingUp:
+                        m_Text.SetText("Setting up...");
+                        break;
+                    case MapLoadingStage.Generating:
+                        m_Text.SetText("Generating terrain from save...");
+                        break;
+                    case MapLoadingStage.UpdatingMesh:
+                        m_Text.SetText("Generating and applying mesh...");
+                        break;
+                }
+                m_ProgressBar.value = progressInfo.progress;
             }
-            m_ProgressBar.value = progressInfo.progress;
-            SetInterfaceActive(session.IsLoading);
+            SetInterfaceActive(isVisible);
         }
     }
 }

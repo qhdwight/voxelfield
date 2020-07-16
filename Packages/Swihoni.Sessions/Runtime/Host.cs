@@ -43,17 +43,21 @@ namespace Swihoni.Sessions
 
             if (!IsLoading)
             {
-                PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(GetModifyingPayerFromId(HostPlayerId, session), HostPlayerId);
-                if (hostModifier)
+                Container hostPlayer = GetModifyingPayerFromId(HostPlayerId, session);
+                if (hostPlayer.Require<HealthProperty>().WithValue)
                 {
-                    hostModifier.ModifyCommands(this, m_HostCommands, HostPlayerId);
-                    _container = m_HostCommands; // Prevent closure allocation
-                    _session = this;
-                    ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(HostPlayerId, _session, _container));
-                    hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
-                    hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+                    PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(hostPlayer, HostPlayerId);
+                    if (hostModifier)
+                    {
+                        hostModifier.ModifyCommands(this, m_HostCommands, HostPlayerId);
+                        _container = m_HostCommands; // Prevent closure allocation
+                        _session = this;
+                        ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(HostPlayerId, _session, _container));
+                        hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
+                        hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+                    }
+                    GetModifyingMode(session).ModifyPlayer(this, session, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);   
                 }
-                GetModifyingMode(session).ModifyPlayer(this, session, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
             }
             var stamp = m_HostCommands.Require<ServerStampComponent>();
             stamp.timeUs.Value = timeUs;
@@ -63,10 +67,10 @@ namespace Swihoni.Sessions
 
         protected override void Render(uint renderTimeUs)
         {
+            
             Profiler.BeginSample("Host Render Setup");
-            if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
-             || m_RenderSession.Without(out LocalPlayerId localPlayer)
-             || IsLoading)
+            if (IsLoading ||m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
+             || m_RenderSession.Without(out LocalPlayerId localPlayer))
             {
                 Profiler.EndSample();
                 return;
@@ -104,7 +108,7 @@ namespace Swihoni.Sessions
             Profiler.BeginSample("Host Render Interfaces");
             RenderInterfaces(m_RenderSession);
             Profiler.EndSample();
-
+            
             Profiler.BeginSample("Host Render Entities");
             RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
             Profiler.EndSample();

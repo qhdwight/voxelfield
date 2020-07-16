@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using Input;
+using Swihoni.Components;
+using Swihoni.Sessions;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
@@ -11,7 +14,7 @@ namespace Voxelfield.Interface
     {
         private LoadOutButton[][] m_LoadOutButtons;
 
-        public WantedItemComponent m_WantedItem = new WantedItemComponent();
+        public WantedItemComponent WantedItem { get; set; } = new WantedItemComponent();
 
         private void Start()
         {
@@ -24,30 +27,31 @@ namespace Voxelfield.Interface
                                                                                           if (hasComponent)
                                                                                               button.OnClick.AddListener(() =>
                                                                                               {
-                                                                                                  m_WantedItem.index.Value = (byte) (slotIndex + 1);
-                                                                                                  m_WantedItem.index.Value = button.ItemId;
+                                                                                                  WantedItem.index.Value = (byte) (slotIndex + 1);
+                                                                                                  WantedItem.id.Value = button.ItemId;
                                                                                               });
                                                                                           return hasComponent;
                                                                                       }).ToArray()).ToArray();
         }
-
-        private void Update()
-        {
-            if (InputProvider.Singleton.GetInputDown(InputType.Buy))
-            {
-                ToggleInterfaceActive();
-            }
-        }
-
+        
         internal void Render(InventoryComponent inventory)
         {
-            foreach (LoadOutButton[] loadOutButtons in m_LoadOutButtons)
-            foreach (LoadOutButton loadOutButton in loadOutButtons)
-                loadOutButton.SetChecked(false);
-            for (var i = 1; i < 10; i++)
+            if (InputProvider.Singleton.GetInputDown(InputType.Buy)) ToggleInterfaceActive();
+
+            for (var i = 1; i <= m_LoadOutButtons.Length; i++)
             {
                 ItemComponent item = inventory[i];
+                foreach (LoadOutButton loadOutButton in m_LoadOutButtons[i - 1])
+                    loadOutButton.SetChecked(item.id == loadOutButton.ItemId);
             }
+        }
+        
+        public void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
+        {
+            if (WantedItem.id.WithoutValue || WantedItem.index.WithoutValue) return;
+            
+            commands.Require<WantedItemComponent>().CopyFrom(WantedItem);
+            WantedItem.Clear();
         }
     }
 }

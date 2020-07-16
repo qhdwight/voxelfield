@@ -4,8 +4,11 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util.Interface;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Voxelfield.Interface.Showdown;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
 
@@ -16,6 +19,7 @@ namespace Voxelfield.Interface
         [SerializeField] private ProgressInterface m_TakeProgress = default;
         [SerializeField] private UpperScoreInterface m_ScoreInterface = default;
         [SerializeField] private Image m_HasFlagSprite = default;
+        [SerializeField] private BufferedTextGui m_RespawnText = default;
         private LoadOutInterface m_LoadOutInterface;
 
         protected override void Awake()
@@ -42,7 +46,7 @@ namespace Voxelfield.Interface
 
         private void RenderLocalPlayer(SessionBase session, Container sessionContainer, CtfComponent ctf)
         {
-            bool isTaking = false, hasFlag = false;
+            bool isTaking = false, hasFlag = false, isRespawnVisible = false;
             if (session.IsValidLocalPlayer(sessionContainer, out Container localPlayer, false))
             {
                 if (localPlayer.Require<HealthProperty>().IsAlive)
@@ -68,10 +72,24 @@ namespace Voxelfield.Interface
                         }
                     }
                 }
-                else m_LoadOutInterface.Render(localPlayer.Require<InventoryComponent>());
+                else
+                {
+                    m_LoadOutInterface.Render(localPlayer.Require<InventoryComponent>());
+                    isRespawnVisible = true;
+                    var respawn = localPlayer.Require<RespawnTimerProperty>();
+                    if (respawn == 0u)
+                        m_RespawnText.StartBuild().Append("Press [Enter] to respawn or [B] to change load out").Commit(m_RespawnText);
+                    else
+                        m_RespawnText.StartBuild().Append("Time until respawn: ").AppendTime(respawn).Commit(m_RespawnText);
+                }
             }
+            else m_LoadOutInterface.SetInterfaceActive(false);
             m_HasFlagSprite.enabled = hasFlag;
             m_TakeProgress.SetInterfaceActive(isTaking);
+            m_RespawnText.enabled = isRespawnVisible;
         }
+
+        public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
+            => m_LoadOutInterface.ModifyLocalTrusted(localPlayerId, session, commands);
     }
 }

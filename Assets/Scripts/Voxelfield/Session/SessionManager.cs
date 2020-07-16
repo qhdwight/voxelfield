@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using Console;
@@ -14,6 +15,7 @@ using UnityEngine;
 using Voxel;
 using Voxel.Map;
 using Voxelfield.Session.Mode;
+using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -64,7 +66,20 @@ namespace Voxelfield.Session
                     Debug.LogError("Could not start client with given parameters");
                 }
             });
-            ConsoleCommandExecutor.SetAlias("wsl_connect", $"connect 172.18.41.211 {DefaultPort}");
+#if ENABLE_MONO
+            ConsoleCommandExecutor.SetCommand("wsl_connect", args =>
+            {
+                var processInfo = new ProcessStartInfo("wsl", "-- hostname -I") {CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true};
+                Process process = Process.Start(processInfo);
+                if (process != null)
+                {
+                    process.WaitForExit();
+                    string result = process.StandardOutput.ReadLine();
+                    ConsoleCommandExecutor.ExecuteCommand($"connect {result}");
+                    process.Close();
+                }
+            });
+#endif
             ConsoleCommandExecutor.SetCommand("disconnect", args => DisconnectAll());
             ConsoleCommandExecutor.SetCommand("update_chunks", args =>
             {

@@ -25,7 +25,7 @@ namespace Voxelfield.Session.Mode
                 {
                     UShortProperty money = player.Require<MoneyComponent>().count;
                     ushort cost = buyingMode.GetCost(wantedBuyItemId);
-                    if (cost < money)
+                    if (cost <= money)
                     {
                         var inventory = player.Require<InventoryComponent>();
                         if (PlayerItemManagerModiferBehavior.AddItem(inventory, wantedBuyItemId))

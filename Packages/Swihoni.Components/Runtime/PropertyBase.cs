@@ -82,8 +82,8 @@ namespace Swihoni.Components
 
         public virtual void Clear() => WithValue = false;
 
-        public virtual bool TryParseValue(string @string) =>
-            throw new NotSupportedException($"Parsing this property is not supported. Override {nameof(TryParseValue)} if this is not intentional");
+        public virtual bool TryParseValue(string @string)
+            => throw new NotSupportedException($"Parsing this property is not supported. Override {nameof(TryParseValue)} if this is not intentional");
     }
 
     public class WithoutValueException : Exception
@@ -177,7 +177,7 @@ namespace Swihoni.Components
         public override string ToString() => $"[{Field?.Name ?? "No field"}] ({GetType().Name}), {(WithValue ? m_Value.ToString() : "No Value")}";
 
         public bool WithValueEqualTo(in T value) => WithValue && ValueEquals(value);
-        
+
         /// <exception cref="ArgumentException">If types are different.</exception>
         public override void SetFromIfWith(PropertyBase other)
         {

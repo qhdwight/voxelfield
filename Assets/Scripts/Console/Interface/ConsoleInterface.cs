@@ -172,6 +172,8 @@ namespace Console.Interface
 
         private void ConsoleInput(string consoleInput)
         {
+            if (m_ConsoleInput.wasCanceled) return;
+            
             consoleInput = StripAutocomplete(consoleInput, out _);
             if (string.IsNullOrWhiteSpace(consoleInput)) return;
 
