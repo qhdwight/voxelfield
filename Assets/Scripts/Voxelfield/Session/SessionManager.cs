@@ -345,6 +345,7 @@ namespace Voxelfield.Session
         [MenuItem("Build/Git Release")]
         public static void BuildRelease()
         {
+            // PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "VOXELFIELD_RELEASE");
             BuildWindowsIl2CppPlayer();
             BuildLinuxServer();
         }

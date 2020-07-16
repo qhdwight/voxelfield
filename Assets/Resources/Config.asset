@@ -56,7 +56,7 @@ MonoBehaviour:
   secureAreaConfig:
     roundEndDurationUs:
       m_Flags: 1
-      m_Value: 20
+      m_Value: 7000000
     roundDurationUs:
       m_Flags: 1
       m_Value: 240000000

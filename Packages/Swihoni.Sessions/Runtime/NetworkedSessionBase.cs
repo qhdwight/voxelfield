@@ -55,7 +55,7 @@ namespace Swihoni.Sessions
             m_SessionHistory = new CyclicArray<ServerSessionContainer>(HistoryCount, ServerSessionContainerConstructor);
 
             m_RollbackSession = NewSession<Container>(elements.elements, elements.playerElements);
-            m_RenderSession = NewSession<Container>(elements.elements, elements.playerElements);
+            m_RenderSession = NewSession<Container>(elements.elements.Append(typeof(SpectatingPlayerId)), elements.playerElements);
 
             m_EmptyClientCommands = new ClientCommandsContainer(clientCommandElements);
             m_EmptyServerSession = ServerSessionContainerConstructor();

@@ -58,6 +58,8 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
+        public virtual bool CanSpectate(Container session, Container player) => false;
+
         public virtual Color GetTeamColor(int teamId) => Color.white;
 
         protected virtual Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer) => new Vector3 {y = 8.0f};

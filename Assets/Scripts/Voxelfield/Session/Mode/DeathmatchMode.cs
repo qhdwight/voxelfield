@@ -27,14 +27,14 @@ namespace Voxelfield.Session.Mode
             int chunkSize = ChunkManager.Singleton.ChunkSize;
             DimensionComponent dimension = MapManager.Singleton.Map.dimension;
             Position3Int lower = dimension.lowerBound, upper = dimension.upperBound;
-            var position = new Vector3
-            {
-                x = Random.Range(lower.x * chunkSize, (upper.x + 1) * chunkSize),
-                y = 1000.0f,
-                z = Random.Range(lower.z * chunkSize, (upper.z + 1) * chunkSize)
-            };
             for (var _ = 0; _ < 32; _++)
             {
+                var position = new Vector3
+                {
+                    x = Random.Range(lower.x * chunkSize, (upper.x + 1) * chunkSize),
+                    y = 1000.0f,
+                    z = Random.Range(lower.z * chunkSize, (upper.z + 1) * chunkSize)
+                };
                 if (Physics.Raycast(position, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
                     return hit.point + new Vector3 {y = 0.1f};
             }

@@ -85,7 +85,16 @@ namespace Voxelfield.Session.Mode
                                                   uint durationUs)
         {
             if (container.Require<SecureAreaComponent>().roundTime.WithoutValue)
+            {
                 base.HandleAutoRespawn(session, container, playerId, player, health, commands, durationUs);
+            }
+            else
+            {
+                // TODO:refactor this snippet is used multiple times
+                if (health.IsAlive || player.Without(out RespawnTimerProperty respawn)) return;
+                if (respawn.Value > durationUs) respawn.Value -= durationUs;
+                else respawn.Value = 0u;
+            }
         }
 
         protected override void KillPlayer(Container player, Container killer)
@@ -249,7 +258,7 @@ namespace Voxelfield.Session.Mode
             bool isBuyTime = roundTime.WithValue && roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
             if (isBuyTime) BuyingMode.HandleBuying(this, player, commands);
             player.Require<FrozenProperty>().Value = isBuyTime;
-            
+
             if (PlayerModifierBehaviorBase.TryServerCommands(player, out IEnumerable<string[]> stringCommands))
             {
                 foreach (string[] args in stringCommands)
@@ -278,12 +287,14 @@ namespace Voxelfield.Session.Mode
             if (secureArea.roundTime.WithValue)
             {
                 var health = player.Require<HealthProperty>();
-                if (health.IsDead)
+                var money = player.Require<MoneyComponent>();
+                if (health.IsInactiveOrDead || money.count.WithoutValue)
                 {
                     var inventory = player.Require<InventoryComponent>();
                     inventory.Zero();
                     PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
                     PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 2);
+                    if (money.count.WithoutValue) money.count.Value = 800;
                 }
 
                 var move = player.Require<MoveComponent>();
@@ -293,12 +304,16 @@ namespace Voxelfield.Session.Mode
                 health.Value = 100;
                 player.ZeroIfWith<HitMarkerComponent>();
                 player.ZeroIfWith<DamageNotifierComponent>();
+                player.ZeroIfWith<RespawnTimerProperty>();
+                player.Require<IdProperty>().Value = 1;
             }
             else
             {
                 base.SpawnPlayer(session, sessionContainer, playerId, player);
             }
         }
+
+        private static readonly List<int> RandomIndices = new List<int>();
 
         protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer)
         {
@@ -311,7 +326,17 @@ namespace Voxelfield.Session.Mode
                                                                          .ToArray();
             byte team = player.Require<TeamProperty>();
             KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
-            int spawnIndex = Random.Range(0, teamSpawns.Length);
+            
+            if (RandomIndices.Count == 0)
+            {
+                RandomIndices.Capacity = teamSpawns.Length;
+                for (var i = 0; i < teamSpawns.Length; i++)
+                    RandomIndices.Add(i);
+            }
+            int index = Random.Range(0, RandomIndices.Count);
+            int spawnIndex = RandomIndices[index];
+            RandomIndices.RemoveAt(index);
+            
             return teamSpawns[spawnIndex].Key;
         }
 
@@ -325,7 +350,6 @@ namespace Voxelfield.Session.Mode
             }
             else
             {
-                bool isFirstRound = secureArea.roundTime.WithoutValue;
                 secureArea.roundTime.Value = m_Config.roundEndDurationUs + m_Config.roundDurationUs + m_Config.buyDurationUs;
                 foreach (SiteComponent site in secureArea.sites)
                 {
@@ -335,13 +359,6 @@ namespace Voxelfield.Session.Mode
                 ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
                 {
                     SpawnPlayer(session, sessionContainer, playerId, player);
-                    if (isFirstRound)
-                    {
-                        var money = player.Require<MoneyComponent>();
-                        money.count.Value = 800;
-                        InventoryComponent inventory = player.Require<InventoryComponent>().Zero();
-                        PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
-                    }
                     if (secureArea.lastWinningTeam.WithValue)
                     {
                         UShortProperty money = player.Require<MoneyComponent>().count;
@@ -370,6 +387,18 @@ namespace Voxelfield.Session.Mode
             for (var siteIndex = 0; siteIndex < secureArea.sites.Length; siteIndex++)
                 siteBehaviors[siteIndex].Render(secureArea.sites[siteIndex]);
         }
+
+        public override bool CanSpectate(Container session, Container player)
+        {
+            if (session.Require<SecureAreaComponent>().roundTime.WithoutValue) return base.CanSpectate(session, player);
+            return player.Require<HealthProperty>().IsDead && player.Require<RespawnTimerProperty>().Value < ConfigManagerBase.Singleton.respawnDuration / 2;
+        }
+
+        protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
+                                                       in RaycastHit hit) =>
+            session.GetLatestSession().Require<SecureAreaComponent>().roundTime.WithValue && hitPlayer.Require<TeamProperty>() == inflictingPlayer.Require<TeamProperty>()
+                ? 0.0f
+                : base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, in hit);
 
         public bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer)
         {

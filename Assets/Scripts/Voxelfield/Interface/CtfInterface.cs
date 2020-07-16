@@ -30,7 +30,7 @@ namespace Voxelfield.Interface
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isVisible = !session.IsLoading && sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Ctf;
+            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Ctf;
             if (isVisible)
             {
                 var ctf = sessionContainer.Require<CtfComponent>();

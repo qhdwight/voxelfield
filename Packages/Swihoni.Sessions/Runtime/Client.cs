@@ -94,8 +94,8 @@ namespace Swihoni.Sessions
         {
             Profiler.BeginSample("Client Render Setup");
             if (IsLoading || m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
-             || m_RenderSession.Without(out LocalPlayerId localPlayer)
-             || !GetLocalPlayerId(GetLatestSession(), out int localPlayerId))
+                          || m_RenderSession.Without(out LocalPlayerId renderLocalPlayerId)
+                          || !GetLocalPlayerId(GetLatestSession(), out int actualLocalPlayerId))
             {
                 Profiler.EndSample();
                 return;
@@ -105,15 +105,19 @@ namespace Swihoni.Sessions
             if (tickRate.WithoutValue) return;
 
             m_RenderSession.CopyFrom(GetLatestSession());
-            localPlayer.Value = (byte) localPlayerId;
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Client Spectate Setup");
+            bool isSpectating = IsSpectating(m_RenderSession, renderPlayers, actualLocalPlayerId, out SpectatingPlayerId spectatingPlayerId);
+            renderLocalPlayerId.Value = isSpectating ? spectatingPlayerId.Value : (byte) actualLocalPlayerId;
             Profiler.EndSample();
 
             Profiler.BeginSample("Client Render Players");
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
-                bool isLocalPlayer = playerId == localPlayerId;
+                bool isActualLocalPlayer = playerId == actualLocalPlayerId;
                 Container renderPlayer = renderPlayers[playerId];
-                if (isLocalPlayer)
+                if (isActualLocalPlayer)
                 {
                     uint playerRenderTimeUs = renderTimeUs - tickRate.TickIntervalUs;
                     _predictionHistory = m_PlayerPredictionHistory;
@@ -132,14 +136,15 @@ namespace Swihoni.Sessions
                                                                                 _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_indexer]);
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
-                if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isLocalPlayer);
+                bool isPossessed = isActualLocalPlayer && !isSpectating || isSpectating && playerId == spectatingPlayerId;
+                if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isPossessed);
             }
             Profiler.EndSample();
 
             Profiler.BeginSample("Client Render Interfaces");
             RenderInterfaces(m_RenderSession);
             Profiler.EndSample();
-            
+
             Profiler.BeginSample("Client Render Entities");
             RenderEntities<LocalizedClientStampComponent>(renderTimeUs, tickRate.TickIntervalUs * 2u);
             Profiler.EndSample();
@@ -147,6 +152,42 @@ namespace Swihoni.Sessions
             Profiler.BeginSample("Client Render Mode");
             ModeManager.GetMode(m_RenderSession).Render(this, m_RenderSession);
             Profiler.EndSample();
+        }
+
+        internal static bool IsSpectating(Container renderSession, PlayerContainerArrayElement renderPlayers, int actualLocalPlayerId, out SpectatingPlayerId spectatingPlayerId)
+        {
+            bool isSpectating = ModeManager.GetMode(renderSession).CanSpectate(renderSession, renderPlayers[actualLocalPlayerId]);
+            spectatingPlayerId = renderSession.Require<SpectatingPlayerId>();
+            if (isSpectating)
+            {
+                Container localPlayer = renderPlayers[actualLocalPlayerId];
+                if (spectatingPlayerId.WithValue)
+                {
+                    Container currentPlayer = renderPlayers[spectatingPlayerId];
+                    if (currentPlayer.Require<HealthProperty>().IsInactiveOrDead || currentPlayer.Require<TeamProperty>() != localPlayer.Require<TeamProperty>())
+                        spectatingPlayerId.Clear();
+                }
+                if (spectatingPlayerId.WithoutValue)
+                {
+                    for (byte playerId = 0; playerId < renderPlayers.Length; playerId++)
+                    {
+                        if (playerId == actualLocalPlayerId) continue;
+                        Container renderPlayer = renderPlayers[playerId];
+                        if (renderPlayer.Require<HealthProperty>().IsInactiveOrDead) continue;
+                        if (renderPlayer.Require<TeamProperty>() == localPlayer.Require<TeamProperty>())
+                        {
+                            spectatingPlayerId.Value = playerId;
+                            break;
+                        }
+                    }
+                }
+                if (spectatingPlayerId.WithoutValue) isSpectating = false;
+            }
+            if (!isSpectating)
+            {
+                spectatingPlayerId.Clear();
+            }
+            return isSpectating;
         }
 
         protected override void Tick(uint tick, uint timeUs, uint durationUs)

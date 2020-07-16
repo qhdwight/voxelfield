@@ -56,7 +56,7 @@ namespace Swihoni.Sessions
                         hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
                         hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
                     }
-                    GetModifyingMode(session).ModifyPlayer(this, session, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);   
+                    GetModifyingMode(session).ModifyPlayer(this, session, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
                 }
             }
             var stamp = m_HostCommands.Require<ServerStampComponent>();
@@ -67,10 +67,10 @@ namespace Swihoni.Sessions
 
         protected override void Render(uint renderTimeUs)
         {
-            
             Profiler.BeginSample("Host Render Setup");
-            if (IsLoading ||m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
-             || m_RenderSession.Without(out LocalPlayerId localPlayer))
+            if (IsLoading || m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
+                          || m_RenderSession.Without(out LocalPlayerId renderLocalPlayerId)
+                          || m_HostCommands.Require<HealthProperty>().WithoutValue)
             {
                 Profiler.EndSample();
                 return;
@@ -80,14 +80,19 @@ namespace Swihoni.Sessions
             if (!tickRate.WithValue) return;
 
             m_RenderSession.CopyFrom(GetLatestSession());
-            localPlayer.Value = HostPlayerId;
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Host Spectate Setup");  
+            bool isSpectating = Client.IsSpectating(m_RenderSession, renderPlayers, HostPlayerId, out SpectatingPlayerId spectatingPlayerId);
+            renderLocalPlayerId.Value = isSpectating ? spectatingPlayerId.Value : (byte) HostPlayerId;
             Profiler.EndSample();
 
             Profiler.BeginSample("Host Render Players");
             for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
             {
                 Container renderPlayer = renderPlayers[playerId];
-                if (playerId == localPlayer)
+                bool isActualLocalPlayer = playerId == HostPlayerId;
+                if (isActualLocalPlayer)
                 {
                     // Inject host player component
                     renderPlayer.CopyFrom(m_HostCommands);
@@ -101,14 +106,15 @@ namespace Swihoni.Sessions
                                                                    historyIndex => _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_indexer]);
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
-                if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, playerId == localPlayer);
+                bool isPossessed = isActualLocalPlayer && !isSpectating || isSpectating && playerId == spectatingPlayerId;
+                if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isPossessed);
             }
             Profiler.EndSample();
 
             Profiler.BeginSample("Host Render Interfaces");
             RenderInterfaces(m_RenderSession);
             Profiler.EndSample();
-            
+
             Profiler.BeginSample("Host Render Entities");
             RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
             Profiler.EndSample();

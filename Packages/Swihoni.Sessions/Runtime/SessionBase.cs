@@ -212,7 +212,7 @@ namespace Swihoni.Sessions
                 return false;
             }
             localPlayer = GetModifyingPayerFromId(localPlayerId);
-            return !needsToBeAlive || localPlayer.Require<HealthProperty>().IsAlive;
+            return !needsToBeAlive || localPlayer.Require<HealthProperty>().IsActiveAndAlive;
         }
 
         protected virtual void Render(uint renderTimeUs) { }

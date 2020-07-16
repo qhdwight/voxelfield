@@ -174,6 +174,11 @@ namespace Swihoni.Sessions.Components
     }
 
     [Serializable]
+    public class SpectatingPlayerId : ByteProperty
+    {
+    }
+
+    [Serializable]
     public class DebugClientView : Container
     {
         public DebugClientView() { }

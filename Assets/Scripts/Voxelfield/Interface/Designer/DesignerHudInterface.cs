@@ -2,6 +2,7 @@ using System.Linq;
 using Input;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
@@ -25,7 +26,8 @@ namespace Voxelfield.Interface.Designer
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            bool isVisible = session.IsValidLocalPlayer(sessionContainer, out Container localPlayer);
+            Container localPlayer = default;
+            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer && session.IsValidLocalPlayer(sessionContainer, out localPlayer);
             FloatProperty editRadius = default;
             if (isVisible)
             {
@@ -46,6 +48,8 @@ namespace Voxelfield.Interface.Designer
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
+            if (session.GetLatestSession().Require<ModeIdProperty>() != ModeIdProperty.Designer) return;
+            
             float wheel = InputProvider.GetMouseScrollWheel() * 2.5f;
             FloatProperty editRadius = commands.Require<DesignerPlayerComponent>().editRadius;
             editRadius.Value = Mathf.Clamp(editRadius.Else(2.0f) + wheel, 0.0f, 10.0f);
