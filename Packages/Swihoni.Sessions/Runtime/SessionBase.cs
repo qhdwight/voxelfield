@@ -203,7 +203,7 @@ namespace Swihoni.Sessions
             Cursor.visible = desiredVisibility;
         }
 
-        public bool IsValidLocalPlayer(Container sessionContainer, out Container localPlayer)
+        public bool IsValidLocalPlayer(Container sessionContainer, out Container localPlayer, bool needsToBeAlive = true)
         {
             var localPlayerId = sessionContainer.Require<LocalPlayerId>();
             if (localPlayerId.WithoutValue)
@@ -212,7 +212,7 @@ namespace Swihoni.Sessions
                 return false;
             }
             localPlayer = GetModifyingPayerFromId(localPlayerId);
-            return localPlayer.Require<HealthProperty>().IsAlive;
+            return !needsToBeAlive || localPlayer.Require<HealthProperty>().IsAlive;
         }
 
         protected virtual void Render(uint renderTimeUs) { }

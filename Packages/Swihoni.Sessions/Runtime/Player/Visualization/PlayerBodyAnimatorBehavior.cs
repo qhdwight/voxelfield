@@ -69,10 +69,11 @@ namespace Swihoni.Sessions.Player.Visualization
             var modifierPrefab = (PlayerModifierDispatcherBehavior) session.PlayerManager.GetModifierPrefab(player.Require<IdProperty>());
             m_PrefabPlayerMovement = modifierPrefab.Movement;
 
-            bool usesHealth = player.With(out HealthProperty health),
-                 isVisible = !usesHealth || health.WithValue;
+            bool withHealth = player.With(out HealthProperty health),
+                 withMove = player.With(out MoveComponent move),
+                 isVisible = (!withHealth || health.WithValue) && (!withMove || move.position.WithValue);
 
-            bool isInFpv = isLocalPlayer && (!usesHealth || health.IsActiveAndAlive);
+            bool isInFpv = isLocalPlayer && (!withHealth || health.IsActiveAndAlive);
 
             foreach (Renderer render in m_TpvRenders)
             {
@@ -84,10 +85,10 @@ namespace Swihoni.Sessions.Player.Visualization
             if (isVisible)
             {
                 isAnimatorEnabled = health.IsAlive;
-                if (player.With(out MoveComponent move))
+                if (withMove)
                 {
                     m_Animator.transform.position = move.position;
-                    if (m_RagdollRigidbodies != null) SetRagdollEnabled(health.IsDead);
+                    if (m_RagdollRigidbodies != null) SetRagdollEnabled(health.IsDead);   
                     RenderMove(move);
                 }
                 if (player.With(out CameraComponent playerCamera))
@@ -98,7 +99,7 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             else
             {
-                if (m_RagdollRigidbodies != null) SetRagdollEnabled(false);
+                if (m_RagdollRigidbodies != null && move.position.WithValue) SetRagdollEnabled(false);
                 isAnimatorEnabled = true;
             }
 

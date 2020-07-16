@@ -16,6 +16,13 @@ namespace Voxelfield.Interface
         [SerializeField] private ProgressInterface m_TakeProgress = default;
         [SerializeField] private UpperScoreInterface m_ScoreInterface = default;
         [SerializeField] private Image m_HasFlagSprite = default;
+        private LoadOutInterface m_LoadOutInterface;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            m_LoadOutInterface = GetComponentInChildren<LoadOutInterface>();
+        }
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
@@ -36,28 +43,32 @@ namespace Voxelfield.Interface
         private void RenderLocalPlayer(SessionBase session, Container sessionContainer, CtfComponent ctf)
         {
             bool isTaking = false, hasFlag = false;
-            if (session.IsValidLocalPlayer(sessionContainer, out Container localPlayer))
+            if (session.IsValidLocalPlayer(sessionContainer, out Container localPlayer, false))
             {
-                ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
-                for (var flagTeam = 0; flagTeam < flags.Length; flagTeam++)
+                if (localPlayer.Require<HealthProperty>().IsAlive)
                 {
-                    if (flagTeam == localPlayer.Require<TeamProperty>()) continue; // Can't possibly take a team flag... Unless???
-                    foreach (FlagComponent flag in flags[flagTeam])
+                    ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
+                    for (var flagTeam = 0; flagTeam < flags.Length; flagTeam++)
                     {
-                        if (flag.capturingPlayerId == sessionContainer.Require<LocalPlayerId>())
+                        if (flagTeam == localPlayer.Require<TeamProperty>()) continue; // Can't possibly take a team flag... Unless???
+                        foreach (FlagComponent flag in flags[flagTeam])
                         {
-                            if (flag.captureElapsedTimeUs < CtfMode.TakeFlagDurationUs)
+                            if (flag.capturingPlayerId == sessionContainer.Require<LocalPlayerId>())
                             {
-                                isTaking = true;
-                                m_TakeProgress.Set(flag.captureElapsedTimeUs, CtfMode.TakeFlagDurationUs);
-                            }
-                            else
-                            {
-                                hasFlag = true;
+                                if (flag.captureElapsedTimeUs < CtfMode.TakeFlagDurationUs)
+                                {
+                                    isTaking = true;
+                                    m_TakeProgress.Set(flag.captureElapsedTimeUs, CtfMode.TakeFlagDurationUs);
+                                }
+                                else
+                                {
+                                    hasFlag = true;
+                                }
                             }
                         }
                     }
                 }
+                else m_LoadOutInterface.Render(localPlayer.Require<InventoryComponent>());
             }
             m_HasFlagSprite.enabled = hasFlag;
             m_TakeProgress.SetInterfaceActive(isTaking);

@@ -98,9 +98,9 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 0, g: 0, b: 0, a: 0.9019608}
-    m_HighlightedColor: {r: 0, g: 0, b: 0, a: 0.8}
-    m_PressedColor: {r: 0, g: 0, b: 0, a: 0.69803923}
-    m_SelectedColor: {r: 0, g: 0, b: 0, a: 0.7490196}
+    m_HighlightedColor: {r: 0.02, g: 0.02, b: 0.02, a: 0.8}
+    m_PressedColor: {r: 0.03, g: 0.03, b: 0.03, a: 0.69803923}
+    m_SelectedColor: {r: 0.01, g: 0.01, b: 0.01, a: 0.7490196}
     m_DisabledColor: {r: 0.099, g: 0.099, b: 0.099, a: 0.9019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1

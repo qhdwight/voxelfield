@@ -30,7 +30,7 @@ namespace Swihoni.Sessions
                                                    .Concat(elements.commandElements)
                                                    .Append(typeof(ServerTag))
                                                    .Append(typeof(HostTag)));
-            m_HostCommands.Zero().Require<ServerStampComponent>().Clear();
+            SetFirstCommand(m_HostCommands);
         }
 
         public override Container GetLocalCommands() => m_HostCommands;
@@ -65,7 +65,8 @@ namespace Swihoni.Sessions
         {
             Profiler.BeginSample("Host Render Setup");
             if (m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
-             || m_RenderSession.Without(out LocalPlayerId localPlayer))
+             || m_RenderSession.Without(out LocalPlayerId localPlayer)
+             || IsLoading)
             {
                 Profiler.EndSample();
                 return;

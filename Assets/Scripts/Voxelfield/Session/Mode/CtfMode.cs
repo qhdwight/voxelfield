@@ -83,6 +83,17 @@ namespace Voxelfield.Session.Mode
             }
         }
 
+        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
+        {
+            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
+
+            var wantedItem = commands.Require<WantedItemComponent>();
+            if (wantedItem.id.WithValue && wantedItem.index.WithValue)
+            {
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(player.Require<InventoryComponent>(), wantedItem.id, wantedItem.index);
+            }
+        }
+
         protected override void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
                                                   uint durationUs)
         {
@@ -198,7 +209,7 @@ namespace Voxelfield.Session.Mode
             player.ZeroIfWith<FrozenProperty>();
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health)) health.Value = 100;
+            if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Singleton.playerHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();
@@ -227,8 +238,15 @@ namespace Voxelfield.Session.Mode
         public override void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer)
         {
             player.Require<TeamProperty>().Value = (byte) (playerId % 2);
-            player.Require<InventoryComponent>().Zero();
-            base.SetupNewPlayer(session, playerId, player, sessionContainer);
+            InventoryComponent inventory = player.Require<InventoryComponent>().Zero();
+            PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
+            player.ZeroIfWith<FrozenProperty>();
+            player.Require<IdProperty>().Value = 1;
+            player.ZeroIfWith<CameraComponent>();
+            if (player.With(out HealthProperty health)) health.Value = 0;
+            player.ZeroIfWith<RespawnTimerProperty>();
+            player.ZeroIfWith<HitMarkerComponent>();
+            player.ZeroIfWith<DamageNotifierComponent>();
         }
 
         public Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());

@@ -63,13 +63,22 @@ namespace Swihoni.Sessions.Player.Modifiers
         protected internal override void SynchronizeBehavior(Container player)
         {
             var move = player.Require<MoveComponent>();
-            m_MoveTransform.position = move.position;
-            if (player.With(out CameraComponent playerCamera))
-                m_MoveTransform.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
-            m_Controller.gameObject.SetActive(player.Without(out HealthProperty health) || health.IsActiveAndAlive);
-            float weight = Mathf.Lerp(0.7f, 1.0f, 1.0f - move.normalizedCrouch);
-            m_Controller.height = m_ControllerHeight * weight;
-            m_Controller.center = m_ControllerCenter * weight;
+            bool isControllerActive;
+            if (move.position.WithValue)
+            {
+                m_MoveTransform.position = move.position;
+                if (player.With(out CameraComponent playerCamera))
+                    m_MoveTransform.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
+                isControllerActive = player.Without(out HealthProperty health) || health.IsActiveAndAlive;
+                float weight = Mathf.Lerp(0.7f, 1.0f, 1.0f - move.normalizedCrouch);
+                m_Controller.height = m_ControllerHeight * weight;
+                m_Controller.center = m_ControllerCenter * weight;   
+            }
+            else
+            {
+                isControllerActive = false;
+            }
+            m_Controller.gameObject.SetActive(isControllerActive);
         }
 
         // TODO:refactor bad

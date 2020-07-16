@@ -33,6 +33,7 @@ namespace Swihoni.Sessions
         [Config("allow_cheats", true)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
         [Config("mode_id", true)] public ModeIdProperty modeId = new ModeIdProperty();
         [Config("respawn_duration")] public TimeUsProperty respawnDuration = new TimeUsProperty();
+        [Config("player_health")] public ByteProperty playerHealth = new ByteProperty(100);
 
         [Config("fov")] public ByteProperty fov = new ByteProperty(60);
         [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);

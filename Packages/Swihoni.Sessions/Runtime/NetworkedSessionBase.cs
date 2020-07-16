@@ -87,7 +87,6 @@ namespace Swihoni.Sessions
             command.Require<InputFlagProperty>().Zero();
             command.Require<WantedItemIndexProperty>().Zero();
             command.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Client");
-            command.Require<WantedTeamProperty>().Clear();
         }
 
         public override Container GetModifyingPayerFromId(int playerId, Container session = null) => (session ?? GetLatestSession()).GetPlayer(playerId);

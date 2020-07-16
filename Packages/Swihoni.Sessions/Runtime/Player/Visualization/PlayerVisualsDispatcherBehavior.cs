@@ -52,9 +52,10 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void Render(SessionBase session, Container sessionContainer, int playerId, Container player, bool isLocalPlayer)
         {
-            bool usesHealth = player.With(out HealthProperty health),
+            bool withHealth = player.With(out HealthProperty health),
+                 withMove = player.With(out MoveComponent move),
                  showDamageNotifier = player.With(out DamageNotifierComponent damageNotifier) && !isLocalPlayer,
-                 isVisible = !usesHealth || health.WithValue,
+                 isVisible = (!withHealth || health.WithValue) && (!withMove || move.position.WithValue),
                  showUsername = false;
 
             if (isVisible)
@@ -62,7 +63,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 if (player.With(out CameraComponent playerCamera))
                     m_Camera.transform.localRotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up)
                                                      * Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
-                if (player.With(out MoveComponent move))
+                if (withMove)
                     m_Camera.transform.position = move.position + new Vector3 {y = Mathf.Lerp(m_CrouchedCameraHeight, m_UprightCameraHeight, 1.0f - move.normalizedCrouch)};
                 Container localPlayer = sessionContainer.GetPlayer(sessionContainer.Require<LocalPlayerId>());
 
@@ -102,7 +103,7 @@ namespace Swihoni.Sessions.Player.Visualization
             m_UsernameText.enabled = showUsername;
             m_DamageText.enabled = showDamageNotifier;
 
-            SetCameraVisible(isLocalPlayer);
+            SetCameraVisible(isLocalPlayer && move.position.WithValue);
 
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(session, player, isLocalPlayer);
 
