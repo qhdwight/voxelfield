@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using Console;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Swihoni.Collections;
@@ -508,7 +509,11 @@ namespace Swihoni.Sessions
         }
 
         public override void StringCommand(int playerId, string stringCommand)
-            => m_CommandHistory.Peek().Require<StringCommandProperty>().SetTo(stringCommand);
+        {
+            var command = GetLocalCommands().Require<StringCommandProperty>();
+            if (command.Builder.Length > 0) command.Add(" && ").Add(stringCommand);
+            else command.SetTo(stringCommand);
+        }
 
         private void SendDebug(Container player)
         {

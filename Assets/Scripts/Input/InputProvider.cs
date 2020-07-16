@@ -48,12 +48,13 @@ namespace Input
         Throw,
         OpenModelSelect,
         OpenVoxelSelect,
+        Respawn
     }
 
     [Serializable]
     public class KeyCodeProperty : PropertyBase<KeyCode>
     {
-        public override bool ValueEquals(PropertyBase<KeyCode> other) => other.Value == Value;
+        public override bool ValueEquals(in KeyCode value) => value == Value;
         public override void DeserializeValue(NetDataReader reader) => Value = (KeyCode) reader.GetUShort();
         public override void SerializeValue(NetDataWriter writer) => writer.Put((ushort) Value);
 
@@ -133,7 +134,8 @@ namespace Input
                     [InputType.Buy] = KeyCode.B,
                     [InputType.Throw] = KeyCode.G,
                     [InputType.OpenModelSelect] = KeyCode.M,
-                    [InputType.OpenVoxelSelect] = KeyCode.V
+                    [InputType.OpenVoxelSelect] = KeyCode.V,
+                    [InputType.Respawn] = KeyCode.Return
                 }
             };
     }

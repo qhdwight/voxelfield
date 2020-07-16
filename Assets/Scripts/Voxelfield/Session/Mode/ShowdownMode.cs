@@ -96,7 +96,7 @@ namespace Voxelfield.Session.Mode
             if (commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact) && IsLookingAt(player, out CurePackageBehavior curePackage))
             {
                 cure = stage.curePackages[curePackage.Container.Require<IdProperty>()];
-                if (cure.isActive.WithValue && cure.isActive) isInteracting = true;
+                if (cure.isActive.WithValueEqualTo(true)) isInteracting = true;
             }
             if (isInteracting)
             {
@@ -121,9 +121,10 @@ namespace Voxelfield.Session.Mode
             cure.isActive.Value = false;
         }
 
-        protected override void HandleRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, uint durationUs)
+        protected override void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
+                                                  uint durationUs)
         {
-            if (InWarmup(container)) base.HandleRespawn(session, container, playerId, player, health, durationUs); // Random respawn
+            if (InWarmup(container)) base.HandleAutoRespawn(session, container, playerId, player, health, commands, durationUs); // Random respawn
         }
 
         private static void FirstStageSpawn(Container session, int playerId, Container player, QueuedTeamSpawns spawns)

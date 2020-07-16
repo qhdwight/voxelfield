@@ -54,7 +54,7 @@ namespace Swihoni.Components
     [Serializable]
     public class CharProperty : PropertyBase<char>
     {
-        public override bool ValueEquals(PropertyBase<char> other) => other.Value == Value;
+        public override bool ValueEquals(in char value) => value == Value;
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetChar();
     }

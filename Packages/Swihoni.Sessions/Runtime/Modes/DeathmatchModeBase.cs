@@ -11,8 +11,7 @@ namespace Swihoni.Sessions.Modes
         {
             base.KillPlayer(player, killer);
 
-            // TODO:refactor variable
-            if (player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = 2_000_000u;
+            if (player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Singleton.respawnDuration;
         }
 
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
@@ -23,10 +22,11 @@ namespace Swihoni.Sessions.Modes
 
             if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive) InflictDamage(session, playerId, player, player, playerId, health, "Suicide");
 
-            HandleRespawn(session, container, playerId, player, health, durationUs);
+            HandleAutoRespawn(session, container, playerId, player, health, commands, durationUs);
         }
 
-        protected virtual void HandleRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, uint durationUs)
+        protected virtual void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
+                                                 uint durationUs)
         {
             if (health.IsAlive || player.Without(out RespawnTimerProperty respawn)) return;
 

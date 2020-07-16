@@ -45,7 +45,7 @@ namespace Swihoni.Sessions.Interfaces
                 var localPlayerId = sessionContainer.Require<LocalPlayerId>();
                 if (localPlayerId.WithoutValue) return false;
                 sessionLocalPlayer = session.GetModifyingPayerFromId(localPlayerId);
-                return sessionLocalPlayer.Without(out localHealth) || localHealth.WithValue && localHealth.IsAlive;
+                return sessionLocalPlayer.Without(out localHealth) || localHealth.IsActiveAndAlive;
             }
             bool isActive = IsVisible(out Container localPlayer, out HealthProperty health);
             if (isActive)
@@ -82,7 +82,9 @@ namespace Swihoni.Sessions.Interfaces
                     ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisualPrefab(equippedItem.id);
                     bool isDefaultCrosshair = visualPrefab.Crosshair == null;
                     m_Crosshair.sprite = isDefaultCrosshair ? m_DefaultCrosshair : visualPrefab.Crosshair;
-                    m_Crosshair.rectTransform.sizeDelta = Vector2.one * (isDefaultCrosshair ? 32.0f : 48.0f);
+                    Vector2 size = Vector2.one * (isDefaultCrosshair ? 32.0f : 48.0f);
+                    if (isDefaultCrosshair) size *= ConfigManagerBase.Singleton.crosshairThickness;
+                        m_Crosshair.rectTransform.sizeDelta = size;
 
                     builder = m_InventoryText.StartBuild();
                     var realizedIndex = 0;

@@ -142,7 +142,6 @@ namespace Swihoni.Sessions
 
         public virtual void Stop()
         {
-            Sessions.Remove(this);
             if (!IsDisposed) Dispose();
         }
 
@@ -346,6 +345,7 @@ namespace Swihoni.Sessions
             EntityManager.pool.Return(EntityManager);
             m_Injector.Stop();
             m_Stopwatch.Stop();
+            Sessions.Remove(this);
         }
 
         public abstract void StringCommand(int playerId, string stringCommand);

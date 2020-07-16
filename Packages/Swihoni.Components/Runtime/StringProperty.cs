@@ -100,6 +100,14 @@ namespace Swihoni.Components
             WithValue = true;
         }
 
+        public StringProperty Add(string @string)
+        {
+            ThrowIfOverMaxSize(Builder.Length + @string.Length);
+            Builder.Append(@string);
+            WithValue = true;
+            return this;
+        }
+
         public void SetTo(Action<StringBuilder> action)
         {
             Zero();

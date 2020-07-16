@@ -34,7 +34,18 @@ namespace Console
             foreach (string[] args in GetArgs(fullCommand))
             {
                 string commandName = args.First().Replace("?", string.Empty);
-                if (_commands.ContainsKey(commandName)) _commands[commandName](args);
+                if (_commands.ContainsKey(commandName))
+                {
+                    try
+                    {
+                        _commands[commandName](args);
+                    }
+                    catch (Exception)
+                    {
+                        Debug.Log($"Exception running command: {args[0]}");
+                        throw;
+                    }
+                }
                 else Debug.LogWarning($"Command \"{args[0]}\" not found!");
             }
         }

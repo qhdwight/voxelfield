@@ -11,7 +11,7 @@ namespace Swihoni.Components
     [Serializable]
     public class ColorProperty : PropertyBase<Color>
     {
-        public override bool ValueEquals(PropertyBase<Color> other) => other.Value == Value;
+        public override bool ValueEquals(in Color value) => value == Value;
         public override void SerializeValue(NetDataWriter writer) => writer.PutColor(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetColor();
     }
@@ -23,7 +23,7 @@ namespace Swihoni.Components
         public UIntProperty() { }
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUInt();
-        public override bool ValueEquals(PropertyBase<uint> other) => other.Value == Value;
+        public override bool ValueEquals(in uint value) => value == Value;
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation) => Value = InterpolateUInt(p1.Value, p2.Value, interpolation);
 
         public static uint InterpolateUInt(uint u1, uint u2, float interpolation)
@@ -76,7 +76,7 @@ namespace Swihoni.Components
         public IntProperty() { }
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetInt();
-        public override bool ValueEquals(PropertyBase<int> other) => other.Value == Value;
+        public override bool ValueEquals(in int value) => value == Value;
 
         public override bool TryParseValue(string @string)
         {
@@ -96,7 +96,7 @@ namespace Swihoni.Components
         public UShortProperty() { }
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUShort();
-        public override bool ValueEquals(PropertyBase<ushort> other) => other.Value == Value;
+        public override bool ValueEquals(in ushort value) => value == Value;
 
         public override bool TryParseValue(string @string)
         {
@@ -116,7 +116,7 @@ namespace Swihoni.Components
         public ShortProperty() { }
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetShort();
-        public override bool ValueEquals(PropertyBase<short> other) => other.Value == Value;
+        public override bool ValueEquals(in short value) => value == Value;
 
         public override bool TryParseValue(string @string)
         {
@@ -136,7 +136,7 @@ namespace Swihoni.Components
         public SByteProperty() { }
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetSByte();
-        public override bool ValueEquals(PropertyBase<sbyte> other) => other.Value == Value;
+        public override bool ValueEquals(in sbyte value) => value == Value;
 
         public override bool TryParseValue(string @string)
         {
@@ -156,7 +156,7 @@ namespace Swihoni.Components
         public ByteProperty() { }
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetByte();
-        public override bool ValueEquals(PropertyBase<byte> other) => other.Value == Value;
+        public override bool ValueEquals(in byte value) => value == Value;
 
         public override bool TryParseValue(string @string)
         {
@@ -174,7 +174,7 @@ namespace Swihoni.Components
     {
         public Position3IntProperty() { }
         public Position3IntProperty(int x, int y, int z) => Value = new Position3Int(x, y, z);
-        public override bool ValueEquals(PropertyBase<Position3Int> other) => other.Value == Value;
+        public override bool ValueEquals(in Position3Int value) => value == Value;
         public override void SerializeValue(NetDataWriter writer) => Position3Int.Serialize(Value, writer);
         public override void DeserializeValue(NetDataReader reader) => Value = Position3Int.Deserialize(reader);
     }
@@ -191,7 +191,7 @@ namespace Swihoni.Components
     {
         public BoolProperty() { }
         public BoolProperty(bool value) : base(value) { }
-        public override bool ValueEquals(PropertyBase<bool> other) => other.Value == Value;
+        public override bool ValueEquals(in bool value) => value == Value;
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetBool();
 
@@ -209,7 +209,7 @@ namespace Swihoni.Components
     [Serializable]
     public class QuaternionProperty : PropertyBase<Quaternion>
     {
-        public override bool ValueEquals(PropertyBase<Quaternion> other) => other.Value == Value;
+        public override bool ValueEquals(in Quaternion value) => value == Value;
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void Zero() => Value = Quaternion.identity;
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetQuaternion();
@@ -227,13 +227,13 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetFloat();
 
-        public override bool ValueEquals(PropertyBase<float> other)
+        public override bool ValueEquals(in float value)
         {
             float tolerance = TryAttribute(out ToleranceAttribute attribute) ? attribute.tolerance : DefaultFloatTolerance;
-            return CheckWithinTolerance(other, tolerance);
+            return CheckWithinTolerance(value, tolerance);
         }
 
-        public bool CheckWithinTolerance(PropertyBase<float> other, float tolerance) => Mathf.Abs(other.Value - Value) < tolerance;
+        public bool CheckWithinTolerance(in float other, float tolerance) => Mathf.Abs(other - Value) < tolerance;
 
         public void CyclicInterpolateFrom(float f1, float f2, float min, float max, float interpolation)
         {
@@ -280,16 +280,16 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetVector3();
 
-        public override bool ValueEquals(PropertyBase<Vector3> other)
+        public override bool ValueEquals(in Vector3 value)
         {
             float tolerance = TryAttribute(out ToleranceAttribute toleranceAttribute) ? toleranceAttribute.tolerance : DefaultFloatTolerance;
-            return CheckWithinTolerance(other, tolerance);
+            return CheckWithinTolerance(value, tolerance);
         }
 
-        public bool CheckWithinTolerance(PropertyBase<Vector3> other, float tolerance)
-            => Mathf.Abs(Value.x - other.Value.x) < tolerance
-            && Mathf.Abs(Value.y - other.Value.y) < tolerance
-            && Mathf.Abs(Value.z - other.Value.z) < tolerance;
+        public bool CheckWithinTolerance(in Vector3 other, float tolerance)
+            => Mathf.Abs(Value.x - other.x) < tolerance
+            && Mathf.Abs(Value.y - other.y) < tolerance
+            && Mathf.Abs(Value.z - other.z) < tolerance;
 
         public override void ValueInterpolateFrom(PropertyBase<Vector3> p1, PropertyBase<Vector3> p2, float interpolation)
         {

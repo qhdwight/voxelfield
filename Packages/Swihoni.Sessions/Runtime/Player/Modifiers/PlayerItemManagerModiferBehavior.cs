@@ -60,11 +60,11 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         private static void HandleCommands(Container player)
         {
-            if (ServerTryCommands(player, out IEnumerable<string[]> commands))
+            if (TryServerCommands(player, out IEnumerable<string[]> commands))
             {
                 foreach (string[] args in commands)
                 {
-                    if (args[0] == "give_item")
+                    if (args[0] == "give_item" && ConfigManagerBase.Singleton.allowCheats)
                     {
                         if (args.Length > 1 && byte.TryParse(args[1], out byte itemId))
                         {

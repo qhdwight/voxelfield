@@ -72,7 +72,7 @@ namespace Swihoni.Sessions.Player.Visualization
             bool usesHealth = player.With(out HealthProperty health),
                  isVisible = !usesHealth || health.WithValue;
 
-            bool isInFpv = isLocalPlayer && (!usesHealth || health.WithValue && health.IsAlive);
+            bool isInFpv = isLocalPlayer && (!usesHealth || health.IsActiveAndAlive);
 
             foreach (Renderer render in m_TpvRenders)
             {

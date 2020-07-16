@@ -172,10 +172,12 @@ namespace Swihoni.Components
         /// <summary>Use on two properties that are known to have values.</summary>
         /// <returns>False if types are different. Equal if both values are the same.</returns>
         /// <exception cref="WithoutValueException">Without value on at least one property.</exception>
-        public abstract bool ValueEquals(PropertyBase<T> other);
+        public abstract bool ValueEquals(in T value);
 
         public override string ToString() => $"[{Field?.Name ?? "No field"}] ({GetType().Name}), {(WithValue ? m_Value.ToString() : "No Value")}";
 
+        public bool WithValueEqualTo(in T value) => WithValue && ValueEquals(value);
+        
         /// <exception cref="ArgumentException">If types are different.</exception>
         public override void SetFromIfWith(PropertyBase other)
         {

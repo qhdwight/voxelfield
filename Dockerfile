@@ -16,7 +16,7 @@ RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/inst
 # COPY --chown=server .ssh .ssh
 COPY --chown=server Builds/Linux .
 RUN chmod +x Voxelfield
-CMD ./Voxelfield -batchmode -nographics
+CMD ./Voxelfield
 
 EXPOSE 7777/udp
 EXPOSE 7777/tcp

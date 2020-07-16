@@ -360,9 +360,9 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8419842796602985761}
   m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
 --- !u!114 &8419842796602985764
 MonoBehaviour:
@@ -378,6 +378,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_NeedsCursor: 0
   m_InterruptsCommands: 0
+  m_IsDuringGame: 1
   m_LeftScore: {fileID: 8419842796437882531}
   m_RightScore: {fileID: 8419842796566235189}
 --- !u!1 &8419842797188948350

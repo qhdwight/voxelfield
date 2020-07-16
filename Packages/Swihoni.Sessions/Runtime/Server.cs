@@ -359,7 +359,11 @@ namespace Swihoni.Sessions
         }
 
         public override void StringCommand(int playerId, string stringCommand)
-            => GetModifyingPayerFromId(playerId).Require<StringCommandProperty>().SetTo(stringCommand);
+        {
+            var command = GetModifyingPayerFromId(playerId).Require<StringCommandProperty>();
+            if (command.Builder.Length > 0) command.Add(" && ").Add(stringCommand);
+            else command.SetTo(stringCommand);
+        }
 
         public override void Dispose()
         {

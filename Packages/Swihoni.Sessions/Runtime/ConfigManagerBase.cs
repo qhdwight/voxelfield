@@ -24,12 +24,22 @@ namespace Swihoni.Sessions
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
     public class ConfigManagerBase : ScriptableObject
     {
-        public static Dictionary<Type, (PropertyBase, ConfigAttribute)> TypeToConfig { get; private set; }
-
+        private static Dictionary<Type, (PropertyBase, ConfigAttribute)> TypeToConfig { get; set; }
+        private static Dictionary<string, (PropertyBase, ConfigAttribute)> NameToConfig { get; set; }
+        
         public static ConfigManagerBase Singleton { get; private set; }
 
-        public static Dictionary<string, (PropertyBase, ConfigAttribute)> NameToConfig { get; private set; }
+        [Config("tick_rate", true)] public TickRateProperty tickRate = new TickRateProperty(60);
+        [Config("allow_cheats", true)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
+        [Config("mode_id", true)] public ModeIdProperty modeId = new ModeIdProperty();
+        [Config("respawn_duration")] public TimeUsProperty respawnDuration = new TimeUsProperty();
 
+        [Config("fov")] public ByteProperty fov = new ByteProperty(60);
+        [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
+        [Config("volume")] public FloatProperty volume = new FloatProperty(0.5f);
+        [Config("sensitivity")] public FloatProperty sensitivity = new FloatProperty(2.0f);
+        [Config("crosshair_thickness")] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
+        
         public static void Initialize()
         {
             Singleton = Instantiate(Resources.Load<ConfigManagerBase>("Config"));
@@ -55,16 +65,15 @@ namespace Swihoni.Sessions
                         case PropertyBase property:
                             string fullName = string.Join(".", names.Append(config.Name));
                             NameToConfig.Add(fullName, (property, config));
-                            if (config.IsSession) TypeToConfig.Add(property.GetType(), (property, config));
-                            ConsoleCommandExecutor.SetCommand(fullName, args =>
+                            if (config.IsSession)
                             {
-                                foreach (SessionBase session in SessionBase.Sessions)
-                                {
-                                    if (session is Client && config.IsSession)
-                                        session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
-                                    else HandleArgs(args);
-                                }
-                            });
+                                TypeToConfig.Add(property.GetType(), (property, config));
+                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssueCommand);
+                            }
+                            else
+                            {
+                                ConsoleCommandExecutor.SetCommand(fullName, HandleArgs);
+                            }
                             break;
                     }
                 }
@@ -76,17 +85,8 @@ namespace Swihoni.Sessions
                 Recurse(element);
             }
         }
-
-        public static void TryCommand(StringCommandProperty command)
-        {
-            if (command.Builder.Length > 0)
-            {
-                string[] split = command.Builder.ToString().Trim().Split();
-                HandleArgs(split);
-            }
-        }
-
-        private static void HandleArgs(IReadOnlyList<string> split)
+        
+        public static void HandleArgs(IReadOnlyList<string> split)
         {
             if (NameToConfig.TryGetValue(split[0], out (PropertyBase, ConfigAttribute) tuple))
             {
@@ -103,15 +103,6 @@ namespace Swihoni.Sessions
                 }
             }
         }
-
-        [Config("tick_rate", true)] public TickRateProperty tickRate = new TickRateProperty(60);
-        [Config("allow_cheats", true)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
-        [Config("mode_id", true)] public ModeIdProperty modeId = new ModeIdProperty();
-
-        [Config("fov")] public ByteProperty fov = new ByteProperty(60);
-        [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
-        [Config("volume")] public FloatProperty volume = new FloatProperty(0.5f);
-        [Config("sensitivity")] public FloatProperty sensitivity = new FloatProperty(2.0f);
 
         public static void UpdateConfig(ComponentBase session)
         {

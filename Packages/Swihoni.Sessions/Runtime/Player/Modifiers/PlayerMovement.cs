@@ -66,7 +66,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_MoveTransform.position = move.position;
             if (player.With(out CameraComponent playerCamera))
                 m_MoveTransform.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
-            m_Controller.gameObject.SetActive(player.Without(out HealthProperty health) || health.WithValue && health.IsAlive);
+            m_Controller.gameObject.SetActive(player.Without(out HealthProperty health) || health.IsActiveAndAlive);
             float weight = Mathf.Lerp(0.7f, 1.0f, 1.0f - move.normalizedCrouch);
             m_Controller.height = m_ControllerHeight * weight;
             m_Controller.center = m_ControllerCenter * weight;
@@ -140,6 +140,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             input.SetInput(PlayerInput.Walk, provider.GetInput(InputType.Walk));
             input.SetInput(PlayerInput.Suicide, provider.GetInput(InputType.Suicide));
             input.SetInput(PlayerInput.Interact, provider.GetInput(InputType.Interact));
+            input.SetInput(PlayerInput.Respawn, provider.GetInput(InputType.Respawn));
         }
 
         private void ModifyStatus(MoveComponent move, InputFlagProperty inputs, float duration)

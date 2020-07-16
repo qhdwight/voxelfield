@@ -20,7 +20,10 @@ MonoBehaviour:
     m_Value: 1
   modeId:
     m_Flags: 1
-    m_Value: 3
+    m_Value: 2
+  respawnDuration:
+    m_Flags: 1
+    m_Value: 3000000
   fov:
     m_Flags: 1
     m_Value: 60
@@ -33,6 +36,9 @@ MonoBehaviour:
   sensitivity:
     m_Flags: 1
     m_Value: 2
+  crosshairThickness:
+    m_Flags: 1
+    m_Value: 1
   mapName:
     m_Flags: 1
   enableMiniMap:

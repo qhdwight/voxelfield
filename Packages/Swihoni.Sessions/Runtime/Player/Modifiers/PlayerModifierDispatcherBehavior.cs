@@ -41,8 +41,10 @@ namespace Swihoni.Sessions.Player.Modifiers
         public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs, int tickDelta = 1)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs, tickDelta);
-            if (playerToModify.With<ServerTag>() || playerToModify.Without<HostTag>())
-                ConfigManagerBase.TryCommand(playerToModify.Require<StringCommandProperty>());
+
+            if (PlayerModifierBehaviorBase.TryServerCommands(playerToModify, out IEnumerable<string[]> stringCommands))
+                foreach (string[] stringCommand in stringCommands)
+                    ConfigManagerBase.HandleArgs(stringCommand);
         }
 
         public void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)
@@ -87,7 +89,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         /// </summary>
         public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta) => SynchronizeBehavior(player);
 
-        public static bool ServerTryCommands(Container player, out IEnumerable<string[]> commands)
+        public static bool TryServerCommands(Container player, out IEnumerable<string[]> commands)
         {
             if (player.Without<ServerTag>() || player.WithoutPropertyOrWithoutValue(out StringCommandProperty command) || command.Builder.Length == 0)
             {

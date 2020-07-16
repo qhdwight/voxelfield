@@ -80,10 +80,11 @@ namespace Voxelfield.Session.Mode
             ForEachActivePlayer(session, sessionContainer, (playerId, player) => player.Require<FrozenProperty>().Value = false);
         }
 
-        protected override void HandleRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, uint durationUs)
+        protected override void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
+                                                  uint durationUs)
         {
             if (container.Require<SecureAreaComponent>().roundTime.WithoutValue)
-                base.HandleRespawn(session, container, playerId, player, health, durationUs);
+                base.HandleAutoRespawn(session, container, playerId, player, health, commands, durationUs);
         }
 
         protected override void KillPlayer(Container player, Container killer)

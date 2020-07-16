@@ -82,6 +82,20 @@ namespace Voxelfield.Session.Mode
             }
         }
 
+        protected override void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
+                                                  uint durationUs)
+        {
+            if (health.IsAlive || player.Without(out RespawnTimerProperty respawn)) return;
+
+            if (respawn.Value > durationUs) respawn.Value -= durationUs;
+            else
+            {
+                respawn.Value = 0u;
+                if (commands.Require<InputFlagProperty>().GetInput(PlayerInput.Respawn))
+                    SpawnPlayer(session, container, playerId, player);
+            }
+        }
+
         protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer)
         {
             KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
@@ -161,8 +175,8 @@ namespace Voxelfield.Session.Mode
                 FlagArrayElement enemyFlags = ctf.teamFlags[flagTeam];
                 foreach (FlagComponent enemyFlag in enemyFlags)
                 {
-                    if (enemyFlag.capturingPlayerId.WithValue && enemyFlag.capturingPlayerId == player.PlayerId
-                                                              && enemyFlag.captureElapsedTimeUs > TakeFlagDurationUs) // Test if friendly returning enemy flag
+                    if (enemyFlag.capturingPlayerId.WithValueEqualTo((byte) player.PlayerId)
+                     && enemyFlag.captureElapsedTimeUs > TakeFlagDurationUs) // Test if friendly returning enemy flag
                     {
                         enemyFlag.Clear();
                         scores[playerTeam].Value++;

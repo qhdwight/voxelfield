@@ -46,7 +46,7 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             if (player.Without(out InventoryComponent inventory)) return;
 
-            bool isVisible = (player.Without(out HealthProperty health) || health.WithValue && health.IsAlive) && inventory.HasItemEquipped;
+            bool isVisible = (player.Without(out HealthProperty health) || health.IsActiveAndAlive) && inventory.HasItemEquipped;
 
             if (isVisible)
             {
