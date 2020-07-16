@@ -66,9 +66,9 @@ namespace Voxelfield.Interface
             if (isActive && InputProvider.Singleton.GetInputDown(InputType.Buy)) m_PlayerWantsVisible = !m_PlayerWantsVisible;
             isActive = isActive && m_PlayerWantsVisible;
 
-            if (isActive)
+            if (isActive && localPlayer.With(out MoneyComponent money) && money.count.WithValue)
             {
-                m_MoneyText.StartBuild().Append("$").Append(localPlayer.Require<MoneyComponent>().count).Commit(m_MoneyText);
+                m_MoneyText.StartBuild().Append("$").Append(money.count).Commit(m_MoneyText);
             }
             SetInterfaceActive(isActive);
         }
@@ -79,10 +79,10 @@ namespace Voxelfield.Interface
             var localPlayerId = sessionContainer.Require<LocalPlayerId>();
             if (localPlayerId.WithoutValue) return false;
 
-            if (ModeManager.GetMode(sessionContainer) is IModeWithBuying buyingMode && buyingMode.CanBuy(session, sessionContainer))
+            if (ModeManager.GetMode(sessionContainer) is IModeWithBuying buyingMode)
             {
                 sessionLocalPlayer = session.GetModifyingPayerFromId(localPlayerId);
-                return sessionLocalPlayer.Without(out HealthProperty localHealth) || localHealth.IsActiveAndAlive;
+                return buyingMode.CanBuy(session, sessionContainer, sessionLocalPlayer);
             }
             return false;
         }

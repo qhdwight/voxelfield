@@ -29,7 +29,6 @@ namespace Swihoni.Sessions.Modes
 
         protected virtual void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
         {
-            Debug.Log("Spawning player");
             // TODO:refactor zeroing
             player.ZeroIfWith<FrozenProperty>();
             player.Require<IdProperty>().Value = 1;

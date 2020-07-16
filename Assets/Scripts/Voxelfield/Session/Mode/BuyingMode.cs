@@ -9,7 +9,7 @@ namespace Voxelfield.Session.Mode
 {
     public interface IModeWithBuying
     {
-        bool CanBuy(SessionBase session, Container sessionContainer);
+        bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer);
 
         ushort GetCost(int itemId);
     }

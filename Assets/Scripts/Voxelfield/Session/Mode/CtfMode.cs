@@ -8,6 +8,7 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel.Map;
@@ -15,7 +16,7 @@ using Voxel.Map;
 namespace Voxelfield.Session.Mode
 {
     [CreateAssetMenu(fileName = "Capture The Flag", menuName = "Session/Mode/Capture The Flag", order = 0)]
-    public class CtfMode : DeathmatchModeBase
+    public class CtfMode : DeathmatchModeBase, IModeWithBuying
     {
         public const byte BlueTeam = 0, RedTeam = 1;
 
@@ -108,7 +109,13 @@ namespace Voxelfield.Session.Mode
             byte team = player.Require<TeamProperty>();
             KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
             int spawnIndex = Random.Range(0, teamSpawns.Length);
-            return teamSpawns[spawnIndex].Key;
+            Vector3 spawnPosition = teamSpawns[spawnIndex].Key;
+            for (var _ = 0; _ < 16; _++, spawnPosition += new Vector3 {y = 3.0f})
+            {
+                if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
+                    return hit.point + new Vector3 {y = 0.1f};
+            }
+            return DeathmatchMode.GetRandomSpawn();
         }
 
         protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
@@ -185,9 +192,42 @@ namespace Voxelfield.Session.Mode
             }
         }
 
+        protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
+        {
+            // TODO:refactor zeroing
+            player.ZeroIfWith<FrozenProperty>();
+            player.Require<IdProperty>().Value = 1;
+            player.ZeroIfWith<CameraComponent>();
+            if (player.With(out HealthProperty health)) health.Value = 100;
+            player.ZeroIfWith<RespawnTimerProperty>();
+            player.ZeroIfWith<HitMarkerComponent>();
+            player.ZeroIfWith<DamageNotifierComponent>();
+            if (player.With(out InventoryComponent inventory))
+            {
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
+                // inventory.Zero();
+                // PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe,
+                //                                           ItemId.Rifle,
+                //                                           ItemId.Shotgun,
+                //                                           ItemId.Sniper,
+                //                                           ItemId.Deagle,
+                //                                           ItemId.Grenade,
+                //                                           ItemId.Molotov,
+                //                                           ItemId.C4,
+                //                                           ItemId.Smg,
+                //                                           ItemId.MissileLauncher);
+            }
+            if (player.With(out MoveComponent move))
+            {
+                move.Zero();
+                move.position.Value = GetSpawnPosition(player, playerId, session, sessionContainer);
+            }
+        }
+
         public override void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer)
         {
             player.Require<TeamProperty>().Value = (byte) (playerId % 2);
+            player.Require<InventoryComponent>().Zero();
             base.SetupNewPlayer(session, playerId, player, sessionContainer);
         }
 
@@ -200,5 +240,9 @@ namespace Voxelfield.Session.Mode
         }
 
         public override Color GetTeamColor(int teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;
+
+        public bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer) => sessionLocalPlayer.Require<HealthProperty>().WithValueEqualTo(0);
+
+        public ushort GetCost(int itemId) => 0;
     }
 }

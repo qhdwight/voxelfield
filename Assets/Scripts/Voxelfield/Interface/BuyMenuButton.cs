@@ -25,7 +25,8 @@ namespace Voxelfield.Interface
         private void Start()
         {
             var secureArea = (SecureAreaMode) ModeManager.GetMode(ModeIdProperty.SecureArea);
-            m_CostText.SetText($"${secureArea.GetCost(m_ItemId)}");
+            ushort cost = secureArea.GetCost(m_ItemId);
+            m_CostText.SetText(cost > 0 ? $"{cost:C0}" : string.Empty);
             m_NameText.SetText(ItemAssetLink.GetModifier(m_ItemId).itemName);
         }
 

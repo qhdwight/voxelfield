@@ -242,8 +242,8 @@ namespace Voxelfield.Session.Mode
         //     }
         // }
 
-        public bool CanBuy(SessionBase session, Container sessionContainer)
-            => sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
+        public bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer)
+            => sessionLocalPlayer.Require<HealthProperty>().IsAlive && sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
 
         public ushort GetCost(int itemId) => throw new NotImplementedException();
     }

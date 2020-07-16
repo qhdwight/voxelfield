@@ -358,8 +358,9 @@ namespace Voxelfield.Session.Mode
                 siteBehaviors[siteIndex].Render(secureArea.sites[siteIndex]);
         }
 
-        public bool CanBuy(SessionBase session, Container sessionContainer)
+        public bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer)
         {
+            if (sessionLocalPlayer.Require<HealthProperty>().IsDead) return false;
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
             return secureArea.roundTime.WithValue && secureArea.roundTime > m_Config.roundWinMoney + m_Config.roundDurationUs;
         }
