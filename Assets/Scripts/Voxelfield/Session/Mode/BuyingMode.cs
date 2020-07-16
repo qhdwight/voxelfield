@@ -16,11 +16,11 @@ namespace Voxelfield.Session.Mode
 
     public static class BuyingMode
     {
-        public static void HandleBuying(ModeBase mode, Container player)
+        public static void HandleBuying(ModeBase mode, Container player, Container commands)
         {
             if (mode is IModeWithBuying buyingMode)
             {
-                ByteProperty wantedBuyItemId = player.Require<MoneyComponent>().wantedBuyItemId;
+                ByteProperty wantedBuyItemId = commands.Require<WantedItemComponent>().id;
                 if (wantedBuyItemId.WithValue)
                 {
                     UShortProperty money = player.Require<MoneyComponent>().count;

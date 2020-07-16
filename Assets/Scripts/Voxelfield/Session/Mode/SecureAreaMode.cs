@@ -246,7 +246,7 @@ namespace Voxelfield.Session.Mode
         {
             TimeUsProperty roundTime = container.Require<SecureAreaComponent>().roundTime;
             bool isBuyTime = roundTime.WithValue && roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
-            if (isBuyTime) BuyingMode.HandleBuying(this, player);
+            if (isBuyTime) BuyingMode.HandleBuying(this, player, commands);
             player.Require<FrozenProperty>().Value = isBuyTime;
 
             base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
@@ -325,7 +325,6 @@ namespace Voxelfield.Session.Mode
                     {
                         var money = player.Require<MoneyComponent>();
                         money.count.Value = 800;
-                        money.wantedBuyItemId.Clear();
                         InventoryComponent inventory = player.Require<InventoryComponent>().Zero();
                         PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
                     }

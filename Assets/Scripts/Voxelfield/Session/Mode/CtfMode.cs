@@ -16,7 +16,7 @@ using Voxel.Map;
 namespace Voxelfield.Session.Mode
 {
     [CreateAssetMenu(fileName = "Capture The Flag", menuName = "Session/Mode/Capture The Flag", order = 0)]
-    public class CtfMode : DeathmatchModeBase, IModeWithBuying
+    public class CtfMode : DeathmatchModeBase
     {
         public const byte BlueTeam = 0, RedTeam = 1;
 
@@ -240,9 +240,5 @@ namespace Voxelfield.Session.Mode
         }
 
         public override Color GetTeamColor(int teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;
-
-        public bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer) => sessionLocalPlayer.Require<HealthProperty>().WithValueEqualTo(0);
-
-        public ushort GetCost(int itemId) => 0;
     }
 }

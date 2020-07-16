@@ -55,7 +55,7 @@ namespace Voxelfield.Interface
             if (!m_WantedBuyItemId.HasValue) return;
 
             var itemId = checked((byte) m_WantedBuyItemId.Value);
-            commands.Require<MoneyComponent>().wantedBuyItemId.Value = itemId;
+            commands.Require<WantedItemComponent>().id.Value = itemId;
             m_WantedBuyItemId = null;
         }
 

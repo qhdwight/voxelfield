@@ -75,7 +75,7 @@ namespace Voxelfield.Session.Mode
             }
             else
             {
-                BuyingMode.HandleBuying(this, player);
+                BuyingMode.HandleBuying(this, player, commands);
             }
         }
 
