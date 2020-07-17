@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Console;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
@@ -64,7 +63,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             {
                 foreach (string[] args in commands)
                 {
-                    if (args[0] == "give_item" && ConfigManagerBase.Singleton.allowCheats)
+                    if (args[0] == "give_item" && ConfigManagerBase.Active.allowCheats)
                     {
                         if (args.Length > 1 && byte.TryParse(args[1], out byte itemId))
                         {
@@ -179,16 +178,16 @@ namespace Swihoni.Sessions.Player.Modifiers
             inputs.SetInput(PlayerInput.Throw, InputProvider.GetInput(PlayerInput.Throw));
             inputs.SetInput(PlayerInput.DropItem, InputProvider.GetInput(PlayerInput.DropItem));
             if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
-            if (InputProvider.GetInput(PlayerInput.ItemSelectStart)) itemIndex.Value = 1;
-            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 1)) itemIndex.Value = 2;
-            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 2)) itemIndex.Value = 3;
-            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 3)) itemIndex.Value = 4;
-            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 4)) itemIndex.Value = 5;
-            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 5)) itemIndex.Value = 6;
-            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 6)) itemIndex.Value = 7;
-            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 7)) itemIndex.Value = 8;
-            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 8)) itemIndex.Value = 9;
-            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 9)) itemIndex.Value = 10;
+            if (InputProvider.GetInput(PlayerInput.ItemOne)) itemIndex.Value = 1;
+            else if (InputProvider.GetInput(PlayerInput.ItemTwo)) itemIndex.Value = 2;
+            else if (InputProvider.GetInput(PlayerInput.ItemThree)) itemIndex.Value = 3;
+            else if (InputProvider.GetInput(PlayerInput.ItemFour)) itemIndex.Value = 4;
+            else if (InputProvider.GetInput(PlayerInput.ItemFive)) itemIndex.Value = 5;
+            else if (InputProvider.GetInput(PlayerInput.ItemSix)) itemIndex.Value = 6;
+            else if (InputProvider.GetInput(PlayerInput.ItemSeven)) itemIndex.Value = 7;
+            else if (InputProvider.GetInput(PlayerInput.ItemEight)) itemIndex.Value = 8;
+            else if (InputProvider.GetInput(PlayerInput.ItemNine)) itemIndex.Value = 9;
+            else if (InputProvider.GetInput(PlayerInput.ItemTen)) itemIndex.Value = 10;
             else if (InputProvider.GetInput(PlayerInput.ItemLast))
             {
                 ByteProperty previousEquipped = commands.Require<InventoryComponent>().previousEquippedIndex;

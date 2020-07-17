@@ -25,8 +25,17 @@ namespace Swihoni.Sessions.Player.Components
                           Throw = 16,
                           DropItem = 17,
                           Respawn = 18,
-                          ItemSelectStart = 200,
-                          ItemLast = ItemSelectStart + 10;
+                          ItemOne = 19,
+                          ItemTwo = 20,
+                          ItemThree = 21,
+                          ItemFour = 22,
+                          ItemFive = 23,
+                          ItemSix = 24,
+                          ItemSeven = 25,
+                          ItemEight = 26,
+                          ItemNine = 27,
+                          ItemTen = 28,
+                          ItemLast = 29;
     }
 
     [Serializable, NoSerialization]

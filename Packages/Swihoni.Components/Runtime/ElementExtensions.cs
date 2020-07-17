@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Swihoni.Components
 {
@@ -55,6 +56,12 @@ namespace Swihoni.Components
         public static bool IsElement(this Type type) => type.IsSubclassOf(typeof(ElementBase));
 
         public static void AppendAll<T>(this List<T> enumerable, params T[] elements) => enumerable.AddRange(elements);
+
+        public static StringBuilder AppendPropertyValue(this StringBuilder builder, PropertyBase property)
+        {
+            property.AppendValue(builder);
+            return builder;
+        }
 
         /// <summary>
         /// Un-sets with value flag.

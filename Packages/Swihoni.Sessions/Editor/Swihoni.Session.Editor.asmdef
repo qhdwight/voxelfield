@@ -1,0 +1,17 @@
+{
+    "name": "Swihoni.Session.Editor",
+    "references": [
+        "GUID:70d0ab44ec86f354e892f6445447b475"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

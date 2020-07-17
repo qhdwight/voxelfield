@@ -26,7 +26,7 @@ namespace Voxelfield.Session.Mode
             }
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Singleton.playerHealth;
+            if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();

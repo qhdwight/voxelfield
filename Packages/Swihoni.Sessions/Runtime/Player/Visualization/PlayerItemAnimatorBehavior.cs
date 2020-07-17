@@ -142,7 +142,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void AnimateAim(InventoryComponent inventory)
         {
-            int fieldOfView = Math.Max(Math.Min(ConfigManagerBase.Singleton.fov, (byte) 90), (byte) 50);
+            int fieldOfView = Math.Max(Math.Min(ConfigManagerBase.Active.fov, (byte) 90), (byte) 50);
             Transform t = transform;
             if (m_ItemVisual is GunVisualBehavior gunVisuals && m_ItemVisual.ModiferProperties is GunWithMagazineModifier)
             {

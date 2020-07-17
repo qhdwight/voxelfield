@@ -81,7 +81,7 @@ namespace Swihoni.Sessions
                       serverSession = m_SessionHistory.ClaimNext();
             CopyFromPreviousSession(previousServerSession, serverSession);
 
-            ConfigManagerBase.UpdateConfig(serverSession);
+            ConfigManagerBase.UpdateSessionConfig(serverSession);
             base.Tick(tick, timeUs, durationUs);
 
             m_Injector.OnSettingsTick(serverSession);

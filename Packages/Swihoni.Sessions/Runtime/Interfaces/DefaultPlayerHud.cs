@@ -84,7 +84,7 @@ namespace Swihoni.Sessions.Interfaces
                     bool isDefaultCrosshair = visualPrefab.Crosshair == null;
                     m_Crosshair.sprite = isDefaultCrosshair ? m_DefaultCrosshair : visualPrefab.Crosshair;
                     Vector2 size = Vector2.one * (isDefaultCrosshair ? 32.0f : 48.0f);
-                    if (isDefaultCrosshair) size *= ConfigManagerBase.Singleton.crosshairThickness;
+                    if (isDefaultCrosshair) size *= ConfigManagerBase.Active.crosshairThickness;
                         m_Crosshair.rectTransform.sizeDelta = size;
 
                     builder = m_InventoryText.StartBuild();

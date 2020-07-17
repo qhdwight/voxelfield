@@ -22,6 +22,19 @@ namespace Swihoni.Components
 
         public StringProperty(string @string, int maxSize = DefaultSize) : this(maxSize) => SetTo(@string);
 
+        public override StringBuilder AppendValue(StringBuilder builder)
+        {
+            builder.EnsureCapacity(builder.Length + Builder.Length);
+            for (var i = 0; i < Builder.Length; i++) builder.Append(Builder[i]);
+            return builder;
+        }
+
+        public override bool TryParseValue(string stringValue)
+        {
+            SetTo(stringValue);
+            return true;
+        }
+
         private void ThrowIfOverMaxSize() => ThrowIfOverMaxSize(Builder.Length);
 
         private void ThrowIfOverMaxSize(int size)
@@ -88,7 +101,7 @@ namespace Swihoni.Components
             if (!(other is StringProperty otherString)) throw new ArgumentException("Other property is not a string!");
             ThrowIfOverMaxSize(otherString.Builder.Length);
             Zero();
-            Builder.AppendProperty(otherString);
+            Builder.AppendPropertyValue(otherString);
             WithValue = true;
         }
 
@@ -119,16 +132,5 @@ namespace Swihoni.Components
         public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => SetTo(p2);
 
         public override string ToString() => Builder.ToString();
-    }
-
-    public static class StringExtensions
-    {
-        // TODO:performance look into copying
-        public static StringBuilder AppendProperty(this StringBuilder builder, StringProperty other)
-        {
-            builder.EnsureCapacity(builder.Length + other.Builder.Length);
-            for (var i = 0; i < other.Builder.Length; i++) builder.Append(other.Builder[i]);
-            return builder;
-        }
     }
 }

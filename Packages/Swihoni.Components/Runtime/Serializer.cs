@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using LiteNetLib.Utils;
 
 namespace Swihoni.Components
@@ -12,6 +13,7 @@ namespace Swihoni.Components
     {
         private static NetDataWriter _writer;
         private static NetDataReader _reader;
+        private static StringBuilder _stringBuilder;
 
         /// <summary>
         /// Serialize element into stream.

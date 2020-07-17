@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using Console;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -98,12 +97,6 @@ namespace Swihoni.Sessions
         private static void Initialize()
         {
             _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void InitializeConfig()
-        {
-            ConfigManagerBase.Initialize();
         }
 
         public static void RegisterSessionCommand(params string[] commands)

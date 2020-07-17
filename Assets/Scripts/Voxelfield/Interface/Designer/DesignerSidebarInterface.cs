@@ -50,10 +50,10 @@ namespace Voxelfield.Interface.Designer
             SetInterfaceActive(isVisible);
         }
 
-        private static StringBuilder AppendProperty<T>(string prefix, PropertyBase<T> position, StringBuilder builder) where T : struct
+        private static StringBuilder AppendProperty(string prefix, PropertyBase position, StringBuilder builder)
         {
             builder.Append(prefix);
-            if (position.WithValue) builder.Append(position.Value);
+            if (position.WithValue) position.AppendValue(builder);
             else builder.Append("None");
             return builder;
         }

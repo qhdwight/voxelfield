@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Text;
 using LiteNetLib.Utils;
 using UnityEngine;
 
@@ -82,8 +83,11 @@ namespace Swihoni.Components
 
         public virtual void Clear() => WithValue = false;
 
-        public virtual bool TryParseValue(string @string)
-            => throw new NotSupportedException($"Parsing this property is not supported. Override {nameof(TryParseValue)} if this is not intentional");
+        public virtual StringBuilder AppendValue(StringBuilder builder)
+            => throw new NotSupportedException($"Appending this property is not supported. Override {GetType().Name}.{nameof(AppendValue)} if this is not intentional.");
+
+        public virtual bool TryParseValue(string stringValue)
+            => throw new NotSupportedException($"Parsing this property is not supported. Override {GetType().Name}.{nameof(TryParseValue)} if this is not intentional.");
     }
 
     public class WithoutValueException : Exception

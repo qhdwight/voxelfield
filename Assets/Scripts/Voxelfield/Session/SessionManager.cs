@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using Console;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions;
@@ -125,7 +124,7 @@ namespace Voxelfield.Session
             StandaloneDisconnectAll();
             var edit = new Host(VoxelfieldComponents.SessionElements, DefaultEndPoint, new ServerInjector());
 
-            var config = (ConfigManager) ConfigManagerBase.Singleton;
+            var config = (ConfigManager) ConfigManagerBase.Active;
             if (args.Count > 1) config.mapName.SetTo(args[1]);
             config.modeId.Value = ModeIdProperty.Designer;
 
@@ -177,8 +176,8 @@ namespace Voxelfield.Session
         private void Update()
         {
             SessionBase.HandleCursorLockState();
-            Application.targetFrameRate = ConfigManager.Singleton.targetFps;
-            AudioListener.volume = ConfigManager.Singleton.volume;
+            Application.targetFrameRate = ConfigManager.Active.targetFps;
+            AudioListener.volume = ConfigManager.Active.volume;
             try
             {
                 foreach (SessionBase session in SessionBase.Sessions)

@@ -4,41 +4,34 @@ using System.Linq;
 using Swihoni.Sessions.Interfaces;
 using UnityEngine;
 
-namespace Console
+namespace Swihoni.Sessions.Config
 {
     public static class ConsoleCommandExecutor
     {
         private static readonly string[] CommandSeparator = {"&&"};
 
-        private static Dictionary<string, Action<string[]>> _commands;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        private static void Initialize()
+        private static readonly Dictionary<string, Action<string[]>> Commands = new Dictionary<string, Action<string[]>>
         {
-            // Conform with https://docs.unity3d.com/Manual/DomainReloading.html
-            _commands = new Dictionary<string, Action<string[]>>
-            {
-                ["clear"] = args => ConsoleInterface.Singleton.ClearConsole(),
-                ["quit"] = _ => Application.Quit()
-            };
-        }
+            ["clear"] = args => ConsoleInterface.Singleton.ClearConsole(),
+            ["quit"] = _ => Application.Quit()
+        };
+        
+        public static void SetCommand(string commandName, Action<string[]> command) => Commands[commandName] = command;
 
-        public static void SetCommand(string commandName, Action<string[]> command) => _commands[commandName] = command;
+        public static void SetAlias(string alias, string realCommand) => Commands[alias] = args => ExecuteCommand(realCommand);
 
-        public static void SetAlias(string alias, string realCommand) => _commands[alias] = args => ExecuteCommand(realCommand);
-
-        public static string GetAutocomplete(string stub) => _commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
+        public static string GetAutocomplete(string stub) => Commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
 
         public static void ExecuteCommand(string fullCommand)
         {
             foreach (string[] args in GetArgs(fullCommand))
             {
                 string commandName = args.First().Replace("?", string.Empty);
-                if (_commands.ContainsKey(commandName))
+                if (Commands.ContainsKey(commandName))
                 {
                     try
                     {
-                        _commands[commandName](args);
+                        Commands[commandName](args);
                     }
                     catch (Exception)
                     {
@@ -56,7 +49,7 @@ namespace Console
             return commands.Select(command => command.Trim().Split()).ToList();
         }
 
-        public static void RemoveCommand(string command) => _commands.Remove(command);
+        public static void RemoveCommand(string command) => Commands.Remove(command);
 
         public static void RemoveCommands(params string[] commands)
         {

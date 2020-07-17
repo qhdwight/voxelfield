@@ -5,6 +5,6 @@ namespace Voxelfield
 {
     public static class Extensions
     {
-        public static ConfigManager GetConfig() => (ConfigManager) ConfigManagerBase.Singleton;
+        public static ConfigManager GetConfig() => (ConfigManager) ConfigManagerBase.Active;
     }
 }

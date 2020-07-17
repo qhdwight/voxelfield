@@ -34,7 +34,7 @@ namespace Swihoni.Sessions.Modes
             player.ZeroIfWith<FrozenProperty>();
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Singleton.playerHealth;
+            if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();
@@ -204,7 +204,7 @@ namespace Swihoni.Sessions.Modes
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
 
         public virtual StringBuilder BuildUsername(StringBuilder builder, Container player)
-            => builder.AppendProperty(player.Require<UsernameProperty>());
+            => builder.AppendPropertyValue(player.Require<UsernameProperty>());
 
         protected static int GetActivePlayerCount(Container session)
             => session.Require<PlayerContainerArrayElement>().Count(player => player.Require<HealthProperty>().WithValue);

@@ -271,7 +271,7 @@ namespace Voxelfield.Session.Mode
                 foreach (string[] args in stringCommands)
                     switch (args[0])
                     {
-                        case "give_money" when args.Length > 1 && ConfigManagerBase.Singleton.allowCheats && ushort.TryParse(args[1].Expand(), out ushort bonus):
+                        case "give_money" when args.Length > 1 && ConfigManagerBase.Active.allowCheats && ushort.TryParse(args[1].Expand(), out ushort bonus):
                         {
                             player.Require<MoneyComponent>().count.Value += bonus;
                             break;
@@ -399,7 +399,7 @@ namespace Voxelfield.Session.Mode
         public override bool CanSpectate(Container session, Container player)
         {
             if (session.Require<SecureAreaComponent>().roundTime.WithoutValue) return base.CanSpectate(session, player);
-            return player.Require<HealthProperty>().IsDead && player.Require<RespawnTimerProperty>().Value < ConfigManagerBase.Singleton.respawnDuration / 2;
+            return player.Require<HealthProperty>().IsDead && player.Require<RespawnTimerProperty>().Value < ConfigManagerBase.Active.respawnDuration / 2;
         }
 
         protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
@@ -420,7 +420,7 @@ namespace Voxelfield.Session.Mode
         public override StringBuilder BuildUsername(StringBuilder builder, Container player)
         {
             string hex = GetHexColor(GetTeamColor(player.Require<TeamProperty>()));
-            return builder.Append("<color=#").Append(hex).Append(">").AppendProperty(player.Require<UsernameProperty>()).Append("</color>");
+            return builder.Append("<color=#").Append(hex).Append(">").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</color>");
         }
 
         public override Color GetTeamColor(int teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;

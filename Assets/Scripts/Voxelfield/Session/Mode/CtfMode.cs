@@ -212,7 +212,7 @@ namespace Voxelfield.Session.Mode
             player.ZeroIfWith<FrozenProperty>();
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Singleton.playerHealth;
+            if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();
@@ -253,7 +253,7 @@ namespace Voxelfield.Session.Mode
         public override StringBuilder BuildUsername(StringBuilder builder, Container player)
         {
             string hex = GetHexColor(GetTeamColor(player.Require<TeamProperty>()));
-            return builder.Append("<color=#").Append(hex).Append(">").AppendProperty(player.Require<UsernameProperty>()).Append("</color>");
+            return builder.Append("<color=#").Append(hex).Append(">").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</color>");
         }
 
         public override Color GetTeamColor(int teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;

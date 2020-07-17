@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using LiteNetLib.Utils;
 using Swihoni.Util;
 using Swihoni.Util.Math;
@@ -25,6 +26,7 @@ namespace Swihoni.Components
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUInt();
         public override bool ValueEquals(in uint value) => value == Value;
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation) => Value = InterpolateUInt(p1.Value, p2.Value, interpolation);
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
 
         public static uint InterpolateUInt(uint u1, uint u2, float interpolation)
         {
@@ -32,9 +34,9 @@ namespace Swihoni.Components
             return (uint) Math.Round(d1 + (d2 - d1) * i);
         }
 
-        public override bool TryParseValue(string @string)
+        public override bool TryParseValue(string stringValue)
         {
-            if (!uint.TryParse(@string.Expand(), out uint @uint)) return false;
+            if (!uint.TryParse(stringValue.Expand(), out uint @uint)) return false;
             Value = @uint;
             return true;
         }
@@ -74,10 +76,11 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetInt();
         public override bool ValueEquals(in int value) => value == Value;
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
 
-        public override bool TryParseValue(string @string)
+        public override bool TryParseValue(string stringValue)
         {
-            if (!int.TryParse(@string, out int @int)) return false;
+            if (!int.TryParse(stringValue, out int @int)) return false;
             Value = @int;
             return true;
         }
@@ -91,10 +94,11 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUShort();
         public override bool ValueEquals(in ushort value) => value == Value;
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
 
-        public override bool TryParseValue(string @string)
+        public override bool TryParseValue(string stringValue)
         {
-            if (!ushort.TryParse(@string, out ushort @ushort)) return false;
+            if (!ushort.TryParse(stringValue, out ushort @ushort)) return false;
             Value = @ushort;
             return true;
         }
@@ -108,10 +112,11 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetShort();
         public override bool ValueEquals(in short value) => value == Value;
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
 
-        public override bool TryParseValue(string @string)
+        public override bool TryParseValue(string stringValue)
         {
-            if (!short.TryParse(@string, out short @short)) return false;
+            if (!short.TryParse(stringValue, out short @short)) return false;
             Value = @short;
             return true;
         }
@@ -125,10 +130,11 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetSByte();
         public override bool ValueEquals(in sbyte value) => value == Value;
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
 
-        public override bool TryParseValue(string @string)
+        public override bool TryParseValue(string stringValue)
         {
-            if (!sbyte.TryParse(@string, out sbyte @sbyte)) return false;
+            if (!sbyte.TryParse(stringValue, out sbyte @sbyte)) return false;
             Value = @sbyte;
             return true;
         }
@@ -142,15 +148,15 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetByte();
         public override bool ValueEquals(in byte value) => value == Value;
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
+        public override int GetHashCode() => Value.GetHashCode();
 
-        public override bool TryParseValue(string @string)
+        public override bool TryParseValue(string stringValue)
         {
-            if (!byte.TryParse(@string, out byte @byte)) return false;
+            if (!byte.TryParse(stringValue, out byte @byte)) return false;
             Value = @byte;
             return true;
         }
-
-        public override int GetHashCode() => Value.GetHashCode();
     }
 
     [Serializable]
@@ -178,10 +184,11 @@ namespace Swihoni.Components
         public override bool ValueEquals(in bool value) => value == Value;
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetBool();
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
 
-        public override bool TryParseValue(string @string)
+        public override bool TryParseValue(string stringValue)
         {
-            if (!bool.TryParse(@string, out bool @bool)) return false;
+            if (!bool.TryParse(stringValue, out bool @bool)) return false;
             Value = @bool;
             return true;
         }
@@ -207,6 +214,7 @@ namespace Swihoni.Components
 
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetFloat();
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
 
         public override bool ValueEquals(in float value)
         {
@@ -241,9 +249,9 @@ namespace Swihoni.Components
             else Value = Mathf.Lerp(f1, f2, interpolation);
         }
 
-        public override bool TryParseValue(string @string)
+        public override bool TryParseValue(string stringValue)
         {
-            if (!float.TryParse(@string, out float @float)) return false;
+            if (!float.TryParse(stringValue, out float @float)) return false;
             Value = @float;
             return true;
         }

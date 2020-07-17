@@ -12,7 +12,7 @@ namespace Swihoni.Sessions.Modes
         {
             base.KillPlayer(player, killer);
 
-            if (player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Singleton.respawnDuration;
+            if (player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Active.respawnDuration;
         }
 
         public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
