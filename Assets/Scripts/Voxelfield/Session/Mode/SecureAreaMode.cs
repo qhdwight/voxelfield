@@ -78,7 +78,13 @@ namespace Voxelfield.Session.Mode
 
         public override void EndModify(SessionBase session, Container sessionContainer)
         {
-            ForEachActivePlayer(session, sessionContainer, (playerId, player) => player.Require<FrozenProperty>().Value = false);
+            ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
+            {
+                player.ZeroIfWith<FrozenProperty>();
+                player.ZeroIfWith<MoneyComponent>();
+            });
+            sessionContainer.Require<SecureAreaComponent>().Clear();
+            sessionContainer.Require<DualScoresComponent>().Clear();
         }
 
         protected override void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
@@ -295,6 +301,7 @@ namespace Voxelfield.Session.Mode
                     PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
                     PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 2);
                     if (money.count.WithoutValue) money.count.Value = 800;
+                    PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);
                 }
 
                 var move = player.Require<MoveComponent>();

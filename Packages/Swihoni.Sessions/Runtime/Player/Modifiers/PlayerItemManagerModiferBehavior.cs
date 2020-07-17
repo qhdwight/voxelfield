@@ -240,6 +240,20 @@ namespace Swihoni.Sessions.Player.Modifiers
             return isAnOpenSlot;
         }
 
+        public static void RefillAllAmmo(InventoryComponent inventory)
+        {
+            for (var i = 1; i <= inventory.items.Length; i++)
+            {
+                ItemComponent item = inventory[i];
+                if (item.id == ItemId.None) continue;
+                if (ItemAssetLink.GetModifier(item.id) is GunModifierBase gunModifier)
+                {
+                    item.ammoInMag.Value = gunModifier.MagSize;
+                    item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
+                }           
+            }
+        }
+
         public static void SetItemAtIndex(InventoryComponent inventory, byte itemId, int index, ushort count = 1)
         {
             ItemComponent item = inventory[index];

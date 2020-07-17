@@ -9,15 +9,20 @@ using UnityEngine;
 
 namespace Swihoni.Sessions
 {
+    public enum ConfigType
+    {
+        Client, ServerSession, Server
+    }
+    
     public class ConfigAttribute : Attribute
     {
         public string Name { get; }
-        public bool IsSession { get; }
+        public ConfigType Type { get; }
 
-        public ConfigAttribute(string name, bool isSession = false)
+        public ConfigAttribute(string name, ConfigType type = ConfigType.Client)
         {
             Name = name;
-            IsSession = isSession;
+            Type = type;
         }
     }
 
@@ -26,21 +31,22 @@ namespace Swihoni.Sessions
     {
         private static Dictionary<Type, (PropertyBase, ConfigAttribute)> TypeToConfig { get; set; }
         private static Dictionary<string, (PropertyBase, ConfigAttribute)> NameToConfig { get; set; }
-        
+
         public static ConfigManagerBase Singleton { get; private set; }
 
-        [Config("tick_rate", true)] public TickRateProperty tickRate = new TickRateProperty(60);
-        [Config("allow_cheats", true)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
-        [Config("mode_id", true)] public ModeIdProperty modeId = new ModeIdProperty();
-        [Config("respawn_duration")] public TimeUsProperty respawnDuration = new TimeUsProperty();
-        [Config("player_health")] public ByteProperty playerHealth = new ByteProperty(100);
+        [Config("tick_rate", ConfigType.ServerSession)] public TickRateProperty tickRate = new TickRateProperty(60);
+        [Config("allow_cheats", ConfigType.ServerSession)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
+        [Config("mode_id", ConfigType.ServerSession)] public ModeIdProperty modeId = new ModeIdProperty();
+        [Config("respawn_duration", ConfigType.Server)] public TimeUsProperty respawnDuration = new TimeUsProperty();
+        [Config("player_health", ConfigType.Server)] public ByteProperty playerHealth = new ByteProperty(100);
 
         [Config("fov")] public ByteProperty fov = new ByteProperty(60);
         [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
         [Config("volume")] public FloatProperty volume = new FloatProperty(0.5f);
         [Config("sensitivity")] public FloatProperty sensitivity = new FloatProperty(2.0f);
+        [Config("ads_multiplier")] public FloatProperty ads_multiplier = new FloatProperty(1.0f);
         [Config("crosshair_thickness")] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
-        
+
         public static void Initialize()
         {
             Singleton = Instantiate(Resources.Load<ConfigManagerBase>("Config"));
@@ -66,14 +72,15 @@ namespace Swihoni.Sessions
                         case PropertyBase property:
                             string fullName = string.Join(".", names.Append(config.Name));
                             NameToConfig.Add(fullName, (property, config));
-                            if (config.IsSession)
+                            if (config.Type == ConfigType.Client)
                             {
-                                TypeToConfig.Add(property.GetType(), (property, config));
-                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssueCommand);
+                                ConsoleCommandExecutor.SetCommand(fullName, HandleArgs);
                             }
                             else
                             {
-                                ConsoleCommandExecutor.SetCommand(fullName, HandleArgs);
+                                if (config.Type == ConfigType.ServerSession)
+                                    TypeToConfig.Add(property.GetType(), (property, config));
+                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssueCommand);
                             }
                             break;
                     }
@@ -86,7 +93,7 @@ namespace Swihoni.Sessions
                 Recurse(element);
             }
         }
-        
+
         public static void HandleArgs(IReadOnlyList<string> split)
         {
             if (NameToConfig.TryGetValue(split[0], out (PropertyBase, ConfigAttribute) tuple))

@@ -218,23 +218,19 @@ namespace Voxelfield.Session.Mode
             if (player.With(out InventoryComponent inventory))
             {
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
-                // inventory.Zero();
-                // PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe,
-                //                                           ItemId.Rifle,
-                //                                           ItemId.Shotgun,
-                //                                           ItemId.Sniper,
-                //                                           ItemId.Deagle,
-                //                                           ItemId.Grenade,
-                //                                           ItemId.Molotov,
-                //                                           ItemId.C4,
-                //                                           ItemId.Smg,
-                //                                           ItemId.MissileLauncher);
+                PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);
             }
             if (player.With(out MoveComponent move))
             {
                 move.Zero();
                 move.position.Value = GetSpawnPosition(player, playerId, session, sessionContainer);
             }
+        }
+
+        public override void EndModify(SessionBase session, Container sessionContainer)
+        {
+            sessionContainer.Require<CtfComponent>().Clear();
+            sessionContainer.Require<DualScoresComponent>().Clear();
         }
 
         public override void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer)
