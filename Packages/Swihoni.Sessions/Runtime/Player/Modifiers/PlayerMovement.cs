@@ -138,18 +138,17 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             if (commands.Without(out InputFlagProperty input)) return;
 
-            InputProvider provider = InputProvider.Singleton;
-            input.SetInput(PlayerInput.Forward, provider.GetInput(InputType.Forward));
-            input.SetInput(PlayerInput.Backward, provider.GetInput(InputType.Backward));
-            input.SetInput(PlayerInput.Right, provider.GetInput(InputType.Right));
-            input.SetInput(PlayerInput.Left, provider.GetInput(InputType.Left));
-            input.SetInput(PlayerInput.Jump, provider.GetInput(InputType.Jump));
-            input.SetInput(PlayerInput.Crouch, provider.GetInput(InputType.Crouch));
-            input.SetInput(PlayerInput.Sprint, provider.GetInput(InputType.Sprint));
-            input.SetInput(PlayerInput.Walk, provider.GetInput(InputType.Walk));
-            input.SetInput(PlayerInput.Suicide, provider.GetInput(InputType.Suicide));
-            input.SetInput(PlayerInput.Interact, provider.GetInput(InputType.Interact));
-            input.SetInput(PlayerInput.Respawn, provider.GetInput(InputType.Respawn));
+            input.SetInput(PlayerInput.Forward, InputProvider.GetInput(PlayerInput.Forward));
+            input.SetInput(PlayerInput.Backward, InputProvider.GetInput(PlayerInput.Backward));
+            input.SetInput(PlayerInput.Right, InputProvider.GetInput(PlayerInput.Right));
+            input.SetInput(PlayerInput.Left, InputProvider.GetInput(PlayerInput.Left));
+            input.SetInput(PlayerInput.Jump, InputProvider.GetInput(PlayerInput.Jump));
+            input.SetInput(PlayerInput.Crouch, InputProvider.GetInput(PlayerInput.Crouch));
+            input.SetInput(PlayerInput.Sprint, InputProvider.GetInput(PlayerInput.Sprint));
+            input.SetInput(PlayerInput.Walk, InputProvider.GetInput(PlayerInput.Walk));
+            input.SetInput(PlayerInput.Suicide, InputProvider.GetInput(PlayerInput.Suicide));
+            input.SetInput(PlayerInput.Interact, InputProvider.GetInput(PlayerInput.Interact));
+            input.SetInput(PlayerInput.Respawn, InputProvider.GetInput(PlayerInput.Respawn));
         }
 
         private void ModifyStatus(MoveComponent move, InputFlagProperty inputs, float duration)

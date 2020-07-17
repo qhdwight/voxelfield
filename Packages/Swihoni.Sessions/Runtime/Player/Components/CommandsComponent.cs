@@ -24,7 +24,9 @@ namespace Swihoni.Sessions.Player.Components
                           Fly = 15,
                           Throw = 16,
                           DropItem = 17,
-                          Respawn = 18;
+                          Respawn = 18,
+                          ItemSelectStart = 200,
+                          ItemLast = ItemSelectStart + 10;
     }
 
     [Serializable, NoSerialization]
@@ -45,8 +47,8 @@ namespace Swihoni.Sessions.Player.Components
             else Value &= (uint) ~(1 << input);
         }
 
-        public float GetAxis(int positiveInput, int negativeInput) =>
-            (GetInput(positiveInput) ? 1.0f : 0.0f) + (GetInput(negativeInput) ? -1.0f : 0.0f);
+        public float GetAxis(int positiveInput, int negativeInput)
+            => (GetInput(positiveInput) ? 1.0f : 0.0f) + (GetInput(negativeInput) ? -1.0f : 0.0f);
     }
 
     [Serializable, ClientTrusted]

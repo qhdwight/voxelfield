@@ -149,6 +149,8 @@ namespace Swihoni.Components
             Value = @byte;
             return true;
         }
+
+        public override int GetHashCode() => Value.GetHashCode();
     }
 
     [Serializable]

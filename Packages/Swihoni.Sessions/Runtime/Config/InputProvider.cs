@@ -2,58 +2,59 @@ using System;
 using System.Collections.Generic;
 using LiteNetLib.Utils;
 using Swihoni.Components;
-using Swihoni.Util;
+using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Config
 {
-    public enum InputType
+    public static class InputProvider
     {
-        Forward,
-        Backward,
-        Left,
-        Right,
-        Jump,
-        Crouch,
-        Sprint,
-        Walk,
-        Interact,
-        Map,
-        Suicide,
-        UseOne,
-        UseTwo,
-        UseThree,
-        Reload,
-        ItemOne,
-        ItemTwo,
-        ItemThree,
-        ItemFour,
-        ItemFive,
-        ItemSix,
-        ItemSeven,
-        ItemEight,
-        ItemNine,
-        ItemTen,
-        ItemLast,
-        DropItem,
-        Ads,
-        ToggleConsole,
-        ConsoleCommand,
-        OpenScoreboard,
-        AutocompleteConsole,
-        PreviousConsoleCommand,
-        NextConsoleCommand,
-        Fly,
-        Buy,
-        Throw,
-        OpenModelSelect,
-        OpenVoxelSelect,
-        Respawn
+        public static bool GetInput(byte type) => Input.GetKey(ConfigManagerBase.Singleton.input.GetKeyCode(type));
+
+        /// <summary>
+        /// Should be called in normal Unity Update() methods
+        /// </summary>
+        /// <returns>If this is the first Unity frame an input is pressed</returns>
+        public static bool GetInputDown(byte type) => Input.GetKeyDown(ConfigManagerBase.Singleton.input.GetKeyCode(type));
+
+        public static float GetAxis(byte positive, byte negative) => (GetInput(positive) ? 1.0f : 0.0f) + (GetInput(negative) ? -1.0f : 0.0f);
+
+        public static float GetMouseInput(MouseMovement mouseMovement)
+        {
+            switch (mouseMovement)
+            {
+                case MouseMovement.X:
+                    return Input.GetAxisRaw("Mouse X");
+                case MouseMovement.Y:
+                    return Input.GetAxisRaw("Mouse Y");
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mouseMovement), mouseMovement, null);
+            }
+        }
+
+        public static float GetMouseScrollWheel() => Input.GetAxisRaw("Mouse ScrollWheel");
+    }
+    
+    public static class InputType
+    {
+        public const byte Map = 100,
+                          ToggleConsole = 101,
+                          ConsoleCommand = 102,
+                          OpenScoreboard = 103,
+                          AutocompleteConsole = 104,
+                          PreviousConsoleCommand = 105,
+                          NextConsoleCommand = 106,
+                          OpenModelSelect = 107,
+                          OpenVoxelSelect = 108,
+                          Buy = 109;
     }
 
     [Serializable]
     public class KeyCodeProperty : PropertyBase<KeyCode>
     {
+        public KeyCodeProperty() { }
+        public KeyCodeProperty(KeyCode value) : base(value) { }
+
         public override bool ValueEquals(in KeyCode value) => value == Value;
         public override void DeserializeValue(NetDataReader reader) => Value = (KeyCode) reader.GetUShort();
         public override void SerializeValue(NetDataWriter writer) => writer.Put((ushort) Value);
@@ -70,103 +71,76 @@ namespace Swihoni.Sessions.Config
     }
 
     [Serializable]
-    public class InputComponent
+    public class InputComponent : ComponentBase
     {
+        private static ByteProperty _lookupProperty = new ByteProperty();
+
         public DictProperty<ByteProperty, KeyCodeProperty> bindings;
+
+        public KeyCode GetKeyCode(byte @byte)
+        {
+            _lookupProperty.Value = @byte;
+            return bindings[_lookupProperty];
+        }
+
+        public InputComponent()
+        {
+            var defaultMap = new Dictionary<byte, KeyCode>
+            {
+                [PlayerInput.Forward] = KeyCode.W,
+                [PlayerInput.Backward] = KeyCode.S,
+                [PlayerInput.Left] = KeyCode.A,
+                [PlayerInput.Right] = KeyCode.D,
+                [PlayerInput.Jump] = KeyCode.Space,
+                [PlayerInput.Crouch] = KeyCode.LeftControl,
+                [PlayerInput.Sprint] = KeyCode.LeftShift,
+                [PlayerInput.Walk] = KeyCode.LeftAlt,
+                [PlayerInput.Suicide] = KeyCode.End,
+                [PlayerInput.Interact] = KeyCode.E,
+                [InputType.Map] = KeyCode.M,
+                [PlayerInput.UseOne] = KeyCode.Mouse0,
+                [PlayerInput.UseTwo] = KeyCode.Mouse1,
+#if UNITY_EDITOR_OSX
+                [InputType.UseThree] = KeyCode.C,
+#else
+                [PlayerInput.UseThree] = KeyCode.Mouse2,
+#endif
+                [PlayerInput.Reload] = KeyCode.R,
+                [PlayerInput.ItemSelectStart] = KeyCode.Alpha1,
+                [PlayerInput.ItemSelectStart + 1] = KeyCode.Alpha2,
+                [PlayerInput.ItemSelectStart + 2] = KeyCode.Alpha3,
+                [PlayerInput.ItemSelectStart + 3] = KeyCode.Alpha4,
+                [PlayerInput.ItemSelectStart + 4] = KeyCode.Alpha5,
+                [PlayerInput.ItemSelectStart + 5] = KeyCode.Alpha6,
+                [PlayerInput.ItemSelectStart + 6] = KeyCode.Alpha7,
+                [PlayerInput.ItemSelectStart + 7] = KeyCode.Alpha8,
+                [PlayerInput.ItemSelectStart + 8] = KeyCode.Alpha9,
+                [PlayerInput.ItemSelectStart + 9] = KeyCode.Alpha0,
+                [PlayerInput.ItemSelectStart + 10] = KeyCode.Q,
+                [PlayerInput.DropItem] = KeyCode.G,
+                [PlayerInput.Ads] = KeyCode.Mouse1,
+                [InputType.ToggleConsole] = KeyCode.BackQuote,
+                [InputType.ConsoleCommand] = KeyCode.Slash,
+                [InputType.OpenScoreboard] = KeyCode.Tab,
+                [InputType.AutocompleteConsole] = KeyCode.Tab,
+                [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
+                [InputType.NextConsoleCommand] = KeyCode.DownArrow,
+                [PlayerInput.Fly] = KeyCode.F,
+                [InputType.Buy] = KeyCode.B,
+                [PlayerInput.Throw] = KeyCode.G,
+                [InputType.OpenModelSelect] = KeyCode.M,
+                [InputType.OpenVoxelSelect] = KeyCode.V,
+                [PlayerInput.Respawn] = KeyCode.Return
+            };
+            bindings = new DictProperty<ByteProperty, KeyCodeProperty>();
+            foreach (KeyValuePair<byte, KeyCode> pair in defaultMap)
+                bindings.Set(new ByteProperty(pair.Key), new KeyCodeProperty(pair.Value));
+        }
     }
 
     public enum MouseMovement
     {
         X,
         Y
-    }
-
-    public class InputSettings
-    {
-        private Dictionary<InputType, KeyCode> m_Mapping;
-
-        public KeyCode Get(InputType type) => m_Mapping[type];
-
-        public static InputSettings Defaults() =>
-            new InputSettings
-            {
-                m_Mapping = new Dictionary<InputType, KeyCode>
-                {
-                    [InputType.Forward] = KeyCode.W,
-                    [InputType.Backward] = KeyCode.S,
-                    [InputType.Left] = KeyCode.A,
-                    [InputType.Right] = KeyCode.D,
-                    [InputType.Jump] = KeyCode.Space,
-                    [InputType.Crouch] = KeyCode.LeftControl,
-                    [InputType.Sprint] = KeyCode.LeftShift,
-                    [InputType.Walk] = KeyCode.LeftAlt,
-                    [InputType.Suicide] = KeyCode.End,
-                    [InputType.Interact] = KeyCode.E,
-                    [InputType.Map] = KeyCode.M,
-                    [InputType.UseOne] = KeyCode.Mouse0,
-                    [InputType.UseTwo] = KeyCode.Mouse1,
-#if UNITY_EDITOR_OSX
-                    [InputType.UseThree] = KeyCode.C,
-#else
-                    [InputType.UseThree] = KeyCode.Mouse2,
-#endif
-                    [InputType.Reload] = KeyCode.R,
-                    [InputType.ItemOne] = KeyCode.Alpha1,
-                    [InputType.ItemTwo] = KeyCode.Alpha2,
-                    [InputType.ItemThree] = KeyCode.Alpha3,
-                    [InputType.ItemFour] = KeyCode.Alpha4,
-                    [InputType.ItemFive] = KeyCode.Alpha5,
-                    [InputType.ItemSix] = KeyCode.Alpha6,
-                    [InputType.ItemSeven] = KeyCode.Alpha7,
-                    [InputType.ItemEight] = KeyCode.Alpha8,
-                    [InputType.ItemNine] = KeyCode.Alpha9,
-                    [InputType.ItemTen] = KeyCode.Alpha0,
-                    [InputType.ItemLast] = KeyCode.Q,
-                    [InputType.DropItem] = KeyCode.G,
-                    [InputType.Ads] = KeyCode.Mouse1,
-                    [InputType.ToggleConsole] = KeyCode.BackQuote,
-                    [InputType.ConsoleCommand] = KeyCode.Slash,
-                    [InputType.OpenScoreboard] = KeyCode.Tab,
-                    [InputType.AutocompleteConsole] = KeyCode.Tab,
-                    [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
-                    [InputType.NextConsoleCommand] = KeyCode.DownArrow,
-                    [InputType.Fly] = KeyCode.F,
-                    [InputType.Buy] = KeyCode.B,
-                    [InputType.Throw] = KeyCode.G,
-                    [InputType.OpenModelSelect] = KeyCode.M,
-                    [InputType.OpenVoxelSelect] = KeyCode.V,
-                    [InputType.Respawn] = KeyCode.Return
-                }
-            };
-    }
-
-    public class InputProvider : SingletonBehavior<InputProvider>
-    {
-        private InputSettings m_Settings = InputSettings.Defaults();
-
-        public bool GetInput(InputType type) => UnityEngine.Input.GetKey(m_Settings.Get(type));
-
-        /// <summary>
-        /// Should be called in normal Unity Update() methods
-        /// </summary>
-        /// <returns>If this is the first Unity frame an input is pressed</returns>
-        public bool GetInputDown(InputType type) => UnityEngine.Input.GetKeyDown(m_Settings.Get(type));
-
-        public float GetAxis(InputType positiveKey, InputType negativeKey) => (GetInput(positiveKey) ? 1.0f : 0.0f) + (GetInput(negativeKey) ? -1.0f : 0.0f);
-
-        public static float GetMouseInput(MouseMovement mouseMovement)
-        {
-            switch (mouseMovement)
-            {
-                case MouseMovement.X:
-                    return UnityEngine.Input.GetAxisRaw("Mouse X");
-                case MouseMovement.Y:
-                    return UnityEngine.Input.GetAxisRaw("Mouse Y");
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(mouseMovement), mouseMovement, null);
-            }
-        }
-
-        public static float GetMouseScrollWheel() => UnityEngine.Input.GetAxisRaw("Mouse ScrollWheel");
     }
 }

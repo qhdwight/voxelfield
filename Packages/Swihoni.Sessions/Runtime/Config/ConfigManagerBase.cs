@@ -46,7 +46,7 @@ namespace Swihoni.Sessions.Config
         [Config("sensitivity")] public FloatProperty sensitivity = new FloatProperty(2.0f);
         [Config("ads_multiplier")] public FloatProperty ads_multiplier = new FloatProperty(1.0f);
         [Config("crosshair_thickness")] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
-        public InputComponent input;
+        [Config("input")] public InputComponent input = new InputComponent();
 
         public static void Initialize()
         {

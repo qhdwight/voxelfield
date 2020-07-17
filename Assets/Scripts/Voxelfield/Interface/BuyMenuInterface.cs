@@ -63,7 +63,7 @@ namespace Voxelfield.Interface
         {
             bool isActive = ShouldBeActive(session, sessionContainer, out Container localPlayer);
 
-            if (isActive && InputProvider.Singleton.GetInputDown(InputType.Buy)) m_PlayerWantsVisible = !m_PlayerWantsVisible;
+            if (isActive && InputProvider.GetInputDown(InputType.Buy)) m_PlayerWantsVisible = !m_PlayerWantsVisible;
             isActive = isActive && m_PlayerWantsVisible;
 
             if (isActive && localPlayer.With(out MoneyComponent money) && money.count.WithValue)

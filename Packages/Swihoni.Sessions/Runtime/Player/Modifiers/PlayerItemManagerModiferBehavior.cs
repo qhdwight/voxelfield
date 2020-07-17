@@ -170,27 +170,26 @@ namespace Swihoni.Sessions.Player.Modifiers
         public override void ModifyCommands(SessionBase session, Container commands, int playerId)
         {
             if (commands.Without(out InputFlagProperty inputs)) return;
-            InputProvider provider = InputProvider.Singleton;
-            inputs.SetInput(PlayerInput.UseOne, provider.GetInput(InputType.UseOne));
-            inputs.SetInput(PlayerInput.UseTwo, provider.GetInput(InputType.UseTwo));
-            inputs.SetInput(PlayerInput.UseThree, provider.GetInput(InputType.UseThree));
-            inputs.SetInput(PlayerInput.Reload, provider.GetInput(InputType.Reload));
-            inputs.SetInput(PlayerInput.Fly, provider.GetInput(InputType.Fly));
-            inputs.SetInput(PlayerInput.Ads, provider.GetInput(InputType.Ads));
-            inputs.SetInput(PlayerInput.Throw, provider.GetInput(InputType.Throw));
-            inputs.SetInput(PlayerInput.DropItem, provider.GetInput(InputType.DropItem));
+            inputs.SetInput(PlayerInput.UseOne, InputProvider.GetInput(PlayerInput.UseOne));
+            inputs.SetInput(PlayerInput.UseTwo, InputProvider.GetInput(PlayerInput.UseTwo));
+            inputs.SetInput(PlayerInput.UseThree, InputProvider.GetInput(PlayerInput.UseThree));
+            inputs.SetInput(PlayerInput.Reload, InputProvider.GetInput(PlayerInput.Reload));
+            inputs.SetInput(PlayerInput.Fly, InputProvider.GetInput(PlayerInput.Fly));
+            inputs.SetInput(PlayerInput.Ads, InputProvider.GetInput(PlayerInput.Ads));
+            inputs.SetInput(PlayerInput.Throw, InputProvider.GetInput(PlayerInput.Throw));
+            inputs.SetInput(PlayerInput.DropItem, InputProvider.GetInput(PlayerInput.DropItem));
             if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
-            if (provider.GetInput(InputType.ItemOne)) itemIndex.Value = 1;
-            else if (provider.GetInput(InputType.ItemTwo)) itemIndex.Value = 2;
-            else if (provider.GetInput(InputType.ItemThree)) itemIndex.Value = 3;
-            else if (provider.GetInput(InputType.ItemFour)) itemIndex.Value = 4;
-            else if (provider.GetInput(InputType.ItemFive)) itemIndex.Value = 5;
-            else if (provider.GetInput(InputType.ItemSix)) itemIndex.Value = 6;
-            else if (provider.GetInput(InputType.ItemSeven)) itemIndex.Value = 7;
-            else if (provider.GetInput(InputType.ItemEight)) itemIndex.Value = 8;
-            else if (provider.GetInput(InputType.ItemNine)) itemIndex.Value = 9;
-            else if (provider.GetInput(InputType.ItemTen)) itemIndex.Value = 10;
-            else if (provider.GetInput(InputType.ItemLast))
+            if (InputProvider.GetInput(PlayerInput.ItemSelectStart)) itemIndex.Value = 1;
+            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 1)) itemIndex.Value = 2;
+            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 2)) itemIndex.Value = 3;
+            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 3)) itemIndex.Value = 4;
+            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 4)) itemIndex.Value = 5;
+            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 5)) itemIndex.Value = 6;
+            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 6)) itemIndex.Value = 7;
+            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 7)) itemIndex.Value = 8;
+            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 8)) itemIndex.Value = 9;
+            else if (InputProvider.GetInput(PlayerInput.ItemSelectStart + 9)) itemIndex.Value = 10;
+            else if (InputProvider.GetInput(PlayerInput.ItemLast))
             {
                 ByteProperty previousEquipped = commands.Require<InventoryComponent>().previousEquippedIndex;
                 if (previousEquipped.WithValue) itemIndex.Value = previousEquipped;

@@ -90,15 +90,14 @@ namespace Swihoni.Sessions.Interfaces
 
         private void Update()
         {
-            InputProvider input = InputProvider.Singleton;
-            if (input.GetInputDown(InputType.ToggleConsole))
+            if (InputProvider.GetInputDown(InputType.ToggleConsole))
                 ToggleInterfaceActive();
-            else if (input.GetInputDown(InputType.ConsoleCommand))
+            else if (InputProvider.GetInputDown(InputType.ConsoleCommand))
             {
                 SetInterfaceActive(!IsActive);
                 if (IsActive) m_OpenedForCommand = true;
             }
-            if (input.GetInputDown(InputType.AutocompleteConsole))
+            if (InputProvider.GetInputDown(InputType.AutocompleteConsole))
             {
                 if (!string.IsNullOrEmpty(m_CurrentAutocomplete))
                 {
@@ -110,10 +109,10 @@ namespace Swihoni.Sessions.Interfaces
             if (focused)
             {
                 bool wantsNextCommand =
-                         input.GetInputDown(InputType.PreviousConsoleCommand) &&
+                         InputProvider.GetInputDown(InputType.PreviousConsoleCommand) &&
                          m_CommandHistoryIndex + 1 < m_PreviousCommands.Count,
                      wantsPreviousCommand =
-                         input.GetInputDown(InputType.NextConsoleCommand) &&
+                         InputProvider.GetInputDown(InputType.NextConsoleCommand) &&
                          m_CommandHistoryIndex - 1 >= 0;
                 if (!wantsNextCommand && !wantsPreviousCommand) return;
                 m_ConsoleInput.text = wantsNextCommand

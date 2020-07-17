@@ -76,6 +76,8 @@ namespace Swihoni.Components
             WithValue = true;
         }
 
+        public TValue this[TKey key] => m_Map[key];
+
         public virtual void Set(in TKey key, in TValue value) => m_Map[key] = value;
     }
 }
