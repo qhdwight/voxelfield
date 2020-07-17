@@ -54,8 +54,8 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             bool withHealth = player.With(out HealthProperty health),
                  withMove = player.With(out MoveComponent move),
-                 showDamageNotifier = player.With(out DamageNotifierComponent damageNotifier) && !isLocalPlayer,
                  isVisible = (!withHealth || health.WithValue) && (!withMove || move.position.WithValue),
+                 showDamageNotifier = false,
                  showUsername = false;
 
             if (isVisible)
@@ -65,34 +65,38 @@ namespace Swihoni.Sessions.Player.Visualization
                                                      * Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
                 if (withMove)
                     m_Camera.transform.position = move.position + new Vector3 {y = Mathf.Lerp(m_CrouchedCameraHeight, m_UprightCameraHeight, 1.0f - move.normalizedCrouch)};
+
                 Container localPlayer = sessionContainer.GetPlayer(sessionContainer.Require<LocalPlayerId>());
+                VectorProperty localPlayerPosition = localPlayer.Require<MoveComponent>().position;
+                bool withNotifier = player.With(out DamageNotifierComponent damageNotifier);
+                if (localPlayerPosition.WithValue)
+                {
+                    showUsername = !isLocalPlayer && localPlayer.Require<TeamProperty>() == player.Require<TeamProperty>();
+                    showDamageNotifier = m_DamageText && !isLocalPlayer && withNotifier;
+                }
+
+                // TODO:refactor remove magic number, relying on internal state of audio source here... BAD!
+                if (withNotifier && damageNotifier.elapsedUs > 1_900_000u)
+                {
+                    if (!m_DamageNotifierSource.isPlaying) m_DamageNotifierSource.Play();
+                    // if (m_LastDamageNotifierElapsed < Mathf.Epsilon)
+                    //     m_DamageNotifierSource.PlayOneShot(m_DamageNotifierSource.clip);
+                }
+                else m_DamageNotifierSource.Stop();
 
                 if (showDamageNotifier)
                 {
-                    // TODO:refactor remove magic number, relying on internal state of audio source here... BAD!
-                    if (damageNotifier.elapsedUs > 1_900_000u)
-                    {
-                        if (!m_DamageNotifierSource.isPlaying) m_DamageNotifierSource.Play();
-                        // if (m_LastDamageNotifierElapsed < Mathf.Epsilon)
-                        //     m_DamageNotifierSource.PlayOneShot(m_DamageNotifierSource.clip);
-                    }
-                    else m_DamageNotifierSource.Stop();
+                    Color color = Color.Lerp(Color.green, Color.red, damageNotifier.damage / 100f);
+                    color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 2_000_000f);
+                    m_DamageText.color = color;
 
-                    if (m_DamageText)
+                    if (damageNotifier.elapsedUs > 0u)
                     {
-                        Color color = Color.Lerp(Color.green, Color.red, damageNotifier.damage / 100f);
-                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 2_000_000f);
-                        m_DamageText.color = color;
-
-                        if (damageNotifier.elapsedUs > 0u)
-                        {
-                            LookAtPlayer(m_DamageText, sessionContainer, playerId, new Vector3 {y = 0.2f});
-                            m_DamageNotifierBuilder.Clear().Append(damageNotifier.damage.Value).Commit(m_DamageText);
-                        }
+                        LookAtPlayer(m_DamageText, sessionContainer, playerId, new Vector3 {y = 0.2f});
+                        m_DamageNotifierBuilder.Clear().Append(damageNotifier.damage.Value).Commit(m_DamageText);
                     }
                 }
 
-                showUsername = !isLocalPlayer && localPlayer.Require<TeamProperty>() == player.Require<TeamProperty>();
                 if (showUsername)
                 {
                     LookAtPlayer(m_UsernameText, sessionContainer, playerId, new Vector3 {y = 0.2f});

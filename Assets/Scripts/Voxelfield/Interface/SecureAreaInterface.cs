@@ -48,10 +48,10 @@ namespace Voxelfield.Interface
 
         private void BuildUpperText(SecureAreaComponent secureArea)
         {
+            StringBuilder builder = m_UpperText.StartBuild();
             if (secureArea.roundTime.WithValue)
             {
                 uint buyTimeEndUs = m_SecureAreaMode.RoundEndDurationUs + m_SecureAreaMode.RoundDurationUs, displayTimeUs;
-                StringBuilder builder = m_UpperText.StartBuild();
                 if (secureArea.roundTime > buyTimeEndUs)
                 {
                     displayTimeUs = secureArea.roundTime - buyTimeEndUs;
@@ -69,12 +69,13 @@ namespace Voxelfield.Interface
                     displayTimeUs = secureArea.roundTime;
                     builder.Append("Time until next round: ");
                 }
-                builder.AppendTime(displayTimeUs).Commit(m_UpperText);
+                builder.AppendTime(displayTimeUs);
             }
             else
             {
-                m_UpperText.SetText("Warmup. Waiting for more players...");
+                builder.Append("Warmup. Waiting for more players...");
             }
+            builder.Commit(m_UpperText);
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Voxelfield.Interface.Designer
                         builder.Append("Selected: ").Append(designer.selectedModelId.WithValue ? MapManager.ModelPrefabs[designer.selectedModelId].ModelName : "None");
                         break;
                 }
-                m_InformationText.SetText(builder);
+                builder.Commit(m_InformationText);
             }
             SetInterfaceActive(isVisible);
         }

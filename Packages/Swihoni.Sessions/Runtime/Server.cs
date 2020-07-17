@@ -152,6 +152,8 @@ namespace Swihoni.Sessions
             }
         }
 
+        private static uint _timeUs, _durationUs;
+
         private void Tick(Container serverSession, uint tick, uint timeUs, uint durationUs)
         {
             ServerTick(serverSession, timeUs, durationUs);
@@ -160,8 +162,14 @@ namespace Swihoni.Sessions
 
             if (!IsLoading)
             {
-                EntityManager.ModifyAll(serverSession,
-                                        (ModifierBehaviorBase modifer, int _, Container entity) => ((EntityModifierBehavior) modifer).Modify(this, entity, timeUs, durationUs));
+                _session = this; // Prevent closure allocation
+                _timeUs = timeUs;
+                _durationUs = durationUs;
+                EntityManager.ModifyAll(serverSession, (modifer, _, entity) =>
+                {
+                    var entityModifier = (EntityModifierBehavior) modifer;
+                    entityModifier.Modify(_session, entity, _timeUs, _durationUs);
+                });
                 GetModifyingMode(serverSession).Modify(this, serverSession, durationUs);
             }
 

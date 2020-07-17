@@ -17,6 +17,7 @@ using Voxel.Map;
 using Voxelfield.Session.Mode;
 using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
+using System.Threading;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 
@@ -342,11 +343,12 @@ namespace Voxelfield.Session
             }
         }
 
-        [MenuItem("Build/Git Release")]
+        [MenuItem("Build/Release")]
         public static void BuildRelease()
         {
             // PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "VOXELFIELD_RELEASE");
             BuildWindowsIl2CppPlayer();
+            Thread.Sleep(TimeSpan.FromSeconds(0.5));
             BuildLinuxServer();
         }
 #endif

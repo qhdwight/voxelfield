@@ -57,9 +57,7 @@ namespace Voxelfield.Session.Mode
         public override void Render(SessionBase session, Container sessionContainer)
         {
             base.Render(session, sessionContainer);
-
-            if (session.IsLoading) return;
-
+            
             FlagBehavior[][] flagBehaviors = GetFlagBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
             ArrayElement<FlagArrayElement> flags = sessionContainer.Require<CtfComponent>().teamFlags;
             for (var flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
@@ -70,8 +68,6 @@ namespace Voxelfield.Session.Mode
         public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
         {
             base.Modify(session, sessionContainer, durationUs);
-
-            if (session.IsLoading) return;
 
             var ctf = sessionContainer.Require<CtfComponent>();
             FlagBehavior[][] flagBehaviors = GetFlagBehaviors(sessionContainer.Require<VoxelMapNameProperty>());

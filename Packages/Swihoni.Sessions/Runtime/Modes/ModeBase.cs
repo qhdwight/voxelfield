@@ -106,6 +106,14 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void Modify(SessionBase session, Container sessionContainer, uint durationUs)
         {
+            BoolProperty restartMode = ConfigManagerBase.Active.restartMode;
+            if (restartMode)
+            {
+                EndModify(session, sessionContainer);
+                BeginModify(session, sessionContainer);
+                restartMode.Value = false;
+            }
+            
             if (sessionContainer.With(out KillFeedElement killFeed))
             {
                 foreach (KillFeedComponent kill in killFeed)

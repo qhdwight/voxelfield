@@ -148,7 +148,7 @@ namespace Swihoni.Sessions.Config
                 [PlayerInput.UseOne] = KeyCode.Mouse0,
                 [PlayerInput.UseTwo] = KeyCode.Mouse1,
 #if UNITY_EDITOR_OSX
-                [InputType.UseThree] = KeyCode.C,
+                [PlayerInput.UseThree] = KeyCode.C,
 #else
                 [PlayerInput.UseThree] = KeyCode.Mouse2,
 #endif

@@ -1,7 +1,7 @@
 map_name: Castle
-enable_mini_map: False
 force_start: False
 restart_mode: False
+enable_mini_map: False
 sa.end_duration: 7000000
 sa.duration: 240000000
 sa.buy_duration: 10000000

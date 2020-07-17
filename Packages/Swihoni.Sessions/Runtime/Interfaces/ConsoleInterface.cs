@@ -38,7 +38,7 @@ namespace Swihoni.Sessions.Interfaces
         private readonly List<string> m_PreviousCommands = new List<string>(MaxPreviousCommands + 1);
         private int m_CommandHistoryIndex;
         private string m_CurrentAutocomplete;
-        private bool m_OpenedForCommand;
+        private bool m_OpenedForCommand, m_NeedsTextUpdate;
 
         [RuntimeInitializeOnLoadMethod]
         private static void Initialize()
@@ -84,7 +84,7 @@ namespace Swihoni.Sessions.Interfaces
         public void ClearConsole()
         {
             m_LogItems.Clear();
-            SetLogText();
+            RequestLogTextUpdate();
         }
 
         private void Update()
@@ -96,6 +96,13 @@ namespace Swihoni.Sessions.Interfaces
                 SetInterfaceActive(!IsActive);
                 if (IsActive) m_OpenedForCommand = true;
             }
+
+            if (IsActive && m_NeedsTextUpdate)
+            {
+                m_ConsoleText.SetText(m_LogBuilder);
+                m_NeedsTextUpdate = false;
+            }
+            
             if (InputProvider.GetInputDown(InputType.AutocompleteConsole))
             {
                 if (!string.IsNullOrEmpty(m_CurrentAutocomplete))
@@ -128,10 +135,10 @@ namespace Swihoni.Sessions.Interfaces
             while (m_LogItems.Count > m_MaxMessages)
                 m_LogItems.Dequeue();
             m_LogItems.Enqueue(new LogItem {logString = logString, type = type});
-            SetLogText();
+            RequestLogTextUpdate();
         }
 
-        private void SetLogText()
+        private void RequestLogTextUpdate()
         {
             m_LogBuilder.Clear();
             foreach (LogItem logItem in m_LogItems)
@@ -139,7 +146,7 @@ namespace Swihoni.Sessions.Interfaces
                 m_LogBuilder.AppendFormat("<color={0}>{1}</color>", LogColors[logItem.type], logItem.logString);
                 m_LogBuilder.AppendLine();
             }
-            m_ConsoleText.SetText(m_LogBuilder);
+            m_NeedsTextUpdate = true;
         }
 
         private void ConsoleInputChange(string consoleInput)

@@ -46,6 +46,7 @@ namespace Swihoni.Sessions.Config
         [Config("mode_id", ConfigType.ServerSession)] public ModeIdProperty modeId = new ModeIdProperty();
         [Config("respawn_duration", ConfigType.Server)] public TimeUsProperty respawnDuration = new TimeUsProperty();
         [Config("respawn_health", ConfigType.Server)] public ByteProperty respawnHealth = new ByteProperty(100);
+        [Config("restart_mode", ConfigType.Server)] public BoolProperty restartMode = new BoolProperty();
 
         [Config("fov")] public ByteProperty fov = new ByteProperty(60);
         [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
@@ -64,12 +65,12 @@ namespace Swihoni.Sessions.Config
             ConsoleCommandExecutor.SetCommand("restore_default_config", args =>
             {
                 WriteDefaults();
-                ReadActive();
+                SetActiveToDefault();
             });
             ConsoleCommandExecutor.SetCommand("write_config", args => WriteActive());
             ConsoleCommandExecutor.SetCommand("read_config", args => ReadActive());
         }
-        
+
         private ConfigManagerBase Introspect()
         {
             m_NameToConfig = new Dictionary<string, (PropertyBase, ConfigAttribute)>();
@@ -162,21 +163,47 @@ namespace Swihoni.Sessions.Config
             }
             string configPath = GetConfigFile();
             File.WriteAllText(configPath, builder.ToString());
+#if UNITY_EDITOR
             Debug.Log($"Wrote config to {configPath}");
+#endif
         }
 
         private static void ReadActive()
         {
-            string configPath = GetConfigFile();
-            if (!File.Exists(configPath)) WriteDefaults();
-            string[] lines = File.ReadAllLines(configPath);
-            foreach (string line in lines)
+            try
             {
-                string[] cells = line.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
-                string key = cells[0], stringValue = cells[1].Trim();
-                Active.m_NameToConfig[key].Item1.TryParseValue(stringValue);
+                string configPath = GetConfigFile();
+                if (File.Exists(configPath))
+                {
+                    string[] lines = File.ReadAllLines(configPath);
+                    foreach (string line in lines)
+                    {
+                        string[] cells = line.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
+                        string key = cells[0], stringValue = cells[1].Trim();
+                        Active.m_NameToConfig[key].Item1.TryParseValue(stringValue);
+                    }
+                }
+                else
+                {
+                    WriteDefaults();
+                    Debug.LogWarning("Config file was not found so a default one was written");
+                    SetActiveToDefault();
+                }
+#if UNITY_EDITOR
+                Debug.Log($"Read config from {configPath}");
+#endif
             }
-            Debug.Log($"Read config from {configPath}");
+            catch (Exception exception)
+            {
+                SetActiveToDefault();
+                Debug.LogError($"Failed to write config. Check permissions? {exception.Message}");
+            }
+        }
+
+        private static void SetActiveToDefault()
+        {
+            foreach (KeyValuePair<string, (PropertyBase, ConfigAttribute)> pair in Default.Value.m_NameToConfig)
+                Active.m_NameToConfig[pair.Key].Item1.SetTo(pair.Value.Item1);
         }
     }
 }

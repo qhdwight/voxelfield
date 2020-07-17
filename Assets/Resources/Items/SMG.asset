@@ -18,7 +18,7 @@ MonoBehaviour:
   m_StatusModiferProperties:
   - durationUs: 1500000
     isPersistent: 0
-  - durationUs: 100000
+  - durationUs: 75000
     isPersistent: 0
   - durationUs: 0
     isPersistent: 0

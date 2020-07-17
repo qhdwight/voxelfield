@@ -11,7 +11,6 @@ namespace Voxelfield
     {
         [Config("map_name", ConfigType.ServerSession)] public VoxelMapNameProperty mapName = new VoxelMapNameProperty("Castle");
         [Config("force_start", ConfigType.Server)] public BoolProperty forceStart = new BoolProperty();
-        [Config("restart_mode", ConfigType.Server)] public BoolProperty restartMode = new BoolProperty();
         
         [Config("enable_mini_map")] public BoolProperty enableMiniMap = new BoolProperty();
 

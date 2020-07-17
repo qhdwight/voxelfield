@@ -82,7 +82,7 @@ namespace Voxelfield.Session.Mode
             ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
             {
                 player.ZeroIfWith<FrozenProperty>();
-                player.ZeroIfWith<MoneyComponent>();
+                player.Require<MoneyComponent>().Clear();
             });
             sessionContainer.Require<SecureAreaComponent>().Clear();
             sessionContainer.Require<DualScoresComponent>().Clear();
@@ -119,16 +119,7 @@ namespace Voxelfield.Session.Mode
         public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
         {
             base.Modify(session, sessionContainer, durationUs);
-
-            if (session.IsLoading) return;
-
-            BoolProperty restartMode = Extensions.GetConfig().restartMode;
-            if (restartMode)
-            {
-                BeginModify(session, sessionContainer);
-                restartMode.Value = false;
-            }
-
+            
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
             int activePlayerCount = GetActivePlayerCount(sessionContainer);
 
@@ -295,15 +286,15 @@ namespace Voxelfield.Session.Mode
             {
                 var health = player.Require<HealthProperty>();
                 var money = player.Require<MoneyComponent>();
+                var inventory = player.Require<InventoryComponent>();
                 if (health.IsInactiveOrDead || money.count.WithoutValue)
                 {
-                    var inventory = player.Require<InventoryComponent>();
                     inventory.Zero();
                     PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
                     PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 2);
                     if (money.count.WithoutValue) money.count.Value = 800;
-                    PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);
                 }
+                if (health.IsActiveAndAlive) PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);
 
                 var move = player.Require<MoveComponent>();
                 move.Zero();
@@ -412,7 +403,7 @@ namespace Voxelfield.Session.Mode
         {
             if (sessionLocalPlayer.Require<HealthProperty>().IsDead) return false;
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
-            return secureArea.roundTime.WithValue && secureArea.roundTime > m_Config.roundWinMoney + m_Config.roundDurationUs;
+            return secureArea.roundTime.WithValue && secureArea.roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
         }
 
         public ushort GetCost(int itemId) => m_ItemPrices[itemId - 1];
