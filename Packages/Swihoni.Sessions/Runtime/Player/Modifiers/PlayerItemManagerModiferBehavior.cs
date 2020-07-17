@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Console;
-using Input;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;

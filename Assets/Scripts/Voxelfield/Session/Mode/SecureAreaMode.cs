@@ -5,6 +5,7 @@ using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;

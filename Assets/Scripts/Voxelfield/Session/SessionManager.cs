@@ -8,6 +8,7 @@ using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;

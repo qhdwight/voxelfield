@@ -1,6 +1,6 @@
-using Input;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;

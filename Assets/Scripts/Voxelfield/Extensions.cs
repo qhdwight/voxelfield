@@ -1,4 +1,5 @@
 using Swihoni.Sessions;
+using Swihoni.Sessions.Config;
 
 namespace Voxelfield
 {

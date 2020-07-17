@@ -1,5 +1,6 @@
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Config;
 using UnityEngine;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;

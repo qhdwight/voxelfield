@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Input;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;

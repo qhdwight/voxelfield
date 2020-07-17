@@ -1,5 +1,6 @@
 using System;
 using Swihoni.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Items.Visuals;

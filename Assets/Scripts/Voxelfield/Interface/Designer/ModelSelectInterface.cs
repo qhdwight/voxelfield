@@ -1,7 +1,7 @@
-using Input;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Interfaces;
 using TMPro;
 using UnityEngine;
