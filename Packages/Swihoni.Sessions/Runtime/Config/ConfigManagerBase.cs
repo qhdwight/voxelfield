@@ -7,10 +7,6 @@ using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-
-#endif
 
 namespace Swihoni.Sessions.Config
 {
@@ -40,7 +36,7 @@ namespace Swihoni.Sessions.Config
 
         public static ConfigManagerBase Active { get; private set; }
 
-        private static ConfigManagerBase _default;
+        private static readonly Lazy<ConfigManagerBase> Default = new Lazy<ConfigManagerBase>(() => Resources.Load<ConfigManagerBase>("Config").Introspect());
 
         private Dictionary<Type, (PropertyBase, ConfigAttribute)> m_TypeToConfig;
         private Dictionary<string, (PropertyBase, ConfigAttribute)> m_NameToConfig;
@@ -57,14 +53,12 @@ namespace Swihoni.Sessions.Config
         [Config("sensitivity")] public FloatProperty sensitivity = new FloatProperty(2.0f);
         [Config("ads_multiplier")] public FloatProperty adsMultiplier = new FloatProperty(1.0f);
         [Config("crosshair_thickness")] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
-        [Config("input")] public InputBindingProperty input = new InputBindingProperty();
+        [Config("input_bindings")] public InputBindingProperty input = new InputBindingProperty();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
-            LoadDefaultAsset();
-
-            Active = ((ConfigManagerBase) CreateInstance(_default.GetType())).Introspect();
+            Active = ((ConfigManagerBase) CreateInstance(Default.Value.GetType())).Introspect();
             ReadActive();
 
             ConsoleCommandExecutor.SetCommand("restore_default_config", args =>
@@ -75,13 +69,7 @@ namespace Swihoni.Sessions.Config
             ConsoleCommandExecutor.SetCommand("write_config", args => WriteActive());
             ConsoleCommandExecutor.SetCommand("read_config", args => ReadActive());
         }
-
-        private static void LoadDefaultAsset()
-        {
-            _default = Resources.Load<ConfigManagerBase>("Config").Introspect();
-            if (!_default) throw new Exception("No config asset was found in resources");
-        }
-
+        
         private ConfigManagerBase Introspect()
         {
             m_NameToConfig = new Dictionary<string, (PropertyBase, ConfigAttribute)>();
@@ -161,7 +149,7 @@ namespace Swihoni.Sessions.Config
             return Path.ChangeExtension(Path.Combine(parentFolder, "Config"), "vfc");
         }
 
-        public static void WriteDefaults() => Write(_default);
+        public static void WriteDefaults() => Write(Default.Value);
 
         private static void WriteActive() => Write(Active);
 
