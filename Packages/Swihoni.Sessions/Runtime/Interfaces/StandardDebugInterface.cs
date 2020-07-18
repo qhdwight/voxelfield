@@ -15,7 +15,8 @@ namespace Swihoni.Sessions.Interfaces
                                                  m_PredictionErrorText = default,
                                                  m_PingText = default,
                                                  m_PacketLossText = default,
-                                                 m_AllocationRateText = default;
+                                                 m_AllocationRateText = default,
+                                                 m_PacketSizeText = default;
         [SerializeField] private float m_UpdateRate = 1.0f;
         private float m_LastUpdateTime;
         private long m_LastMemory;
@@ -47,6 +48,7 @@ namespace Swihoni.Sessions.Interfaces
             m_PredictionErrorText.gameObject.SetActive(isPredictionVisible);
 
             var areNetworkStatsVisible = false;
+            
             if (session is NetworkedSessionBase networkSession && networkSession.Socket.NetworkManager.ConnectedPeersCount > 0)
             {
                 areNetworkStatsVisible = true;
@@ -54,11 +56,13 @@ namespace Swihoni.Sessions.Interfaces
                 m_UploadText.StartBuild().AppendFormat("Up: {0:F1} kb/s", networkSession.Socket.SendRateKbs).Commit(m_UploadText);
                 m_DownloadText.StartBuild().AppendFormat("Down: {0:F1} kb/s", networkSession.Socket.ReceiveRateKbs).Commit(m_DownloadText);
                 m_PacketLossText.StartBuild().AppendFormat("Drop: {0:P1}", networkSession.Socket.PacketLoss).Commit(m_PacketLossText);
+                m_PacketSizeText.StartBuild().AppendFormat("Pkt: {0} bytes", networkSession.Socket.AveragePacketReceiveSize).Commit(m_PacketSizeText);
             }
             m_ResetErrorText.gameObject.SetActive(areNetworkStatsVisible);
             m_UploadText.gameObject.SetActive(areNetworkStatsVisible);
             m_DownloadText.gameObject.SetActive(areNetworkStatsVisible);
             m_PacketLossText.gameObject.SetActive(areNetworkStatsVisible);
+            m_PacketSizeText.gameObject.SetActive(areNetworkStatsVisible);
 
             m_AllocationRateText.StartBuild().AppendFormat("GC: {0:F1} kb/s", memoryRate / 1000.0f).Commit(m_AllocationRateText);
             m_LastUpdateTime = time;

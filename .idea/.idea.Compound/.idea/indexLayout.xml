@@ -19,7 +19,6 @@
     <explicitExcludes>
       <Path>.git</Path>
       <Path>.idea</Path>
-      <Path>.ssh</Path>
       <Path>.vs</Path>
       <Path>.vscode</Path>
       <Path>Adobe</Path>

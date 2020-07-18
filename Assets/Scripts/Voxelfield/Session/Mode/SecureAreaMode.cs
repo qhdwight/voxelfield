@@ -166,44 +166,47 @@ namespace Voxelfield.Session.Mode
                         }
                     }
 
-                    for (var siteIndex = 0; siteIndex < secureArea.sites.Length; siteIndex++)
+                    if (!endedWithKills)
                     {
-                        SiteBehavior siteBehavior = siteBehaviors[siteIndex];
-                        Transform siteTransform = siteBehavior.transform;
-                        SiteComponent site = secureArea.sites[siteIndex];
-                        Vector3 bounds = siteBehavior.Container.Require<ExtentsProperty>();
-                        int playersInsideCount = Physics.OverlapBoxNonAlloc(siteTransform.position, bounds / 2, m_CachedColliders, siteTransform.rotation, m_PlayerTriggerMask);
-                        bool isRedInside = false, isBlueInside = false;
-                        for (var i = 0; i < playersInsideCount; i++)
+                        for (var siteIndex = 0; siteIndex < secureArea.sites.Length; siteIndex++)
                         {
-                            Collider collider = m_CachedColliders[i];
-                            if (collider.TryGetComponent(out PlayerTrigger playerTrigger))
+                            SiteBehavior siteBehavior = siteBehaviors[siteIndex];
+                            Transform siteTransform = siteBehavior.transform;
+                            SiteComponent site = secureArea.sites[siteIndex];
+                            Vector3 bounds = siteBehavior.Container.Require<ExtentsProperty>();
+                            int playersInsideCount = Physics.OverlapBoxNonAlloc(siteTransform.position, bounds / 2, m_CachedColliders, siteTransform.rotation, m_PlayerTriggerMask);
+                            bool isRedInside = false, isBlueInside = false;
+                            for (var i = 0; i < playersInsideCount; i++)
                             {
-                                Container player = session.GetModifyingPayerFromId(playerTrigger.PlayerId);
-                                if (player.Require<HealthProperty>().IsInactiveOrDead) continue;
+                                Collider collider = m_CachedColliders[i];
+                                if (collider.TryGetComponent(out PlayerTrigger playerTrigger))
+                                {
+                                    Container player = session.GetModifyingPayerFromId(playerTrigger.PlayerId);
+                                    if (player.Require<HealthProperty>().IsInactiveOrDead) continue;
 
-                                byte team = player.Require<TeamProperty>();
-                                if (team == RedTeam) isRedInside = true;
-                                else if (team == BlueTeam) isBlueInside = true;
+                                    byte team = player.Require<TeamProperty>();
+                                    if (team == RedTeam) isRedInside = true;
+                                    else if (team == BlueTeam) isBlueInside = true;
+                                }
                             }
-                        }
-                        site.isRedInside.Value = isRedInside;
-                        site.isBlueInside.Value = isBlueInside;
-                        if (isRedInside && !isBlueInside)
-                        {
-                            // Red securing with no opposition
-                            if (site.timeUs > durationUs) site.timeUs.Value -= durationUs;
-                            else if (secureArea.roundTime >= m_Config.roundEndDurationUs)
+                            site.isRedInside.Value = isRedInside;
+                            site.isBlueInside.Value = isBlueInside;
+                            if (isRedInside && !isBlueInside)
                             {
-                                // Round ended, site was secured by red
-                                site.timeUs.Value = 0u;
-                                secureArea.roundTime.Value = m_Config.roundEndDurationUs;
-                                sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
-                                secureArea.lastWinningTeam.Value = RedTeam;
+                                // Red securing with no opposition
+                                if (site.timeUs > durationUs) site.timeUs.Value -= durationUs;
+                                else if (secureArea.roundTime >= m_Config.roundEndDurationUs)
+                                {
+                                    // Round ended, site was secured by red
+                                    site.timeUs.Value = 0u;
+                                    secureArea.roundTime.Value = m_Config.roundEndDurationUs;
+                                    sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
+                                    secureArea.lastWinningTeam.Value = RedTeam;
+                                }
+                                canAdvance = redJustSecured = site.timeUs == 0u;
                             }
-                            canAdvance = redJustSecured = site.timeUs == 0u;
+                            if (isRedInside && isBlueInside) canAdvance = false; // Both in site
                         }
-                        if (isRedInside && isBlueInside) canAdvance = false; // Both in site
                     }
                 }
 

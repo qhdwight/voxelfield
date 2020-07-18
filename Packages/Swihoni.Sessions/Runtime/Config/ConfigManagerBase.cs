@@ -14,7 +14,8 @@ namespace Swihoni.Sessions.Config
     {
         Client,
         ServerSession,
-        Server
+        Server,
+        ServerSingleTick
     }
 
     public class ConfigAttribute : Attribute
@@ -44,9 +45,11 @@ namespace Swihoni.Sessions.Config
         [Config("tick_rate", ConfigType.ServerSession)] public TickRateProperty tickRate = new TickRateProperty(60);
         [Config("allow_cheats", ConfigType.ServerSession)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
         [Config("mode_id", ConfigType.ServerSession)] public ModeIdProperty modeId = new ModeIdProperty();
+        
         [Config("respawn_duration", ConfigType.Server)] public TimeUsProperty respawnDuration = new TimeUsProperty();
         [Config("respawn_health", ConfigType.Server)] public ByteProperty respawnHealth = new ByteProperty(100);
-        [Config("restart_mode", ConfigType.Server)] public BoolProperty restartMode = new BoolProperty();
+        
+        [Config("restart_mode", ConfigType.ServerSingleTick)] public BoolProperty restartMode = new BoolProperty();
 
         [Config("fov")] public ByteProperty fov = new ByteProperty(60);
         [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
@@ -55,6 +58,7 @@ namespace Swihoni.Sessions.Config
         [Config("ads_multiplier")] public FloatProperty adsMultiplier = new FloatProperty(1.0f);
         [Config("crosshair_thickness")] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
         [Config("input_bindings")] public InputBindingProperty input = new InputBindingProperty();
+        [Config("fps_update_rate")] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()

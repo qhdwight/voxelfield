@@ -1,12 +1,13 @@
+using Swihoni.Sessions.Config;
+using Swihoni.Util;
+using Swihoni.Util.Interface;
 using UnityEngine;
 
-namespace Swihoni.Util.Interface
+namespace Swihoni.Sessions.Interfaces
 {
     [RequireComponent(typeof(BufferedTextGui))]
     public class FpsInterface : InterfaceBehaviorBase
     {
-        [SerializeField] private float m_UpdateRate = 0.1f;
-
         private BufferedTextGui m_FramerateText;
         private IntervalAction m_UpdateFramerateAction;
 
@@ -14,10 +15,10 @@ namespace Swihoni.Util.Interface
         {
             base.Awake();
             m_FramerateText = GetComponent<BufferedTextGui>();
-            m_UpdateFramerateAction = new IntervalAction(m_UpdateRate, UpdateFramerate);
+            m_UpdateFramerateAction = new IntervalAction(ConfigManagerBase.Active.fpsUpdateRate, UpdateFramerate);
         }
 
-        private void Update() { m_UpdateFramerateAction.Update(Time.smoothDeltaTime); }
+        private void Update() => m_UpdateFramerateAction.Update(Time.deltaTime);
 
         private void UpdateFramerate()
         {
