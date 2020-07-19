@@ -71,7 +71,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
             bool withHealth = player.With(out HealthProperty health),
                  withMove = player.With(out MoveComponent move),
-                 isVisible = (!withHealth || health.WithValue) && (!withMove || move.position.WithValue);
+                 isVisible = !withHealth || health.WithValue;
 
             bool isInFpv = isLocalPlayer && (!withHealth || health.IsActiveAndAlive);
 
@@ -85,7 +85,7 @@ namespace Swihoni.Sessions.Player.Visualization
             if (isVisible)
             {
                 isAnimatorEnabled = health.IsAlive;
-                if (withMove)
+                if (withMove && move.position.WithValue)
                 {
                     m_Animator.transform.position = move.position;
                     if (m_RagdollRigidbodies != null) SetRagdollEnabled(health.IsDead);   
@@ -99,7 +99,7 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             else
             {
-                if (m_RagdollRigidbodies != null && move.position.WithValue) SetRagdollEnabled(false);
+                if (m_RagdollRigidbodies != null && withMove && move.position.WithValue) SetRagdollEnabled(false);
                 isAnimatorEnabled = true;
             }
 
@@ -108,10 +108,8 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public override void SetActive(bool isActive)
         {
-            if (!isActive)
-            {
-                foreach (Renderer render in m_TpvRenders) render.enabled = false;
-            }
+            if (isActive) return;
+            foreach (Renderer render in m_TpvRenders) render.enabled = false;
         }
 
         private void SetRagdollEnabled(bool isActive)
@@ -128,9 +126,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 part.angularVelocity = Vector3.zero;
             }
             foreach (Collider partCollider in m_RagdollColliders)
-            {
                 partCollider.enabled = isActive;
-            }
         }
 
         private void RenderState(int baseIndex, MoveComponent move, float weight)

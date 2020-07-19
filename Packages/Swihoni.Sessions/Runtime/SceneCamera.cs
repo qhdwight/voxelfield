@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Swihoni.Util;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace Swihoni.Sessions
     {
         private AudioListener m_AudioListener;
         private Camera m_Camera;
-
+        
         protected override void Awake()
         {
             base.Awake();
@@ -17,14 +18,14 @@ namespace Swihoni.Sessions
             m_AudioListener = GetComponent<AudioListener>();
         }
 
-        private void LateUpdate()
+        public void Sync()
         {
             int count = Camera.allCameras.Count(activeCamera => !activeCamera.targetTexture);
-            if (count > 1)
-                SetEnabled(false);
-            else if (count < 1)
-                SetEnabled(true);
+            if (count > 1) SetEnabled(false);
+            else if (count < 1) SetEnabled(true);
         }
+
+        private void LateUpdate() => Sync();
 
         private void SetEnabled(bool isEnabled)
         {

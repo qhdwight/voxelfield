@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -54,7 +55,7 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             bool withHealth = player.With(out HealthProperty health),
                  withMove = player.With(out MoveComponent move),
-                 isVisible = (!withHealth || health.WithValue) && (!withMove || move.position.WithValue),
+                 isVisible = !withHealth || health.WithValue,
                  showDamageNotifier = false,
                  showUsername = false;
 
@@ -63,17 +64,13 @@ namespace Swihoni.Sessions.Player.Visualization
                 if (player.With(out CameraComponent playerCamera))
                     m_Camera.transform.localRotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up)
                                                      * Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
-                if (withMove)
+                if (withMove && move.position.WithValue)
                     m_Camera.transform.position = move.position + new Vector3 {y = Mathf.Lerp(m_CrouchedCameraHeight, m_UprightCameraHeight, 1.0f - move.normalizedCrouch)};
 
                 Container localPlayer = sessionContainer.GetPlayer(sessionContainer.Require<LocalPlayerId>());
-                VectorProperty localPlayerPosition = localPlayer.Require<MoveComponent>().position;
                 bool withNotifier = player.With(out DamageNotifierComponent damageNotifier);
-                if (localPlayerPosition.WithValue)
-                {
-                    showUsername = !isLocalPlayer && localPlayer.Require<TeamProperty>() == player.Require<TeamProperty>();
-                    showDamageNotifier = m_DamageText && !isLocalPlayer && withNotifier;
-                }
+                showUsername = !isLocalPlayer && localPlayer.Require<TeamProperty>() == player.Require<TeamProperty>();
+                showDamageNotifier = m_DamageText && !isLocalPlayer && withNotifier;
 
                 // TODO:refactor remove magic number, relying on internal state of audio source here... BAD!
                 if (withNotifier && damageNotifier.elapsedUs > 1_900_000u)
@@ -92,14 +89,14 @@ namespace Swihoni.Sessions.Player.Visualization
 
                     if (damageNotifier.elapsedUs > 0u)
                     {
-                        LookAtPlayer(m_DamageText, sessionContainer, playerId, new Vector3 {y = 0.2f});
+                        LookAtCamera(m_DamageText, sessionContainer, playerId, new Vector3 {y = 0.2f});
                         m_DamageNotifierBuilder.Clear().Append(damageNotifier.damage.Value).Commit(m_DamageText);
                     }
                 }
 
                 if (showUsername)
                 {
-                    LookAtPlayer(m_UsernameText, sessionContainer, playerId, new Vector3 {y = 0.2f});
+                    LookAtCamera(m_UsernameText, sessionContainer, playerId, new Vector3 {y = 0.2f});
                     m_UsernameBuilder.Clear();
                     ModeManager.GetMode(sessionContainer).BuildUsername(m_UsernameBuilder, player).Commit(m_UsernameText);
                 }
@@ -114,30 +111,30 @@ namespace Swihoni.Sessions.Player.Visualization
             m_RecentRender = player;
         }
 
-        private static void LookAtPlayer(TMP_Text text, Container session, int playerId, in Vector3 offset)
+        private static void LookAtCamera(TMP_Text text, Container session, int playerId, in Vector3 offset)
         {
-            Vector3 localPosition = GetPosition(session, session.Require<LocalPlayerId>()),
+            Vector3 cameraPosition = SessionBase.ActiveCamera.transform.position,
                     textPosition = GetPosition(session, playerId) + offset;
-            float distanceMultiplier = Mathf.Clamp(Vector3.Distance(localPosition, textPosition) * 0.05f, 1.0f, 5.0f);
+            float distanceMultiplier = Mathf.Clamp(Vector3.Distance(cameraPosition, textPosition) * 0.05f, 1.0f, 5.0f);
             var localScale = new Vector3(-distanceMultiplier, distanceMultiplier, 1.0f);
             Transform t = text.transform;
             t.localScale = localScale;
             t.position = textPosition;
-            t.LookAt(localPosition);
+            t.LookAt(cameraPosition);
         }
 
         private void SetCameraVisible(bool isCameraEnabled)
         {
             m_AudioListener.enabled = isCameraEnabled;
             m_Camera.enabled = isCameraEnabled;
+            SceneCamera.Singleton.Sync();
         }
 
         public override void SetActive(bool isActive)
         {
             if (!isActive) SetCameraVisible(false);
-            if (m_Visuals != null)
-                foreach (PlayerVisualsBehaviorBase visual in m_Visuals)
-                    visual.SetActive(isActive);
+            if (m_Visuals == null) return;
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.SetActive(isActive);
         }
 
         public void Dispose()

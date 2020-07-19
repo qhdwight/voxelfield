@@ -74,10 +74,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 m_Controller.height = m_ControllerHeight * weight;
                 m_Controller.center = m_ControllerCenter * weight;   
             }
-            else
-            {
-                isControllerActive = false;
-            }
+            else isControllerActive = false;
             m_Controller.gameObject.SetActive(isControllerActive);
         }
 

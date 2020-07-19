@@ -17,7 +17,6 @@ using Voxel.Map;
 using Voxelfield.Session.Mode;
 using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
-using System.Threading;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 
@@ -27,10 +26,8 @@ namespace Voxelfield.Session
 {
     public class SessionManager : SingletonBehavior<SessionManager>
     {
-        [SerializeField] private int m_ServerPort = DefaultPort;
-
         private static IPAddress DefaultAddress => IPAddress.Loopback;
-        private static int DefaultPort => 7777;
+        internal static int DefaultPort => 7777;
         private static readonly IPEndPoint DefaultEndPoint = new IPEndPoint(DefaultAddress, DefaultPort);
         private static readonly string[] IpSeparator = {":"};
 
@@ -92,13 +89,7 @@ namespace Voxelfield.Session
                 if (args.Length > 1 && byte.TryParse(args[1], out byte team))
                     SessionBase.Sessions.First().GetLocalCommands().Require<WantedTeamProperty>().Value = team;
             });
-
-            if (Application.isBatchMode)
-            {
-                IPEndPoint endPoint = NetUtils.MakeEndPoint(NetUtils.GetLocalIp(LocalAddrType.IPv4), m_ServerPort);
-                StartServer(endPoint);
-                Debug.Log($"Starting headless server at {endPoint}...");
-            }
+            
             ConsoleCommandExecutor.SetCommand("r", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
 
             Debug.Log("Started session manager");
@@ -139,7 +130,7 @@ namespace Voxelfield.Session
             return StartSession(host);
         }
 
-        private static Server StartServer(IPEndPoint ipEndPoint)
+        public static Server StartServer(IPEndPoint ipEndPoint)
         {
             StandaloneDisconnectAll();
             var server = new Server(VoxelfieldComponents.SessionElements, ipEndPoint, new ServerInjector());
@@ -177,8 +168,8 @@ namespace Voxelfield.Session
         private void Update()
         {
             SessionBase.HandleCursorLockState();
-            Application.targetFrameRate = ConfigManager.Active.targetFps;
-            AudioListener.volume = ConfigManager.Active.volume;
+            Application.targetFrameRate = ConfigManagerBase.Active.targetFps;
+            AudioListener.volume = ConfigManagerBase.Active.volume;
             try
             {
                 foreach (SessionBase session in SessionBase.Sessions)
@@ -191,19 +182,19 @@ namespace Voxelfield.Session
             }
 
             if (SessionBase.InterruptingInterface) return;
-            if (UnityEngine.Input.GetKeyDown(KeyCode.H))
+            if (Input.GetKeyDown(KeyCode.H))
             {
                 StartHost();
             }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Y))
+            if (Input.GetKeyDown(KeyCode.Y))
             {
                 StartServer(DefaultEndPoint);
             }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.J))
+            if (Input.GetKeyDown(KeyCode.J))
             {
                 StartClient(DefaultEndPoint);
             }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.K))
+            if (Input.GetKeyDown(KeyCode.K))
             {
                 DisconnectAll();
             }
@@ -287,7 +278,7 @@ namespace Voxelfield.Session
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"Server Linux build succeeded: {summary.totalSize} bytes");
+                    Debug.Log($"Server Linux build succeeded: {summary.totalSize / 1000000:F1} mb");
                     break;
                 case BuildResult.Failed:
                     Debug.Log("Server Linux build failed");
@@ -311,7 +302,7 @@ namespace Voxelfield.Session
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"Windows IL2CPP player build succeeded: {summary.totalSize} bytes");
+                    Debug.Log($"Windows IL2CPP player build succeeded: {summary.totalSize / 1000000:F1} mb");
                     break;
                 case BuildResult.Failed:
                     Debug.Log("Windows IL2CPP player build failed");
@@ -335,10 +326,34 @@ namespace Voxelfield.Session
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"Windows Mono player build succeeded: {summary.totalSize} bytes");
+                    Debug.Log($"Windows Mono player build succeeded: {summary.totalSize / 1000000:F1} mb");
                     break;
                 case BuildResult.Failed:
                     Debug.Log("Windows Mono player build failed");
+                    break;
+            }
+        }
+        
+        [MenuItem("Build/Windows IL2CPP Server")]
+        public static void BuildWindowsIl2CppServer()
+        {
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.IL2CPP);
+            var buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = new[] {"Assets/Scenes/Base.unity"},
+                locationPathName = "Builds/Windows Server/Voxelfield.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.EnableHeadlessMode
+            };
+
+            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            BuildSummary summary = report.summary;
+
+            switch (summary.result)
+            {
+                case BuildResult.Succeeded:
+                    Debug.Log($"Windows IL2CPP server build succeeded: {summary.totalSize / 1000000:F1} mb");
+                    break;
+                case BuildResult.Failed:
+                    Debug.Log("Windows IL2CPP server build failed");
                     break;
             }
         }
@@ -348,7 +363,6 @@ namespace Voxelfield.Session
         {
             // PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "VOXELFIELD_RELEASE");
             BuildWindowsIl2CppPlayer();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
             BuildLinuxServer();
         }
 #endif

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using LiteNetLib;
 using Swihoni.Components;
@@ -94,10 +95,9 @@ namespace Swihoni.Sessions
         }
 
         [RuntimeInitializeOnLoadMethod]
-        private static void Initialize()
-        {
-            _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
-        }
+        private static void Initialize() => _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
+
+        public static Camera ActiveCamera => Camera.allCameras.First(camera => !camera.targetTexture);
 
         public static void RegisterSessionCommand(params string[] commands)
         {

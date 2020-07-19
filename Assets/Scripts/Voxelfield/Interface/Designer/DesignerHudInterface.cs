@@ -38,9 +38,8 @@ namespace Voxelfield.Interface.Designer
             {
                 if (Physics.RaycastNonAlloc(SessionBase.GetRayForPlayer(localPlayer), m_CachedHits, m_SculptingItem.EditDistance, m_SculptingItem.ChunkMask) > 0)
                 {
-                    Camera activeCamera = Camera.allCameras.First();
                     Matrix4x4 matrix = Matrix4x4.TRS(m_CachedHits.First().point, Quaternion.identity, Vector3.one * editRadius * 1.5f);
-                    Graphics.DrawMesh(m_SphereMesh, matrix, m_Material, 0, activeCamera, 0, null, ShadowCastingMode.Off, false);
+                    Graphics.DrawMesh(m_SphereMesh, matrix, m_Material, 0, SessionBase.ActiveCamera, 0, null, ShadowCastingMode.Off, false);
                 }
             }
             SetInterfaceActive(isVisible);

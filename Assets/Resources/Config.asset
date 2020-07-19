@@ -20,13 +20,16 @@ MonoBehaviour:
     m_Value: 1
   modeId:
     m_Flags: 1
-    m_Value: 3
+    m_Value: 2
   respawnDuration:
     m_Flags: 1
     m_Value: 5000000
-  playerHealth:
+  respawnHealth:
     m_Flags: 1
     m_Value: 100
+  restartMode:
+    m_Flags: 1
+    m_Value: 0
   fov:
     m_Flags: 1
     m_Value: 60
@@ -39,18 +42,23 @@ MonoBehaviour:
   sensitivity:
     m_Flags: 1
     m_Value: 2
+  adsMultiplier:
+    m_Flags: 1
+    m_Value: 1
   crosshairThickness:
     m_Flags: 1
     m_Value: 1
+  input:
+    m_Flags: 0
+  fpsUpdateRate:
+    m_Flags: 1
+    m_Value: 0.4
   mapName:
     m_Flags: 1
-  enableMiniMap:
-    m_Flags: 1
-    m_Value: 0
   forceStart:
     m_Flags: 1
     m_Value: 0
-  restartMode:
+  enableMiniMap:
     m_Flags: 1
     m_Value: 0
   secureAreaConfig:

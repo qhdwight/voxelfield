@@ -1,3 +1,4 @@
+using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -39,15 +40,13 @@ namespace Voxelfield.Session.Mode
             else spritePosition = transform.position + new Vector3 {y = 2.8f};
 
             var isIconVisible = true;
-            if (session.IsValidLocalPlayer(sessionContainer, out Container localPlayer) && localPlayer.With(out MoveComponent move) && move.position.WithValue)
-            {
-                Vector3 localPosition = SessionBase.GetPlayerEyePosition(move) + new Vector3 {y = 0.2f};
-                m_SpriteRenderer.transform.LookAt(localPosition);
-                float distanceMultiplier = Mathf.Clamp(Vector3.Distance(localPosition, spritePosition) * 0.05f, 1.0f, 5.0f);
-                spritePosition += new Vector3 {y = distanceMultiplier};
-                m_SpriteRenderer.transform.localScale = Vector3.one * distanceMultiplier;
-                if (isFlagTaken && sessionContainer.Require<LocalPlayerId>() == flag.capturingPlayerId) isIconVisible = false;
-            }
+            Vector3 localPosition = SessionBase.ActiveCamera.transform.position;
+            m_SpriteRenderer.transform.LookAt(localPosition);
+            float distanceMultiplier = Mathf.Clamp(Vector3.Distance(localPosition, spritePosition) * 0.05f, 1.0f, 5.0f);
+            spritePosition += new Vector3 {y = distanceMultiplier};
+            m_SpriteRenderer.transform.localScale = Vector3.one * distanceMultiplier;
+            if (isFlagTaken && sessionContainer.Require<LocalPlayerId>() == flag.capturingPlayerId) isIconVisible = false;
+
             m_SpriteRenderer.transform.position = spritePosition;
 
             var mode = (CtfMode) ModeManager.GetMode(ModeIdProperty.Ctf);

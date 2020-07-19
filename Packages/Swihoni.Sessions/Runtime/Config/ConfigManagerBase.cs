@@ -42,14 +42,20 @@ namespace Swihoni.Sessions.Config
         private Dictionary<Type, (PropertyBase, ConfigAttribute)> m_TypeToConfig;
         private Dictionary<string, (PropertyBase, ConfigAttribute)> m_NameToConfig;
 
-        [Config("tick_rate", ConfigType.ServerSession)] public TickRateProperty tickRate = new TickRateProperty(60);
-        [Config("allow_cheats", ConfigType.ServerSession)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
-        [Config("mode_id", ConfigType.ServerSession)] public ModeIdProperty modeId = new ModeIdProperty();
-        
-        [Config("respawn_duration", ConfigType.Server)] public TimeUsProperty respawnDuration = new TimeUsProperty();
-        [Config("respawn_health", ConfigType.Server)] public ByteProperty respawnHealth = new ByteProperty(100);
-        
-        [Config("restart_mode", ConfigType.ServerSingleTick)] public BoolProperty restartMode = new BoolProperty();
+        [Config("tick_rate", ConfigType.ServerSession)]
+        public TickRateProperty tickRate = new TickRateProperty(60);
+        [Config("allow_cheats", ConfigType.ServerSession)]
+        public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
+        [Config("mode_id", ConfigType.ServerSession)]
+        public ModeIdProperty modeId = new ModeIdProperty();
+
+        [Config("respawn_duration", ConfigType.Server)]
+        public TimeUsProperty respawnDuration = new TimeUsProperty();
+        [Config("respawn_health", ConfigType.Server)]
+        public ByteProperty respawnHealth = new ByteProperty(100);
+
+        [Config("restart_mode", ConfigType.ServerSingleTick)]
+        public BoolProperty restartMode = new BoolProperty();
 
         [Config("fov")] public ByteProperty fov = new ByteProperty(60);
         [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
@@ -64,7 +70,11 @@ namespace Swihoni.Sessions.Config
         private static void Initialize()
         {
             Active = ((ConfigManagerBase) CreateInstance(Default.Value.GetType())).Introspect();
+#if UNITY_EDITOR
+            SetActiveToDefault();
+#else
             ReadActive();
+#endif
 
             ConsoleCommandExecutor.SetCommand("restore_default_config", args =>
             {

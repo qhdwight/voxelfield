@@ -52,6 +52,12 @@ namespace Voxelfield.Session.Mode
             var ctf = sessionContainer.Require<CtfComponent>();
             sessionContainer.Require<DualScoresComponent>().Zero();
             ctf.teamFlags.Clear();
+            ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
+            {
+                player.Require<HealthProperty>().Value = 0;
+                player.Require<MoveComponent>().Clear();
+                player.Require<InventoryComponent>().Zero();
+            });
         }
 
         public override void Render(SessionBase session, Container sessionContainer)
