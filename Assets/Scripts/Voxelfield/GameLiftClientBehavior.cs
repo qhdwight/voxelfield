@@ -1,12 +1,17 @@
+// #define VOXELFIELD_RELEASE_CLIENT
+
+#if VOXELFIELD_RELEASE_CLIENT
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
 using Amazon.Runtime;
+#endif
 using UnityEngine;
 
 namespace Voxelfield
 {
     public class GameLiftClientBehavior : MonoBehaviour
     {
+#if VOXELFIELD_RELEASE_CLIENT
         private void Start()
         {
             var config = new AmazonGameLiftConfig();
@@ -21,5 +26,6 @@ namespace Voxelfield
         }
 
         private void OnApplicationPause(bool pauseStatus) { }
+#endif
     }
 }

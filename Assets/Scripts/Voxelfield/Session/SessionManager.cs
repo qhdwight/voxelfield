@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -17,6 +16,7 @@ using Voxel.Map;
 using Voxelfield.Session.Mode;
 using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
+using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 
@@ -89,8 +89,9 @@ namespace Voxelfield.Session
                 if (args.Length > 1 && byte.TryParse(args[1], out byte team))
                     SessionBase.Sessions.First().GetLocalCommands().Require<WantedTeamProperty>().Value = team;
             });
-            
-            ConsoleCommandExecutor.SetCommand("r", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
+
+            ConsoleCommandExecutor.SetCommand("rollback_override", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
+            ConsoleCommandExecutor.SetCommand("show_log", args => Application.OpenURL($"file://{Application.consoleLogPath}"));
 
             Debug.Log("Started session manager");
             AnalysisLogger.Reset(string.Empty);
@@ -144,7 +145,7 @@ namespace Voxelfield.Session
             return StartSession(client);
         }
 
-        private static T StartSession<T>(T session) where T : NetworkedSessionBase
+        private static TSession StartSession<TSession>(TSession session) where TSession : NetworkedSessionBase
         {
             try
             {
@@ -262,108 +263,67 @@ namespace Voxelfield.Session
         }
 
 #if UNITY_EDITOR
-        [MenuItem("Build/Linux Server")]
-        public static void BuildLinuxServer()
-        {
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
-            var buildPlayerOptions = new BuildPlayerOptions
-            {
-                scenes = new[] {"Assets/Scenes/Base.unity"},
-                locationPathName = "Builds/Linux/Voxelfield", target = BuildTarget.StandaloneLinux64, options = BuildOptions.EnableHeadlessMode,
-            };
-
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            BuildSummary summary = report.summary;
-
-            switch (summary.result)
-            {
-                case BuildResult.Succeeded:
-                    Debug.Log($"Server Linux build succeeded: {summary.totalSize / 1000000:F1} mb");
-                    break;
-                case BuildResult.Failed:
-                    Debug.Log("Server Linux build failed");
-                    break;
-            }
-        }
-
         [MenuItem("Build/Windows IL2CPP Player")]
         public static void BuildWindowsIl2CppPlayer()
-        {
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.IL2CPP);
-            var buildPlayerOptions = new BuildPlayerOptions
-            {
-                scenes = new[] {"Assets/Scenes/Base.unity"},
-                locationPathName = "Builds/Windows/Voxelfield.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.AutoRunPlayer,
-            };
-
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            BuildSummary summary = report.summary;
-
-            switch (summary.result)
-            {
-                case BuildResult.Succeeded:
-                    Debug.Log($"Windows IL2CPP player build succeeded: {summary.totalSize / 1000000:F1} mb");
-                    break;
-                case BuildResult.Failed:
-                    Debug.Log("Windows IL2CPP player build failed");
-                    break;
-            }
-        }
+            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Windows IL2CPP Player");
 
         [MenuItem("Build/Windows Mono Player")]
         public static void BuildWindowsMonoPlayer()
-        {
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
-            var buildPlayerOptions = new BuildPlayerOptions
-            {
-                scenes = new[] {"Assets/Scenes/Base.unity"},
-                locationPathName = "C:/Users/qhdwi/Desktop/Voxelfield/Voxelfield.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.AutoRunPlayer,
-            };
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneWindows64, "Windows Mono Player");
 
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            BuildSummary summary = report.summary;
-
-            switch (summary.result)
-            {
-                case BuildResult.Succeeded:
-                    Debug.Log($"Windows Mono player build succeeded: {summary.totalSize / 1000000:F1} mb");
-                    break;
-                case BuildResult.Failed:
-                    Debug.Log("Windows Mono player build failed");
-                    break;
-            }
-        }
-        
         [MenuItem("Build/Windows IL2CPP Server")]
         public static void BuildWindowsIl2CppServer()
-        {
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.IL2CPP);
-            var buildPlayerOptions = new BuildPlayerOptions
-            {
-                scenes = new[] {"Assets/Scenes/Base.unity"},
-                locationPathName = "Builds/Windows Server/Voxelfield.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.EnableHeadlessMode
-            };
+            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Windows IL2CPP Server", true);
 
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            BuildSummary summary = report.summary;
-
-            switch (summary.result)
-            {
-                case BuildResult.Succeeded:
-                    Debug.Log($"Windows IL2CPP server build succeeded: {summary.totalSize / 1000000:F1} mb");
-                    break;
-                case BuildResult.Failed:
-                    Debug.Log("Windows IL2CPP server build failed");
-                    break;
-            }
-        }
+        [MenuItem("Build/Linux Mono Server")]
+        public static void BuildLinuxMonoServer()
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Windows Linux Server", true);
 
         [MenuItem("Build/Release")]
         public static void BuildRelease()
         {
             // PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "VOXELFIELD_RELEASE");
             BuildWindowsIl2CppPlayer();
-            BuildLinuxServer();
+            BuildLinuxMonoServer();
+        }
+
+        private static void Build(ScriptingImplementation scripting, BuildTarget target, string name, bool isServer = false)
+        {
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, scripting);
+            string executablePath = Path.Combine("Builds", name.Replace(' ', Path.DirectorySeparatorChar), "Voxelfield");
+            switch (target)
+            {
+                case BuildTarget.StandaloneWindows64:
+                    executablePath = Path.ChangeExtension(executablePath, "exe");
+                    break;
+                case BuildTarget.StandaloneOSX:
+                    executablePath = Path.ChangeExtension(executablePath, "app");
+                    break;
+            }
+            var buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = new[] {"Assets/Scenes/Base.unity"},
+                locationPathName = executablePath,
+                target = target,
+                options = isServer ? BuildOptions.EnableHeadlessMode : BuildOptions.AutoRunPlayer
+            };
+
+            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            BuildSummary summary = report.summary;
+
+            switch (summary.result)
+            {
+                case BuildResult.Succeeded:
+                    Debug.Log($"{name} build succeeded: {summary.totalSize / 1_000_000:F1} mb");
+                    break;
+                case BuildResult.Unknown:
+                case BuildResult.Failed:
+                case BuildResult.Cancelled:
+                    Debug.Log($"{name} build result: {summary.result}");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 #endif
     }

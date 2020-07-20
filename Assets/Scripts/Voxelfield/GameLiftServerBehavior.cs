@@ -48,10 +48,6 @@ namespace Voxelfield
 
         private bool OnHealthCheck() => true;
 
-        private void OnApplicationQuit()
-        {
-            if (!Application.isBatchMode) return;
-            GameLiftServerAPI.Destroy();
-        }
+        private void OnApplicationQuit() => GameLiftServerAPI.Destroy();
     }
 }
