@@ -47,6 +47,51 @@ namespace Swihoni.Sessions
         };
     }
 
+    public readonly struct ModifyContext
+    {
+        public readonly SessionBase session;
+        public readonly Container entity, sessionContainer, commands;
+        public readonly int playerId;
+        public readonly Container player;
+        public readonly uint timeUs, durationUs;
+        public readonly int tickDelta;
+
+        public ModifyContext(SessionBase session = null, Container sessionContainer = null, Container commands = null,
+                             int? playerId = null, Container player = null,
+                             Container entity = null,
+                             uint? timeUs = null, uint? durationUs = null, int? tickDelta = null, in ModifyContext? existing = null)
+        {
+            if (existing is ModifyContext context)
+            {
+                this.session = session ?? context.session;
+                this.entity = entity ?? context.entity;
+                this.sessionContainer = sessionContainer ?? context.sessionContainer;
+                this.commands = commands ?? context.commands;
+                this.playerId = playerId ?? context.playerId;
+                this.player = player ?? context.player;
+                this.timeUs = timeUs ?? context.timeUs;
+                this.durationUs = durationUs ?? context.durationUs;
+                this.tickDelta = tickDelta ?? context.tickDelta;
+            }
+            else
+            {
+                this.session = session;
+                this.entity = entity;
+                this.sessionContainer = sessionContainer;
+                this.commands = commands;
+                this.playerId = playerId.GetValueOrDefault();
+                this.player = player;
+                this.timeUs = timeUs.GetValueOrDefault();
+                this.durationUs = durationUs.GetValueOrDefault();
+                this.tickDelta = tickDelta.GetValueOrDefault();
+            }
+        }
+
+        public Container GetModifyingPlayer() => session.GetModifyingPayerFromId(playerId, sessionContainer);
+
+        public Container GetModifyingPlayer(int otherPlayerId) => session.GetModifyingPayerFromId(otherPlayerId, sessionContainer);
+    }
+
     public class SessionInjectorBase
     {
         protected internal SessionBase Manager { get; set; }
@@ -311,11 +356,13 @@ namespace Swihoni.Sessions
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public virtual ModeBase GetModifyingMode(Container session = null)
         {
-            ModeBase mode = ModeManager.GetMode(session ?? GetLatestSession());
+            session = session ?? GetLatestSession();
+            ModeBase mode = ModeManager.GetMode(session);
             if (!m_Mode || m_Mode != mode)
             {
-                if (m_Mode) m_Mode.EndModify(this, session);
-                mode.BeginModify(this, session);
+                var modify = new ModifyContext(this, session);
+                if (m_Mode) m_Mode.EndModify(modify);
+                mode.BeginModify(modify);
             }
             return m_Mode = mode;
         }

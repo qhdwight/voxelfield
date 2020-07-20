@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
@@ -91,7 +92,10 @@ namespace Swihoni.Sessions.Items.Modifiers
                 if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
                 m_HitPlayers.Add(hitbox.Manager);
                 if (session.GetModifyingPayerFromId(playerId).With<ServerTag>())
-                    session.GetModifyingMode().PlayerHit(session, playerId, hitbox, this, hit, durationUs);
+                {
+                    var hitContext = new PlayerHitContext(new ModifyContext(session, playerId: playerId, durationUs: durationUs), hitbox, this, hit);
+                    session.GetModifyingMode().PlayerHit(hitContext);
+                }
             }
             m_HitPlayers.Clear();
 

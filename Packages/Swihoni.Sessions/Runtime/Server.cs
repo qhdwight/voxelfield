@@ -137,7 +137,8 @@ namespace Swihoni.Sessions
                     if (!IsLoading && serverPlayer.Require<HealthProperty>().WithoutValue)
                     {
                         Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {clientId}");
-                        SetupNewPlayer(serverSession, clientId, serverPlayer, serverSession);
+                        var modifyContext = new ModifyContext(this, serverSession, playerId: clientId, player: serverPlayer);
+                        SetupNewPlayer(modifyContext);
                     }
                     HandleClientCommand(clientId, m_EmptyClientCommands, serverSession, serverPlayer);
                     break;
@@ -165,12 +166,14 @@ namespace Swihoni.Sessions
                 _session = this; // Prevent closure allocation
                 _timeUs = timeUs;
                 _durationUs = durationUs;
+                _container = serverSession;
                 EntityManager.ModifyAll(serverSession, (modifer, _, entity) =>
                 {
                     var entityModifier = (EntityModifierBehavior) modifer;
-                    entityModifier.Modify(_session, entity, _timeUs, _durationUs);
+                    var modifyContext = new ModifyContext(_session, _container, entity: entity, timeUs: _timeUs, durationUs: _durationUs);
+                    entityModifier.Modify(modifyContext);
                 });
-                GetModifyingMode(serverSession).Modify(this, serverSession, durationUs);
+                GetModifyingMode(serverSession).Modify(new ModifyContext(_session, _container, timeUs: _timeUs, durationUs: _durationUs));
             }
 
             SendServerSession(tick, serverSession);
@@ -302,7 +305,7 @@ namespace Swihoni.Sessions
                     if (!IsLoading)
                     {
                         GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs, tickDelta);
-                        mode.ModifyPlayer(this, serverSession, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs, tickDelta);
+                        mode.ModifyPlayer(new ModifyContext(this, serverSession, receivedClientCommands, clientId, serverPlayer, durationUs: clientStamp.durationUs, tickDelta: tickDelta));
                     }
                 }
             }
@@ -325,11 +328,12 @@ namespace Swihoni.Sessions
             }, serverPlayer, receivedClientCommands);
         }
 
-        protected void SetupNewPlayer(Container session, int playerId, Container player, Container sessionContainer)
+        protected void SetupNewPlayer(in ModifyContext context)
         {
-            GetModifyingMode(session).SetupNewPlayer(this, playerId, player, sessionContainer);
+            GetModifyingMode(context.sessionContainer).SetupNewPlayer(context);
             // TODO:refactor zeroing
 
+            Container player = context.player;
             player.ZeroIfWith<StatsComponent>();
             player.Require<HasSentInitialData>().Zero();
             player.Require<ServerPingComponent>().Zero();

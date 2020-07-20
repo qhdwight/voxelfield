@@ -33,22 +33,22 @@ namespace Voxelfield.Session.Mode
         private CurePackageBehavior[] m_CurePackages;
         private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
 
-        public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
+        public override void Modify(in ModifyContext context)
         {
-            base.Modify(session, sessionContainer, durationUs);
-            var stage = sessionContainer.Require<ShowdownSessionComponent>();
+            base.Modify(context);
+            var stage = context.sessionContainer.Require<ShowdownSessionComponent>();
             if (stage.number.WithoutValue) // If in warmup
             {
-                int playerCount = GetActivePlayerCount(sessionContainer);
+                int playerCount = GetActivePlayerCount(context.sessionContainer);
                 if (playerCount == 1)
                     // if (playerCount == TotalPlayers)
                 {
-                    StartFirstStage(session, sessionContainer, stage);
+                    StartFirstStage(context, stage);
                 }
             }
             if (stage.number.WithValue)
             {
-                if (stage.remainingUs > durationUs) stage.remainingUs.Value -= durationUs;
+                if (stage.remainingUs > context.durationUs) stage.remainingUs.Value -= context.durationUs;
                 else
                 {
                     // Advance stage
@@ -59,26 +59,26 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
+        public override void ModifyPlayer(in ModifyContext context)
         {
-            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
+            base.ModifyPlayer(in context);
 
-            var stage = container.Require<ShowdownSessionComponent>();
+            var stage = context.sessionContainer.Require<ShowdownSessionComponent>();
             if (stage.number.WithoutValue) return;
 
             bool isFightTime = stage.remainingUs < FightTimeUs;
-            player.Require<FrozenProperty>().Value = !isFightTime;
+            context.player.Require<FrozenProperty>().Value = !isFightTime;
             if (isFightTime)
             {
-                if (tickDelta >= 1)
+                if (context.tickDelta >= 1)
                 {
-                    var showdownPlayer = player.Require<ShowdownPlayerComponent>();
-                    PlayerSecuring(player, commands, showdownPlayer, stage, durationUs);   
+                    var showdownPlayer = context.player.Require<ShowdownPlayerComponent>();
+                    PlayerSecuring(context, showdownPlayer, stage);   
                 }
             }
             else
             {
-                BuyingMode.HandleBuying(this, player, commands);
+                BuyingMode.HandleBuying(this, context.player, context.commands);
             }
         }
 
@@ -92,11 +92,12 @@ namespace Voxelfield.Session.Mode
             return false;
         }
 
-        private void PlayerSecuring(Container player, Container commands, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage, uint durationUs)
+        private void PlayerSecuring(in ModifyContext modifyContext, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage)
         {
             var isInteracting = false;
             CurePackageComponent cure = default;
-            if (commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact) && IsLookingAt(player, out CurePackageBehavior curePackage))
+            if (modifyContext.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)
+             && IsLookingAt(modifyContext.player, out CurePackageBehavior curePackage))
             {
                 cure = stage.curePackages[curePackage.Container.Require<IdProperty>()];
                 if (cure.isActive.WithValueEqualTo(true)) isInteracting = true;
@@ -105,7 +106,7 @@ namespace Voxelfield.Session.Mode
             {
                 checked
                 {
-                    showdownPlayer.elapsedSecuringUs.Value += durationUs;
+                    showdownPlayer.elapsedSecuringUs.Value += modifyContext.durationUs;
                     if (showdownPlayer.elapsedSecuringUs > SecureTimeUs)
                     {
                         Secure(showdownPlayer, stage, cure);
@@ -124,15 +125,15 @@ namespace Voxelfield.Session.Mode
             cure.isActive.Value = false;
         }
 
-        protected override void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
-                                                  uint durationUs)
+        protected override void HandleAutoRespawn(in ModifyContext context, HealthProperty health)
         {
-            if (InWarmup(container)) base.HandleAutoRespawn(session, container, playerId, player, health, commands, durationUs); // Random respawn
+            if (InWarmup(context.sessionContainer)) base.HandleAutoRespawn(in context, health); // Random respawn
         }
 
-        private static void FirstStageSpawn(Container session, int playerId, Container player, QueuedTeamSpawns spawns)
+        private static void FirstStageSpawn(in ModifyContext modifyContext, QueuedTeamSpawns spawns)
         {
-            player.Require<TeamProperty>().Value = (byte) (playerId % PlayersPerTeam);
+            Container player = modifyContext.player;
+            player.Require<TeamProperty>().Value = (byte) (modifyContext.playerId % PlayersPerTeam);
 
             var move = player.Require<MoveComponent>();
             move.Zero();
@@ -152,14 +153,14 @@ namespace Voxelfield.Session.Mode
             player.Require<ShowdownPlayerComponent>().Zero();
         }
 
-        private static void StartFirstStage(SessionBase session, Container sessionContainer, ShowdownSessionComponent stage)
+        private static void StartFirstStage(in ModifyContext context, ShowdownSessionComponent stage)
         {
             ModelsProperty models = MapManager.Singleton.Map.models;
             QueuedTeamSpawns spawns = FindSpawns(models);
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
             SetActiveCures(stage);
-            ForEachActivePlayer(session, sessionContainer, (playerId, player) => FirstStageSpawn(sessionContainer, playerId, player, spawns));
+            ForEachActivePlayer(context, (in ModifyContext playerModifyContext) => FirstStageSpawn(playerModifyContext, spawns));
             Debug.Log("Started first stage");
         }
 
@@ -198,28 +199,29 @@ namespace Voxelfield.Session.Mode
 
         private static bool InWarmup(Container session) => session.Require<ShowdownSessionComponent>().number.WithoutValue;
 
-        protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer,
-                                                       PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
+        protected override float CalculateWeaponDamage(in PlayerHitContext context)
         {
-            if (!InWarmup(session.GetLatestSession()) && hitPlayer.Require<TeamProperty>() == inflictingPlayer.Require<TeamProperty>()) return 0.0f;
+            if (!InWarmup(context.modifyContext.session.GetLatestSession())
+             && context.hitPlayer.Require<TeamProperty>() == context.modifyContext.player.Require<TeamProperty>()) return 0.0f;
 
-            float baseDamage = base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit);
-            return CalculateDamageWithMovement(session, inflictingPlayer, weapon, baseDamage);
+            float baseDamage = base.CalculateWeaponDamage(context);
+            return CalculateDamageWithMovement(context, baseDamage);
         }
 
-        public static float CalculateDamageWithMovement(SessionBase session, Container inflictingPlayer, WeaponModifierBase weapon, float baseDamage)
+        public static float CalculateDamageWithMovement(in PlayerHitContext context, float baseDamage)
         {
-            if (weapon is MeleeModifier) return baseDamage;
+            if (context.weapon is MeleeModifier) return baseDamage;
             // Nerf damage while on the run
+            Container inflictingPlayer = context.modifyContext.player;
             Vector3 velocity = inflictingPlayer.Require<MoveComponent>().velocity;
-            var modifierPrefab = (PlayerModifierDispatcherBehavior) session.PlayerManager.GetModifierPrefab(inflictingPlayer.Require<IdProperty>());
+            var modifierPrefab = (PlayerModifierDispatcherBehavior) context.modifyContext.session.PlayerManager.GetModifierPrefab(inflictingPlayer.Require<IdProperty>());
             float ratio = 1.0f - Mathf.Clamp01(velocity.LateralMagnitude() / modifierPrefab.Movement.MaxSpeed);
             const float minimumRatio = 0.3f;
             ratio = minimumRatio + ratio * (1.0f - minimumRatio);
             return baseDamage * ratio;
         }
 
-        public override bool AllowTeamSwap(Container container, Container player) => InWarmup(container);
+        public override bool AllowTeamSwap(in ModifyContext context) => InWarmup(context.sessionContainer);
 
         public override void Render(SessionBase session, Container sessionContainer)
         {

@@ -13,6 +13,64 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Modes
 {
+    public readonly struct DamageContext
+    {
+        public readonly ModifyContext modifyContext;
+        public readonly bool isHeadShot;
+        public readonly string weaponName;
+        public readonly byte damage;
+        public readonly int hitPlayerId, inflictingPlayerId;
+        public readonly Container hitPlayer, inflictingPlayer;
+
+        public DamageContext(in ModifyContext? modifyContext = null, int? inflictingPlayerId = null, Container inflictingPlayer = null, Container hitPlayer = null,
+                             int? hitPlayerId = null,
+                             byte? damage = null, string weaponName = null, bool? isHeadShot = null, PlayerHitContext? playerHitContext = null)
+        {
+            if (playerHitContext is PlayerHitContext context)
+            {
+                this.modifyContext = context.modifyContext;
+                this.inflictingPlayerId = context.modifyContext.playerId;
+                this.inflictingPlayer = context.modifyContext.player;
+                this.hitPlayer = context.hitPlayer;
+                this.hitPlayerId = context.hitPlayerId;
+                this.damage = damage.GetValueOrDefault();
+                this.weaponName = weaponName;
+                this.isHeadShot = isHeadShot.GetValueOrDefault();
+            }
+            else
+            {
+                this.modifyContext = modifyContext.GetValueOrDefault();
+                this.inflictingPlayerId = inflictingPlayerId.GetValueOrDefault();
+                this.inflictingPlayer = inflictingPlayer;
+                this.hitPlayer = hitPlayer;
+                this.hitPlayerId = hitPlayerId.GetValueOrDefault();
+                this.damage = damage.GetValueOrDefault();
+                this.weaponName = weaponName;
+                this.isHeadShot = isHeadShot.GetValueOrDefault();
+            }
+        }
+    }
+
+    public readonly struct PlayerHitContext
+    {
+        public readonly ModifyContext modifyContext;
+        public readonly int hitPlayerId;
+        public readonly Container hitPlayer;
+        public readonly PlayerHitbox hitbox;
+        public readonly WeaponModifierBase weapon;
+        public readonly RaycastHit hit;
+
+        public PlayerHitContext(in ModifyContext modifyContext, PlayerHitbox hitbox, WeaponModifierBase weapon, RaycastHit hit)
+        {
+            this.modifyContext = modifyContext;
+            this.hitbox = hitbox;
+            this.weapon = weapon;
+            this.hit = hit;
+            hitPlayerId = hitbox.Manager.PlayerId;
+            hitPlayer = modifyContext.GetModifyingPlayer(hitPlayerId);
+        }
+    }
+
     public abstract class ModeBase : ScriptableObject
     {
         private static readonly Dictionary<Color, string> CachedHex = new Dictionary<Color, string>();
@@ -28,9 +86,10 @@ namespace Swihoni.Sessions.Modes
             return hex;
         }
 
-        protected virtual void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
+        protected virtual void SpawnPlayer(in ModifyContext context)
         {
             // TODO:refactor zeroing
+            Container player = context.player;
             player.ZeroIfWith<FrozenProperty>();
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
@@ -55,7 +114,7 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out MoveComponent move))
             {
                 move.Zero();
-                move.position.Value = GetSpawnPosition(player, playerId, session, sessionContainer);
+                move.position.Value = GetSpawnPosition(context);
             }
         }
 
@@ -63,12 +122,9 @@ namespace Swihoni.Sessions.Modes
 
         public virtual Color GetTeamColor(int teamId) => Color.white;
 
-        protected virtual Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer) => new Vector3 {y = 8.0f};
+        protected virtual Vector3 GetSpawnPosition(in ModifyContext context) => new Vector3 {y = 8.0f};
 
-        public virtual void BeginModify(SessionBase session, Container sessionContainer)
-        {
-            ForEachActivePlayer(session, sessionContainer, (playerId, player) => SpawnPlayer(session, sessionContainer, playerId, player));
-        }
+        public virtual void BeginModify(in ModifyContext context) { ForEachActivePlayer(context, (in ModifyContext playerModifyContext) => SpawnPlayer(playerModifyContext)); }
 
         protected virtual void KillPlayer(Container player, Container killer)
         {
@@ -79,99 +135,96 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void Render(SessionBase session, Container sessionContainer) => session.Injector.OnRenderMode(sessionContainer);
 
-        public virtual void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
+        public virtual void ModifyPlayer(in ModifyContext context)
         {
-            if (player.Without(out HealthProperty health) || health.WithoutValue) return;
+            if (context.player.Without(out HealthProperty health) || health.WithoutValue) return;
 
-            if (tickDelta >= 1)
+            if (context.tickDelta >= 1)
             {
-                if (player.With(out HitMarkerComponent hitMarker))
-                    if (hitMarker.elapsedUs.Value > durationUs) hitMarker.elapsedUs.Value -= durationUs;
+                if (context.player.With(out HitMarkerComponent hitMarker))
+                    if (hitMarker.elapsedUs.Value > context.durationUs) hitMarker.elapsedUs.Value -= context.durationUs;
                     else hitMarker.elapsedUs.Value = 0u;
-                if (player.With(out DamageNotifierComponent damageNotifier))
-                    if (damageNotifier.elapsedUs.Value > durationUs) damageNotifier.elapsedUs.Value -= durationUs;
+                if (context.player.With(out DamageNotifierComponent damageNotifier))
+                    if (damageNotifier.elapsedUs.Value > context.durationUs) damageNotifier.elapsedUs.Value -= context.durationUs;
                     else damageNotifier.elapsedUs.Value = 0u;
-                if (player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
-                    InflictDamage(session, playerId, player, player, playerId, health.Value, "Void");   
+                if (context.player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
+                    InflictDamage(new DamageContext(context, context.playerId, context.player, context.player, context.playerId, health.Value, "Void"));
             }
 
-            if (commands.WithPropertyWithValue(out WantedTeamProperty wantedTeam) && wantedTeam != player.Require<TeamProperty>() && AllowTeamSwap(container, player))
+            if (context.commands.WithPropertyWithValue(out WantedTeamProperty wantedTeam) && wantedTeam != context.player.Require<TeamProperty>() && AllowTeamSwap(context))
             {
-                player.Require<TeamProperty>().Value = wantedTeam;
-                SpawnPlayer(session, container, playerId, player);
+                context.player.Require<TeamProperty>().Value = wantedTeam;
+                SpawnPlayer(context);
             }
         }
 
-        public virtual bool AllowTeamSwap(Container container, Container player) => true;
+        public virtual bool AllowTeamSwap(in ModifyContext context) => true;
 
-        public virtual void Modify(SessionBase session, Container sessionContainer, uint durationUs)
+        public virtual void Modify(in ModifyContext context)
         {
             BoolProperty restartMode = ConfigManagerBase.Active.restartMode;
             if (restartMode)
             {
-                EndModify(session, sessionContainer);
-                BeginModify(session, sessionContainer);
+                EndModify(context);
+                BeginModify(context);
                 restartMode.Value = false;
             }
-            
-            if (sessionContainer.With(out KillFeedElement killFeed))
+
+            if (context.sessionContainer.With(out KillFeedElement killFeed))
             {
                 foreach (KillFeedComponent kill in killFeed)
-                    if (kill.elapsedUs > durationUs) kill.elapsedUs.Value -= durationUs;
+                    if (kill.elapsedUs > context.durationUs) kill.elapsedUs.Value -= context.durationUs;
                     else kill.elapsedUs.Value = 0u;
             }
         }
 
-        public virtual void PlayerHit(SessionBase session, int inflictingPlayerId, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit, uint durationUs)
+        public virtual void PlayerHit(in PlayerHitContext playerHitContext)
         {
-            int hitPlayerId = hitbox.Manager.PlayerId;
-            Container hitPlayer = session.GetModifyingPayerFromId(hitPlayerId),
-                      inflictingPlayer = session.GetModifyingPayerFromId(inflictingPlayerId);
-            if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive && hitPlayer.With<ServerTag>())
+            if (playerHitContext.hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive && playerHitContext.hitPlayer.With<ServerTag>())
             {
-                var damage = checked((byte) Mathf.Clamp(CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit), 0.0f, 255.0f));
-                InflictDamage(session, inflictingPlayerId, inflictingPlayer, hitPlayer, hitPlayerId, damage, weapon.itemName, hitbox.IsHead);
+                var damage = checked((byte) Mathf.Clamp(CalculateWeaponDamage(playerHitContext), 0.0f, 255.0f));
+                var damageContext = new DamageContext(playerHitContext: playerHitContext,
+                                                      damage: damage, weaponName: playerHitContext.weapon.itemName, isHeadShot: playerHitContext.hitbox.IsHead);
+                InflictDamage(damageContext);
             }
         }
 
-        protected virtual float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer,
-                                                      PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
+        protected virtual float CalculateWeaponDamage(in PlayerHitContext context)
         {
-            float damage = weapon.GetDamage(hit.distance) * hitbox.DamageMultiplier;
-            if (hitbox.IsHead) damage *= weapon.HeadShotMultiplier;
+            float damage = context.weapon.GetDamage(context.hit.distance) * context.hitbox.DamageMultiplier;
+            if (context.hitbox.IsHead) damage *= context.weapon.HeadShotMultiplier;
             return damage;
         }
 
-        public void InflictDamage(SessionBase session, int inflictingPlayerId, Container inflictingPlayer, Container hitPlayer, int hitPlayerId, byte damage, string weaponName,
-                                  bool isHeadShot = false)
+        public void InflictDamage(in DamageContext damageContext)
         {
             checked
             {
-                bool isSelfInflicting = inflictingPlayerId == hitPlayerId,
-                     usesHitMarker = inflictingPlayer.With(out HitMarkerComponent hitMarker) && !isSelfInflicting,
-                     usesNotifier = hitPlayer.With(out DamageNotifierComponent damageNotifier);
+                bool isSelfInflicting = damageContext.inflictingPlayerId == damageContext.hitPlayerId,
+                     usesHitMarker = damageContext.inflictingPlayer.With(out HitMarkerComponent hitMarker) && !isSelfInflicting,
+                     usesNotifier = damageContext.hitPlayer.With(out DamageNotifierComponent damageNotifier);
 
-                var health = hitPlayer.Require<HealthProperty>();
-                bool isKilling = damage >= health;
+                var health = damageContext.hitPlayer.Require<HealthProperty>();
+                bool isKilling = damageContext.damage >= health;
                 if (isKilling)
                 {
-                    KillPlayer(hitPlayer, inflictingPlayer);
+                    KillPlayer(damageContext.hitPlayer, damageContext.inflictingPlayer);
 
-                    if (!isSelfInflicting && inflictingPlayer.With(out StatsComponent stats))
+                    if (!isSelfInflicting && damageContext.inflictingPlayer.With(out StatsComponent stats))
                         stats.kills.Value++;
 
                     if (usesHitMarker) hitMarker.isKill.Value = true;
 
-                    if (session.GetLatestSession().Without(out KillFeedElement killFeed)) return;
+                    if (damageContext.modifyContext.sessionContainer.Without(out KillFeedElement killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)
                     {
                         if (kill.elapsedUs > 0u) continue;
                         // Empty kill found
                         kill.elapsedUs.Value = 2_000_000u;
-                        kill.killingPlayerId.Value = (byte) inflictingPlayerId;
-                        kill.killedPlayerId.Value = (byte) hitPlayerId;
-                        kill.isHeadShot.Value = isHeadShot;
-                        kill.weaponName.SetTo(weaponName);
+                        kill.killingPlayerId.Value = (byte) damageContext.inflictingPlayerId;
+                        kill.killedPlayerId.Value = (byte) damageContext.hitPlayerId;
+                        kill.isHeadShot.Value = damageContext.isHeadShot;
+                        kill.weaponName.SetTo(damageContext.weaponName);
                         break;
                     }
 
@@ -179,7 +232,7 @@ namespace Swihoni.Sessions.Modes
                 }
                 else
                 {
-                    health.Value -= damage;
+                    health.Value -= damageContext.damage;
                     if (usesHitMarker) hitMarker.isKill.Value = false;
                 }
 
@@ -188,26 +241,30 @@ namespace Swihoni.Sessions.Modes
                 if (usesNotifier)
                 {
                     damageNotifier.elapsedUs.Value = 2_000_000u;
-                    damageNotifier.inflictingPlayerId.Value = (byte) inflictingPlayerId;
-                    damageNotifier.damage.Value = damage;
+                    damageNotifier.inflictingPlayerId.Value = (byte) damageContext.inflictingPlayerId;
+                    damageNotifier.damage.Value = damageContext.damage;
                 }
             }
         }
 
-        public virtual void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer)
-            => SpawnPlayer(session, sessionContainer, playerId, player);
+        public virtual void SetupNewPlayer(in ModifyContext context) => SpawnPlayer(context);
 
-        protected static void ForEachActivePlayer(SessionBase session, Container container, Action<int, Container> action)
+        public delegate void ModifyPlayerAction(in ModifyContext playerModifyContext);
+
+        protected static void ForEachActivePlayer(in ModifyContext context, ModifyPlayerAction action)
         {
             for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
             {
-                Container player = session.GetModifyingPayerFromId(playerId, container);
+                Container player = context.GetModifyingPlayer(playerId);
                 if (player.Require<HealthProperty>().WithValue)
-                    action(playerId, player);
+                {
+                    var playerModifyContext = new ModifyContext(existing: context, player: player, playerId: playerId);
+                    action(playerModifyContext);
+                }
             }
         }
 
-        public virtual void EndModify(SessionBase session, Container sessionContainer) { }
+        public virtual void EndModify(in ModifyContext context) { }
 
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
 

@@ -1,4 +1,5 @@
 using Swihoni.Components;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
@@ -76,12 +77,14 @@ namespace Swihoni.Sessions.Entities
                 : Vector3.up;
         }
 
-        public override void Modify(SessionBase session, Container container, uint timeUs, uint durationUs)
+        public override void Modify(in ModifyContext context)
         {
-            base.Modify(session, container, timeUs, durationUs);
+            base.Modify(context);
 
-            var throwable = container.Require<ThrowableComponent>();
-            throwable.thrownElapsedUs.Value += durationUs;
+            Container entity = context.entity;
+
+            var throwable = entity.Require<ThrowableComponent>();
+            throwable.thrownElapsedUs.Value += context.durationUs;
 
             bool poppedFromTime = throwable.thrownElapsedUs >= m_PopTimeUs && m_LastElapsedUs < throwable.popTimeUs;
             if (poppedFromTime || PopQueued)
@@ -100,11 +103,11 @@ namespace Swihoni.Sessions.Entities
                 bool justPopped = m_LastElapsedUs < throwable.popTimeUs;
 
                 if (m_Damage > 0 && (m_Interval > 0u || justPopped))
-                    HurtNearby(session, durationUs, justPopped);
+                    HurtNearby(context, justPopped);
             }
             else
             {
-                throwable.contactElapsedUs.Value += durationUs;
+                throwable.contactElapsedUs.Value += context.durationUs;
                 (CollisionType collisionType, Collision collision) = m_LastCollision;
                 if (collisionType != CollisionType.None)
                 {
@@ -113,7 +116,7 @@ namespace Swihoni.Sessions.Entities
                     {
                         throwable.popTimeUs.Value = throwable.thrownElapsedUs;
                         resetContact = false;
-                        HurtNearby(session, durationUs, true);
+                        HurtNearby(context, true);
                     }
                     if (collisionType == CollisionType.World && !m_ExplodeOnContact)
                     {
@@ -142,10 +145,10 @@ namespace Swihoni.Sessions.Entities
             throwable.rotation.Value = t.rotation;
 
             if (throwable.popTimeUs != uint.MaxValue && throwable.thrownElapsedUs - throwable.popTimeUs > m_PopDurationUs)
-                container.Zero();
+                entity.Zero();
         }
 
-        private void HurtNearby(SessionBase session, uint durationUs, bool justPopped)
+        private void HurtNearby(in ModifyContext context, bool justPopped)
         {
             int count = Physics.OverlapSphereNonAlloc(transform.position, m_Radius, m_OverlappingColliders, m_Mask);
             for (var i = 0; i < count; i++)
@@ -153,21 +156,23 @@ namespace Swihoni.Sessions.Entities
                 Collider hitCollider = m_OverlappingColliders[i];
                 if (!hitCollider.TryGetComponent(out PlayerTrigger trigger)) continue;
                 int hitPlayerId = trigger.PlayerId;
-                Container hitPlayer = session.GetModifyingPayerFromId(hitPlayerId);
+                Container hitPlayer = context.session.GetModifyingPayerFromId(hitPlayerId);
                 if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive)
                 {
-                    byte damage = CalculateDamage(hitPlayer, durationUs);
-                    session.GetModifyingMode().InflictDamage(session, ThrowerId, session.GetModifyingPayerFromId(ThrowerId), hitPlayer, hitPlayerId, damage, Name);
+                    byte damage = CalculateDamage(new ModifyContext(player: hitPlayer, durationUs: context.durationUs));
+                    Container inflictingPlayer = context.session.GetModifyingPayerFromId(ThrowerId);
+                    var damageContext = new DamageContext(context, ThrowerId, inflictingPlayer, hitPlayer, hitPlayerId, damage, Name);
+                    context.session.GetModifyingMode().InflictDamage(damageContext);
                 }
             }
-            if (justPopped) session.Injector.OnThrowablePopped(this);
+            if (justPopped) context.session.Injector.OnThrowablePopped(this);
         }
 
-        private byte CalculateDamage(Container hitPlayer, uint durationUs)
+        private byte CalculateDamage(in ModifyContext context)
         {
-            float distance = Vector3.Distance(hitPlayer.Require<MoveComponent>().position, transform.position);
+            float distance = Vector3.Distance(context.player.Require<MoveComponent>().position, transform.position);
             float ratio = (m_MinimumDamageRatio - 1.0f) * Mathf.Clamp01(distance / m_Radius) + 1.0f;
-            if (m_Interval > 0u) ratio *= durationUs * TimeConversions.MicrosecondToSecond;
+            if (m_Interval > 0u) ratio *= context.durationUs * TimeConversions.MicrosecondToSecond;
             return checked((byte) Mathf.Max(m_Damage * ratio, 1.0f));
         }
     }

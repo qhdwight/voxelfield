@@ -1,6 +1,7 @@
 ﻿using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Voxel.Map;
 
@@ -166,18 +167,22 @@ namespace Voxel
 
         public void UpdateMesh()
         {
+            Profiler.BeginSample("Update Mesh");
             m_Updating = true;
             m_SolidMeshData.Clear();
             m_FoliageMeshData.Clear();
             VoxelRenderer.RenderVoxels(m_ChunkManager, this, m_SolidMeshData, m_FoliageMeshData);
             m_Updating = false;
+            Profiler.EndSample();
         }
 
         private void ApplyMesh()
         {
+            Profiler.BeginSample("Apply Mesh");
             ApplyMesh(m_SolidMesh, m_SolidMeshData);
             ApplyMesh(m_FoliageMesh, m_FoliageMeshData);
             m_MeshCollider.sharedMesh = m_SolidMesh;
+            Profiler.EndSample();
         }
 
         private static void ApplyMesh(Mesh mesh, MeshData data)

@@ -15,27 +15,26 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Active.respawnDuration;
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
+        public override void ModifyPlayer(in ModifyContext context)
         {
-            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
+            base.ModifyPlayer(context);
 
-            if (commands.Without(out InputFlagProperty inputs) || player.Without(out HealthProperty health) || health.WithoutValue) return;
+            if (context.commands.Without(out InputFlagProperty inputs) || context.player.Without(out HealthProperty health) || health.WithoutValue) return;
 
-            if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive) InflictDamage(session, playerId, player, player, playerId, health, "Suicide");
+            if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive) InflictDamage(new DamageContext(context, context.playerId, context.player, context.player, context.playerId, health, "Suicide"));
             
-            if (tickDelta >= 1) HandleAutoRespawn(session, container, playerId, player, health, commands, durationUs);
+            if (context.tickDelta >= 1) HandleAutoRespawn(context, health);
         }
 
-        protected virtual void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
-                                                 uint durationUs)
+        protected virtual void HandleAutoRespawn(in ModifyContext context, HealthProperty health)
         {
-            if (health.IsAlive || player.Without(out RespawnTimerProperty respawn)) return;
+            if (health.IsAlive || context.player.Without(out RespawnTimerProperty respawn)) return;
 
-            if (respawn.Value > durationUs) respawn.Value -= durationUs;
+            if (respawn.Value > context.durationUs) respawn.Value -= context.durationUs;
             else
             {
                 respawn.Value = 0u;
-                SpawnPlayer(session, container, playerId, player);
+                SpawnPlayer(context);
             }
         }
     }

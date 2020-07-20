@@ -13,14 +13,13 @@ namespace Voxelfield.Session.Mode
     [CreateAssetMenu(fileName = "Warmup", menuName = "Session/Mode/Warmup", order = 0)]
     public class DeathmatchMode : DeathmatchModeBase
     {
-        protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
-                                                       in RaycastHit hit)
+        protected override float CalculateWeaponDamage(in PlayerHitContext context)
         {
-            float baseDamage = base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, in hit);
-            return ShowdownMode.CalculateDamageWithMovement(session, inflictingPlayer, weapon, baseDamage);
+            float baseDamage = base.CalculateWeaponDamage(context);
+            return ShowdownMode.CalculateDamageWithMovement(context, baseDamage);
         }
 
-        protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer) => GetRandomSpawn();
+        protected override Vector3 GetSpawnPosition(in ModifyContext context) => GetRandomSpawn();
 
         public static Vector3 GetRandomSpawn()
         {

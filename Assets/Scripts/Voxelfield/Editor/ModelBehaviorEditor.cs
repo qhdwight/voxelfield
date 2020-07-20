@@ -15,7 +15,7 @@ namespace Voxelfield.Editor
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            if (target is ModelBehavior model && !ReferenceEquals(model.Container, null))
+            if (target is ModelBehavior model && !(model.Container is null))
             {
                 if (model.Container.With(out TeamProperty teamProperty))
                     m_Team = EditorGUILayout.IntField("Team", m_Team.GetValueOrDefault(teamProperty.Value));

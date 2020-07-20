@@ -7,6 +7,7 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Items.Modifiers;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
@@ -67,39 +68,39 @@ namespace Voxelfield.Session.Mode
                                                .Cast<SiteBehavior>().ToArray();
         }
 
-        public override void BeginModify(SessionBase session, Container sessionContainer)
+        public override void BeginModify(in ModifyContext context)
         {
-            base.BeginModify(session, sessionContainer);
-            var secureArea = sessionContainer.Require<SecureAreaComponent>();
+            base.BeginModify(in context);
+            var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             secureArea.roundTime.Clear();
             secureArea.lastWinningTeam.Clear();
-            sessionContainer.Require<DualScoresComponent>().Clear();
+            context.sessionContainer.Require<DualScoresComponent>().Clear();
             secureArea.sites.Clear();
         }
 
-        public override void EndModify(SessionBase session, Container sessionContainer)
+        public override void EndModify(in ModifyContext context)
         {
-            ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
+            ForEachActivePlayer(context, (in ModifyContext playerModifyContext) =>
             {
+                Container player = playerModifyContext.player;
                 player.ZeroIfWith<FrozenProperty>();
                 player.Require<MoneyComponent>().Clear();
             });
-            sessionContainer.Require<SecureAreaComponent>().Clear();
-            sessionContainer.Require<DualScoresComponent>().Clear();
+            context.sessionContainer.Require<SecureAreaComponent>().Clear();
+            context.sessionContainer.Require<DualScoresComponent>().Clear();
         }
 
-        protected override void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
-                                                  uint durationUs)
+        protected override void HandleAutoRespawn(in ModifyContext context, HealthProperty health)
         {
-            if (container.Require<SecureAreaComponent>().roundTime.WithoutValue)
+            if (context.sessionContainer.Require<SecureAreaComponent>().roundTime.WithoutValue)
             {
-                base.HandleAutoRespawn(session, container, playerId, player, health, commands, durationUs);
+                base.HandleAutoRespawn(in context, health);
             }
             else
             {
                 // TODO:refactor this snippet is used multiple times
-                if (health.IsAlive || player.Without(out RespawnTimerProperty respawn)) return;
-                if (respawn.Value > durationUs) respawn.Value -= durationUs;
+                if (health.IsAlive || context.player.Without(out RespawnTimerProperty respawn)) return;
+                if (respawn.Value > context.durationUs) respawn.Value -= context.durationUs;
                 else respawn.Value = 0u;
             }
         }
@@ -116,10 +117,12 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
+        public override void Modify(in ModifyContext context)
         {
-            base.Modify(session, sessionContainer, durationUs);
-            
+            base.Modify(context);
+
+            Container sessionContainer = context.sessionContainer;
+            uint durationUs = context.durationUs;
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
             int activePlayerCount = GetActivePlayerCount(sessionContainer);
 
@@ -181,7 +184,7 @@ namespace Voxelfield.Session.Mode
                                 Collider collider = m_CachedColliders[i];
                                 if (collider.TryGetComponent(out PlayerTrigger playerTrigger))
                                 {
-                                    Container player = session.GetModifyingPayerFromId(playerTrigger.PlayerId);
+                                    Container player = context.GetModifyingPlayer(playerTrigger.PlayerId);
                                     if (player.Require<HealthProperty>().IsInactiveOrDead) continue;
 
                                     byte team = player.Require<TeamProperty>();
@@ -222,7 +225,7 @@ namespace Voxelfield.Session.Mode
                         }
                         secureArea.roundTime.Value -= durationUs;
                     }
-                    else NextRound(session, sessionContainer, secureArea);
+                    else NextRound(context, secureArea);
                 }
                 else
                 {
@@ -247,17 +250,18 @@ namespace Voxelfield.Session.Mode
                 bool start = activePlayerCount == m_Config.playerCount || ForceStart();
                 if (start)
                 {
-                    NextRound(session, sessionContainer, secureArea);
+                    NextRound(context, secureArea);
                     sessionContainer.Require<DualScoresComponent>().Zero();
                 }
             }
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
+        public override void ModifyPlayer(in ModifyContext context)
         {
-            TimeUsProperty roundTime = container.Require<SecureAreaComponent>().roundTime;
+            TimeUsProperty roundTime = context.sessionContainer.Require<SecureAreaComponent>().roundTime;
             bool isBuyTime = roundTime.WithValue && roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
-            if (isBuyTime) BuyingMode.HandleBuying(this, player, commands);
+            Container player = context.player;
+            if (isBuyTime) BuyingMode.HandleBuying(this, player, context.commands);
             player.Require<FrozenProperty>().Value = isBuyTime;
 
             if (PlayerModifierBehaviorBase.TryServerCommands(player, out IEnumerable<string[]> stringCommands))
@@ -273,18 +277,19 @@ namespace Voxelfield.Session.Mode
                     }
             }
 
-            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
+            base.ModifyPlayer(in context);
         }
 
-        public override void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer)
+        public override void SetupNewPlayer(in ModifyContext context)
         {
-            player.Require<TeamProperty>().Value = (byte) ((playerId + 1) % 2);
-            base.SetupNewPlayer(session, playerId, player, sessionContainer);
+            context.player.Require<TeamProperty>().Value = (byte) ((context.playerId + 1) % 2);
+            base.SetupNewPlayer(in context);
         }
 
-        protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
+        protected override void SpawnPlayer(in ModifyContext context)
         {
-            var secureArea = sessionContainer.Require<SecureAreaComponent>();
+            var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
+            Container player = context.player;
             if (secureArea.roundTime.WithValue)
             {
                 var health = player.Require<HealthProperty>();
@@ -301,7 +306,7 @@ namespace Voxelfield.Session.Mode
 
                 var move = player.Require<MoveComponent>();
                 move.Zero();
-                move.position.Value = GetSpawnPosition(player, playerId, session, sessionContainer);
+                move.position.Value = GetSpawnPosition(context);
                 player.ZeroIfWith<CameraComponent>();
                 health.Value = 100;
                 player.ZeroIfWith<HitMarkerComponent>();
@@ -311,13 +316,13 @@ namespace Voxelfield.Session.Mode
             }
             else
             {
-                base.SpawnPlayer(session, sessionContainer, playerId, player);
+                base.SpawnPlayer(in context);
             }
         }
 
         private static readonly List<int> RandomIndices = new List<int>();
 
-        protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer)
+        protected override Vector3 GetSpawnPosition(in ModifyContext context)
         {
             KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
                                                                                                               && modelId == ModelsProperty.Spawn
@@ -326,9 +331,9 @@ namespace Voxelfield.Session.Mode
                                                                          .OrderBy(spawnGroup => spawnGroup.Key)
                                                                          .Select(spawnGroup => spawnGroup.ToArray())
                                                                          .ToArray();
-            byte team = player.Require<TeamProperty>();
+            byte team = context.player.Require<TeamProperty>();
             KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
-            
+
             if (RandomIndices.Count == 0)
             {
                 RandomIndices.Capacity = teamSpawns.Length;
@@ -338,17 +343,17 @@ namespace Voxelfield.Session.Mode
             int index = Random.Range(0, RandomIndices.Count);
             int spawnIndex = RandomIndices[index];
             RandomIndices.RemoveAt(index);
-            
+
             return teamSpawns[spawnIndex].Key;
         }
 
-        private void NextRound(SessionBase session, Container sessionContainer, SecureAreaComponent secureArea)
+        private void NextRound(in ModifyContext context, SecureAreaComponent secureArea)
         {
-            var scores = sessionContainer.Require<DualScoresComponent>();
+            var scores = context.sessionContainer.Require<DualScoresComponent>();
             bool isLastRound = secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_Config.maxRounds;
             if (isLastRound)
             {
-                ForEachActivePlayer(session, sessionContainer, (playerId, player) => player.Require<FrozenProperty>().Value = true);
+                ForEachActivePlayer(context, (in ModifyContext playerModifyContext) => playerModifyContext.player.Require<FrozenProperty>().Value = true);
             }
             else
             {
@@ -358,11 +363,12 @@ namespace Voxelfield.Session.Mode
                     site.Zero();
                     site.timeUs.Value = m_Config.secureDurationUs;
                 }
-                ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
+                ForEachActivePlayer(context, (in ModifyContext playerModifyContext) =>
                 {
-                    SpawnPlayer(session, sessionContainer, playerId, player);
+                    SpawnPlayer(playerModifyContext);
                     if (secureArea.lastWinningTeam.WithValue)
                     {
+                        Container player = playerModifyContext.player;
                         UShortProperty money = player.Require<MoneyComponent>().count;
                         money.Value += player.Require<TeamProperty>() == secureArea.lastWinningTeam ? m_Config.roundWinMoney : m_Config.roundLoseMoney;
                         if (money.Value > 7000) money.Value = 7000;
@@ -396,11 +402,11 @@ namespace Voxelfield.Session.Mode
             return player.Require<HealthProperty>().IsDead && player.Require<RespawnTimerProperty>().Value < ConfigManagerBase.Active.respawnDuration / 2;
         }
 
-        protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
-                                                       in RaycastHit hit) =>
-            session.GetLatestSession().Require<SecureAreaComponent>().roundTime.WithValue && hitPlayer.Require<TeamProperty>() == inflictingPlayer.Require<TeamProperty>()
+        protected override float CalculateWeaponDamage(in PlayerHitContext context) =>
+            context.modifyContext.sessionContainer.Require<SecureAreaComponent>().roundTime.WithValue
+         && context.hitPlayer.Require<TeamProperty>() == context.modifyContext.player.Require<TeamProperty>()
                 ? 0.0f
-                : base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, in hit);
+                : base.CalculateWeaponDamage(context);
 
         public bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer)
         {

@@ -14,8 +14,9 @@ namespace Voxelfield.Session.Mode
     [CreateAssetMenu(fileName = "Designer", menuName = "Session/Mode/Designer", order = 0)]
     public class DesignerMode : ModeBase
     {
-        protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
+        protected override void SpawnPlayer(in ModifyContext context)
         {
+            Container player = context.player;
             Debug.Log("Spawn Player");
             // TODO:refactor zeroing
             if (player.With(out MoveComponent move))

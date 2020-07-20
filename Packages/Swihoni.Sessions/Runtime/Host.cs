@@ -56,7 +56,8 @@ namespace Swihoni.Sessions
                         hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
                         hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
                     }
-                    GetModifyingMode(session).ModifyPlayer(this, session, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+                    var context = new ModifyContext(this, session, playerId: HostPlayerId, player: m_HostCommands, commands: m_HostCommands, durationUs: deltaUs, tickDelta: 1);
+                    GetModifyingMode(session).ModifyPlayer(context);
                 }
             }
             var stamp = m_HostCommands.Require<ServerStampComponent>();
@@ -142,7 +143,8 @@ namespace Swihoni.Sessions
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
             if (hostPlayer.Require<HealthProperty>().WithValue) return;
             // Set up new player component data
-            SetupNewPlayer(tickSession, HostPlayerId, hostPlayer, tickSession);
+            var context = new ModifyContext(this, tickSession, playerId: HostPlayerId, player: hostPlayer);
+            SetupNewPlayer(context);
             tickSession.Require<LocalPlayerId>().Value = HostPlayerId;
             m_HostCommands.CopyFrom(hostPlayer);
             m_HostCommands.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Host");

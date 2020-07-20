@@ -46,17 +46,17 @@ namespace Voxelfield.Session.Mode
                                                .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray();
         }
 
-        public override void BeginModify(SessionBase session, Container sessionContainer)
+        public override void BeginModify(in ModifyContext context)
         {
-            base.BeginModify(session, sessionContainer);
-            var ctf = sessionContainer.Require<CtfComponent>();
-            sessionContainer.Require<DualScoresComponent>().Zero();
+            base.BeginModify(in context);
+            var ctf = context.sessionContainer.Require<CtfComponent>();
+            context.sessionContainer.Require<DualScoresComponent>().Zero();
             ctf.teamFlags.Clear();
-            ForEachActivePlayer(session, sessionContainer, (playerId, player) =>
+            ForEachActivePlayer(context, (in ModifyContext playerModifyContext) =>
             {
-                player.Require<HealthProperty>().Value = 0;
-                player.Require<MoveComponent>().Clear();
-                player.Require<InventoryComponent>().Zero();
+                playerModifyContext.player.Require<HealthProperty>().Value = 0;
+                playerModifyContext.player.Require<MoveComponent>().Clear();
+                playerModifyContext.player.Require<InventoryComponent>().Zero();
             });
         }
 
@@ -71,49 +71,48 @@ namespace Voxelfield.Session.Mode
                 flagBehaviors[flagTeam][flagId].Render(session, sessionContainer, flags[flagTeam][flagId]);
         }
 
-        public override void Modify(SessionBase session, Container sessionContainer, uint durationUs)
+        public override void Modify(in ModifyContext context)
         {
-            base.Modify(session, sessionContainer, durationUs);
+            base.Modify(context);
 
-            var ctf = sessionContainer.Require<CtfComponent>();
-            FlagBehavior[][] flagBehaviors = GetFlagBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
+            var ctf = context.sessionContainer.Require<CtfComponent>();
+            FlagBehavior[][] flagBehaviors = GetFlagBehaviors(context.sessionContainer.Require<VoxelMapNameProperty>());
             for (byte flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
             {
                 FlagComponent flag = ctf.teamFlags[flagTeam][flagId];
-                HandlePlayersNearFlag(session, flag, flagTeam, flagId, ctf, sessionContainer.Require<DualScoresComponent>());
-                if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += durationUs;
+                HandlePlayersNearFlag(context.session, flag, flagTeam, flagId, ctf, context.sessionContainer.Require<DualScoresComponent>());
+                if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += context.durationUs;
             }
         }
 
-        public override void ModifyPlayer(SessionBase session, Container container, int playerId, Container player, Container commands, uint durationUs, int tickDelta = 1)
+        public override void ModifyPlayer(in ModifyContext context)
         {
-            base.ModifyPlayer(session, container, playerId, player, commands, durationUs, tickDelta);
+            base.ModifyPlayer(in context);
 
-            if (player.Require<HealthProperty>().IsAlive) return;
+            if (context.player.Require<HealthProperty>().IsAlive) return;
             
-            var wantedItem = commands.Require<WantedItemComponent>();
+            var wantedItem = context.commands.Require<WantedItemComponent>();
             if (wantedItem.id.WithValue && wantedItem.index.WithValue)
             {
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(player.Require<InventoryComponent>(), wantedItem.id, wantedItem.index);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(context.player.Require<InventoryComponent>(), wantedItem.id, wantedItem.index);
             }
         }
 
-        protected override void HandleAutoRespawn(SessionBase session, Container container, int playerId, Container player, HealthProperty health, Container commands,
-                                                  uint durationUs)
+        protected override void HandleAutoRespawn(in ModifyContext context, HealthProperty health)
         {
-            if (health.IsAlive || player.Without(out RespawnTimerProperty respawn)) return;
+            if (health.IsAlive || context.player.Without(out RespawnTimerProperty respawn)) return;
 
-            if (respawn.Value > durationUs) respawn.Value -= durationUs;
+            if (respawn.Value > context.durationUs) respawn.Value -= context.durationUs;
             else
             {
                 respawn.Value = 0u;
-                if (commands.Require<InputFlagProperty>().GetInput(PlayerInput.Respawn))
-                    SpawnPlayer(session, container, playerId, player);
+                if (context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Respawn))
+                    SpawnPlayer(context);
             }
         }
 
-        protected override Vector3 GetSpawnPosition(Container player, int playerId, SessionBase session, Container sessionContainer)
+        protected override Vector3 GetSpawnPosition(in ModifyContext context)
         {
             KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
                                                                                                               && modelId == ModelsProperty.Spawn
@@ -122,7 +121,7 @@ namespace Voxelfield.Session.Mode
                                                                          .OrderBy(spawnGroup => spawnGroup.Key)
                                                                          .Select(spawnGroup => spawnGroup.ToArray())
                                                                          .ToArray();
-            byte team = player.Require<TeamProperty>();
+            byte team = context.player.Require<TeamProperty>();
             KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
             int spawnIndex = Random.Range(0, teamSpawns.Length);
             Vector3 spawnPosition = teamSpawns[spawnIndex].Key;
@@ -134,14 +133,10 @@ namespace Voxelfield.Session.Mode
             return DeathmatchMode.GetRandomSpawn();
         }
 
-        protected override float CalculateWeaponDamage(SessionBase session, Container hitPlayer, Container inflictingPlayer, PlayerHitbox hitbox, WeaponModifierBase weapon,
-                                                       in RaycastHit hit)
-        {
-            if (hitPlayer.Require<TeamProperty>() == inflictingPlayer.Require<TeamProperty>()) return 0.0f;
-
-            float baseDamage = base.CalculateWeaponDamage(session, hitPlayer, inflictingPlayer, hitbox, weapon, hit);
-            return ShowdownMode.CalculateDamageWithMovement(session, inflictingPlayer, weapon, baseDamage);
-        }
+        protected override float CalculateWeaponDamage(in PlayerHitContext context)
+            => context.hitPlayer.Require<TeamProperty>() == context.modifyContext.player.Require<TeamProperty>()
+                ? 0.0f
+                : ShowdownMode.CalculateDamageWithMovement(context, base.CalculateWeaponDamage(context));
 
         private void HandlePlayersNearFlag(SessionBase session, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresComponent scores)
         {
@@ -175,7 +170,7 @@ namespace Voxelfield.Session.Mode
                 }
             }
             Container enemyTaking;
-            if (ReferenceEquals(enemyTakingIn, null) && flag.capturingPlayerId.WithValue)
+            if (enemyTakingIn is null && flag.capturingPlayerId.WithValue)
             {
                 // Flag is taken, but the capturing player is outside the radius of taking
                 enemyTaking = session.GetModifyingPayerFromId(flag.capturingPlayerId);
@@ -183,7 +178,7 @@ namespace Voxelfield.Session.Mode
                 if (enemyTaking.Require<HealthProperty>().IsInactiveOrDead || flag.captureElapsedTimeUs < TakeFlagDurationUs) enemyTaking = null;
             }
             else enemyTaking = enemyTakingIn;
-            if (ReferenceEquals(enemyTaking, null))
+            if (enemyTaking is null)
             {
                 // Return flag if capturing player has left early when taking or has disconnected or died
                 flag.Clear();
@@ -208,9 +203,10 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        protected override void SpawnPlayer(SessionBase session, Container sessionContainer, int playerId, Container player)
+        protected override void SpawnPlayer(in ModifyContext context)
         {
             // TODO:refactor zeroing
+            Container player = context.player;
             player.ZeroIfWith<FrozenProperty>();
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
@@ -226,19 +222,20 @@ namespace Voxelfield.Session.Mode
             if (player.With(out MoveComponent move))
             {
                 move.Zero();
-                move.position.Value = GetSpawnPosition(player, playerId, session, sessionContainer);
+                move.position.Value = GetSpawnPosition(context);
             }
         }
 
-        public override void EndModify(SessionBase session, Container sessionContainer)
+        public override void EndModify(in ModifyContext context)
         {
-            sessionContainer.Require<CtfComponent>().Clear();
-            sessionContainer.Require<DualScoresComponent>().Clear();
+            context.sessionContainer.Require<CtfComponent>().Clear();
+            context.sessionContainer.Require<DualScoresComponent>().Clear();
         }
 
-        public override void SetupNewPlayer(SessionBase session, int playerId, Container player, Container sessionContainer)
+        public override void SetupNewPlayer(in ModifyContext context)
         {
-            player.Require<TeamProperty>().Value = (byte) (playerId % 2);
+            Container player = context.player;
+            player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
             InventoryComponent inventory = player.Require<InventoryComponent>().Zero();
             PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
             player.ZeroIfWith<FrozenProperty>();
