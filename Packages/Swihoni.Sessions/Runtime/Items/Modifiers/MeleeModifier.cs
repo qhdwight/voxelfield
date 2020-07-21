@@ -1,3 +1,4 @@
+using Swihoni.Components;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
@@ -25,8 +26,11 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (count == 0) return;
             RaycastHit hit = RaycastHits[0];
             if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId) return;
-            
-            var hitContext = new PlayerHitContext(new ModifyContext(session, playerId: playerId, durationUs: durationUs), hitbox, this, hit);
+
+            Container sessionContainer = session.GetLatestSession(),
+                      player = session.GetModifyingPayerFromId(playerId, sessionContainer);
+            var hitContext = new PlayerHitContext(new ModifyContext(session, sessionContainer, playerId: playerId, player: player, durationUs: durationUs),
+                                                  hitbox, this, hit);
             session.GetModifyingMode().PlayerHit(hitContext);
         }
     }

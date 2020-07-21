@@ -117,7 +117,7 @@ namespace Swihoni.Sessions
     {
         public const int MaxPlayers = 6;
 
-        public static readonly List<SessionBase> Sessions = new List<SessionBase>(1);
+        public static readonly LinkedList<SessionBase> Sessions = new LinkedList<SessionBase>();
         private static InterfaceBehaviorBase[] _interfaces;
 
         protected readonly SessionInjectorBase m_Injector;
@@ -176,7 +176,7 @@ namespace Swihoni.Sessions
 
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(true));
 
-            Sessions.Add(this);
+            Sessions.AddLast(this);
         }
 
         public virtual void Stop()

@@ -1,44 +1,55 @@
+// #define VOXELFIELD_RELEASE_SERVER
+
+using UnityEngine;
+#if VOXELFIELD_RELEASE_SERVER
+using Voxelfield.Session;
+using System.Linq;
 using System.Collections.Generic;
 using System.Net;
 using Aws.GameLift;
 using Aws.GameLift.Server;
 using Aws.GameLift.Server.Model;
 using LiteNetLib;
-using UnityEngine;
-using Voxelfield.Session;
+
+#endif
 
 namespace Voxelfield
 {
     [DefaultExecutionOrder(100)]
     public class GameLiftServerBehavior : MonoBehaviour
     {
-        [SerializeField] private int m_ServerPort = SessionManager.DefaultPort;
-
+#if VOXELFIELD_RELEASE_SERVER
         private void Start()
         {
-            // if (!Application.isBatchMode) return;
             GenericOutcome outcome = GameLiftServerAPI.InitSDK();
-            if (!outcome.Success)
+            if (outcome.Success)
             {
-                Debug.LogError($"Failed to initialize server SDK {outcome.Error}");
-                return;
+                var logParameters = new LogParameters(new List<string> {Application.consoleLogPath});
+                var processParameters = new ProcessParameters(OnStartGameSession, OnProcessTerminate, OnHealthCheck,
+                                                              SessionManager.DefaultPort, logParameters);
+                GameLiftServerAPI.ProcessReady(processParameters);
+                const string message = "GameLift server process ready";
+                string separator = string.Concat(Enumerable.Repeat("=", message.Length));
+                Debug.Log(separator);
+                Debug.Log(message);
+                Debug.Log(separator);
             }
-            var logParameters = new LogParameters(new List<string> {Application.consoleLogPath});
-            var processParameters = new ProcessParameters(OnStartGameSession, OnProcessTerminate, OnHealthCheck,
-                                                          m_ServerPort, logParameters);
-            GameLiftServerAPI.ProcessReady(processParameters);
-            Debug.Log("GameLift server process ready");
+            else
+            {
+                string message = $"Failed to initialize server SDK {outcome.Error}",
+                       separator = string.Concat(Enumerable.Repeat("=", message.Length));
+                Debug.LogError(separator);
+                Debug.LogError(message);
+                Debug.LogError(separator);
+            }
         }
 
-        private void OnProcessTerminate()
-        {
-            Debug.Log("Terminated game session");
-        }
+        private void OnProcessTerminate() => Debug.Log("Terminated game session");
 
         private void OnStartGameSession(GameSession session)
         {
             Debug.Log($"Started game session: {SessionToString(session)}");
-            IPEndPoint endPoint = NetUtils.MakeEndPoint(NetUtils.GetLocalIp(LocalAddrType.IPv4), m_ServerPort);
+            IPEndPoint endPoint = NetUtils.MakeEndPoint(NetUtils.GetLocalIp(LocalAddrType.IPv4), SessionManager.DefaultPort);
             SessionManager.StartServer(endPoint);
             Debug.Log($"Started host on private IP: {endPoint}");
         }
@@ -49,5 +60,8 @@ namespace Voxelfield
         private bool OnHealthCheck() => true;
 
         private void OnApplicationQuit() => GameLiftServerAPI.Destroy();
+#else
+        private void Start() { }
+#endif
     }
 }

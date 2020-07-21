@@ -91,9 +91,11 @@ namespace Swihoni.Sessions.Items.Modifiers
                 RaycastHit hit = RaycastHits[hitIndex];
                 if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
                 m_HitPlayers.Add(hitbox.Manager);
-                if (session.GetModifyingPayerFromId(playerId).With<ServerTag>())
+                Container player = session.GetModifyingPayerFromId(playerId);
+                if (player.With<ServerTag>())
                 {
-                    var hitContext = new PlayerHitContext(new ModifyContext(session, playerId: playerId, durationUs: durationUs), hitbox, this, hit);
+                    var hitContext = new PlayerHitContext(new ModifyContext(session, session.GetLatestSession(), playerId: playerId, player: player, durationUs: durationUs),
+                                                          hitbox, this, hit);
                     session.GetModifyingMode().PlayerHit(hitContext);
                 }
             }

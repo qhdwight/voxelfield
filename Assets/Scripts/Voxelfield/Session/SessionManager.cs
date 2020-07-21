@@ -265,29 +265,36 @@ namespace Voxelfield.Session
 #if UNITY_EDITOR
         [MenuItem("Build/Windows IL2CPP Player")]
         public static void BuildWindowsIl2CppPlayer()
-            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Windows IL2CPP Player");
+            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Debug Windows IL2CPP Player");
 
         [MenuItem("Build/Windows Mono Player")]
         public static void BuildWindowsMonoPlayer()
-            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneWindows64, "Windows Mono Player");
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneWindows64, "Debug Windows Mono Player");
 
         [MenuItem("Build/Windows IL2CPP Server")]
         public static void BuildWindowsIl2CppServer()
-            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Windows IL2CPP Server", true);
+            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Debug Windows IL2CPP Server", true);
 
         [MenuItem("Build/Linux Mono Server")]
         public static void BuildLinuxMonoServer()
-            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Windows Linux Server", true);
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Debug Linux Mono Server", true);
 
-        [MenuItem("Build/Release")]
+        [MenuItem("Build/Release Windows Player")]
+        private static void BuildWindowsRelease()
+            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Debug Windows IL2CPP Player", defines: new[] {"VOXELFIELD_RELEASE_CLIENT"});
+
+        [MenuItem("Build/Release Server")]
+        private static void BuildReleaseServer()
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Release Linux Mono Server", true, new[] {"VOXELFIELD_RELEASE_SERVER"});
+
+        [MenuItem("Build/Release All")]
         public static void BuildRelease()
         {
-            // PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "VOXELFIELD_RELEASE");
-            BuildWindowsIl2CppPlayer();
-            BuildLinuxMonoServer();
+            BuildWindowsRelease();
+            BuildReleaseServer();
         }
 
-        private static void Build(ScriptingImplementation scripting, BuildTarget target, string name, bool isServer = false)
+        private static void Build(ScriptingImplementation scripting, BuildTarget target, string name, bool isServer = false, string[] defines = null)
         {
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, scripting);
             string executablePath = Path.Combine("Builds", name.Replace(' ', Path.DirectorySeparatorChar), "Voxelfield");
@@ -300,6 +307,8 @@ namespace Voxelfield.Session
                     executablePath = Path.ChangeExtension(executablePath, "app");
                     break;
             }
+            PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Standalone,
+                                                    scripting == ScriptingImplementation.Mono2x ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.Low);
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = new[] {"Assets/Scenes/Base.unity"},
@@ -307,6 +316,7 @@ namespace Voxelfield.Session
                 target = target,
                 options = isServer ? BuildOptions.EnableHeadlessMode : BuildOptions.AutoRunPlayer
             };
+            if (defines != null) buildPlayerOptions.extraScriptingDefines = defines;
 
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;

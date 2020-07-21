@@ -24,8 +24,8 @@ namespace Voxelfield
             {
             }
         }
-
-        private void OnApplicationPause(bool pauseStatus) { }
+#else
+        private void Start() { }
 #endif
     }
 }
