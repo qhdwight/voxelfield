@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
@@ -33,7 +32,7 @@ namespace Voxelfield.Interface
                                                                                           return hasComponent;
                                                                                       }).ToArray()).ToArray();
         }
-        
+
         internal void Render(InventoryComponent inventory)
         {
             if (InputProvider.GetInputDown(InputType.Buy)) ToggleInterfaceActive();
@@ -45,11 +44,11 @@ namespace Voxelfield.Interface
                     loadOutButton.SetChecked(item.id == loadOutButton.ItemId);
             }
         }
-        
+
         public void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
             if (WantedItem.id.WithoutValue || WantedItem.index.WithoutValue) return;
-            
+
             commands.Require<WantedItemComponent>().CopyFrom(WantedItem);
             WantedItem.Clear();
         }

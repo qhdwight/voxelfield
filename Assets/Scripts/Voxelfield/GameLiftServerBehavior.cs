@@ -1,7 +1,10 @@
-// #define VOXELFIELD_RELEASE_SERVER
+#if UNITY_EDITOR
+#define VOXELFIELD_RELEASE_SERVER
+#endif
 
 using UnityEngine;
 #if VOXELFIELD_RELEASE_SERVER
+using System;
 using Voxelfield.Session;
 using System.Linq;
 using System.Collections.Generic;
@@ -10,7 +13,6 @@ using Aws.GameLift;
 using Aws.GameLift.Server;
 using Aws.GameLift.Server.Model;
 using LiteNetLib;
-
 #endif
 
 namespace Voxelfield
@@ -30,34 +32,33 @@ namespace Voxelfield
                 GameLiftServerAPI.ProcessReady(processParameters);
                 const string message = "GameLift server process ready";
                 string separator = string.Concat(Enumerable.Repeat("=", message.Length));
-                Debug.Log(separator);
-                Debug.Log(message);
-                Debug.Log(separator);
+                Debug.Log($"{separator}{Environment.NewLine}{message}{Environment.NewLine}{separator}");
             }
             else
             {
                 string message = $"Failed to initialize server SDK {outcome.Error}",
                        separator = string.Concat(Enumerable.Repeat("=", message.Length));
-                Debug.LogError(separator);
-                Debug.LogError(message);
-                Debug.LogError(separator);
+                Debug.LogError($"{separator}{Environment.NewLine}{message}{Environment.NewLine}{separator}");
             }
         }
 
-        private void OnProcessTerminate() => Debug.Log("Terminated game session");
+        private static void OnProcessTerminate() => Debug.Log("Terminated game session");
 
-        private void OnStartGameSession(GameSession session)
+        private static void OnStartGameSession(GameSession session)
         {
-            Debug.Log($"Started game session: {SessionToString(session)}");
-            IPEndPoint endPoint = NetUtils.MakeEndPoint(NetUtils.GetLocalIp(LocalAddrType.IPv4), SessionManager.DefaultPort);
-            SessionManager.StartServer(endPoint);
-            Debug.Log($"Started host on private IP: {endPoint}");
+            GenericOutcome outcome = GameLiftServerAPI.ActivateGameSession();
+            if (outcome.Success)
+            {
+                Debug.Log($"Starting game session: {SessionToString(session)}");
+                SessionManager.GameLiftReady = true;
+            }
+            else Debug.Log($"Error activating game session: {outcome.Error}");
         }
 
         private static string SessionToString(GameSession session)
             => $"{session.IpAddress}:{session.Port} Fleet ID: {session.FleetId} Session ID: {session.GameSessionId}";
 
-        private bool OnHealthCheck() => true;
+        private static bool OnHealthCheck() => true;
 
         private void OnApplicationQuit() => GameLiftServerAPI.Destroy();
 #else

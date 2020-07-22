@@ -99,7 +99,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             commands = ConsoleCommandExecutor.GetArgs(command.Builder.ToString());
             return true;
         }
-        
+
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>

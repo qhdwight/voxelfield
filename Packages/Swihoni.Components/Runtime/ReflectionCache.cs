@@ -39,10 +39,14 @@ namespace Swihoni.Components
                 foreach (Attribute memberAttributes in member.GetCustomAttributes())
                 {
                     Type memberAttributeType = memberAttributes.GetType();
-                    if (memberAttributeType == attributeType)
-                        attribute = (T) memberAttributes;
-                    set.Add(memberAttributeType, memberAttributes);
-                    types.Add(memberAttributeType);
+                    while (memberAttributeType != null && memberAttributeType != typeof(Attribute))
+                    {
+                        if (memberAttributeType == attributeType)
+                            attribute = (T) memberAttributes;
+                        set.Add(memberAttributeType, memberAttributes);
+                        types.Add(memberAttributeType);
+                        memberAttributeType = memberAttributeType.BaseType;
+                    }
                 }
                 return attribute != null;
             }

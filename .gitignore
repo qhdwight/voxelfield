@@ -78,8 +78,9 @@ fabric.properties
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
+/[Bb]uild/*
+/[Bb]uilds/*
+!/[Bb]uilds/*.zsh
 /[Ll]ogs/
 /[Mm]emoryCaptures/
 

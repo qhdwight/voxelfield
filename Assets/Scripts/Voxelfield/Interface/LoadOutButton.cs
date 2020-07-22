@@ -16,7 +16,7 @@ namespace Voxelfield.Interface
 
         public byte ItemId => m_ItemId;
         public UnityEvent OnClick => m_Button.onClick;
-        
+
         private void Awake()
         {
             m_NameText = GetComponentInChildren<TextMeshProUGUI>();

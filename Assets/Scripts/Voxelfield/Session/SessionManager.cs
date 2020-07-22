@@ -1,3 +1,7 @@
+#if UNITY_EDITOR
+#define VOXELFIELD_RELEASE_SERVER
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,7 +23,8 @@ using Debug = UnityEngine.Debug;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
-
+#else
+using LiteNetLib;
 #endif
 
 namespace Voxelfield.Session
@@ -27,9 +32,13 @@ namespace Voxelfield.Session
     public class SessionManager : SingletonBehavior<SessionManager>
     {
         private static IPAddress DefaultAddress => IPAddress.Loopback;
-        internal static int DefaultPort => 7777;
+        public static int DefaultPort => 7777;
         private static readonly IPEndPoint DefaultEndPoint = new IPEndPoint(DefaultAddress, DefaultPort);
         private static readonly string[] IpSeparator = {":"};
+
+#if VOXELFIELD_RELEASE_SERVER
+        public static bool GameLiftReady { get; set; }
+#endif
 
         private void Start()
         {
@@ -41,7 +50,7 @@ namespace Voxelfield.Session
                 string newFile = args.Length > 1 ? args[1] : null;
                 if (newFile != null)
                 {
-                    SessionBase.Sessions.First().GetLatestSession().Require<VoxelMapNameProperty>().SetTo(newFile);
+                    SessionBase.SessionEnumerable.First().GetLatestSession().Require<VoxelMapNameProperty>().SetTo(newFile);
                 }
                 MapManager.Singleton.SaveCurrentMap(newFile);
             });
@@ -78,6 +87,11 @@ namespace Voxelfield.Session
                 }
             });
 #endif
+            ConsoleCommandExecutor.SetCommand("game_lift_connect", args =>
+            {
+                StandaloneDisconnectAll();
+                GameLiftClientBehavior.StartGameLiftClient();
+            });
             ConsoleCommandExecutor.SetCommand("disconnect", args => DisconnectAll());
             ConsoleCommandExecutor.SetCommand("update_chunks", args =>
             {
@@ -87,7 +101,7 @@ namespace Voxelfield.Session
             ConsoleCommandExecutor.SetCommand("switch_teams", args =>
             {
                 if (args.Length > 1 && byte.TryParse(args[1], out byte team))
-                    SessionBase.Sessions.First().GetLocalCommands().Require<WantedTeamProperty>().Value = team;
+                    SessionBase.SessionEnumerable.First().GetLocalCommands().Require<WantedTeamProperty>().Value = team;
             });
 
             ConsoleCommandExecutor.SetCommand("rollback_override", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
@@ -100,7 +114,7 @@ namespace Voxelfield.Session
 #if UNITY_EDITOR
         private void OnApplicationPause(bool pauseStatus)
         {
-            foreach (SessionBase session in SessionBase.Sessions)
+            foreach (SessionBase session in SessionBase.SessionEnumerable)
                 session.SetApplicationPauseState(pauseStatus);
         }
 #endif
@@ -138,10 +152,10 @@ namespace Voxelfield.Session
             return StartSession(server);
         }
 
-        private static Client StartClient(IPEndPoint ipEndPoint)
+        public static Client StartClient(IPEndPoint ipEndPoint)
         {
             StandaloneDisconnectAll();
-            var client = new Client(VoxelfieldComponents.SessionElements, ipEndPoint, Application.version, new ClientInjector());
+            var client = new Client(VoxelfieldComponents.SessionElements, ipEndPoint, new ClientInjector());
             return StartSession(client);
         }
 
@@ -162,7 +176,7 @@ namespace Voxelfield.Session
 
         public static void DisconnectAll()
         {
-            foreach (SessionBase session in SessionBase.Sessions.ToArray())
+            foreach (SessionBase session in SessionBase.SessionEnumerable)
                 session.Stop();
         }
 
@@ -171,9 +185,24 @@ namespace Voxelfield.Session
             SessionBase.HandleCursorLockState();
             Application.targetFrameRate = ConfigManagerBase.Active.targetFps;
             AudioListener.volume = ConfigManagerBase.Active.volume;
+
+#if VOXELFIELD_RELEASE_SERVER
+            if (GameLiftReady)
+            {
+#if UNITY_EDITOR
+                IPEndPoint endPoint = DefaultEndPoint;
+#else
+                IPEndPoint endPoint = NetUtils.MakeEndPoint(NetUtils.GetLocalIp(LocalAddrType.IPv4), DefaultPort);
+#endif
+                StartServer(endPoint);
+                Debug.Log($"Started server on private IP: {endPoint}");
+                GameLiftReady = false;
+            }
+#endif
+
             try
             {
-                foreach (SessionBase session in SessionBase.Sessions)
+                foreach (SessionBase session in SessionBase.SessionEnumerable)
                     session.Update();
             }
             catch (Exception exception)
@@ -205,7 +234,7 @@ namespace Voxelfield.Session
         {
             try
             {
-                foreach (SessionBase session in SessionBase.Sessions)
+                foreach (SessionBase session in SessionBase.SessionEnumerable)
                     session.FixedUpdate();
             }
             catch (Exception exception)
@@ -307,8 +336,8 @@ namespace Voxelfield.Session
                     executablePath = Path.ChangeExtension(executablePath, "app");
                     break;
             }
-            PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Standalone,
-                                                    scripting == ScriptingImplementation.Mono2x ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.Low);
+            // PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Standalone,
+            //                                         scripting == ScriptingImplementation.Mono2x ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.Low);
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = new[] {"Assets/Scenes/Base.unity"},

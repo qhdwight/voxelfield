@@ -48,7 +48,7 @@ namespace Voxelfield.Interface.Designer
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
             if (session.GetLatestSession().Require<ModeIdProperty>() != ModeIdProperty.Designer) return;
-            
+
             float wheel = InputProvider.GetMouseScrollWheel() * 2.5f;
             FloatProperty editRadius = commands.Require<DesignerPlayerComponent>().editRadius;
             editRadius.Value = Mathf.Clamp(editRadius.Else(2.0f) + wheel, 0.0f, 10.0f);

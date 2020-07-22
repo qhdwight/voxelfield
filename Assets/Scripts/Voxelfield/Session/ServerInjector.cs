@@ -14,7 +14,7 @@ namespace Voxelfield.Session
         protected internal override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true)
         {
             if (MapManager.Singleton.Models.ContainsKey(worldPosition)) return;
-            var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();
+            var changed = Session.GetLatestSession().Require<ChangedVoxelsProperty>();
             base.SetVoxelData(worldPosition, change, chunk, updateMesh);
             changed.Set(worldPosition, change);
             m_MasterChanges.AddAllFrom(changed);
@@ -25,14 +25,14 @@ namespace Voxelfield.Session
                                                         in VoxelChangeData additiveChange = default,
                                                         ChangedVoxelsProperty changedVoxels = null)
         {
-            var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();
+            var changed = Session.GetLatestSession().Require<ChangedVoxelsProperty>();
             base.SetVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, isAdditive, additiveChange, changed);
             m_MasterChanges.AddAllFrom(changed);
         }
 
         protected internal override void VoxelTransaction(VoxelChangeTransaction uncommitted)
         {
-            var changed = Manager.GetLatestSession().Require<ChangedVoxelsProperty>();
+            var changed = Session.GetLatestSession().Require<ChangedVoxelsProperty>();
             foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in uncommitted.Map)
                 changed.Set(pair.Key, pair.Value);
             m_MasterChanges.AddAllFrom(changed);

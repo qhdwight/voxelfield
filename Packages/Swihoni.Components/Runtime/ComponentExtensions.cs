@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using LiteNetLib.Utils;
 using UnityEngine;
@@ -50,7 +48,7 @@ namespace Swihoni.Components
 
         public static Color GetColor(this NetDataReader reader)
             => new Color(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
-        
+
         public static string Expand(this string @string)
         {
             string expanded = Regex.Replace(@string, "[mM]", "000000");

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Swihoni.Util;
 using UnityEngine;
@@ -10,7 +9,7 @@ namespace Swihoni.Sessions
     {
         private AudioListener m_AudioListener;
         private Camera m_Camera;
-        
+
         protected override void Awake()
         {
             base.Awake();

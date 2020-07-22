@@ -63,7 +63,7 @@ namespace Voxelfield.Session.Mode
         public override void Render(SessionBase session, Container sessionContainer)
         {
             base.Render(session, sessionContainer);
-            
+
             FlagBehavior[][] flagBehaviors = GetFlagBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
             ArrayElement<FlagArrayElement> flags = sessionContainer.Require<CtfComponent>().teamFlags;
             for (var flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
@@ -91,7 +91,7 @@ namespace Voxelfield.Session.Mode
             base.ModifyPlayer(in context);
 
             if (context.player.Require<HealthProperty>().IsAlive) return;
-            
+
             var wantedItem = context.commands.Require<WantedItemComponent>();
             if (wantedItem.id.WithValue && wantedItem.index.WithValue)
             {

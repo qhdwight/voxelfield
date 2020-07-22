@@ -30,7 +30,8 @@ namespace Swihoni.Components.Networking
 
         public float SendRateKbs => m_NetworkManager.Statistics.BytesSent / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
         public float ReceiveRateKbs => m_NetworkManager.Statistics.BytesReceived / (Time.realtimeSinceStartup - m_StartTime) * 0.001f;
-        public float PacketLoss => (float) (m_NetworkManager.Statistics.PacketsSent == 0 ? 0 : m_NetworkManager.Statistics.PacketLoss / (double) m_NetworkManager.Statistics.PacketsSent);
+        public float PacketLoss =>
+            (float) (m_NetworkManager.Statistics.PacketsSent == 0 ? 0 : m_NetworkManager.Statistics.PacketLoss / (double) m_NetworkManager.Statistics.PacketsSent);
         public int AveragePacketReceiveSize => (int) (m_NetworkManager.Statistics.BytesReceived / (double) m_NetworkManager.Statistics.PacketsReceived);
 
         protected ComponentSocketBase()

@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
-using LiteNetLib.Utils;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
@@ -64,22 +62,10 @@ namespace Swihoni.Sessions.Config
     }
 
     [Serializable]
-    public class KeyCodeProperty : PropertyBase<KeyCode>
+    public class KeyCodeProperty : BoxedEnumProperty<KeyCode>
     {
         public KeyCodeProperty() { }
         public KeyCodeProperty(KeyCode value) : base(value) { }
-
-        public override bool ValueEquals(in KeyCode value) => value == Value;
-        public override void DeserializeValue(NetDataReader reader) => Value = (KeyCode) reader.GetUShort();
-        public override void SerializeValue(NetDataWriter writer) => writer.Put((ushort) Value);
-        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!Enum.TryParse(stringValue, out KeyCode keyCode)) return false;
-            Value = keyCode;
-            return true;
-        }
     }
 
     [Serializable]

@@ -18,7 +18,12 @@ namespace Swihoni.Sessions.Config
         ServerSingleTick
     }
 
-    public class ConfigAttribute : Attribute
+    public abstract class ConfigAttributeBase : Attribute
+    {
+        internal virtual void Update() { }
+    }
+
+    public class ConfigAttribute : ConfigAttributeBase
     {
         public string Name { get; }
         public ConfigType Type { get; }
@@ -28,6 +33,23 @@ namespace Swihoni.Sessions.Config
             Name = name;
             Type = type;
         }
+    }
+
+    public class DisplayConfigAttribute : ConfigAttribute
+    {
+#if !UNITY_EDITOR
+        internal override void Update() => Screen.SetResolution(ConfigManagerBase.Active.resolutionWidth, ConfigManagerBase.Active.resolutionHeight,
+                                                                ConfigManagerBase.Active.fullScreen, ConfigManagerBase.Active.refreshRate);
+#endif
+
+        public DisplayConfigAttribute(string name) : base(name) { }
+    }
+
+    [Serializable]
+    public class FullscreenProperty : BoxedEnumProperty<FullScreenMode>
+    {
+        public FullscreenProperty() { }
+        public FullscreenProperty(FullScreenMode value) : base(value) { }
     }
 
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
@@ -42,20 +64,14 @@ namespace Swihoni.Sessions.Config
         private Dictionary<Type, (PropertyBase, ConfigAttribute)> m_TypeToConfig;
         private Dictionary<string, (PropertyBase, ConfigAttribute)> m_NameToConfig;
 
-        [Config("tick_rate", ConfigType.ServerSession)]
-        public TickRateProperty tickRate = new TickRateProperty(60);
-        [Config("allow_cheats", ConfigType.ServerSession)]
-        public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
-        [Config("mode_id", ConfigType.ServerSession)]
-        public ModeIdProperty modeId = new ModeIdProperty();
+        [Config("tick_rate", ConfigType.ServerSession)] public TickRateProperty tickRate = new TickRateProperty(60);
+        [Config("allow_cheats", ConfigType.ServerSession)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
+        [Config("mode_id", ConfigType.ServerSession)] public ModeIdProperty modeId = new ModeIdProperty();
 
-        [Config("respawn_duration", ConfigType.Server)]
-        public TimeUsProperty respawnDuration = new TimeUsProperty();
-        [Config("respawn_health", ConfigType.Server)]
-        public ByteProperty respawnHealth = new ByteProperty(100);
+        [Config("respawn_duration", ConfigType.Server)] public TimeUsProperty respawnDuration = new TimeUsProperty();
+        [Config("respawn_health", ConfigType.Server)] public ByteProperty respawnHealth = new ByteProperty(100);
 
-        [Config("restart_mode", ConfigType.ServerSingleTick)]
-        public BoolProperty restartMode = new BoolProperty();
+        [Config("restart_mode", ConfigType.ServerSingleTick)] public BoolProperty restartMode = new BoolProperty();
 
         [Config("fov")] public ByteProperty fov = new ByteProperty(60);
         [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
@@ -65,6 +81,11 @@ namespace Swihoni.Sessions.Config
         [Config("crosshair_thickness")] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
         [Config("input_bindings")] public InputBindingProperty input = new InputBindingProperty();
         [Config("fps_update_rate")] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
+
+        [DisplayConfig("resolution_width")] public IntProperty resolutionWidth = new IntProperty();
+        [DisplayConfig("resolution_height")] public IntProperty resolutionHeight = new IntProperty();
+        [DisplayConfig("refresh_rate")] public IntProperty refreshRate = new IntProperty();
+        [DisplayConfig("fullscreen_mode")] public BoxedEnumProperty<FullScreenMode> fullScreen = new BoxedEnumProperty<FullScreenMode>(FullScreenMode.Windowed);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
@@ -134,20 +155,35 @@ namespace Swihoni.Sessions.Config
         {
             if (Active.m_NameToConfig.TryGetValue(split[0], out (PropertyBase, ConfigAttribute) tuple))
             {
+                (PropertyBase property, ConfigAttribute attribute) = tuple;
                 switch (split.Count)
                 {
                     case 2:
-                        tuple.Item1.TryParseValue(split[1]);
-                        Debug.Log($"Set {split[0]} to {split[1]}");
-                        if (tuple.Item2.Type == ConfigType.Client) WriteActive();
+                        if (split[1] == "None")
+                        {
+                            property.Clear();
+                            Debug.Log($"Cleared {split[0]}");
+                        }
+                        else
+                        {
+                            property.TryParseValue(split[1]);
+                            Debug.Log($"Set {split[0]} to {split[1]}");
+                        }
+                        OnConfigUpdated(property, attribute);
                         break;
-                    case 1 when tuple.Item1 is BoolProperty boolProperty:
+                    case 1 when property is BoolProperty boolProperty:
                         boolProperty.Value = true;
                         Debug.Log($"Set {split[0]}");
-                        if (tuple.Item2.Type == ConfigType.Client) WriteActive();
+                        OnConfigUpdated(property, attribute);
                         break;
                 }
             }
+        }
+
+        public static void OnConfigUpdated(PropertyBase property, ConfigAttribute config)
+        {
+            if (config.Type == ConfigType.Client) WriteActive();
+            config.Update();
         }
 
         public static void UpdateSessionConfig(ComponentBase session)
@@ -173,7 +209,7 @@ namespace Swihoni.Sessions.Config
             var builder = new StringBuilder();
             foreach (KeyValuePair<string, (PropertyBase, ConfigAttribute)> pair in config.m_NameToConfig)
             {
-                builder.Append(pair.Key).Append(Separator).Append(" ").AppendPropertyValue(pair.Value.Item1).Append("\n");
+                builder.Append(pair.Key).Append(Separator).Append(" ").AppendProperty(pair.Value.Item1).Append("\n");
             }
             string configPath = GetConfigFile();
             File.WriteAllText(configPath, builder.ToString());
@@ -194,7 +230,9 @@ namespace Swihoni.Sessions.Config
                     {
                         string[] cells = line.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
                         string key = cells[0], stringValue = cells[1].Trim();
-                        Active.m_NameToConfig[key].Item1.TryParseValue(stringValue);
+                        PropertyBase property = Active.m_NameToConfig[key].Item1;
+                        if (stringValue == "None") property.Clear();
+                        else property.TryParseValue(stringValue);
                     }
                 }
                 else

@@ -1,6 +1,5 @@
 map_name: Castle
 force_start: False
-restart_mode: False
 enable_mini_map: False
 sa.end_duration: 7000000
 sa.duration: 240000000
@@ -13,9 +12,10 @@ sa.kill_bonus: 800
 sa.max_rounds: 10
 tick_rate: 60
 allow_cheats: True
-mode_id: 3
+mode_id: 2
 respawn_duration: 5000000
 respawn_health: 100
+restart_mode: False
 fov: 60
 target_fps: 200
 volume: 0.5
@@ -23,3 +23,8 @@ sensitivity: 2
 ads_multiplier: 1
 crosshair_thickness: 1
 input_bindings: Forward=W, Backward=S, Left=A, Right=D, Jump=Space, Crouch=LeftControl, Sprint=LeftShift, Walk=LeftAlt, Suicide=End, Interact=E, Map=M, UseOne=Mouse0, UseTwo=Mouse1, UseThree=Mouse2, Reload=R, ItemOne=Alpha1, ItemTwo=Alpha2, ItemThree=Alpha3, ItemFour=Alpha4, ItemFive=Alpha5, ItemSix=Alpha6, ItemSeven=Alpha7, ItemEight=Alpha8, ItemNine=Alpha9, ItemTen=Alpha0, ItemLast=Q, DropItem=G, Ads=Mouse1, ToggleConsole=BackQuote, ConsoleCommand=Slash, OpenScoreboard=Tab, AutocompleteConsole=Tab, PreviousConsoleCommand=UpArrow, NextConsoleCommand=DownArrow, Fly=F, Buy=B, Throw=G, OpenModelSelect=M, OpenVoxelSelect=V, Respawn=Return
+fps_update_rate: 0.4
+resolution_width: 480
+resolution_height: 480
+refresh_rate: None
+fullscreen_mode: None

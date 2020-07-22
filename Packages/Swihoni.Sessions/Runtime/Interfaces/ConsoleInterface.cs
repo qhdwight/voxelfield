@@ -102,7 +102,7 @@ namespace Swihoni.Sessions.Interfaces
                 m_ConsoleText.SetText(m_LogBuilder);
                 m_NeedsTextUpdate = false;
             }
-            
+
             if (InputProvider.GetInputDown(InputType.AutocompleteConsole))
             {
                 if (!string.IsNullOrEmpty(m_CurrentAutocomplete))
@@ -179,7 +179,7 @@ namespace Swihoni.Sessions.Interfaces
         private void ConsoleInput(string consoleInput)
         {
             if (m_ConsoleInput.wasCanceled) return;
-            
+
             consoleInput = StripAutocomplete(consoleInput, out _);
             if (string.IsNullOrWhiteSpace(consoleInput)) return;
 

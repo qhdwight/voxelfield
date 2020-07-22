@@ -72,7 +72,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 isControllerActive = player.Without(out HealthProperty health) || health.IsActiveAndAlive;
                 float weight = Mathf.Lerp(0.7f, 1.0f, 1.0f - move.normalizedCrouch);
                 m_Controller.height = m_ControllerHeight * weight;
-                m_Controller.center = m_ControllerCenter * weight;   
+                m_Controller.center = m_ControllerCenter * weight;
             }
             else isControllerActive = false;
             m_Controller.gameObject.SetActive(isControllerActive);

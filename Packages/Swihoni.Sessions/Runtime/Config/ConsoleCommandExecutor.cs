@@ -15,7 +15,7 @@ namespace Swihoni.Sessions.Config
             ["clear"] = args => ConsoleInterface.Singleton.ClearConsole(),
             ["quit"] = _ => Application.Quit()
         };
-        
+
         public static void SetCommand(string commandName, Action<string[]> command) => Commands[commandName] = command;
 
         public static void SetAlias(string alias, string realCommand) => Commands[alias] = args => ExecuteCommand(realCommand);

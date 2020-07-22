@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using LiteNetLib;
+using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
@@ -47,54 +48,9 @@ namespace Swihoni.Sessions
         };
     }
 
-    public readonly struct ModifyContext
-    {
-        public readonly SessionBase session;
-        public readonly Container entity, sessionContainer, commands;
-        public readonly int playerId;
-        public readonly Container player;
-        public readonly uint timeUs, durationUs;
-        public readonly int tickDelta;
-
-        public ModifyContext(SessionBase session = null, Container sessionContainer = null, Container commands = null,
-                             int? playerId = null, Container player = null,
-                             Container entity = null,
-                             uint? timeUs = null, uint? durationUs = null, int? tickDelta = null, in ModifyContext? existing = null)
-        {
-            if (existing is ModifyContext context)
-            {
-                this.session = session ?? context.session;
-                this.entity = entity ?? context.entity;
-                this.sessionContainer = sessionContainer ?? context.sessionContainer;
-                this.commands = commands ?? context.commands;
-                this.playerId = playerId ?? context.playerId;
-                this.player = player ?? context.player;
-                this.timeUs = timeUs ?? context.timeUs;
-                this.durationUs = durationUs ?? context.durationUs;
-                this.tickDelta = tickDelta ?? context.tickDelta;
-            }
-            else
-            {
-                this.session = session;
-                this.entity = entity;
-                this.sessionContainer = sessionContainer;
-                this.commands = commands;
-                this.playerId = playerId.GetValueOrDefault();
-                this.player = player;
-                this.timeUs = timeUs.GetValueOrDefault();
-                this.durationUs = durationUs.GetValueOrDefault();
-                this.tickDelta = tickDelta.GetValueOrDefault();
-            }
-        }
-
-        public Container GetModifyingPlayer() => session.GetModifyingPayerFromId(playerId, sessionContainer);
-
-        public Container GetModifyingPlayer(int otherPlayerId) => session.GetModifyingPayerFromId(otherPlayerId, sessionContainer);
-    }
-
     public class SessionInjectorBase
     {
-        protected internal SessionBase Manager { get; set; }
+        protected internal SessionBase Session { get; set; }
 
         protected internal virtual void OnSettingsTick(Container session) { }
 
@@ -104,21 +60,54 @@ namespace Swihoni.Sessions
 
         protected internal virtual void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
 
-        protected internal virtual void OnHandleNewConnection(ConnectionRequest request) => request.Accept();
+        protected internal virtual void OnServerNewConnection(ConnectionRequest request) => request.AcceptIfKey(Application.version);
 
-        protected internal virtual void Stop() { }
+        protected internal virtual void Dispose() { }
 
         public virtual bool IsLoading(Container session) => false;
 
         public virtual void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior) { }
+
+        public virtual void OnReceiveCode(NetPeer fromPeer, NetDataReader reader, byte code) { }
+
+        public virtual void Start() { }
+
+        public virtual NetDataWriter GetConnectWriter()
+        {
+            var writer = new NetDataWriter();
+            writer.Put(Application.version);
+            return writer;
+        }
     }
 
     public abstract class SessionBase : IDisposable
     {
         public const int MaxPlayers = 6;
 
-        public static readonly LinkedList<SessionBase> Sessions = new LinkedList<SessionBase>();
+        private static List<SessionBase> _sessions, _sessionList;
         private static InterfaceBehaviorBase[] _interfaces;
+
+        public static int SessionCount => _sessions.Count;
+
+        public static IEnumerable<SessionBase> SessionEnumerable
+        {
+            get
+            {
+                _sessionList.Clear();
+                _sessionList.AddRange(_sessions);
+                return _sessionList;
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void InitializeInterfaces() => _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void Initialize()
+        {
+            _sessions = new List<SessionBase>(1);
+            _sessionList = new List<SessionBase>(1);
+        }
 
         protected readonly SessionInjectorBase m_Injector;
         private long m_FixedUpdateTicks, m_RenderTicks;
@@ -136,11 +125,8 @@ namespace Swihoni.Sessions
         protected SessionBase(SessionElements sessionElements, SessionInjectorBase injector)
         {
             m_Injector = injector;
-            m_Injector.Manager = this;
+            m_Injector.Session = this;
         }
-
-        [RuntimeInitializeOnLoadMethod]
-        private static void Initialize() => _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
 
         public static Camera ActiveCamera => Camera.allCameras.First(camera => !camera.targetTexture);
 
@@ -152,7 +138,7 @@ namespace Swihoni.Sessions
 
         public static void IssueCommand(string[] args)
         {
-            foreach (SessionBase session in Sessions)
+            foreach (SessionBase session in SessionEnumerable)
                 session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
         }
 
@@ -176,7 +162,9 @@ namespace Swihoni.Sessions
 
             ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(true));
 
-            Sessions.AddLast(this);
+            _sessions.Add(this);
+
+            m_Injector.Start();
         }
 
         public virtual void Stop()
@@ -380,13 +368,19 @@ namespace Swihoni.Sessions
 
         public virtual void Dispose()
         {
-            IsDisposed = true;
-            PlayerManager.pool.Return(PlayerManager);
-            ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
-            EntityManager.pool.Return(EntityManager);
-            m_Injector.Stop();
-            m_Stopwatch.Stop();
-            Sessions.Remove(this);
+            try
+            {
+                IsDisposed = true;
+                PlayerManager.pool.Return(PlayerManager);
+                ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
+                EntityManager.pool.Return(EntityManager);
+                m_Injector.Dispose();
+                m_Stopwatch.Stop();
+            }
+            finally
+            {
+                _sessions.Remove(this);
+            }
         }
 
         public abstract void StringCommand(int playerId, string stringCommand);

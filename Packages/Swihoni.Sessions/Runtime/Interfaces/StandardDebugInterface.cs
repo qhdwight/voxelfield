@@ -48,7 +48,7 @@ namespace Swihoni.Sessions.Interfaces
             m_PredictionErrorText.gameObject.SetActive(isPredictionVisible);
 
             var areNetworkStatsVisible = false;
-            
+
             if (session is NetworkedSessionBase networkSession && networkSession.Socket.NetworkManager.ConnectedPeersCount > 0)
             {
                 areNetworkStatsVisible = true;

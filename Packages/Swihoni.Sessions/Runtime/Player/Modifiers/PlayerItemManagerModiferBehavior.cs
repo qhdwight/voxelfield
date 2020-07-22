@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Swihoni.Components;
-using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
@@ -22,7 +21,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (tickDelta < 1 || !player.With(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
             HandleCommands(player);
-            
+
             var input = commands.Require<InputFlagProperty>();
             var wantedItemIndex = commands.Require<WantedItemIndexProperty>();
 
@@ -70,7 +69,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                             ushort count = args.Length > 2 && ushort.TryParse(args[2], out ushort parsedCount) ? parsedCount : (ushort) 1;
                             AddItem(player.Require<InventoryComponent>(), itemId, count);
                         }
-                    }   
+                    }
                 }
             }
         }
@@ -248,7 +247,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 {
                     item.ammoInMag.Value = gunModifier.MagSize;
                     item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
-                }           
+                }
             }
         }
 

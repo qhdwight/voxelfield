@@ -1,7 +1,5 @@
 using System.Linq;
-using Swihoni.Components;
 using Swihoni.Sessions;
-using Swihoni.Sessions.Interfaces;
 using Swihoni.Util.Interface;
 using UnityEngine.UI;
 using Voxel;
@@ -22,7 +20,7 @@ namespace Voxelfield.Interface
 
         private void Update()
         {
-            bool isVisible = SessionBase.Sessions.Any(session => session.IsLoading);
+            bool isVisible = SessionBase.SessionEnumerable.Any(session => session.IsLoading);
             if (isVisible)
             {
                 MapProgressInfo progressInfo = ChunkManager.Singleton.ProgressInfo;

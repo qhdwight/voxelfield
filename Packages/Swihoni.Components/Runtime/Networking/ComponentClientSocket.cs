@@ -7,10 +7,10 @@ namespace Swihoni.Components.Networking
 {
     public class ComponentClientSocket : ComponentSocketBase
     {
-        public ComponentClientSocket(IPEndPoint ip, string key = null)
+        public ComponentClientSocket(IPEndPoint ip, NetDataWriter keyWriter = null)
         {
             m_NetworkManager.Start();
-            m_NetworkManager.Connect(ip, key);
+            m_NetworkManager.Connect(ip, keyWriter ?? new NetDataWriter());
         }
 
         public bool SendToServer(ElementBase element, DeliveryMethod deliveryMethod, Action<ElementBase, NetDataWriter> serializeAction = null)

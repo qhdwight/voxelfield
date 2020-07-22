@@ -19,7 +19,6 @@ namespace Swihoni.Sessions
 {
     public sealed class Client : NetworkedSessionBase, IReceiver
     {
-        private readonly string m_ConnectKey;
         private readonly CyclicArray<ClientCommandsContainer> m_CommandHistory;
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
@@ -27,10 +26,9 @@ namespace Swihoni.Sessions
         public int PredictionErrors { get; private set; }
         public override ComponentSocketBase Socket => m_Socket;
 
-        public Client(SessionElements elements, IPEndPoint ipEndPoint, string connectKey, SessionInjectorBase injector)
+        public Client(SessionElements elements, IPEndPoint ipEndPoint, SessionInjectorBase injector)
             : base(elements, ipEndPoint, injector)
         {
-            m_ConnectKey = connectKey;
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(HistoryCount, () => m_EmptyClientCommands.Clone());
             // TODO:refactor zeroing
@@ -51,7 +49,7 @@ namespace Swihoni.Sessions
         public override void Start()
         {
             base.Start();
-            m_Socket = new ComponentClientSocket(IpEndPoint, m_ConnectKey);
+            m_Socket = new ComponentClientSocket(IpEndPoint, m_Injector.GetConnectWriter());
             m_Socket.Listener.PeerDisconnectedEvent += OnDisconnect;
             m_Socket.Receiver = this;
             RegisterMessages(m_Socket);
@@ -486,7 +484,7 @@ namespace Swihoni.Sessions
                 case PropertyBase p1 when _server is PropertyBase p2 && !p1.Equals(p2):
                     _predictionIsAccurate = false;
                     // if (Debug.isDebugBuild)
-                        Debug.LogWarning($"Error with predicted: {_predicted} and verified: {_server}");
+                    Debug.LogWarning($"Error with predicted: {_predicted} and verified: {_server}");
                     return Navigation.Exit;
             }
             return Navigation.Continue;

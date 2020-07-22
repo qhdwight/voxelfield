@@ -75,9 +75,9 @@ namespace Swihoni.Sessions
 
         protected static void RegisterMessages(ComponentSocketBase socket)
         {
-            socket.Register(typeof(ClientCommandsContainer), 0, ClientCommandsCode);
-            socket.Register(typeof(ServerSessionContainer), 1, ServerSessionCode);
-            socket.Register(typeof(DebugClientView), 2, DebugClientViewCode);
+            socket.Register(typeof(ClientCommandsContainer), ClientCommandsCode, ClientCommandsCode);
+            socket.Register(typeof(ServerSessionContainer), ServerSessionCode, ServerSessionCode);
+            socket.Register(typeof(DebugClientView), DebugClientViewCode, DebugClientViewCode);
         }
 
         protected static void SetFirstCommand(Container command)

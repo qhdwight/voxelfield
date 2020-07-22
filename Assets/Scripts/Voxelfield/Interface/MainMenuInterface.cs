@@ -8,6 +8,6 @@ namespace Voxelfield.Interface
     {
         public override void Render(SessionBase session, Container sessionContainer) { }
 
-        private void Update() { SetInterfaceActive(SessionBase.Sessions.Count == 0); }
+        private void Update() => SetInterfaceActive(SessionBase.SessionCount == 0);
     }
 }

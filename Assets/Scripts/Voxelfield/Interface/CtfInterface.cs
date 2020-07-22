@@ -5,7 +5,6 @@ using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Voxelfield.Interface.Showdown;

@@ -21,8 +21,9 @@ namespace Swihoni.Sessions.Modes
 
             if (context.commands.Without(out InputFlagProperty inputs) || context.player.Without(out HealthProperty health) || health.WithoutValue) return;
 
-            if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive) InflictDamage(new DamageContext(context, context.playerId, context.player, context.player, context.playerId, health, "Suicide"));
-            
+            if (inputs.GetInput(PlayerInput.Suicide) && health.IsAlive)
+                InflictDamage(new DamageContext(context, context.playerId, context.player, context.player, context.playerId, health, "Suicide"));
+
             if (context.tickDelta >= 1) HandleAutoRespawn(context, health);
         }
 

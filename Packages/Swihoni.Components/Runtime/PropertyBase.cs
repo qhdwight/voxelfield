@@ -95,6 +95,28 @@ namespace Swihoni.Components
         public WithoutValueException(string message) : base(message) { }
     }
 
+    /**
+     * Serialization and equality testing require boxing which allocates, so only suitable for contexts where this does not matter.
+     * If performance is need, explicitly create a type deriving from <see cref="PropertyBase{T}"/>.
+     */
+    [Serializable]
+    public class BoxedEnumProperty<TEnum> : PropertyBase<TEnum> where TEnum : struct, Enum
+    {
+        public BoxedEnumProperty() { }
+        public BoxedEnumProperty(TEnum value) : base(value) { }
+        public override bool ValueEquals(in TEnum value) => Equals(Value, value);
+        public override void SerializeValue(NetDataWriter writer) => writer.Put((int) (object) Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = (TEnum) (object) reader.GetInt();
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
+
+        public override bool TryParseValue(string stringValue)
+        {
+            if (!Enum.TryParse(stringValue, out TEnum mode)) return false;
+            Value = mode;
+            return true;
+        }
+    }
+
     /// <summary>
     /// Wrapper for holding a value.
     /// This is a class, so it is always passed by reference.

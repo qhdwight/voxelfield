@@ -83,7 +83,7 @@ namespace Swihoni.Sessions
             m_RenderSession.CopyFrom(GetLatestSession());
             Profiler.EndSample();
 
-            Profiler.BeginSample("Host Spectate Setup");  
+            Profiler.BeginSample("Host Spectate Setup");
             bool isSpectating = Client.IsSpectating(m_RenderSession, renderPlayers, HostPlayerId, out SpectatingPlayerId spectatingPlayerId);
             renderLocalPlayerId.Value = isSpectating ? spectatingPlayerId.Value : (byte) HostPlayerId;
             Profiler.EndSample();

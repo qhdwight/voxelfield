@@ -7,7 +7,6 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
-using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
@@ -73,7 +72,7 @@ namespace Voxelfield.Session.Mode
                 if (context.tickDelta >= 1)
                 {
                     var showdownPlayer = context.player.Require<ShowdownPlayerComponent>();
-                    PlayerSecuring(context, showdownPlayer, stage);   
+                    PlayerSecuring(context, showdownPlayer, stage);
                 }
             }
             else

@@ -68,9 +68,15 @@ namespace Swihoni.Components
             }
         }
 
+        public bool Equals(string @string) => this == @string;
+
         public override bool Equals(object other) => this == (StringProperty) other;
 
         public override bool Equals(PropertyBase other) => this == (StringProperty) other;
+
+        public static bool operator ==(StringProperty s1, string s2) => s1.Builder.ToString() == s2;
+
+        public static bool operator !=(StringProperty s1, string s2) => !(s1 == s2);
 
         public static bool operator ==(StringProperty s1, StringProperty s2)
         {

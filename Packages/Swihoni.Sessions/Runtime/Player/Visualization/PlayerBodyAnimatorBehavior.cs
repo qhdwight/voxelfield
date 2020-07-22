@@ -88,7 +88,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 if (withMove && move.position.WithValue)
                 {
                     m_Animator.transform.position = move.position;
-                    if (m_RagdollRigidbodies != null) SetRagdollEnabled(health.IsDead);   
+                    if (m_RagdollRigidbodies != null) SetRagdollEnabled(health.IsDead);
                     RenderMove(move);
                 }
                 if (player.With(out CameraComponent playerCamera))

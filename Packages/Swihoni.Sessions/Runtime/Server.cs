@@ -41,7 +41,7 @@ namespace Swihoni.Sessions
         {
             base.Start();
             Random.InitState(Environment.TickCount);
-            m_Socket = new ComponentServerSocket(IpEndPoint, m_Injector.OnHandleNewConnection);
+            m_Socket = new ComponentServerSocket(IpEndPoint, m_Injector.OnServerNewConnection);
             m_Socket.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
             m_Socket.Listener.NetworkLatencyUpdateEvent += OnLatencyUpdated;
             m_Socket.Receiver = this;
@@ -84,13 +84,13 @@ namespace Swihoni.Sessions
             ConfigManagerBase.UpdateSessionConfig(serverSession);
             base.Tick(tick, timeUs, durationUs);
 
-            m_Injector.OnSettingsTick(serverSession);
-
             var serverStamp = serverSession.Require<ServerStampComponent>();
             serverStamp.tick.Value = tick;
             serverStamp.timeUs.Value = timeUs;
             serverStamp.durationUs.Value = durationUs;
             Profiler.EndSample();
+
+            m_Injector.OnSettingsTick(serverSession);
 
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
@@ -148,6 +148,11 @@ namespace Swihoni.Sessions
                     var clientView = new ClientCommandsContainer(m_EmptyDebugClientView.ElementTypes);
                     clientView.Deserialize(reader);
                     DebugBehavior.Singleton.Render(this, clientId, clientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
+                    break;
+                }
+                default:
+                {
+                    m_Injector.OnReceiveCode(fromPeer, reader, code);
                     break;
                 }
             }
@@ -305,7 +310,8 @@ namespace Swihoni.Sessions
                     if (!IsLoading)
                     {
                         GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs, tickDelta);
-                        mode.ModifyPlayer(new ModifyContext(this, serverSession, receivedClientCommands, clientId, serverPlayer, durationUs: clientStamp.durationUs, tickDelta: tickDelta));
+                        mode.ModifyPlayer(new ModifyContext(this, serverSession, receivedClientCommands, clientId, serverPlayer, durationUs: clientStamp.durationUs,
+                                                            tickDelta: tickDelta));
                     }
                 }
             }
