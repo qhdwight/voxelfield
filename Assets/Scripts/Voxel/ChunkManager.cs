@@ -297,7 +297,7 @@ namespace Voxel
                         byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(distance / radius * 0.5f) * byte.MaxValue)),
                              currentDensity = voxel.Value.density;
                         var changeData = new VoxelChangeData();
-                        if (voxel.Value.breakable)
+                        if (voxel.Value.IsBreakable)
                         {
                             if (additive)
                             {
@@ -305,7 +305,7 @@ namespace Voxel
                                 if (newDensity > currentDensity)
                                 {
                                     changeData.density = newDensity;
-                                    if (voxel.Value.renderType == VoxelRenderType.Smooth) changeData.Merge(change);
+                                    if (voxel.Value.OnlySmooth) changeData.Merge(change);
                                 }
                             }
                             else
@@ -316,8 +316,8 @@ namespace Voxel
                         if (!additive && replaceGrassWithDirt && voxel.Value.texture == VoxelId.Grass)
                             changeData.id = VoxelId.Dirt;
                         bool inSphere = distance < Mathf.Ceil(radius);
-                        if (!additive && destroyBlocks && inSphere && voxel.Value.renderType == VoxelRenderType.Block)
-                            changeData.renderType = VoxelRenderType.Smooth;
+                        if (!additive && destroyBlocks && inSphere && voxel.Value.HasBlock)
+                            changeData.hasBlock = false;
                         if (inSphere) changeData.natural = false;
                         changedVoxels?.Set(voxelWorldPosition, changeData);
                         if (!Transaction.HasChangeAt(voxelWorldPosition))

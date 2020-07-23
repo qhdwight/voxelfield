@@ -46,6 +46,8 @@ namespace Swihoni.Components
             return true;
         }
 
+        public string AsNewString() => Builder.ToString();
+
         private void ThrowIfOverMaxSize() => ThrowIfOverMaxSize(Builder.Length);
 
         private void ThrowIfOverMaxSize(int size)

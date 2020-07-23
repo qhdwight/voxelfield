@@ -23,7 +23,7 @@ namespace Voxelfield.Item
         protected override void RemoveBlock(SessionBase session, Injector injector, in Position3Int position)
         {
             VoxelChangeData mapSaveVoxel = ChunkManager.Singleton.GetMapSaveVoxel(position).Value;
-            injector.SetVoxelData(position, new VoxelChangeData {id = mapSaveVoxel.id, renderType = VoxelRenderType.Smooth, natural = true});
+            injector.SetVoxelData(position, new VoxelChangeData {id = mapSaveVoxel.id, hasBlock = false, natural = true});
         }
 
         protected override void RemoveVoxelRadius(SessionBase session, int playerId, Injector injector, in Position3Int position)

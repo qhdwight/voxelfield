@@ -25,7 +25,7 @@ namespace Voxelfield.Item
             if (WithoutClientHit(session, playerId, m_EditDistance, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
 
-            if (voxel.renderType == VoxelRenderType.Block)
+            if (voxel.HasBlock)
             {
                 var designer = session.GetLocalCommands().Require<DesignerPlayerComponent>();
                 if (designer.positionOne.WithoutValue || designer.positionTwo.WithValue)
@@ -48,7 +48,7 @@ namespace Voxelfield.Item
             if (player.Without<ServerTag>()) return;
 
             var designer = player.Require<DesignerPlayerComponent>();
-            DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId, renderType = VoxelRenderType.Block});
+            DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId, hasBlock = true});
         }
 
         public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,
@@ -67,7 +67,7 @@ namespace Voxelfield.Item
                             var designer = player.Require<DesignerPlayerComponent>();
                             if (args.Length > 1 && byte.TryParse(args[1], out byte blockId))
                                 designer.selectedVoxelId.ValueOverride = blockId;
-                            DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId.AsNullable, renderType = VoxelRenderType.Block});
+                            DimensionFunction(session, designer, _ => new VoxelChangeData {id = designer.selectedVoxelId.AsNullable, hasBlock = true});
                             break;
                         }
                         case "revert":
@@ -79,7 +79,7 @@ namespace Voxelfield.Item
                         {
                             var breakable = true;
                             if (args.Length > 1 && bool.TryParse(args[1], out bool parsedBreakable)) breakable = parsedBreakable;
-                            DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => new VoxelChangeData {breakable = breakable});
+                            DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => new VoxelChangeData {isBreakable = breakable});
                             break;
                         }
                     }

@@ -19,17 +19,19 @@ namespace Voxel
             }
         }
     }
-
-    public enum VoxelRenderType : byte
-    {
-        None,
-        Block,
-        Smooth
-    }
-
+    
     public static class Orientation
     {
         public const byte None = 0, North = 1, East = 2, South = 3, West = 4, Up = 5, Down = 6;
+    }
+    
+    [Flags]
+    public enum VoxelFlags : ushort
+    {
+        None = 0,
+        Block = 1,
+        Breakable = 2,
+        Natural = 4,
     }
 
     public struct Voxel
@@ -41,18 +43,49 @@ namespace Voxel
             PixelRatio = 1.0f / ImageSize;
 
         public byte texture, density, orientation;
-        public VoxelRenderType renderType;
-        public bool breakable, natural;
+        public VoxelFlags flags;
         public Color32 color;
+        
+        public bool HasBlock
+        {
+            get => (flags & VoxelFlags.Block) == VoxelFlags.Block;
+            set
+            {
+                if (value) flags |= VoxelFlags.Block;
+                else flags &= ~VoxelFlags.Block;
+            }
+        }
+
+        public bool OnlySmooth => !HasBlock;
+        
+        public bool IsBreakable
+        {
+            get => (flags & VoxelFlags.Breakable) == VoxelFlags.Breakable;
+            set
+            {
+                if (value) flags |= VoxelFlags.Breakable;
+                else flags &= ~VoxelFlags.Breakable;
+            }
+        }
+        
+        public bool IsNatural
+        {
+            get => (flags & VoxelFlags.Natural) == VoxelFlags.Natural;
+            set
+            {
+                if (value) flags |= VoxelFlags.Natural;
+                else flags &= ~VoxelFlags.Natural;
+            }
+        }
 
         public void SetVoxelData(in VoxelChangeData changeData)
         {
             if (changeData.id.HasValue) texture = changeData.id.Value;
-            if (changeData.renderType.HasValue) renderType = changeData.renderType.Value;
+            if (changeData.hasBlock.HasValue) HasBlock = changeData.hasBlock.Value;
             if (changeData.density.HasValue) density = changeData.density.Value;
-            if (changeData.breakable.HasValue) breakable = changeData.breakable.Value;
+            if (changeData.isBreakable.HasValue) IsBreakable = changeData.isBreakable.Value;
             if (changeData.orientation.HasValue) orientation = changeData.orientation.Value;
-            if (changeData.natural.HasValue) natural = changeData.natural.Value;
+            if (changeData.natural.HasValue) IsNatural = changeData.natural.Value;
             if (changeData.color.HasValue) color = changeData.color.Value;
         }
 
@@ -81,31 +114,27 @@ namespace Voxel
         public int FaceUVs(Vector2[] uvs)
         {
             Vector2Int tilePos = TexturePosition();
-            switch (renderType)
+            if (HasBlock)
             {
-                case VoxelRenderType.Block:
-                {
-                    float x = TileRatio * tilePos.x, y = TileRatio * tilePos.y;
-                    uvs[0] = new Vector2(x + TileRatio, y);
-                    uvs[1] = new Vector2(x + TileRatio, y + TileRatio);
-                    uvs[2] = new Vector2(x, y + TileRatio);
-                    uvs[3] = new Vector2(x, y);
-                    return 4;
-                }
-                case VoxelRenderType.Smooth:
-                {
-                    float x = TileRatio * tilePos.x, y = TileRatio * tilePos.y;
-                    uvs[0] = new Vector2(x, y);
-                    uvs[2] = new Vector2(x + TileRatio, y);
-                    uvs[1] = new Vector2(x, y + TileRatio);
-                    return 3;
-                }
-                default: return 0;
+                float x = TileRatio * tilePos.x, y = TileRatio * tilePos.y;
+                uvs[0] = new Vector2(x + TileRatio, y);
+                uvs[1] = new Vector2(x + TileRatio, y + TileRatio);
+                uvs[2] = new Vector2(x, y + TileRatio);
+                uvs[3] = new Vector2(x, y);
+                return 4;
+            }
+            else
+            {
+                float x = TileRatio * tilePos.x, y = TileRatio * tilePos.y;
+                uvs[0] = new Vector2(x, y);
+                uvs[2] = new Vector2(x + TileRatio, y);
+                uvs[1] = new Vector2(x, y + TileRatio);
+                return 3;
             }
         }
 
-        public override string ToString() => $"Texture: {texture}, Render Type: {renderType}, Density: {density}, Breakable: {breakable}, Orientation: {orientation}";
+        public override string ToString() => $"Texture: {texture}, Density: {density}, Orientation: {orientation}, Flags: {flags}";
 
-        public bool ShouldRenderBlock(byte direction) => renderType == VoxelRenderType.Smooth || renderType == VoxelRenderType.None;
+        public bool ShouldRenderBlock(byte direction) => OnlySmooth;
     }
 }

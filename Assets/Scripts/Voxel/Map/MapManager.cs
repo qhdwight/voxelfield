@@ -90,14 +90,13 @@ namespace Voxel.Map
                 rawMap = File.ReadAllBytes(mapPath);
             }
             var reader = new NetDataReader(rawMap);
-            var map = new MapContainer();
-            map.Deserialize(reader);
-            return map;
+            return new MapContainer().Deserialize(reader);
         }
 
         public static bool SaveMapSave(MapContainer map, string fileName = null)
         {
             if (fileName != null) map.name.SetTo(fileName);
+            map.version.SetTo(Application.version);
             string mapPath = $"C:/Users/qhdwi/Projects/Programming/Unity/Compound/Assets/Resources/Maps/{map.name}.bytes";
             var writer = new NetDataWriter();
             map.Serialize(writer);

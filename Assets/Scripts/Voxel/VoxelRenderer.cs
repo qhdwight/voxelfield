@@ -423,61 +423,53 @@ namespace Voxel
                     for (var z = 0; z < manager.ChunkSize; z++)
                     {
                         Voxel voxel = chunk.GetVoxelNoCheck(new Position3Int(x, y, z));
-                        switch (voxel.renderType)
+                        if (voxel.HasBlock)
                         {
-                            case VoxelRenderType.Smooth:
+                            for (var i = 0; i < 6; i++)
                             {
-                                var cubeIndex = 0;
-                                for (var i = 0; i < 8; i++)
-                                {
-                                    Position3Int internalPosition = new Position3Int(x, y, z) + Positions[i];
-                                    Voxel? v = chunk.GetVoxel(internalPosition);
-                                    bool useEmpty = !v.HasValue
-                                                 || internalPosition.x == 0 && lowerBound.x == chunk.Position.x
-                                                 || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
-                                                 || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
-                                    float density = useEmpty ? 0.0f : (float) v.Value.density / byte.MaxValue * 2;
-                                    CachedDensities[i] = density;
-                                    if (density < IsoLevel) cubeIndex |= 1 << i;
-                                    CachedPositions[i] = new Vector3(x, y, z) + Positions[i];
-                                }
-                                if (cubeIndex == 0 || cubeIndex == 255) continue;
-                                for (var i = 0; i < 12; i++)
-                                    CachedVertList[i] = (EdgeTable[cubeIndex] & (1 << i)) != 0
-                                        ? InterpolateVertex(CachedPositions[VertIdx1[i]],
-                                                            CachedPositions[VertIdx2[i]], CachedDensities[VertIdx1[i]],
-                                                            CachedDensities[VertIdx2[i]])
-                                        : Vector3.zero;
-                                for (var i = 0; TriangleTable[cubeIndex][i] != -1; i += 3)
-                                {
-                                    for (var j = 0; j < 3; j++)
-                                    {
-                                        int index = solidMesh.vertices.Count;
-                                        solidMesh.vertices.Add(CachedVertList[TriangleTable[cubeIndex][i + j]] - Offset);
-                                        solidMesh.colors.Add(voxel.color);
-                                        solidMesh.triangleIndices.Add(index);
-                                    }
-                                    if (voxel.texture == VoxelId.Grass && voxel.natural)
-                                        GenerateFoliage(solidMesh, foliageMesh, ref voxel);
-                                    int length = voxel.FaceUVs(CachedUvs);
-                                    for (var j = 0; j < length; j++) solidMesh.uvs.Add(CachedUvs[j]);
-                                }
-
-                                break;
+                                var orientation = (byte) (i + 1);
+                                Voxel? adjacentVoxel = chunk.GetVoxel(new Position3Int(x, y, z) + Adjacents[orientation]);
+                                if (adjacentVoxel?.ShouldRenderBlock(orientation) ?? true)
+                                    GenerateBlock(ref voxel, x, y, z, orientation, solidMesh);
                             }
-                            case VoxelRenderType.Block:
+                        }
+                        else
+                        {
+                            var cubeIndex = 0;
+                            for (var i = 0; i < 8; i++)
                             {
-                                for (var i = 0; i < 6; i++)
-                                {
-                                    var orientation = (byte) (i + 1);
-                                    Voxel? adjacentVoxel = chunk.GetVoxel(new Position3Int(x, y, z) + Adjacents[orientation]);
-                                    if (adjacentVoxel?.ShouldRenderBlock(orientation) ?? true)
-                                        GenerateBlock(ref voxel, x, y, z, orientation, solidMesh);
-                                }
-                                break;
+                                Position3Int internalPosition = new Position3Int(x, y, z) + Positions[i];
+                                Voxel? v = chunk.GetVoxel(internalPosition);
+                                bool useEmpty = !v.HasValue
+                                             || internalPosition.x == 0 && lowerBound.x == chunk.Position.x
+                                             || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
+                                             || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
+                                float density = useEmpty ? 0.0f : (float) v.Value.density / byte.MaxValue * 2;
+                                CachedDensities[i] = density;
+                                if (density < IsoLevel) cubeIndex |= 1 << i;
+                                CachedPositions[i] = new Vector3(x, y, z) + Positions[i];
                             }
-                            default:
-                                throw new ArgumentOutOfRangeException(nameof(voxel.renderType), voxel.renderType, null);
+                            if (cubeIndex == 0 || cubeIndex == 255) continue;
+                            for (var i = 0; i < 12; i++)
+                                CachedVertList[i] = (EdgeTable[cubeIndex] & (1 << i)) != 0
+                                    ? InterpolateVertex(CachedPositions[VertIdx1[i]],
+                                                        CachedPositions[VertIdx2[i]], CachedDensities[VertIdx1[i]],
+                                                        CachedDensities[VertIdx2[i]])
+                                    : Vector3.zero;
+                            for (var i = 0; TriangleTable[cubeIndex][i] != -1; i += 3)
+                            {
+                                for (var j = 0; j < 3; j++)
+                                {
+                                    int index = solidMesh.vertices.Count;
+                                    solidMesh.vertices.Add(CachedVertList[TriangleTable[cubeIndex][i + j]] - Offset);
+                                    solidMesh.colors.Add(voxel.color);
+                                    solidMesh.triangleIndices.Add(index);
+                                }
+                                if (voxel.texture == VoxelId.Grass && voxel.IsNatural)
+                                    GenerateFoliage(solidMesh, foliageMesh, ref voxel);
+                                int length = voxel.FaceUVs(CachedUvs);
+                                for (var j = 0; j < length; j++) solidMesh.uvs.Add(CachedUvs[j]);
+                            }
                         }
                     }
                 }
@@ -523,7 +515,7 @@ namespace Voxel
         private static void GenerateBlock(ref Voxel voxel, int x, int y, int z, byte dir, MeshData meshData)
         {
             Color32 color = voxel.color;
-            if (!voxel.breakable) color.Diminish(0.7f);
+            if (!voxel.IsBreakable) color.Diminish(0.7f);
             foreach (Vector3 vert in BlockVerts[dir])
             {
                 meshData.vertices.Add(new Vector3(x, y, z) + vert);

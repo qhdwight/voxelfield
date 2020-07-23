@@ -29,22 +29,15 @@ namespace Voxelfield.Item
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
 
             var voxelInjector = (Injector) session.Injector;
-            switch (voxel.renderType)
-            {
-                case VoxelRenderType.Block:
-                    RemoveBlock(session, voxelInjector, position);
-                    break;
-                case VoxelRenderType.Smooth:
-                    RemoveVoxelRadius(session, playerId, voxelInjector, position);
-                    break;
-            }
+            if (voxel.HasBlock) RemoveBlock(session, voxelInjector, position);
+            else RemoveVoxelRadius(session, playerId, voxelInjector, position);
             var brokeVoxelTickProperty = session.GetModifyingPayerFromId(playerId).Require<BrokeVoxelTickProperty>();
             if (brokeVoxelTickProperty.WithValue) brokeVoxelTickProperty.Value++;
             else brokeVoxelTickProperty.Value = 0;
         }
 
         protected virtual void RemoveBlock(SessionBase session, Injector injector, in Position3Int position)
-            => injector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth, natural = false});
+            => injector.SetVoxelData(position, new VoxelChangeData {hasBlock = false, natural = false});
 
         protected virtual void RemoveVoxelRadius(SessionBase session, int playerId, Injector injector, in Position3Int position)
             => injector.SetVoxelRadius(position, m_DestroyRadius, true);
@@ -55,7 +48,7 @@ namespace Voxelfield.Item
             position = (Position3Int) (hit.point - hit.normal * 0.1f);
             Voxel.Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
             voxel = optionalVoxel ?? default;
-            return !optionalVoxel.HasValue || !voxel.breakable;
+            return !optionalVoxel.HasValue || !voxel.IsBreakable;
         }
 
         protected static bool WithoutOuterVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
@@ -63,7 +56,7 @@ namespace Voxelfield.Item
             position = (Position3Int) (hit.point + hit.normal * 0.1f);
             Voxel.Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
             voxel = optionalVoxel ?? default;
-            return !optionalVoxel.HasValue || !voxel.breakable;
+            return !optionalVoxel.HasValue || !voxel.IsBreakable;
         }
 
         protected bool WithoutServerHit(SessionBase session, int playerId, float distance, out RaycastHit hit)
@@ -113,7 +106,7 @@ namespace Voxelfield.Item
             byte texture = player.With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
                 ? designer.selectedVoxelId
                 : VoxelId.Dirt;
-            voxelInjector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Block, id = texture});
+            voxelInjector.SetVoxelData(position, new VoxelChangeData {hasBlock = true, id = texture});
         }
 
         private bool CanPlace(in Position3Int position, Container player)

@@ -115,7 +115,7 @@ namespace Voxel
             return new VoxelChangeData
             {
                 id = height > 5.0f ? VoxelId.Stone : VoxelId.Grass,
-                renderType = VoxelRenderType.Smooth, density = density, breakable = breakable, orientation = Orientation.None, natural = true,
+                hasBlock = false, density = density, isBreakable = breakable, orientation = Orientation.None, natural = true,
                 color = new Color32(255, 255, 255, 255)
             };
         }

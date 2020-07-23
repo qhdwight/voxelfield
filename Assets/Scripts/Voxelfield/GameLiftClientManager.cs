@@ -13,6 +13,7 @@ using Steamworks;
 using Swihoni.Sessions;
 using UnityEngine;
 using Voxelfield.Session;
+
 #if VOXELFIELD_RELEASE_CLIENT
 using System.Linq;
 using Amazon;
@@ -68,8 +69,7 @@ namespace Voxelfield
             CreatePlayerSessionResponse playerResponse = await GameLiftClient.CreatePlayerSessionAsync(playerRequest);
             PlayerSession playerSession = playerResponse.PlayerSession;
             IPEndPoint endPoint = NetUtils.MakeEndPoint(playerSession.IpAddress, playerSession.Port);
-            if (Debug.isDebugBuild) Debug.Log($"Game Lift server endpoint: {endPoint}. Connecting...");
-            else Debug.Log("Connecting to server");
+            Debug.Log($"Connecting to server endpoint: {endPoint}");
 
             PlayerSessionId = playerSession.PlayerSessionId;
             SessionManager.StartClient(endPoint);

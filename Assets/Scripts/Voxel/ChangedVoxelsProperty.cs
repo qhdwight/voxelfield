@@ -9,13 +9,15 @@ namespace Voxel
     [Serializable, SingleTick]
     public class ChangedVoxelsProperty : DictPropertyBase<Position3Int, VoxelChangeData>
     {
+        public string Version { get; set; }
+        
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(m_Map.Count);
             foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in m_Map)
             {
                 Position3Int.Serialize(pair.Key, writer);
-                VoxelChangeData.Serialize(pair.Value, writer);
+                VoxelVersionSerializer.Serialize(pair.Value, writer);
             }
         }
 
@@ -26,7 +28,7 @@ namespace Voxel
             for (var _ = 0; _ < count; _++)
             {
                 m_Map.Add(Position3Int.Deserialize(reader),
-                          VoxelChangeData.Deserialize(reader));
+                          VoxelVersionSerializer.Deserialize(reader, Version));
             }
             WithValue = true;
         }
