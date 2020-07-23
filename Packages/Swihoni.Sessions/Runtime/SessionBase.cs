@@ -79,7 +79,11 @@ namespace Swihoni.Sessions
             return writer;
         }
 
-        public virtual void OnServerLoseConnection(NetPeer peer) { }
+        public virtual void OnServerLoseConnection(NetPeer peer, Container player) { }
+        
+        public virtual void OnKillPlayer(in DamageContext context) {  }
+        
+        public virtual void OnPlayerRegisterAppend(Container player) {  }
     }
 
     public abstract class SessionBase : IDisposable
@@ -174,7 +178,7 @@ namespace Swihoni.Sessions
             if (!IsDisposed) Dispose();
         }
 
-        protected virtual int GetPeerPlayerId(NetPeer peer) => peer.Id;
+        public virtual int GetPeerPlayerId(NetPeer peer) => peer.Id;
 
         protected PlayerModifierDispatcherBehavior GetPlayerModifier(Container player, int index)
         {

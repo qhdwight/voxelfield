@@ -32,7 +32,10 @@ namespace Swihoni.Sessions
             {
                 serverSession.RegisterAppend(typeof(ServerTag));
                 foreach (Container player in serverSession.Require<PlayerContainerArrayElement>())
+                {
                     player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent), typeof(HasSentInitialData));
+                    m_Injector.OnPlayerRegisterAppend(player);
+                }
             }
             m_SendSession = m_EmptyServerSession.Clone();
         }
@@ -61,17 +64,17 @@ namespace Swihoni.Sessions
 
         private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnect)
         {
+            int playerId = GetPeerPlayerId(peer);
+            Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
+            Container player = GetModifyingPayerFromId(playerId);
             try
             {
-                int playerId = GetPeerPlayerId(peer);
-                Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
-                Container player = GetModifyingPayerFromId(playerId);
-                player.Clear();
-                GetPlayerModifier(player, playerId);
+                m_Injector.OnServerLoseConnection(peer, player);
             }
             finally
             {
-                m_Injector.OnServerLoseConnection(peer);
+                player.Clear();
+                GetPlayerModifier(player, playerId); // Force synchronization of behavior
             }
         }
 

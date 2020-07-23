@@ -21,6 +21,8 @@ namespace Swihoni.Sessions.Modes
         public readonly int hitPlayerId, inflictingPlayerId;
         public readonly Container hitPlayer, inflictingPlayer;
 
+        public bool IsSelfInflicting => hitPlayerId == inflictingPlayerId;
+
         public DamageContext(in ModifyContext? modifyContext = null, int? inflictingPlayerId = null, Container inflictingPlayer = null, Container hitPlayer = null,
                              int? hitPlayerId = null,
                              byte? damage = null, string weaponName = null, bool? isHeadShot = null, PlayerHitContext? playerHitContext = null)
@@ -123,10 +125,14 @@ namespace Swihoni.Sessions.Modes
 
         protected virtual Vector3 GetSpawnPosition(in ModifyContext context) => new Vector3 {y = 8.0f};
 
-        public virtual void BeginModify(in ModifyContext context) { ForEachActivePlayer(context, (in ModifyContext playerModifyContext) => SpawnPlayer(playerModifyContext)); }
+        public virtual void BeginModify(in ModifyContext context)
+            => ForEachActivePlayer(context, (in ModifyContext playerModifyContext) => SpawnPlayer(playerModifyContext));
 
-        protected virtual void KillPlayer(Container player, Container killer)
+        protected virtual void KillPlayer(in DamageContext context)
         {
+            SessionBase session = context.modifyContext.session;
+            session.Injector.OnKillPlayer(context);
+            Container player = context.modifyContext.player;
             player.ZeroIfWith<HealthProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
@@ -199,7 +205,7 @@ namespace Swihoni.Sessions.Modes
         {
             checked
             {
-                bool isSelfInflicting = damageContext.inflictingPlayerId == damageContext.hitPlayerId,
+                bool isSelfInflicting = damageContext.IsSelfInflicting,
                      usesHitMarker = damageContext.inflictingPlayer.With(out HitMarkerComponent hitMarker) && !isSelfInflicting,
                      usesNotifier = damageContext.hitPlayer.With(out DamageNotifierComponent damageNotifier);
 
@@ -207,7 +213,7 @@ namespace Swihoni.Sessions.Modes
                 bool isKilling = damageContext.damage >= health;
                 if (isKilling)
                 {
-                    KillPlayer(damageContext.hitPlayer, damageContext.inflictingPlayer);
+                    KillPlayer(damageContext);
 
                     if (!isSelfInflicting && damageContext.inflictingPlayer.With(out StatsComponent stats))
                         stats.kills.Value++;

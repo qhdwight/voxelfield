@@ -1,4 +1,6 @@
-// #undef UNITY_EDITOR
+#if UNITY_EDITOR
+// #define VOXELFIELD_RELEASE_CLIENT
+#endif
 
 using System;
 using System.Net;
@@ -11,8 +13,7 @@ using Steamworks;
 using Swihoni.Sessions;
 using UnityEngine;
 using Voxelfield.Session;
-
-#if !UNITY_EDITOR
+#if VOXELFIELD_RELEASE_CLIENT
 using System.Linq;
 using Amazon;
 
@@ -26,10 +27,11 @@ namespace Voxelfield
         private static readonly BasicAWSCredentials Credentials = new BasicAWSCredentials(@"AKIAWKQVDVRWQMYAUBAV", @"62ixippCgELFUDKgPlGnWqtd0WEZ3w51YhEnMK8C");
         private static readonly AmazonGameLiftConfig Config = new AmazonGameLiftConfig
         {
-#if UNITY_EDITOR
-            ServiceURL = $"http://localhost:{SessionManager.DefaultPort}"
-#else
+#if VOXELFIELD_RELEASE_CLIENT
             RegionEndpoint = RegionEndpoint.USWest1
+
+#else
+            ServiceURL = $"http://localhost:{SessionManager.DefaultPort}"
 #endif
         };
         private static readonly AmazonGameLiftClient GameLiftClient = new AmazonGameLiftClient(Credentials, Config);
@@ -83,9 +85,7 @@ namespace Voxelfield
 
         private static async Task<GameSession> GetQuickPlayGameSession(string playerId)
         {
-#if UNITY_EDITOR
-            return await CreateNewGameSession(playerId);
-#else
+#if VOXELFIELD_RELEASE_CLIENT
             try
             {
                 var searchRequest = new SearchGameSessionsRequest
@@ -106,6 +106,8 @@ namespace Voxelfield
                 Debug.LogError("No active online servers found to search for game sessions");
                 throw;
             }
+#else
+            return await CreateNewGameSession(playerId);
 #endif
         }
 

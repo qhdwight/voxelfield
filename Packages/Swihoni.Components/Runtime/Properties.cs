@@ -67,6 +67,25 @@ namespace Swihoni.Components
             else Value = 0u;
         }
     }
+    
+    [Serializable]
+    public class ULongProperty : PropertyBase<ulong>
+    {
+        public ULongProperty(ulong value) : base(value) { }
+        public ULongProperty() { }
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetULong();
+        public override bool ValueEquals(in ulong value) => value == Value;
+        public override void ValueInterpolateFrom(PropertyBase<ulong> p1, PropertyBase<ulong> p2, float interpolation) => throw new NotImplementedException();
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
+
+        public override bool TryParseValue(string stringValue)
+        {
+            if (!ulong.TryParse(stringValue.Expand(), out ulong @ulong)) return false;
+            Value = @ulong;
+            return true;
+        }
+    }
 
     [Serializable]
     public class IntProperty : PropertyBase<int>

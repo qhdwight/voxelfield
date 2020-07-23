@@ -105,11 +105,12 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        protected override void KillPlayer(Container player, Container killer)
+        protected override void KillPlayer(in DamageContext damageContext)
         {
-            base.KillPlayer(player, killer);
+            base.KillPlayer(damageContext);
 
-            if (player.Require<TeamProperty>() != killer.Require<TeamProperty>())
+            Container killer = damageContext.inflictingPlayer;
+            if (damageContext.modifyContext.player.Require<TeamProperty>() != killer.Require<TeamProperty>())
             {
                 UShortProperty money = killer.Require<MoneyComponent>().count;
                 money.Value += m_Config.killMoney;

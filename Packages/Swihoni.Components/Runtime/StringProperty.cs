@@ -35,6 +35,17 @@ namespace Swihoni.Components
             return true;
         }
 
+        public bool AsNewString(out string @string)
+        {
+            if (Builder.Length == 0)
+            {
+                @string = default;
+                return false;
+            }
+            @string = Builder.ToString();
+            return true;
+        }
+
         private void ThrowIfOverMaxSize() => ThrowIfOverMaxSize(Builder.Length);
 
         private void ThrowIfOverMaxSize(int size)

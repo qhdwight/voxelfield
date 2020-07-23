@@ -1,4 +1,3 @@
-using Swihoni.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
@@ -8,11 +7,11 @@ namespace Swihoni.Sessions.Modes
     [CreateAssetMenu(fileName = "Deathmatch", menuName = "Session/Mode/Deathmatch", order = 0)]
     public class DeathmatchModeBase : ModeBase
     {
-        protected override void KillPlayer(Container player, Container killer)
+        protected override void KillPlayer(in DamageContext damageContext)
         {
-            base.KillPlayer(player, killer);
+            base.KillPlayer(damageContext);
 
-            if (player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Active.respawnDuration;
+            if (damageContext.modifyContext.player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Active.respawnDuration;
         }
 
         public override void ModifyPlayer(in ModifyContext context)

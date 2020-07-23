@@ -165,7 +165,7 @@ namespace Swihoni.Sessions
             else base.RollbackHitboxes(playerId);
         }
 
-        protected override int GetPeerPlayerId(NetPeer peer) => base.GetPeerPlayerId(peer) + 1; // Reserve zero for host player
+        public override int GetPeerPlayerId(NetPeer peer) => base.GetPeerPlayerId(peer) + 1; // Reserve zero for host player
 
         // TODO:refactor bad
         public override Container GetModifyingPayerFromId(int playerId, Container session = null)

@@ -213,9 +213,8 @@ namespace Voxelfield.Session
             {
                 if (SessionBase.SessionEnumerable.FirstOrDefault(session => session is Server) is Server server)
                 {
-                    var injector = (VoxelfieldInjector) server.Injector;
-
-                    int activePlayerSessionCount = injector.PeerToPlayerSessionId.Count;
+                    // TODO:refactor use session and count number of player session id's?
+                    int activePlayerSessionCount = server.Socket.NetworkManager.ConnectedPeersCount;
                     if (activePlayerSessionCount == 0) AddTime();
                     else m_InactiveServerElapsedSeconds = 0.0f;   
                 }
