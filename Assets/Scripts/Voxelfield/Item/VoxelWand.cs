@@ -91,7 +91,7 @@ namespace Voxelfield.Item
         {
             if (designer.positionOne.WithoutValue || designer.positionTwo.WithoutValue) return;
 
-            var voxelInjector = (VoxelInjector) session.Injector;
+            var voxelInjector = (VoxelfieldInjector) session.Injector;
             Position3Int p1 = designer.positionOne, p2 = designer.positionTwo;
             for (int x = Math.Min(p1.x, p2.x); x <= Math.Max(p1.x, p2.x); x++)
             for (int y = Math.Min(p1.y, p2.y); y <= Math.Max(p1.y, p2.y); y++)

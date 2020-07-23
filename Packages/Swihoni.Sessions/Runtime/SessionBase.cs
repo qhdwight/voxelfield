@@ -78,6 +78,8 @@ namespace Swihoni.Sessions
             writer.Put(Application.version);
             return writer;
         }
+
+        public virtual void OnServerLoseConnection(NetPeer peer) { }
     }
 
     public abstract class SessionBase : IDisposable

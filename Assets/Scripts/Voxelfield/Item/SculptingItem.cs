@@ -28,7 +28,7 @@ namespace Voxelfield.Item
             if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
 
-            var voxelInjector = (VoxelInjector) session.Injector;
+            var voxelInjector = (VoxelfieldInjector) session.Injector;
             switch (voxel.renderType)
             {
                 case VoxelRenderType.Block:
@@ -43,10 +43,10 @@ namespace Voxelfield.Item
             else brokeVoxelTickProperty.Value = 0;
         }
 
-        protected virtual void RemoveBlock(SessionBase session, VoxelInjector injector, in Position3Int position)
+        protected virtual void RemoveBlock(SessionBase session, VoxelfieldInjector injector, in Position3Int position)
             => injector.SetVoxelData(position, new VoxelChangeData {renderType = VoxelRenderType.Smooth, natural = false});
 
-        protected virtual void RemoveVoxelRadius(SessionBase session, int playerId, VoxelInjector injector, in Position3Int position)
+        protected virtual void RemoveVoxelRadius(SessionBase session, int playerId, VoxelfieldInjector injector, in Position3Int position)
             => injector.SetVoxelRadius(position, m_DestroyRadius, true);
 
         protected static bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
@@ -108,7 +108,7 @@ namespace Voxelfield.Item
             // TODO:feature add client side prediction for placing blocks
             if (!(m_CachedPosition is Position3Int position)) return;
 
-            var voxelInjector = (VoxelInjector) session.Injector;
+            var voxelInjector = (VoxelfieldInjector) session.Injector;
             Container player = session.GetModifyingPayerFromId(playerId);
             byte texture = player.With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
                 ? designer.selectedVoxelId
@@ -138,7 +138,7 @@ namespace Voxelfield.Item
         {
             if (!(m_CachedPosition is Position3Int position)) return;
 
-            var voxelInjector = (VoxelInjector) session.Injector;
+            var voxelInjector = (VoxelfieldInjector) session.Injector;
             voxelInjector.SetVoxelRadius(position, m_AdditiveRadius, additiveChange: new VoxelChangeData {id = VoxelId.Dirt}, isAdditive: true);
         }
     }

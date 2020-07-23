@@ -10,4 +10,6 @@
     <assembly fullname="Google.Protobuf" preserve="all" />
     <assembly fullname="Newtonsoft.Json" preserve="all" />
     <assembly fullname="websocket-sharp" preserve="all" />
+    <assembly fullname="AWSSDK.Core" preserve="all" />
+    <assembly fullname="AWSSDK.GameLift" preserve="all" />
 </linker>

@@ -7,7 +7,7 @@ using Voxel.Map;
 
 namespace Voxelfield.Session
 {
-    public class ServerInjector : VoxelInjector
+    public class ServerInjector : VoxelfieldInjector
     {
         private readonly ChangedVoxelsProperty m_MasterChanges = new ChangedVoxelsProperty();
 

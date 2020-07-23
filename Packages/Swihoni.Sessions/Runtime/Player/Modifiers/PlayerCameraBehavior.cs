@@ -14,8 +14,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)
         {
             if (trustedPlayer.Without(out CameraComponent playerCamera)
-             || commands.Without(out MouseComponent mouse)
-             || trustedPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
+             || commands.Without(out MouseComponent mouse)) return;
             base.ModifyTrusted(session, playerId, trustedPlayer, verifiedPlayer, commands, durationUs);
 
             var inventory = verifiedPlayer.Require<InventoryComponent>();

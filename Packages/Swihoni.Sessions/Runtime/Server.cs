@@ -61,11 +61,18 @@ namespace Swihoni.Sessions
 
         private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnect)
         {
-            int playerId = GetPeerPlayerId(peer);
-            Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
-            Container player = GetModifyingPayerFromId(playerId);
-            player.Clear();
-            GetPlayerModifier(player, playerId);
+            try
+            {
+                int playerId = GetPeerPlayerId(peer);
+                Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
+                Container player = GetModifyingPayerFromId(playerId);
+                player.Clear();
+                GetPlayerModifier(player, playerId);
+            }
+            finally
+            {
+                m_Injector.OnServerLoseConnection(peer);
+            }
         }
 
         protected virtual void PreTick(Container tickSession) { }

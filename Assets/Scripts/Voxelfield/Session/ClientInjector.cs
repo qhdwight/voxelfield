@@ -8,7 +8,7 @@ using Voxel;
 
 namespace Voxelfield.Session
 {
-    public class ClientInjector : VoxelInjector
+    public class ClientInjector : VoxelfieldInjector
     {
         private readonly Pool<VoxelChangeTransaction> m_TransactionPool = new Pool<VoxelChangeTransaction>(1, () => new VoxelChangeTransaction());
         private readonly UIntProperty m_Pointer = new UIntProperty();

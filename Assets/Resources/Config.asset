@@ -53,6 +53,18 @@ MonoBehaviour:
   fpsUpdateRate:
     m_Flags: 1
     m_Value: 0.4
+  resolutionWidth:
+    m_Flags: 0
+    m_Value: 0
+  resolutionHeight:
+    m_Flags: 0
+    m_Value: 0
+  refreshRate:
+    m_Flags: 0
+    m_Value: 0
+  fullScreen:
+    m_Flags: 0
+    m_Value: 3
   mapName:
     m_Flags: 1
   forceStart:

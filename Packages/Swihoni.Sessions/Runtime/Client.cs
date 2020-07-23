@@ -58,7 +58,7 @@ namespace Swihoni.Sessions
         private void OnDisconnect(NetPeer peer, DisconnectInfo disconnect)
         {
             if (disconnect.AdditionalData.TryGetString(out string reason))
-                Debug.Log($"Disconnected for reason: {reason}");
+                Debug.LogWarning($"Disconnected for reason: {reason}");
             Dispose();
         }
 

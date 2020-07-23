@@ -81,29 +81,22 @@ namespace Swihoni.Sessions.Player.Visualization
                 render.shadowCastingMode = isInFpv ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             }
 
-            bool isAnimatorEnabled;
+            bool isAnimatorEnabled = false, isRagdollEnabled = false;
+            CameraComponent playerCamera = default;
             if (isVisible)
             {
-                isAnimatorEnabled = health.IsAlive;
-                if (withMove && move.position.WithValue)
-                {
-                    m_Animator.transform.position = move.position;
-                    if (m_RagdollRigidbodies != null) SetRagdollEnabled(health.IsDead);
-                    RenderMove(move);
-                }
-                if (player.With(out CameraComponent playerCamera))
-                {
-                    m_Animator.transform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
-                    m_Head.localRotation = Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
-                }
-            }
-            else
-            {
-                if (m_RagdollRigidbodies != null && withMove && move.position.WithValue) SetRagdollEnabled(false);
-                isAnimatorEnabled = true;
+                isAnimatorEnabled = health.IsAlive && player.With(out playerCamera) && withMove && move.position.WithValue;
+                isRagdollEnabled = health.IsDead && withMove && move.position.WithValue;
             }
 
+            if (m_RagdollRigidbodies != null) SetRagdollEnabled(isRagdollEnabled);
             m_Animator.enabled = isAnimatorEnabled;
+            if (isAnimatorEnabled)
+            {
+                m_Head.localRotation = Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
+                m_Animator.transform.SetPositionAndRotation(move.position, Quaternion.AngleAxis(playerCamera.yaw, Vector3.up));
+                RenderMove(move);
+            }
         }
 
         public override void SetActive(bool isActive)

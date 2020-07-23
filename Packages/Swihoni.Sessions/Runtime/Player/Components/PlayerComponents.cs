@@ -40,10 +40,10 @@ namespace Swihoni.Sessions.Player.Components
     public class MoveComponent : ComponentBase
     {
         public MoveType type;
-        [PredictionTolerance(0.01f), InterpolateRange(2.0f), NeverCompress]
+        [PredictionTolerance(0.02f), InterpolateRange(2.0f), NeverCompress]
         public VectorProperty position, velocity;
         [NeverCompress] public ByteProperty groundTick;
-        [PredictionTolerance(0.01f)] public FloatProperty normalizedCrouch;
+        [PredictionTolerance(0.02f), NeverCompress] public FloatProperty normalizedCrouch;
         [Cyclic(0.0f, 1.0f)] public FloatProperty normalizedMove;
 
         public override string ToString() => $"Position: {position}, Velocity: {velocity}";

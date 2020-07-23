@@ -59,7 +59,20 @@ namespace Swihoni.Sessions.Config
 
         public static ConfigManagerBase Active { get; private set; }
 
-        private static readonly Lazy<ConfigManagerBase> Default = new Lazy<ConfigManagerBase>(() => Resources.Load<ConfigManagerBase>("Config").Introspect());
+        private static readonly Lazy<ConfigManagerBase> Default = new Lazy<ConfigManagerBase>(LoadDefault);
+
+        private static ConfigManagerBase LoadDefault()
+        {
+            ConfigManagerBase defaults = Resources.Load<ConfigManagerBase>("Config").Introspect();
+#if !UNITY_EDITOR
+            if (defaults.resolutionWidth.WithoutValue) defaults.resolutionWidth.Value = Screen.width / 2;
+            if (defaults.resolutionHeight.WithoutValue) defaults.resolutionHeight.Value = Screen.height / 2;
+            if (defaults.refreshRate.WithoutValue) defaults.refreshRate.Value = Screen.currentResolution.refreshRate;
+            if (defaults.fullScreen.WithoutValue) defaults.fullScreen.Value = FullScreenMode.Windowed;
+#endif
+            defaults.input = new InputBindingProperty();
+            return defaults;
+        }
 
         private Dictionary<Type, (PropertyBase, ConfigAttribute)> m_TypeToConfig;
         private Dictionary<string, (PropertyBase, ConfigAttribute)> m_NameToConfig;
@@ -85,17 +98,18 @@ namespace Swihoni.Sessions.Config
         [DisplayConfig("resolution_width")] public IntProperty resolutionWidth = new IntProperty();
         [DisplayConfig("resolution_height")] public IntProperty resolutionHeight = new IntProperty();
         [DisplayConfig("refresh_rate")] public IntProperty refreshRate = new IntProperty();
-        [DisplayConfig("fullscreen_mode")] public BoxedEnumProperty<FullScreenMode> fullScreen = new BoxedEnumProperty<FullScreenMode>(FullScreenMode.Windowed);
+        [DisplayConfig("fullscreen_mode")] public BoxedEnumProperty<FullScreenMode> fullScreen = new BoxedEnumProperty<FullScreenMode>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
             Active = ((ConfigManagerBase) CreateInstance(Default.Value.GetType())).Introspect();
-#if UNITY_EDITOR
-            SetActiveToDefault();
-#else
+// #if UNITY_EDITOR
+//             SetActiveToDefault();
+// #else
+//             ReadActive();
+// #endif
             ReadActive();
-#endif
 
             ConsoleCommandExecutor.SetCommand("restore_default_config", args =>
             {
@@ -104,6 +118,7 @@ namespace Swihoni.Sessions.Config
             });
             ConsoleCommandExecutor.SetCommand("write_config", args => WriteActive());
             ConsoleCommandExecutor.SetCommand("read_config", args => ReadActive());
+            ConsoleCommandExecutor.SetCommand("open_config", args => Application.OpenURL($"file://{GetConfigFile()}"));
         }
 
         private ConfigManagerBase Introspect()
@@ -148,6 +163,7 @@ namespace Swihoni.Sessions.Config
                 element.Field = field;
                 Recurse(element);
             }
+
             return this;
         }
 

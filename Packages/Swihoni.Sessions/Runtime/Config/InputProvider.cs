@@ -76,7 +76,7 @@ namespace Swihoni.Sessions.Config
         public KeyCode GetKeyCode(byte @byte)
         {
             _lookupProperty.Value = @byte;
-            return this[_lookupProperty];
+            return m_Map.TryGetValue(_lookupProperty, out KeyCodeProperty keyCode) ? keyCode : KeyCode.None;
         }
 
         public override StringBuilder AppendValue(StringBuilder builder)
@@ -168,6 +168,7 @@ namespace Swihoni.Sessions.Config
             m_Map = new Dictionary<ByteProperty, KeyCodeProperty>();
             foreach (KeyValuePair<byte, KeyCode> pair in defaultMap)
                 m_Map.Add(new ByteProperty(pair.Key), new KeyCodeProperty(pair.Value));
+            WithValue = true;
         }
     }
 
