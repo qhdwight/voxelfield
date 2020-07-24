@@ -49,7 +49,8 @@ namespace Swihoni.Sessions.Config
                           OpenModelSelect = 107,
                           OpenVoxelSelect = 108,
                           Buy = 109,
-                          PauseMenu = 110;
+                          TogglePauseMenu = 110,
+                          ToggleChat = 111;
 
         public static DualDictionary<byte, string> Names { get; } = new DualDictionary<byte, string>();
 
@@ -164,7 +165,8 @@ namespace Swihoni.Sessions.Config
                 [PlayerInput.Throw] = KeyCode.G,
                 [InputType.OpenModelSelect] = KeyCode.M,
                 [InputType.OpenVoxelSelect] = KeyCode.V,
-                [InputType.PauseMenu] = KeyCode.Escape,
+                [InputType.TogglePauseMenu] = KeyCode.Escape,
+                [InputType.ToggleChat] = KeyCode.T,
                 [PlayerInput.Respawn] = KeyCode.Return
             };
             m_Map = new Dictionary<ByteProperty, KeyCodeProperty>();

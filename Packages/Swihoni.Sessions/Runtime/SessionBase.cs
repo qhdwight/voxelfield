@@ -39,7 +39,7 @@ namespace Swihoni.Sessions
                 typeof(HealthProperty), typeof(IdProperty), typeof(MoveComponent), typeof(FrozenProperty), typeof(InventoryComponent),
                 typeof(CameraComponent), typeof(RespawnTimerProperty),
                 typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameProperty),
-                typeof(StringCommandProperty)
+                typeof(StringCommandProperty), typeof(ChatEntryProperty)
             },
             commandElements = new List<Type>
             {

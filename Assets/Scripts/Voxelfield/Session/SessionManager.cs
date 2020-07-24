@@ -391,7 +391,7 @@ namespace Voxelfield.Session
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"{name} build succeeded: {summary.totalSize / 1_000_000:F1} mb in {summary.totalTime}");
+                    Debug.Log($"{name} build succeeded: {summary.totalSize / 1_000_000:F1} mb in {summary.totalTime:mm:ss}");
                     break;
                 case BuildResult.Unknown:
                 case BuildResult.Failed:

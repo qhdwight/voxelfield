@@ -7,6 +7,7 @@ using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Components.Networking;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
@@ -483,8 +484,8 @@ namespace Swihoni.Sessions
                                           || v1.WithoutValue && v2.WithValue || v1.WithValue && v2.WithoutValue):
                 case PropertyBase p1 when _server is PropertyBase p2 && !p1.Equals(p2):
                     _predictionIsAccurate = false;
-                    // if (Debug.isDebugBuild)
-                    Debug.LogWarning($"Error with predicted: {_predicted} and verified: {_server}");
+                    if (ConfigManagerBase.Active.logPredictionErrors)
+                        Debug.LogWarning($"Error with predicted: {_predicted} and verified: {_server}");
                     return Navigation.Exit;
             }
             return Navigation.Continue;

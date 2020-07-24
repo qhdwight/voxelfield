@@ -191,4 +191,9 @@ namespace Swihoni.Sessions.Components
         public StringCommandProperty() { }
         public StringCommandProperty(string @string) : base(@string) { }
     }
+
+    [Serializable, ClientTrusted, SingleTick]
+    public class ChatEntryProperty : StringProperty
+    {
+    }
 }

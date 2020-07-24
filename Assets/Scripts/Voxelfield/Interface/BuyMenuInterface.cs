@@ -47,7 +47,11 @@ namespace Voxelfield.Interface
             m_AudioSource.PlayOneShot(clip);
         }
 
-        public override void SessionStateChange(bool isActive) => m_WantedBuyItemId = null;
+        public override void SessionStateChange(bool isActive)
+        {
+            base.SessionStateChange(isActive);
+            m_WantedBuyItemId = null;
+        }
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
@@ -70,6 +74,12 @@ namespace Voxelfield.Interface
                 m_MoneyText.StartBuild().Append("$").Append(money.count).Commit(m_MoneyText);
             }
             SetInterfaceActive(isActive);
+        }
+
+        public override void SetInterfaceActive(bool isActive)
+        {
+            base.SetInterfaceActive(isActive);
+            m_PlayerWantsVisible = isActive;
         }
 
         private static bool ShouldBeActive(SessionBase session, Container sessionContainer, out Container sessionLocalPlayer)

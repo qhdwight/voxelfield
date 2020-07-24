@@ -16,7 +16,7 @@ namespace Swihoni.Sessions.Interfaces
 
         public virtual void SessionStateChange(bool isActive)
         {
-            if (!isActive) SetInterfaceActive(false);
+            if (m_IsDuringGame && isActive) SetInterfaceActive(false);
         }
 
         protected bool NoInterrupting() => !SessionBase.InterruptingInterface || SessionBase.InterruptingInterface == this;
