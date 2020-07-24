@@ -71,7 +71,7 @@ namespace Swihoni.Sessions.Interfaces
                                .Append(" x")
                                .Append(equippedItem.ammoInReserve);
                             break;
-                        case ThrowableModifierBase _:
+                        case ThrowableItemModifierBase _:
                             builder.Append("x").Append(equippedItem.ammoInReserve);
                             break;
                         default:

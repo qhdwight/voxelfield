@@ -10,14 +10,14 @@ namespace Swihoni.Sessions.Items.Modifiers
         [SerializeField] protected ThrowableModifierBehavior m_ThrowablePrefab = default;
         [SerializeField] protected float m_LaunchForce = 10.0f;
 
-        protected override void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs) =>
-            Release(session, playerId, item);
+        protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item) =>
+            Release(context, item);
 
-        protected virtual void Release(SessionBase session, int playerId, ItemComponent item)
+        protected virtual void Release(in ModifyContext context, ItemComponent item)
         {
             checked
             {
-                ThrowableModifierBase.Throw(session, playerId, itemName, m_ThrowablePrefab, m_LaunchForce);
+                ThrowableItemModifierBase.Throw(context, itemName, m_ThrowablePrefab, m_LaunchForce);
                 item.ammoInMag.Value--;
             }
         }

@@ -156,21 +156,25 @@ namespace Swihoni.Sessions.Entities
                 Collider hitCollider = m_OverlappingColliders[i];
                 if (!hitCollider.TryGetComponent(out PlayerTrigger trigger)) continue;
                 int hitPlayerId = trigger.PlayerId;
-                Container hitPlayer = context.session.GetModifyingPayerFromId(hitPlayerId);
+                Container hitPlayer = context.GetModifyingPlayer(hitPlayerId);
                 if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive)
                 {
                     byte damage = CalculateDamage(new ModifyContext(player: hitPlayer, durationUs: context.durationUs));
-                    Container inflictingPlayer = context.session.GetModifyingPayerFromId(ThrowerId);
-                    var damageContext = new DamageContext(context, ThrowerId, inflictingPlayer, hitPlayer, hitPlayerId, damage, Name);
+                    int inflictingPlayerId = ThrowerId;
+                    Container inflictingPlayer = context.GetModifyingPlayer(inflictingPlayerId);
+                    var playerContext = new ModifyContext(existing: context, playerId: inflictingPlayerId, player: inflictingPlayer);
+                    var damageContext = new DamageContext(playerContext, hitPlayerId, hitPlayer, damage, Name);
                     context.session.GetModifyingMode().InflictDamage(damageContext);
                 }
             }
-            if (justPopped) context.session.Injector.OnThrowablePopped(this);
+            if (justPopped) JustPopped(context);
         }
+
+        protected virtual void JustPopped(in ModifyContext context) => context.session.Injector.OnThrowablePopped(this);
 
         private byte CalculateDamage(in ModifyContext context)
         {
-            float distance = Vector3.Distance(context.player.Require<MoveComponent>().position, transform.position);
+            float distance = Vector3.Distance(context.player.Require<MoveComponent>(), transform.position);
             float ratio = (m_MinimumDamageRatio - 1.0f) * Mathf.Clamp01(distance / m_Radius) + 1.0f;
             if (m_Interval > 0u) ratio *= context.durationUs * TimeConversions.MicrosecondToSecond;
             return checked((byte) Mathf.Max(m_Damage * ratio, 1.0f));

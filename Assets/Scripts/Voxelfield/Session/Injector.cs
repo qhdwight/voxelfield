@@ -28,11 +28,11 @@ namespace Voxelfield.Session
     {
         protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
 
-        protected internal virtual void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
+        public virtual void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
             => ChunkManager.Singleton.EvaluateVoxelChange(worldPosition, change, chunk, updateMesh);
 
-        protected internal virtual void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted) => uncommitted.Commit();
-        
+        public virtual void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted) => uncommitted.Commit();
+
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
         protected AuthTicket m_SteamAuthenticationTicket;
 
@@ -76,7 +76,8 @@ namespace Voxelfield.Session
         public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
         {
             var center = (Position3Int) throwableBehavior.transform.position;
-            ApplyVoxelChange(center, new VoxelChange{magnitude = throwableBehavior.Radius * -0.4f, replaceGrassWithDirt = true, modifiesBlocks = true});
+            var change = new VoxelChange {magnitude = throwableBehavior.Radius * -0.4f, replaceGrassWithDirt = true, modifiesBlocks = true, form = VoxelVolumeForm.Sperhical};
+            EvaluateVoxelChange(center, change);
         }
     }
 }

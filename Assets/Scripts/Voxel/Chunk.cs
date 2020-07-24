@@ -17,7 +17,6 @@ namespace Voxel
         private readonly MeshData m_SolidMeshData = new MeshData(), m_FoliageMeshData = new MeshData();
 
         private ChunkManager m_ChunkManager;
-        private MeshCollider m_MeshCollider;
         private Mesh m_SolidMesh, m_FoliageMesh;
         private MeshRenderer[] m_Renderers;
         private Position3Int m_Position;
@@ -25,6 +24,7 @@ namespace Voxel
         private int m_ChunkSize;
         private Voxel[] m_Voxels;
 
+        public MeshCollider MeshCollider { get; private set; }
         public ref Position3Int Position => ref m_Position;
 
         public override int GetHashCode() => m_Position.GetHashCode();
@@ -36,7 +36,7 @@ namespace Voxel
             m_SolidMesh = m_SolidMeshFilter.mesh;
             m_SolidMesh.indexFormat = IndexFormat.UInt32;
             m_FoliageMesh = new Mesh {indexFormat = IndexFormat.UInt32};
-            m_MeshCollider = GetComponent<MeshCollider>();
+            MeshCollider = GetComponent<MeshCollider>();
             m_Renderers = GetComponentsInChildren<MeshRenderer>();
             m_SolidMesh.MarkDynamic();
             m_FoliageMesh.MarkDynamic();
@@ -81,7 +81,7 @@ namespace Voxel
         private void ClearMeshes()
         {
             m_SolidMesh.Clear();
-            if (m_MeshCollider.sharedMesh) m_MeshCollider.sharedMesh.Clear();
+            if (MeshCollider.sharedMesh) MeshCollider.sharedMesh.Clear();
         }
 
         public bool InsideChunk(in Position3Int pos) => pos.x < m_ChunkSize && pos.y < m_ChunkSize && pos.z < m_ChunkSize
@@ -168,7 +168,7 @@ namespace Voxel
             Profiler.BeginSample("Apply Mesh");
             ApplyMesh(m_SolidMesh, m_SolidMeshData);
             ApplyMesh(m_FoliageMesh, m_FoliageMeshData);
-            m_MeshCollider.sharedMesh = m_SolidMesh;
+            MeshCollider.sharedMesh = m_SolidMesh;
             Profiler.EndSample();
         }
 

@@ -18,9 +18,9 @@ namespace Voxelfield.Session
         private readonly SortedDictionary<uint, VoxelChangesProperty> m_Changes = new SortedDictionary<uint, VoxelChangesProperty>();
         private readonly EvaluatedVoxelsTransaction m_Transaction = new EvaluatedVoxelsTransaction();
 
-        protected internal override void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true) { }
+        public override void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true) { }
 
-        protected internal override void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted) { }
+        public override void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted) { }
 
         public override NetDataWriter GetConnectWriter()
         {

@@ -13,6 +13,7 @@ using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Modes;
+using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxel;
@@ -57,16 +58,16 @@ namespace Voxelfield.Session
         private readonly VoxelChangesProperty m_MasterChanges = new VoxelChangesProperty();
         private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new DualDictionary<NetPeer, SteamId>();
 
-        protected internal override void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
+        public override void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
         {
             if (MapManager.Singleton.Models.ContainsKey(worldPosition)) return;
             var changed = Session.GetLatestSession().Require<VoxelChangesProperty>();
-            base.ApplyVoxelChange(worldPosition, change, chunk, updateMesh);
+            base.EvaluateVoxelChange(worldPosition, change, chunk, updateMesh);
             changed.Set(worldPosition, change);
             m_MasterChanges.AddAllFrom(changed);
         }
 
-        protected internal override void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted)
+        public override void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted)
         {
             var changed = Session.GetLatestSession().Require<VoxelChangesProperty>();
             foreach (KeyValuePair<Position3Int, VoxelChange> pair in uncommitted.Map)
@@ -114,25 +115,19 @@ namespace Voxelfield.Session
         }
 
 #if VOXELFIELD_RELEASE_SERVER
-        private readonly UpdateItemRequest m_AddKill = new UpdateItemRequest
+        private static UpdateItemRequest GetAdditionRequest(string key) => new UpdateItemRequest
         {
             TableName = "Player",
             Key = new Dictionary<string, AttributeValue> {["SteamId"] = new AttributeValue()},
-            ExpressionAttributeValues = new Dictionary<string, AttributeValue> {[":k"] = new AttributeValue {N = "1"}},
-            UpdateExpression = "ADD Kills :k"
+            ExpressionAttributeValues = new Dictionary<string, AttributeValue> {[":i"] = new AttributeValue {N = "1"}},
+            UpdateExpression = $"ADD {key} :i"
         };
 
-        private readonly UpdateItemRequest m_AddDeath = new UpdateItemRequest
-        {
-            TableName = "Player",
-            Key = new Dictionary<string, AttributeValue> {["SteamId"] = new AttributeValue()},
-            ExpressionAttributeValues = new Dictionary<string, AttributeValue> {[":d"] = new AttributeValue {N = "1"}},
-            UpdateExpression = "ADD Deaths :d"
-        };
+        private readonly UpdateItemRequest m_AddKill = GetAdditionRequest("Kills"), m_AddDeath = GetAdditionRequest("Deaths");
 
         public override void OnKillPlayer(in DamageContext context)
         {
-            if (!context.inflictingPlayer.Require<SteamIdProperty>().TryWithValue(out ulong steamId)) return;
+            if (!context.InflictingPlayer.Require<SteamIdProperty>().TryWithValue(out ulong steamId)) return;
 
             var steamIdString = steamId.ToString();
 
@@ -145,7 +140,7 @@ namespace Voxelfield.Session
             DynamoClient.UpdateItemAsync(m_AddKill);
         }
 #endif
-        
+
         public override void OnPlayerRegisterAppend(Container player) => player.RegisterAppend(typeof(SteamIdProperty));
 
         protected override void OnServerNewConnection(ConnectionRequest socketRequest)
@@ -225,8 +220,11 @@ namespace Voxelfield.Session
                     ModDir = Application.productName,
                     SteamPort = 0
                 };
-                SteamServer.Init(480, parameters, false);
-                SteamServer.LogOnAnonymous();
+                if (!SteamServer.IsValid)
+                {
+                    SteamServer.Init(480, parameters, false);
+                    SteamServer.LogOnAnonymous();
+                }
                 SteamServer.OnValidateAuthTicketResponse += SteamServerOnOnValidateAuthTicketResponse;
                 Debug.Log("Successfully initialized Steam server");
             }
@@ -265,12 +263,6 @@ namespace Voxelfield.Session
             }
         }
 
-        public override void OnStop()
-        {
-            base.OnStop();
-            if (SteamServer.IsValid) SteamServer.Shutdown();
-        }
-
         public override void OnSetupHost(in ModifyContext context)
         {
             if (SteamClient.IsValid) context.player.Require<SteamIdProperty>().Value = SteamClient.SteamId;
@@ -296,6 +288,54 @@ namespace Voxelfield.Session
             {
                 return base.GetUsername(context);
             }
+        }
+        
+        private static readonly RaycastHit[] CachedHits = new RaycastHit[2];
+
+        public override void OnServerModify(in ModifyContext context, MoveComponent component)
+        {
+            if (context.player.Require<HealthProperty>().IsDead) return;
+
+            var move = context.player.Require<MoveComponent>();
+            if (move.position.WithoutValue || move.type == MoveType.Flying) return;
+
+            Vector3 eyePosition = SessionBase.GetPlayerEyePosition(move);
+            float height = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch);
+            // TODO:refactor chunk layer mask no magic value
+            if (Physics.Raycast(eyePosition, Vector3.down, out RaycastHit hit, height - 0.1f, 1 << 15))
+                move.position.Value += new Vector3 {y = height - hit.distance};
+
+            bool hitBackFaces = Physics.queriesHitBackfaces;
+            Physics.queriesHitBackfaces = true;
+            if (move.groundTick > 0)
+            {
+                int count = Physics.RaycastNonAlloc(move, Vector3.down, CachedHits, 1.0f);
+                bool isOnBackface = count != 0 && CachedHits[0].normal.y < 0.0f;
+                if (isOnBackface)
+                {
+                    var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");
+                    context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);   
+                }
+            }
+            Physics.queriesHitBackfaces = hitBackFaces;
+            // Vector3 normal = context.session.GetPlayerModifier(context.player, context.playerId).Movement.Hit.
+            // Debug.Log(normal);
+            // if (Vector3.Dot(normal, Vector3.down) > 0.0f)
+            // {
+
+            // }
+
+            // Voxel.Voxel? _voxel = ChunkManager.Singleton.GetVoxel((Position3Int) eyePosition);
+            // if (!(_voxel is Voxel.Voxel voxel) || voxel.OnlySmooth && voxel.density <= 255 / 2) return;
+            //
+            // var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");
+            // context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
+        }
+
+        public override void OnStop()
+        {
+            base.OnStop();
+            if (SteamServer.IsValid) SteamServer.Shutdown();
         }
     }
 }

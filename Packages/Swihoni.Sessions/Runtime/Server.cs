@@ -321,9 +321,9 @@ namespace Swihoni.Sessions
 
                     if (!IsLoading)
                     {
-                        GetPlayerModifier(serverPlayer, clientId).ModifyChecked(this, clientId, serverPlayer, receivedClientCommands, clientStamp.durationUs, tickDelta);
-                        mode.ModifyPlayer(new ModifyContext(this, serverSession, receivedClientCommands, clientId, serverPlayer, durationUs: clientStamp.durationUs,
-                                                            tickDelta: tickDelta));
+                        var context = new ModifyContext(this, serverSession, receivedClientCommands, clientId, serverPlayer, durationUs: clientStamp.durationUs, tickDelta: tickDelta);
+                        GetPlayerModifier(serverPlayer, clientId).ModifyChecked(context);
+                        mode.ModifyPlayer(context);
                     }
                 }
             }

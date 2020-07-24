@@ -20,14 +20,14 @@ namespace Voxelfield.Item
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("set", "revert", "breakable");
 
-        protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        protected override void Swing(in ModifyContext context, ItemComponent item)
         {
-            if (WithoutClientHit(session, playerId, m_EditDistance, out RaycastHit hit)
+            if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
 
             if (voxel.HasBlock)
             {
-                var designer = session.GetLocalCommands().Require<DesignerPlayerComponent>();
+                var designer = context.session.GetLocalCommands().Require<DesignerPlayerComponent>();
                 if (designer.positionOne.WithoutValue || designer.positionTwo.WithValue)
                 {
                     Debug.Log($"Set position one: {position}");
@@ -42,20 +42,21 @@ namespace Voxelfield.Item
             }
         }
 
-        protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
+        protected override void SecondaryUse(in ModifyContext context)
         {
-            Container player = session.GetModifyingPayerFromId(playerId);
+            Container player = context.player;
             if (player.Without<ServerTag>()) return;
 
             var designer = player.Require<DesignerPlayerComponent>();
-            DimensionFunction(session, designer, _ => new VoxelChange {id = designer.selectedVoxelId, hasBlock = true});
+            DimensionFunction(context.session, designer, _ => new VoxelChange {id = designer.selectedVoxelId, hasBlock = true});
         }
 
-        public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,
-                                           uint durationUs)
+        public override void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
-            base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
+            base.ModifyChecked(context, item, inventory, inputs);
 
+            Container player = context.player;
+            SessionBase session = context.session;
             if (PlayerModifierBehaviorBase.TryServerCommands(player, out IEnumerable<string[]> commands))
             {
                 foreach (string[] args in commands)
@@ -72,6 +73,7 @@ namespace Voxelfield.Item
                         }
                         case "revert":
                         {
+                            // ReSharper disable once PossibleInvalidOperationException
                             DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => ChunkManager.Singleton.GetMapSaveVoxel(position).Value);
                             break;
                         }

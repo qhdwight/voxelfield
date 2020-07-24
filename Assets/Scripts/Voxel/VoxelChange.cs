@@ -2,14 +2,20 @@
 
 namespace Voxel
 {
+    public enum VoxelVolumeForm : byte
+    {
+        Sperhical, Cylindrical, Wall
+    }
+    
     public struct VoxelChange
     {
         public byte? id, density, orientation;
         public bool? hasBlock, isBreakable, natural, replaceGrassWithDirt, modifiesBlocks;
         public Color32? color;
         public float? magnitude, yaw;
+        public VoxelVolumeForm? form;
 
-        public override string ToString() => $"Texture: {id}, Is Block: {hasBlock}, Density: {density}, Orientation: {orientation}, Breakable: {isBreakable}, Magnitude: {magnitude}, Yaw: {yaw}";
+        public override string ToString() => $"Texture: {id}, Is Block: {hasBlock}, Density: {density}, Orientation: {orientation}, Breakable: {isBreakable}, Form: {form}, Magnitude: {magnitude}, Yaw: {yaw}";
 
         public void Merge(in VoxelChange newChange)
         {
@@ -24,6 +30,7 @@ namespace Voxel
             if (newChange.color.HasValue) color = newChange.color.Value;
             if (newChange.magnitude.HasValue) magnitude = newChange.magnitude.Value;
             if (newChange.yaw.HasValue) yaw = newChange.yaw.Value;
+            if (newChange.form.HasValue) form = newChange.form.Value;
         }
     }
 }

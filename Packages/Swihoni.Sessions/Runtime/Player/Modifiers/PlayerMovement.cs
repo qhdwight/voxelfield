@@ -47,8 +47,11 @@ namespace Swihoni.Sessions.Player.Modifiers
         private float m_ControllerHeight;
         private Vector3 m_ControllerCenter;
 
+        public ControllerColliderHit Hit => m_ControllerListener.CachedControllerHit;
+
         public LayerMask GroundMask => m_GroundMask;
         public float MaxSpeed => m_RunSpeed * m_SprintMultiplier;
+        public Collider Collider => m_Controller;
 
         internal override void Setup(SessionBase session)
         {
@@ -60,8 +63,9 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_ControllerCenter = m_Controller.center;
         }
 
-        protected internal override void SynchronizeBehavior(Container player)
+        protected internal override void SynchronizeBehavior(in ModifyContext context)
         {
+            Container player = context.player;
             var move = player.Require<MoveComponent>();
             bool isControllerActive;
             if (move.position.WithValue)
@@ -81,19 +85,22 @@ namespace Swihoni.Sessions.Player.Modifiers
         // TODO:refactor bad
         private bool m_LastFlyInput;
 
-        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
+        public override void ModifyChecked(in ModifyContext context)
         {
-            if (tickDelta < 1 || player.Without(out MoveComponent move)) return;
+            if (context.tickDelta < 1) return;
+            
+            Container player = context.player;
+            if (player.Without(out MoveComponent move)) return;
 
-            base.ModifyChecked(session, playerId, player, commands, durationUs, tickDelta); // Synchronize game object
+            base.ModifyChecked(in context); // Synchronize game object
 
             if (player.WithPropertyWithValue(out FrozenProperty frozen) && frozen
              || player.With(out HealthProperty health) && health.IsDead
-             || commands.Without(out InputFlagProperty inputs)) return;
+             || context.commands.Without(out InputFlagProperty inputs)) return;
 
-            float duration = durationUs * TimeConversions.MicrosecondToSecond;
+            float duration = context.durationUs * TimeConversions.MicrosecondToSecond;
 
-            if (session.GetLatestSession().Require<AllowCheatsProperty>())
+            if (context.sessionContainer.Require<AllowCheatsProperty>())
             {
                 bool flyInput = inputs.GetInput(PlayerInput.Fly);
                 if (flyInput && !m_LastFlyInput) move.type.Value = move.type == MoveType.Grounded ? MoveType.Flying : MoveType.Grounded;
@@ -129,7 +136,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             move.groundTick.Value = byte.MaxValue;
         }
 
-        public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs) { }
+        public override void ModifyTrusted(in ModifyContext context, Container verifiedPlayer) { }
 
         public override void ModifyCommands(SessionBase session, Container commands, int playerId)
         {
@@ -180,14 +187,11 @@ namespace Swihoni.Sessions.Player.Modifiers
             float lateralSpeed = endingVelocity.LateralMagnitude();
 
             Vector3 position = m_MoveTransform.position;
-            float radius = m_Controller.radius - 0.01f;
-            int capsuleCastCount = Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance},
-                                                                  position + new Vector3 {y = m_Controller.height / 2.0f},
-                                                                  radius, m_CachedContactColliders, m_GroundMask);
+            int capsuleCastCount = OverlapGround(position);
             int downwardCastCount = Physics.RaycastNonAlloc(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
                                                             float.PositiveInfinity, m_GroundMask);
             float floorDistance = m_CachedGroundHits[0].distance,
-                  slopeAngle = Vector3.Angle(m_ControllerListener.CachedControllerHit.normal, Vector3.up);
+                  slopeAngle = Vector3.Angle(Hit.normal, Vector3.up);
             bool isGrounded = m_Controller.isGrounded || capsuleCastCount == 2, // Always have 1 due to ourselves. 2 means we are touching something else
                  withinAngleLimit = isGrounded && slopeAngle < m_Controller.slopeLimit,
                  applyStick = endingVelocity.y < 0.0f && withinAngleLimit; // Only on way down, if done on way up it negates jump
@@ -241,9 +245,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             // Prevent player from walking off the side when crouching
             if (inputs.GetInput(PlayerInput.Crouch) && !inputs.GetInput(PlayerInput.Jump) && isGrounded)
             {
-                int projectedCount = Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance} + motion,
-                                                                    position + new Vector3 {y = m_Controller.height / 2.0f}, radius,
-                                                                    m_CachedContactColliders, m_GroundMask);
+                int projectedCount = OverlapGround(position + motion);
                 if (projectedCount == 1)
                 {
                     move.position.Value = position;
@@ -263,6 +265,14 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_Controller.Move(motion);
             move.position.Value = m_MoveTransform.position;
             move.velocity.Value = endingVelocity;
+        }
+
+        private int OverlapGround(in Vector3 position)
+        {
+            float radius = m_Controller.radius - 0.01f;
+            return Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance},
+                                                  position + new Vector3 {y = m_Controller.height / 2.0f},
+                                                  radius, m_CachedContactColliders, m_GroundMask);
         }
 
         private float CalculateMaxSpeed(Container player, InputFlagProperty inputs, float slopeAngle)

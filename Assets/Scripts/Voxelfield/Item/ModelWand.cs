@@ -21,11 +21,11 @@ namespace Voxelfield.Item
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("select_model");
 
-        protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        protected override void Swing(in ModifyContext context, ItemComponent item)
         {
-            if (session.GetModifyingPayerFromId(playerId).Without<ServerTag>()) return;
+            if (context.player.Without<ServerTag>()) return;
 
-            Ray ray = session.GetRayForPlayerId(playerId);
+            Ray ray = context.session.GetRayForPlayerId(context.playerId);
             if (!Physics.Raycast(ray, out RaycastHit hit, m_EditDistance, m_ModelMask)) return;
 
             var modelBehavior = hit.collider.GetComponentInParent<ModelBehaviorBase>();
@@ -35,13 +35,13 @@ namespace Voxelfield.Item
             }
         }
 
-        protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
+        protected override void SecondaryUse(in ModifyContext context)
         {
-            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)) return;
+            if (WithoutServerHit(context, m_EditDistance, out RaycastHit hit)) return;
 
             var position = (Position3Int) (hit.point + hit.normal * 0.5f);
 
-            var designer = session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>();
+            var designer = context.player.Require<DesignerPlayerComponent>();
             if (designer.selectedModelId.WithoutValue) return;
             ushort selectedModelId = designer.selectedModelId;
 
@@ -65,12 +65,11 @@ namespace Voxelfield.Item
             MapManager.Singleton.AddModel(position, model);
         }
 
-        public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs,
-                                           uint durationUs)
+        public override void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
-            base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
+            base.ModifyChecked(context, item, inventory, inputs);
 
-            if (PlayerModifierBehaviorBase.TryServerCommands(player, out IEnumerable<string[]> commands))
+            if (PlayerModifierBehaviorBase.TryServerCommands(context.player, out IEnumerable<string[]> commands))
             {
                 foreach (string[] args in commands)
                 {
@@ -78,7 +77,7 @@ namespace Voxelfield.Item
                     {
                         case "select_model":
                             if (args.Length > 1 && ushort.TryParse(args[1], out ushort modelId))
-                                player.Require<DesignerPlayerComponent>().selectedModelId.Value = modelId;
+                                context.player.Require<DesignerPlayerComponent>().selectedModelId.Value = modelId;
                             break;
                     }
                 }

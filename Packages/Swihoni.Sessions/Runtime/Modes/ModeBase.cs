@@ -18,22 +18,24 @@ namespace Swihoni.Sessions.Modes
         public readonly bool isHeadShot;
         public readonly string weaponName;
         public readonly byte damage;
-        public readonly int hitPlayerId, inflictingPlayerId;
-        public readonly Container hitPlayer, inflictingPlayer;
+        public readonly int hitPlayerId;
+        public readonly Container hitPlayer;
 
-        public bool IsSelfInflicting => hitPlayerId == inflictingPlayerId;
+        public int InflictingPlayerId => modifyContext.playerId;
+        public Container InflictingPlayer => modifyContext.player;
 
-        public DamageContext(in ModifyContext? modifyContext = null, int? inflictingPlayerId = null, Container inflictingPlayer = null, Container hitPlayer = null,
+        public bool IsSelfInflicting => hitPlayerId == InflictingPlayerId;
+
+        public DamageContext(in ModifyContext? modifyContext = null,
                              int? hitPlayerId = null,
+                             Container hitPlayer = null,
                              byte? damage = null, string weaponName = null, bool? isHeadShot = null, PlayerHitContext? playerHitContext = null)
         {
             if (playerHitContext is PlayerHitContext context)
             {
                 this.modifyContext = context.modifyContext;
-                this.inflictingPlayerId = context.modifyContext.playerId;
-                this.inflictingPlayer = context.modifyContext.player;
-                this.hitPlayer = context.hitPlayer;
                 this.hitPlayerId = context.hitPlayerId;
+                this.hitPlayer = context.hitPlayer;
                 this.damage = damage.GetValueOrDefault();
                 this.weaponName = weaponName;
                 this.isHeadShot = isHeadShot.GetValueOrDefault();
@@ -41,10 +43,8 @@ namespace Swihoni.Sessions.Modes
             else
             {
                 this.modifyContext = modifyContext.GetValueOrDefault();
-                this.inflictingPlayerId = inflictingPlayerId.GetValueOrDefault();
-                this.inflictingPlayer = inflictingPlayer;
-                this.hitPlayer = hitPlayer;
                 this.hitPlayerId = hitPlayerId.GetValueOrDefault();
+                this.hitPlayer = hitPlayer;
                 this.damage = damage.GetValueOrDefault();
                 this.weaponName = weaponName;
                 this.isHeadShot = isHeadShot.GetValueOrDefault();
@@ -153,7 +153,7 @@ namespace Swihoni.Sessions.Modes
                     if (damageNotifier.elapsedUs.Value > context.durationUs) damageNotifier.elapsedUs.Value -= context.durationUs;
                     else damageNotifier.elapsedUs.Value = 0u;
                 if (context.player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
-                    InflictDamage(new DamageContext(context, context.playerId, context.player, context.player, context.playerId, health.Value, "Void"));
+                    InflictDamage(new DamageContext(context, context.playerId, context.player, health.Value, "Void"));
             }
 
             if (context.commands.WithPropertyWithValue(out WantedTeamProperty wantedTeam) && wantedTeam != context.player.Require<TeamProperty>() && AllowTeamSwap(context))
@@ -188,8 +188,7 @@ namespace Swihoni.Sessions.Modes
             if (playerHitContext.hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive && playerHitContext.hitPlayer.With<ServerTag>())
             {
                 var damage = checked((byte) Mathf.Clamp(CalculateWeaponDamage(playerHitContext), 0.0f, 255.0f));
-                var damageContext = new DamageContext(playerHitContext: playerHitContext,
-                                                      damage: damage, weaponName: playerHitContext.weapon.itemName, isHeadShot: playerHitContext.hitbox.IsHead);
+                var damageContext = new DamageContext(damage: damage, weaponName: playerHitContext.weapon.itemName, isHeadShot: playerHitContext.hitbox.IsHead, playerHitContext: playerHitContext);
                 InflictDamage(damageContext);
             }
         }
@@ -206,7 +205,7 @@ namespace Swihoni.Sessions.Modes
             checked
             {
                 bool isSelfInflicting = damageContext.IsSelfInflicting,
-                     usesHitMarker = damageContext.inflictingPlayer.With(out HitMarkerComponent hitMarker) && !isSelfInflicting,
+                     usesHitMarker = damageContext.InflictingPlayer.With(out HitMarkerComponent hitMarker) && !isSelfInflicting,
                      usesNotifier = damageContext.hitPlayer.With(out DamageNotifierComponent damageNotifier);
 
                 var health = damageContext.hitPlayer.Require<HealthProperty>();
@@ -215,7 +214,7 @@ namespace Swihoni.Sessions.Modes
                 {
                     KillPlayer(damageContext);
 
-                    if (!isSelfInflicting && damageContext.inflictingPlayer.With(out StatsComponent stats))
+                    if (!isSelfInflicting && damageContext.InflictingPlayer.With(out StatsComponent stats))
                         stats.kills.Value++;
 
                     if (usesHitMarker) hitMarker.isKill.Value = true;
@@ -226,7 +225,7 @@ namespace Swihoni.Sessions.Modes
                         if (kill.elapsedUs > 0u) continue;
                         // Empty kill found
                         kill.elapsedUs.Value = 2_000_000u;
-                        kill.killingPlayerId.Value = (byte) damageContext.inflictingPlayerId;
+                        kill.killingPlayerId.Value = (byte) damageContext.InflictingPlayerId;
                         kill.killedPlayerId.Value = (byte) damageContext.hitPlayerId;
                         kill.isHeadShot.Value = damageContext.isHeadShot;
                         kill.weaponName.SetTo(damageContext.weaponName);
@@ -246,7 +245,7 @@ namespace Swihoni.Sessions.Modes
                 if (usesNotifier)
                 {
                     damageNotifier.elapsedUs.Value = 2_000_000u;
-                    damageNotifier.inflictingPlayerId.Value = (byte) damageContext.inflictingPlayerId;
+                    damageNotifier.inflictingPlayerId.Value = (byte) damageContext.InflictingPlayerId;
                     damageNotifier.damage.Value = damageContext.damage;
                 }
             }

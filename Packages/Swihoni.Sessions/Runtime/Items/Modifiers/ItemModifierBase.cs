@@ -62,31 +62,32 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
 
-        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory,
-                                          InputFlagProperty inputs, uint durationUs)
+        public virtual void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             // TODO:refactor move frozen into CanUse
-            bool notFrozen = player.Without(out FrozenProperty frozen) || frozen.WithoutValue || !frozen;
+            int playerId = context.playerId;
+            SessionBase session = context.session;
+            bool notFrozen = context.player.Without(out FrozenProperty frozen) || frozen.WithoutValue || !frozen;
             if (notFrozen)
             {
                 if (inputs.GetInput(PlayerInput.UseOne) && CanPrimaryUse(item, inventory))
-                    StartStatus(session, playerId, inventory, item, GetUseStatus(inputs), durationUs);
-                else if (inputs.GetInput(PlayerInput.UseTwo) && CanSecondaryUse(session, playerId, item, inventory))
-                    StartStatus(session, playerId, inventory, item, ItemStatusId.SecondaryUsing, durationUs);
-                else if (inputs.GetInput(PlayerInput.UseThree) && CanTernaryUse(session, playerId, item, inventory))
-                    StartStatus(session, playerId, inventory, item, ItemStatusId.TernaryUsing, durationUs);
+                    StartStatus(context, inventory, item, GetUseStatus(inputs));
+                else if (inputs.GetInput(PlayerInput.UseTwo) && CanSecondaryUse(context, item, inventory))
+                    StartStatus(context, inventory, item, ItemStatusId.SecondaryUsing);
+                else if (inputs.GetInput(PlayerInput.UseThree) && CanTernaryUse(context, item, inventory))
+                    StartStatus(context, inventory, item, ItemStatusId.TernaryUsing);
             }
-            ModifyStatus(session, playerId, item, inventory, inputs, durationUs);
+            ModifyStatus(context, item, inventory, inputs);
         }
 
-        private void ModifyStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, uint durationUs)
+        private void ModifyStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
-            item.status.elapsedUs.Value += durationUs;
-            StatusTick(session, playerId, inventory, item, inputs, durationUs);
-            EndStatus(session, playerId, item, inventory, inputs, durationUs);
+            item.status.elapsedUs.Value += context.durationUs;
+            StatusTick(context, inventory, item, inputs);
+            EndStatus(context, item, inventory, inputs);
         }
 
-        protected virtual void EndStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs, uint durationUs)
+        protected virtual void EndStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             ByteStatusComponent status = item.status;
             try
@@ -96,8 +97,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                 {
                     if (modifierProperties.isPersistent) break;
                     uint statusElapsedUs = status.elapsedUs;
-                    byte? nextStatus = FinishStatus(session, playerId, item, inventory, inputs);
-                    StartStatus(session, playerId, inventory, item, nextStatus ?? ItemStatusId.Idle, durationUs, statusElapsedUs - modifierProperties.durationUs);
+                    byte? nextStatus = FinishStatus(context, item, inventory, inputs);
+                    StartStatus(context, inventory, item, nextStatus ?? ItemStatusId.Idle, statusElapsedUs - modifierProperties.durationUs);
                     if (nextStatus == ItemStatusId.RequestRemoval) break;
                 }
             }
@@ -108,29 +109,28 @@ namespace Swihoni.Sessions.Items.Modifiers
             }
         }
 
-        protected virtual void StatusTick(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs, uint durationUs) { }
+        protected virtual void StatusTick(in ModifyContext context, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs) { }
 
-        protected void StartStatus(SessionBase session, int playerId, InventoryComponent inventory,
-                                   ItemComponent item, byte statusId, uint durationUs, uint elapsedUs = 0u)
+        protected void StartStatus(in ModifyContext context, InventoryComponent inventory, ItemComponent item, byte statusId, uint elapsedUs = 0u)
         {
             item.status.id.Value = statusId;
             item.status.elapsedUs.Value = elapsedUs;
             switch (statusId)
             {
                 case ItemStatusId.PrimaryUsing:
-                    PrimaryUse(session, playerId, inventory, item, durationUs);
+                    PrimaryUse(context, inventory, item);
                     break;
                 case ItemStatusId.SecondaryUsing:
-                    SecondaryUse(session, playerId, durationUs);
+                    SecondaryUse(context);
                     break;
                 case ItemStatusId.TernaryUsing:
-                    TernaryUse(session, playerId, item, durationUs);
+                    TernaryUse(context, item);
                     break;
             }
         }
 
         /// <returns>State to switch to</returns>
-        protected virtual byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected virtual byte? FinishStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             switch (item.status.id)
             {
@@ -152,20 +152,20 @@ namespace Swihoni.Sessions.Items.Modifiers
          && item.status.id != ItemStatusId.TernaryUsing
          && inventory.equipStatus.id == ItemEquipStatusId.Equipped;
 
-        protected virtual bool CanSecondaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory) => false;
+        protected virtual bool CanSecondaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory) => false;
 
-        protected virtual bool CanTernaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory) => false;
+        protected virtual bool CanTernaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory) => false;
 
-        protected virtual void SecondaryUse(SessionBase session, int playerId, uint durationUs) { }
+        protected virtual void SecondaryUse(in ModifyContext context) { }
 
-        protected virtual void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs) { }
+        protected virtual void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item) { }
 
-        protected virtual void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
+        protected virtual void TernaryUse(in ModifyContext context, ItemComponent item) { }
 
         public void ModifyCommands(SessionBase session, InputFlagProperty commandsToModify) { }
 
-        protected internal virtual void OnEquip(SessionBase session, int playerId, ItemComponent item, uint durationUs) { }
+        protected internal virtual void OnEquip(in ModifyContext context, ItemComponent item) { }
 
-        protected internal virtual void OnUnequip(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs) { }
+        protected internal virtual void OnUnequip(in ModifyContext context, InventoryComponent inventory, ItemComponent item) { }
     }
 }

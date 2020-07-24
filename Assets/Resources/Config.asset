@@ -49,10 +49,13 @@ MonoBehaviour:
     m_Flags: 1
     m_Value: 1
   input:
-    m_Flags: 0
+    m_Flags: 1
   fpsUpdateRate:
     m_Flags: 1
     m_Value: 0.4
+  logPredictionErrors:
+    m_Flags: 1
+    m_Value: 0
   resolutionWidth:
     m_Flags: 0
     m_Value: 0

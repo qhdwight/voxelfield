@@ -10,27 +10,27 @@ namespace Voxelfield.Item
     [CreateAssetMenu(fileName = "Super Pickaxe", menuName = "Item/Super Pickaxe", order = 0)]
     public class SuperPickaxe : SculptingItem
     {
-        protected override void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        protected override void TernaryUse(in ModifyContext context, ItemComponent item)
         {
-            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)) return;
+            if (WithoutServerHit(context, m_EditDistance, out RaycastHit hit)) return;
 
-            var designer = session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>();
-            var voxelInjector = (Injector) session.Injector;
+            var designer = context.player.Require<DesignerPlayerComponent>();
+            var voxelInjector = (Injector) context.session.Injector;
             var position = (Position3Int) hit.point;
-            voxelInjector.ApplyVoxelChange(position, new VoxelChange{id = designer.selectedVoxelId.AsNullable, magnitude = designer.editRadius});
+            voxelInjector.EvaluateVoxelChange(position, new VoxelChange{id = designer.selectedVoxelId.AsNullable, magnitude = designer.editRadius, form = VoxelVolumeForm.Sperhical});
         }
 
-        protected override void RemoveBlock(SessionBase session, Injector injector, in Position3Int position)
+        protected override void RemoveBlock(in ModifyContext context, Injector injector, in Position3Int position)
         {
             if (ChunkManager.Singleton.GetMapSaveVoxel(position) is VoxelChange save)
-                injector.ApplyVoxelChange(position, new VoxelChange {id = save.id, hasBlock = false, natural = true});
+                injector.EvaluateVoxelChange(position, new VoxelChange {id = save.id, hasBlock = false, natural = true});
         }
 
-        protected override void RemoveVoxelRadius(SessionBase session, int playerId, Injector injector, in Position3Int position)
+        protected override void RemoveVoxelRadius(in ModifyContext context, Injector injector, in Position3Int position)
         {
-            float radius = session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>().editRadius;
+            float radius = context.player.Require<DesignerPlayerComponent>().editRadius;
             if (radius > Mathf.Epsilon)
-                injector.ApplyVoxelChange(position, new VoxelChange{magnitude = -radius});
+                injector.EvaluateVoxelChange(position, new VoxelChange{magnitude = -radius, form = VoxelVolumeForm.Sperhical});
         }
     }
 }

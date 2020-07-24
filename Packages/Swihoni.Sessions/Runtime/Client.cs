@@ -75,14 +75,16 @@ namespace Swihoni.Sessions
 
         public override Container GetLocalCommands() => m_CommandHistory.Peek();
 
-        protected override void Input(uint timeUs, uint deltaUs)
+        protected override void Input(uint timeUs, uint durationUs)
         {
-            Container latestSession = GetLatestSession();
-            if (!GetLocalPlayerId(latestSession, out int localPlayerId))
+            Container verifiedLatestSession = GetLatestSession();
+            if (!GetLocalPlayerId(verifiedLatestSession, out int localPlayerId))
                 return;
-            Container player = GetModifyingPayerFromId(localPlayerId, latestSession);
-            UpdateInputs(player, localPlayerId);
-            GetPlayerModifier(player, localPlayerId).ModifyTrusted(this, localPlayerId, m_CommandHistory.Peek(), player, m_CommandHistory.Peek(), deltaUs);
+            Container verifiedPlayer = GetModifyingPayerFromId(localPlayerId, verifiedLatestSession);
+            UpdateInputs(verifiedPlayer, localPlayerId);
+            var context = new ModifyContext(this, commands: m_CommandHistory.Peek(), playerId: localPlayerId, player: m_CommandHistory.Peek(),
+                                            timeUs: timeUs, durationUs: durationUs);
+            GetPlayerModifier(verifiedPlayer, localPlayerId).ModifyTrusted(context, verifiedPlayer);
         }
 
         // private static CyclicArray<Container> _predictionHistory;
@@ -319,7 +321,7 @@ namespace Swihoni.Sessions
                         }
                         else localizedServerTimeUs.Value = _timeUs;
 
-                        if (playerId != localPlayerId) GetPlayerModifier(serverPlayer, playerId).Synchronize(serverPlayer);
+                        if (playerId != localPlayerId) GetPlayerModifier(serverPlayer, playerId).Synchronize(new ModifyContext(player: serverPlayer));
 
                         long delta = localizedServerTimeUs.Value - (long) _timeUs;
                         if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
@@ -398,7 +400,12 @@ namespace Swihoni.Sessions
                 if (!IsLoading && predictedStamp.durationUs.WithValue)
                 {
                     PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
-                    if (modifier) modifier.ModifyChecked(this, localPlayerId, predictedPlayer, commands, predictedStamp.durationUs);
+                    if (modifier)
+                    {
+                        var context = new ModifyContext(this, commands: commands, playerId: localPlayerId, player: predictedPlayer,
+                                                        timeUs: timeUs, durationUs: predictedStamp.durationUs, tickDelta: 1);
+                        modifier.ModifyChecked(context);
+                    }
                 }
             }
         }
@@ -451,7 +458,9 @@ namespace Swihoni.Sessions
                     PlayerModifierDispatcherBehavior localPlayerModifier = GetPlayerModifier(pastPredictedPlayer, localPlayerId);
                     if (commands.Require<ClientStampComponent>().durationUs.WithValue)
                     {
-                        localPlayerModifier.ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().durationUs);
+                        var context = new ModifyContext(this, commands: commands, playerId: localPlayerId, player: pastPredictedPlayer,
+                                                        durationUs: commands.Require<ClientStampComponent>().durationUs, tickDelta: 1);
+                        localPlayerModifier.ModifyChecked(context);
                     }
                     else
                     {

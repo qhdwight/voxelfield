@@ -11,28 +11,28 @@ namespace Swihoni.Sessions.Items.Modifiers
         public const byte Cooking = ItemStatusId.Last + 1;
     }
 
-    public class ThrowableModifierBase : ItemModifierBase
+    public class ThrowableItemModifierBase : ItemModifierBase
     {
         [Header("Throwable"), SerializeField] private float m_ThrowForce = default;
         [SerializeField] protected ThrowableModifierBehavior m_ThrowablePrefab = default;
 
-        protected override void StatusTick(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs, uint durationUs)
+        protected override void StatusTick(in ModifyContext context, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs)
         {
             if (item.status.id == ThrowableStatusId.Cooking && !inputs.GetInput(PlayerInput.UseOne))
-                StartStatus(session, playerId, inventory, item, ItemStatusId.PrimaryUsing, durationUs);
+                StartStatus(context, inventory, item, ItemStatusId.PrimaryUsing);
         }
 
-        protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected override byte? FinishStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             // TODO:refactor make base class for C4 type objects
             if (item.status.id == ItemStatusId.PrimaryUsing)
             {
-                Release(session, playerId, item);
+                Release(context, item);
                 if (item.ammoInReserve == 0 && item.id != ItemId.C4) return ItemStatusId.RequestRemoval;
             }
             else if (item.status.id == ItemStatusId.SecondaryUsing && item.id == ItemId.C4 && item.ammoInReserve == 0)
                 return ItemStatusId.RequestRemoval;
-            return base.FinishStatus(session, playerId, item, inventory, inputs);
+            return base.FinishStatus(context, item, inventory, inputs);
         }
 
         protected override byte GetUseStatus(InputFlagProperty input) => ThrowableStatusId.Cooking;
@@ -40,19 +40,20 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false)
             => base.CanPrimaryUse(item, inventory, justFinishedUse) && item.status.id != ThrowableStatusId.Cooking && item.ammoInReserve > 0;
 
-        protected override bool CanSecondaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory)
+        protected override bool CanSecondaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory)
             => base.CanPrimaryUse(item, inventory) && item.status.id != ThrowableStatusId.Cooking;
 
-        protected override void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs) { }
+        protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item) { }
 
-        protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
+        protected override void SecondaryUse(in ModifyContext context)
         {
-            var entities = session.GetLatestSession().Require<EntityArrayElement>();
+            var entities = context.sessionContainer.Require<EntityArrayElement>();
             for (var index = 0; index < entities.Length; index++)
             {
                 EntityContainer entity = entities[index];
-                if (session.EntityManager.UnsafeModifiers[index] is ThrowableModifierBehavior throwableModifier
-                 && throwableModifier.CanQueuePop && throwableModifier.ThrowerId == playerId)
+                if (context.session.EntityManager.UnsafeModifiers[index] is ThrowableModifierBehavior throwableModifier
+                 && throwableModifier.CanQueuePop && throwableModifier.ThrowerId == context.playerId
+                    )
                 {
                     var throwable = entity.Require<ThrowableComponent>();
                     if (throwable.popTimeUs > throwable.thrownElapsedUs)
@@ -61,27 +62,27 @@ namespace Swihoni.Sessions.Items.Modifiers
             }
         }
 
-        protected virtual void Release(SessionBase session, int playerId, ItemComponent item)
+        protected virtual void Release(in ModifyContext context, ItemComponent item)
         {
             checked
             {
-                Throw(session, playerId, itemName, m_ThrowablePrefab, m_ThrowForce);
+                Throw(context, itemName, m_ThrowablePrefab, m_ThrowForce);
                 item.ammoInReserve.Value--;
             }
         }
 
-        public static bool Throw(SessionBase session, int playerId, string itemName, IdBehavior throwablePrefab, float throwForce)
+        public static bool Throw(in ModifyContext context, string itemName, IdBehavior throwablePrefab, float throwForce)
         {
-            Container player = session.GetModifyingPayerFromId(playerId);
+            Container player = context.player;
             if (player.Without<ServerTag>()) return false;
 
             Ray ray = SessionBase.GetRayForPlayer(player);
-            var modifier = (EntityModifierBehavior) session.EntityManager.ObtainNextModifier(session.GetLatestSession(), throwablePrefab.id);
+            var modifier = (EntityModifierBehavior) context.session.EntityManager.ObtainNextModifier(context.sessionContainer, throwablePrefab.id);
             if (modifier is ThrowableModifierBehavior throwableModifier)
             {
                 throwableModifier.Name = itemName;
                 modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.LookRotation(ray.direction));
-                throwableModifier.ThrowerId = playerId;
+                throwableModifier.ThrowerId = context.playerId;
                 Vector3 force = ray.direction * throwForce;
                 if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;
                 throwableModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
@@ -89,10 +90,10 @@ namespace Swihoni.Sessions.Items.Modifiers
             return true;
         }
 
-        protected internal override void OnUnequip(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
+        protected internal override void OnUnequip(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
         {
             if (item.status.id == ThrowableStatusId.Cooking)
-                StartStatus(session, playerId, inventory, item, ItemStatusId.Idle, durationUs);
+                StartStatus(context, inventory, item, ItemStatusId.Idle);
         }
     }
 }

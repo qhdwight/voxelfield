@@ -13,13 +13,15 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         [SerializeField] private float m_Distance = 2.0f;
 
-        protected override void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
+        protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
         {
-            Swing(session, playerId, item, durationUs);
+            Swing(context, item);
         }
 
-        protected virtual void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        protected virtual void Swing(in ModifyContext context, ItemComponent item)
         {
+            int playerId = context.playerId;
+            SessionBase session = context.session;
             Ray ray = session.GetRayForPlayerId(playerId);
             session.RollbackHitboxesFor(playerId);
             int count = Physics.RaycastNonAlloc(ray, RaycastHits, m_Distance, m_RaycastMask);
@@ -27,10 +29,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             RaycastHit hit = RaycastHits[0];
             if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId) return;
 
-            Container sessionContainer = session.GetLatestSession(),
-                      player = session.GetModifyingPayerFromId(playerId, sessionContainer);
-            var hitContext = new PlayerHitContext(new ModifyContext(session, sessionContainer, playerId: playerId, player: player, durationUs: durationUs),
-                                                  hitbox, this, hit);
+            var hitContext = new PlayerHitContext(context, hitbox, this, hit);
             session.GetModifyingMode().PlayerHit(hitContext);
         }
     }

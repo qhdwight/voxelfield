@@ -17,13 +17,13 @@ namespace Voxel
 
         private class DeserializerAttribute : Attribute
         {
-            internal string Version { get; }
+            internal string[] Versions { get; }
 
-            public DeserializerAttribute(string version) => Version = version;
+            public DeserializerAttribute(params string[] versions) => Versions = versions;
         }
 
         [Deserializer("0.0.11")]
-        private static VoxelChange Deserialize_0_0_11(NetDataReader reader)
+        private static VoxelChange _Deserialize(NetDataReader reader)
         {
             byte flags = reader.GetByte();
             VoxelChange change = default;
@@ -37,8 +37,8 @@ namespace Voxel
             return change;
         }
 
-        [Deserializer("0.0.12")]
-        private static VoxelChange Deserialize_0_0_12(NetDataReader reader)
+        [Deserializer("0.0.12", "1.0.0.0", "1.0.0.1")]
+        private static VoxelChange __Deserialize(NetDataReader reader)
         {
             ushort flags = reader.GetUShort();
             VoxelChange change = default;
@@ -52,11 +52,13 @@ namespace Voxel
             return change;
         }
 
-        private static readonly Dictionary<string, Deserializer> Deserializers = typeof(VoxelVersionSerializer)
-                                                                                .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
-                                                                                .Where(method => method.GetCustomAttribute<DeserializerAttribute>() != null)
-                                                                                .ToDictionary(method => method.GetCustomAttribute<DeserializerAttribute>().Version,
-                                                                                              method => (Deserializer) Delegate.CreateDelegate(typeof(Deserializer), null, method));
+        private static readonly Dictionary<string, Deserializer> Deserializers
+            = typeof(VoxelVersionSerializer).GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
+                                            .Where(method => method.GetCustomAttribute<DeserializerAttribute>() != null)
+                                            .SelectMany(method => method.GetCustomAttribute<DeserializerAttribute>().Versions
+                                                                        .Select(version => new {Method = method, Version = version}))
+                                            .ToDictionary(pair => pair.Version,
+                                                          pair => (Deserializer) Delegate.CreateDelegate(typeof(Deserializer), null, pair.Method));
 
         public static VoxelChange Deserialize(NetDataReader reader, string version = null)
         {
@@ -73,7 +75,7 @@ namespace Voxel
 
         public static void Serialize(in VoxelChange change, NetDataWriter writer)
         {
-            ushort flags = 0;
+            var flags = 0u;
             int position = writer.Length;
             writer.Put(flags);
 
@@ -107,6 +109,11 @@ namespace Voxel
                 FlagUtil.SetFlag(ref flags, 5);
                 writer.Put(change.yaw.Value);
             }
+            if (change.form.HasValue)
+            {
+                FlagUtil.SetFlag(ref flags, 6);
+                writer.Put((byte) change.form.Value);
+            }
 
             /* Flags */
             if (change.modifiesBlocks.HasValue)
@@ -121,18 +128,18 @@ namespace Voxel
             }
             if (change.hasBlock.HasValue)
             {
-                FlagUtil.SetFlag(ref flags, 10);
-                if (change.hasBlock.Value) FlagUtil.SetFlag(ref flags, 11);
+                FlagUtil.SetFlag(ref flags, 26);
+                if (change.hasBlock.Value) FlagUtil.SetFlag(ref flags, 27);
             }
             if (change.isBreakable.HasValue)
             {
-                FlagUtil.SetFlag(ref flags, 12);
-                if (change.isBreakable.Value) FlagUtil.SetFlag(ref flags, 13);
+                FlagUtil.SetFlag(ref flags, 28);
+                if (change.isBreakable.Value) FlagUtil.SetFlag(ref flags, 29);
             }
             if (change.natural.HasValue)
             {
-                FlagUtil.SetFlag(ref flags, 14);
-                if (change.natural.Value) FlagUtil.SetFlag(ref flags, 15);
+                FlagUtil.SetFlag(ref flags, 30);
+                if (change.natural.Value) FlagUtil.SetFlag(ref flags, 31);
             }
 
             FastBitConverter.GetBytes(writer.Data, position, flags);
@@ -149,12 +156,13 @@ namespace Voxel
             if (FlagUtil.HasFlag(flags, 3)) change.color = reader.GetColor32();
             if (FlagUtil.HasFlag(flags, 4)) change.magnitude = reader.GetFloat();
             if (FlagUtil.HasFlag(flags, 5)) change.yaw = reader.GetFloat();
+            if (FlagUtil.HasFlag(flags, 6)) change.form = (VoxelVolumeForm) reader.GetByte();
             /* Flags */
             if (FlagUtil.HasFlag(flags, 6)) change.modifiesBlocks = FlagUtil.HasFlag(flags, 7);
             if (FlagUtil.HasFlag(flags, 8)) change.replaceGrassWithDirt = FlagUtil.HasFlag(flags, 9);
-            if (FlagUtil.HasFlag(flags, 10)) change.hasBlock = FlagUtil.HasFlag(flags, 11);
-            if (FlagUtil.HasFlag(flags, 12)) change.isBreakable = FlagUtil.HasFlag(flags, 13);
-            if (FlagUtil.HasFlag(flags, 14)) change.natural = FlagUtil.HasFlag(flags, 15);
+            if (FlagUtil.HasFlag(flags, 26)) change.hasBlock = FlagUtil.HasFlag(flags, 27);
+            if (FlagUtil.HasFlag(flags, 28)) change.isBreakable = FlagUtil.HasFlag(flags, 29);
+            if (FlagUtil.HasFlag(flags, 30)) change.natural = FlagUtil.HasFlag(flags, 31);
 
             return change;
         }

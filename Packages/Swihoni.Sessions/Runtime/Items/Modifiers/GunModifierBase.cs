@@ -33,22 +33,21 @@ namespace Swihoni.Sessions.Items.Modifiers
         public ushort StartingAmmoInReserve => m_StartingAmmoInReserve;
         public ItemStatusModiferProperties GetAdsStatusModifierProperties(byte statusId) => m_AdsModifierProperties[statusId];
 
-        public override void ModifyChecked(SessionBase session, int playerId, Container player, ItemComponent item, InventoryComponent inventory,
-                                           InputFlagProperty inputs, uint durationUs)
+        public override void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             bool reloadInput = inputs.GetInput(PlayerInput.Reload);
             if ((reloadInput || item.ammoInMag == 0) && CanReload(item, inventory) && item.status.id == ItemStatusId.Idle)
-                StartStatus(session, playerId, inventory, item, GunStatusId.Reloading, durationUs);
+                StartStatus(context, inventory, item, GunStatusId.Reloading);
             else if (inputs.GetInput(PlayerInput.UseOne) && item.ammoInMag == 0 && item.ammoInReserve == 0 && item.status.id == ItemStatusId.Idle)
-                StartStatus(session, playerId, inventory, item, GunStatusId.DryFiring, durationUs);
+                StartStatus(context, inventory, item, GunStatusId.DryFiring);
 
-            if (inventory.tracerTimeUs > durationUs) inventory.tracerTimeUs.Value -= durationUs;
+            if (inventory.tracerTimeUs > context.durationUs) inventory.tracerTimeUs.Value -= context.durationUs;
             else inventory.tracerTimeUs.Value = 0u;
 
-            base.ModifyChecked(session, playerId, player, item, inventory, inputs, durationUs);
+            base.ModifyChecked(context, item, inventory, inputs);
         }
 
-        protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected override byte? FinishStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             switch (item.status.id)
             {
@@ -58,7 +57,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 case ItemStatusId.PrimaryUsing when item.ammoInMag == 0 && CanReload(item, inventory):
                     return GunStatusId.Reloading;
             }
-            return base.FinishStatus(session, playerId, item, inventory, inputs);
+            return base.FinishStatus(in context, item, inventory, inputs);
         }
 
         protected virtual bool CanReload(ItemComponent item, InventoryComponent inventory) =>
@@ -71,17 +70,19 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
             item.ammoInMag > 0 && base.CanPrimaryUse(item, inventory, justFinishedUse);
 
-        protected override void PrimaryUse(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
-            => Fire(playerId, session, inventory, item, durationUs);
+        protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
+            => Fire(context, inventory, item);
 
         private readonly HashSet<PlayerHitboxManager> m_HitPlayers = new HashSet<PlayerHitboxManager>();
 
-        protected virtual void Fire(int playerId, SessionBase session, InventoryComponent inventory, ItemComponent item, uint durationUs)
+        protected virtual void Fire(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
         {
             if (item.ammoInMag == 0) return;
 
             item.ammoInMag.Value--;
 
+            SessionBase session = context.session;
+            int playerId = context.playerId;
             Ray ray = session.GetRayForPlayerId(playerId);
             session.RollbackHitboxesFor(playerId);
 
@@ -91,11 +92,9 @@ namespace Swihoni.Sessions.Items.Modifiers
                 RaycastHit hit = RaycastHits[hitIndex];
                 if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
                 m_HitPlayers.Add(hitbox.Manager);
-                Container player = session.GetModifyingPayerFromId(playerId);
-                if (player.With<ServerTag>())
+                if (context.player.With<ServerTag>())
                 {
-                    var hitContext = new PlayerHitContext(new ModifyContext(session, session.GetLatestSession(), playerId: playerId, player: player, durationUs: durationUs),
-                                                          hitbox, this, hit);
+                    var hitContext = new PlayerHitContext(context, hitbox, this, hit);
                     session.GetModifyingMode().PlayerHit(hitContext);
                 }
             }
@@ -106,10 +105,10 @@ namespace Swihoni.Sessions.Items.Modifiers
             inventory.tracerTimeUs.Value = 1_000_000u;
         }
 
-        protected internal override void OnUnequip(SessionBase session, int playerId, InventoryComponent inventory, ItemComponent item, uint durationUs)
+        protected internal override void OnUnequip(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
         {
             if (item.status.id == GunStatusId.Reloading)
-                StartStatus(session, playerId, inventory, item, ItemStatusId.Idle, durationUs);
+                StartStatus(context, inventory, item, ItemStatusId.Idle);
         }
 
         protected abstract void ReloadAmmo(ItemComponent item);

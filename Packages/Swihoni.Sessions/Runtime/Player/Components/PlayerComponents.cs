@@ -36,6 +36,11 @@ namespace Swihoni.Sessions.Player.Components
     {
     }
 
+    [Serializable, OnlyServerTrusted]
+    public class SuffocatingProperty : BoolProperty
+    {
+    }
+
     [Serializable, ClientChecked]
     public class MoveComponent : ComponentBase
     {
@@ -45,6 +50,8 @@ namespace Swihoni.Sessions.Player.Components
         [NeverCompress] public ByteProperty groundTick;
         [PredictionTolerance(0.02f), NeverCompress] public FloatProperty normalizedCrouch;
         [Cyclic(0.0f, 1.0f)] public FloatProperty normalizedMove;
+
+        public static implicit operator Vector3(MoveComponent move) => move.position;
 
         public override string ToString() => $"Position: {position}, Velocity: {velocity}";
     }

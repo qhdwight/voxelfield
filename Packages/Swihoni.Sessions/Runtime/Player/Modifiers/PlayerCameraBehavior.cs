@@ -11,11 +11,11 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         [SerializeField] private Transform m_MoveTransform = default;
 
-        public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)
+        public override void ModifyTrusted(in ModifyContext context, Container verifiedPlayer)
         {
-            if (trustedPlayer.Without(out CameraComponent playerCamera)
-             || commands.Without(out MouseComponent mouse)) return;
-            base.ModifyTrusted(session, playerId, trustedPlayer, verifiedPlayer, commands, durationUs);
+            if (context.player.Without(out CameraComponent playerCamera)
+             || context.commands.Without(out MouseComponent mouse)) return;
+            base.ModifyTrusted(in context, verifiedPlayer);
 
             var inventory = verifiedPlayer.Require<InventoryComponent>();
             bool isAds = inventory.HasItemEquipped && inventory.adsStatus.id == AdsStatusId.Ads;
@@ -32,9 +32,9 @@ namespace Swihoni.Sessions.Player.Modifiers
             mouse.mouseDeltaY.Value = InputProvider.GetMouseInput(MouseMovement.Y);
         }
 
-        protected internal override void SynchronizeBehavior(Container player)
+        protected internal override void SynchronizeBehavior(in ModifyContext context)
         {
-            if (player.Without(out CameraComponent playerCamera)) return;
+            if (context.player.Without(out CameraComponent playerCamera)) return;
             if (playerCamera.yaw.WithValue) m_MoveTransform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);
         }
     }

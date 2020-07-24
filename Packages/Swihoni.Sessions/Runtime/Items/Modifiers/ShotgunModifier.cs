@@ -12,14 +12,14 @@ namespace Swihoni.Sessions.Items.Modifiers
             item.ammoInReserve.Value--;
         }
 
-        protected override byte? FinishStatus(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected override byte? FinishStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             if (item.status.id == GunStatusId.Reloading)
             {
                 ReloadAmmo(item);
                 return CanReload(item, inventory) ? GunStatusId.Reloading : (byte?) null;
             }
-            return base.FinishStatus(session, playerId, item, inventory, inputs);
+            return base.FinishStatus(in context, item, inventory, inputs);
         }
     }
 }

@@ -38,24 +38,26 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (m_Trigger) m_Trigger.Setup(playerId);
         }
 
-        public void ModifyChecked(SessionBase session, int playerId, Container playerToModify, Container commands, uint durationUs, int tickDelta = 1)
+        public void ModifyChecked(in ModifyContext context)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(session, playerId, playerToModify, commands, durationUs, tickDelta);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(context);
 
-            if (PlayerModifierBehaviorBase.TryServerCommands(playerToModify, out IEnumerable<string[]> stringCommands))
+            if (context.player.With(out MoveComponent move) && context.player.With<ServerTag>())
+                context.session.Injector.OnServerModify(context, move);
+
+            if (PlayerModifierBehaviorBase.TryServerCommands(context.player, out IEnumerable<string[]> stringCommands))
                 foreach (string[] stringCommand in stringCommands)
                     ConfigManagerBase.HandleArgs(stringCommand);
         }
 
-        public void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container verifiedPlayer, Container commands, uint durationUs)
+        public void ModifyTrusted(in ModifyContext context, Container verifiedPlayer)
         {
-            // if (UnityEngine.Input.GetKeyDown(KeyCode.T)) trustedPlayer.Require<IdProperty>().Value = 0;
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(session, playerId, trustedPlayer, verifiedPlayer, commands, durationUs);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(context, verifiedPlayer);
         }
 
-        public void Synchronize(Container player)
+        public void Synchronize(in ModifyContext context)
         {
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.SynchronizeBehavior(player);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.SynchronizeBehavior(context);
         }
 
         public void ModifyCommands(SessionBase session, Container commandsToModify, int playerId)
@@ -87,7 +89,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
-        public virtual void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta) => SynchronizeBehavior(player);
+        public virtual void ModifyChecked(in ModifyContext context) => SynchronizeBehavior(context);
 
         public static bool TryServerCommands(Container player, out IEnumerable<string[]> commands)
         {
@@ -103,11 +105,10 @@ namespace Swihoni.Sessions.Player.Modifiers
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>
-        public virtual void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container player, Container commands, uint durationUs) =>
-            SynchronizeBehavior(trustedPlayer);
+        public virtual void ModifyTrusted(in ModifyContext context, Container verifiedPlayer) => SynchronizeBehavior(context);
 
         public virtual void ModifyCommands(SessionBase session, Container commands, int playerId) { }
 
-        protected internal virtual void SynchronizeBehavior(Container player) { }
+        protected internal virtual void SynchronizeBehavior(in ModifyContext context) { }
     }
 }

@@ -92,6 +92,8 @@ namespace Swihoni.Sessions
         public virtual void OnStop() {  }
         
         public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.Require<HealthProperty>().WithoutValue;
+        
+        public virtual void OnServerModify(in ModifyContext context, MoveComponent component) {  }
     }
 
     public abstract class SessionBase : IDisposable
@@ -198,7 +200,7 @@ namespace Swihoni.Sessions
 
         public virtual int GetPeerPlayerId(NetPeer peer) => peer.Id;
 
-        protected PlayerModifierDispatcherBehavior GetPlayerModifier(Container player, int index)
+        public PlayerModifierDispatcherBehavior GetPlayerModifier(Container player, int index)
         {
             var modifier = (PlayerModifierDispatcherBehavior) PlayerManager.GetModifierAtIndex(player, index, out bool isNewlyObtained);
             if (isNewlyObtained) modifier.Setup(this, index);
@@ -275,7 +277,7 @@ namespace Swihoni.Sessions
             if (tickRate.WithValue) Time.fixedDeltaTime = 1.0f / tickRate;
         }
 
-        protected virtual void Input(uint timeUs, uint deltaUs) { }
+        protected virtual void Input(uint timeUs, uint durationUs) { }
 
         public void FixedUpdate()
         {

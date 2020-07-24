@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Net;
 using LiteNetLib;
-using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Modes;
@@ -30,12 +29,13 @@ namespace Swihoni.Sessions
                                                    .Concat(elements.commandElements)
                                                    .Append(typeof(ServerTag))
                                                    .Append(typeof(HostTag)));
+            injector.OnPlayerRegisterAppend(m_HostCommands);
             SetFirstCommand(m_HostCommands);
         }
 
         public override Container GetLocalCommands() => m_HostCommands;
 
-        protected override void Input(uint timeUs, uint deltaUs)
+        protected override void Input(uint timeUs, uint durationUs)
         {
             Container session = GetLatestSession();
             if (session.Without(out ServerStampComponent serverStamp) || serverStamp.tick.WithoutValue)
@@ -47,17 +47,18 @@ namespace Swihoni.Sessions
                 if (hostPlayer.Require<HealthProperty>().WithValue)
                 {
                     PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(hostPlayer, HostPlayerId);
+                    var hostContext = new ModifyContext(this, session, m_HostCommands, HostPlayerId, m_HostCommands, durationUs: durationUs, tickDelta: 1);
                     if (hostModifier)
                     {
                         hostModifier.ModifyCommands(this, m_HostCommands, HostPlayerId);
                         _container = m_HostCommands; // Prevent closure allocation
                         _session = this;
                         ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(HostPlayerId, _session, _container));
-                        hostModifier.ModifyTrusted(this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs);
-                        hostModifier.ModifyChecked(this, HostPlayerId, m_HostCommands, m_HostCommands, deltaUs);
+                        // this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs
+                        hostModifier.ModifyTrusted(hostContext, m_HostCommands);
+                        hostModifier.ModifyChecked(hostContext);
                     }
-                    var context = new ModifyContext(this, session, playerId: HostPlayerId, player: m_HostCommands, commands: m_HostCommands, durationUs: deltaUs, tickDelta: 1);
-                    GetModifyingMode(session).ModifyPlayer(context);
+                    GetModifyingMode(session).ModifyPlayer(hostContext);
                 }
             }
             var stamp = m_HostCommands.Require<ServerStampComponent>();

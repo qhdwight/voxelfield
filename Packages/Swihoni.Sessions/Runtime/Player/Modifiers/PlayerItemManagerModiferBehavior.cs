@@ -16,14 +16,17 @@ namespace Swihoni.Sessions.Player.Modifiers
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("give_item");
 
-        public override void ModifyChecked(SessionBase session, int playerId, Container player, Container commands, uint durationUs, int tickDelta)
+        public override void ModifyChecked(in ModifyContext context)
         {
-            if (tickDelta < 1 || !player.With(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
+            if (context.tickDelta < 1) return;
+
+            Container player = context.player;
+            if (!player.With(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
             HandleCommands(player);
 
-            var input = commands.Require<InputFlagProperty>();
-            var wantedItemIndex = commands.Require<WantedItemIndexProperty>();
+            var input = context.commands.Require<InputFlagProperty>();
+            var wantedItemIndex = context.commands.Require<WantedItemIndexProperty>();
 
             if (input.GetInput(PlayerInput.DropItem) && inventory.equippedIndex != 1 && inventory.equipStatus.id == ItemEquipStatusId.Equipped
              && inventory.WithItemEquipped(out ItemComponent item))
@@ -35,17 +38,17 @@ namespace Swihoni.Sessions.Player.Modifiers
                 inventory.equipStatus.elapsedUs.Value = 0u;
             }
 
-            ModifyEquipStatus(session, playerId, inventory, wantedItemIndex, durationUs);
+            ModifyEquipStatus(context, inventory, wantedItemIndex);
 
             if (inventory.HasNoItemEquipped) return;
             /* Has Item Equipped */
 
-            ModifyAdsStatus(inventory, input, durationUs);
+            ModifyAdsStatus(context, inventory, input);
 
             // Modify equipped item component
             ItemComponent equippedItem = inventory.EquippedItemComponent;
             ItemModifierBase itemModifier = ItemAssetLink.GetModifier(equippedItem.id);
-            itemModifier.ModifyChecked(session, playerId, player, equippedItem, inventory, input, durationUs);
+            itemModifier.ModifyChecked(context, equippedItem, inventory, input);
 
             if (equippedItem.status.id == ItemStatusId.RequestRemoval)
             {
@@ -80,7 +83,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         //         ItemAssetLink.GetModifier(item.id).ModifyTrusted(session, playerId, trustedPlayer, commands, container, durationUs);
         // }
 
-        private static void ModifyEquipStatus(SessionBase session, int playerId, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex, uint durationUs)
+        private static void ModifyEquipStatus(in ModifyContext context, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex)
         {
             byte wantedIndex = wantedItemIndex;
             ByteStatusComponent equipStatus = inventory.equipStatus;
@@ -97,7 +100,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             if (inventory.HasNoItemEquipped) return;
             // We have a current equipped item
-            equipStatus.elapsedUs.Value += durationUs;
+            equipStatus.elapsedUs.Value += context.durationUs;
             ItemModifierBase modifier = ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
 
             // Handle finishing equip status
@@ -107,12 +110,12 @@ namespace Swihoni.Sessions.Player.Modifiers
                 if (equipStatus.id == ItemEquipStatusId.Equipping)
                 {
                     equipStatus.id.Value = ItemEquipStatusId.Equipped;
-                    modifier.OnEquip(session, playerId, inventory.EquippedItemComponent, durationUs);
+                    modifier.OnEquip(context, inventory.EquippedItemComponent);
                 }
                 else if (equipStatus.id == ItemEquipStatusId.Unequipping)
                 {
                     equipStatus.id.Value = ItemEquipStatusId.Unequipped;
-                    modifier.OnUnequip(session, playerId, inventory, inventory.EquippedItemComponent, durationUs);
+                    modifier.OnUnequip(context, inventory, inventory.EquippedItemComponent);
                 }
                 equipStatus.elapsedUs.Value -= modifierProperties.durationUs;
             }
@@ -131,7 +134,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             equipStatus.id.Value = ItemEquipStatusId.Equipping;
         }
 
-        private static void ModifyAdsStatus(InventoryComponent inventory, InputFlagProperty inputs, uint durationUs)
+        private static void ModifyAdsStatus(in ModifyContext context, InventoryComponent inventory, InputFlagProperty inputs)
         {
             ItemModifierBase modifier = ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
             if (!(modifier is GunModifierBase gunModifier)) return;
@@ -154,7 +157,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
 
             ByteStatusComponent adsStatus = inventory.adsStatus;
-            adsStatus.elapsedUs.Value += durationUs;
+            adsStatus.elapsedUs.Value += context.durationUs;
 
             ItemStatusModiferProperties modifierProperties;
             while (adsStatus.elapsedUs > (modifierProperties = gunModifier.GetAdsStatusModifierProperties(adsStatus.id)).durationUs)
@@ -225,7 +228,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public static bool AddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
         {
             bool isAnOpenSlot;
-            if (ItemAssetLink.GetModifier(itemId) is ThrowableModifierBase &&
+            if (ItemAssetLink.GetModifier(itemId) is ThrowableItemModifierBase &&
                 (isAnOpenSlot = FindItem(inventory, item => item.id == ItemId.None || item.id == itemId, out byte index))) // Try to stack throwables if possible
             {
                 ItemComponent itemInIndex = inventory[index];
@@ -273,7 +276,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 item.ammoInMag.Value = gunModifier.MagSize;
                 item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
             }
-            if (itemModifier is ThrowableModifierBase)
+            if (itemModifier is ThrowableItemModifierBase)
                 item.ammoInReserve.Value = count;
             if (inventory.HasNoItemEquipped)
             {

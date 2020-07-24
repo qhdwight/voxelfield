@@ -22,25 +22,25 @@ namespace Voxelfield.Item
         public float EditDistance => m_EditDistance;
         public LayerMask ChunkMask => m_ChunkMask;
 
-        protected override void Swing(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        protected override void Swing(in ModifyContext context, ItemComponent item)
         {
-            base.Swing(session, playerId, item, durationUs); // Melee damage
-            if (WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
+            base.Swing(context, item); // Melee damage
+            if (WithoutServerHit(context, m_EditDistance, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
 
-            var voxelInjector = (Injector) session.Injector;
-            if (voxel.HasBlock) RemoveBlock(session, voxelInjector, position);
-            else RemoveVoxelRadius(session, playerId, voxelInjector, position);
-            var brokeVoxelTickProperty = session.GetModifyingPayerFromId(playerId).Require<BrokeVoxelTickProperty>();
+            var voxelInjector = (Injector) context.session.Injector;
+            if (voxel.HasBlock) RemoveBlock(context, voxelInjector, position);
+            else RemoveVoxelRadius(context, voxelInjector, position);
+            var brokeVoxelTickProperty = context.player.Require<BrokeVoxelTickProperty>();
             if (brokeVoxelTickProperty.WithValue) brokeVoxelTickProperty.Value++;
             else brokeVoxelTickProperty.Value = 0;
         }
 
-        protected virtual void RemoveBlock(SessionBase session, Injector injector, in Position3Int position)
-            => injector.ApplyVoxelChange(position, new VoxelChange {hasBlock = false, natural = false});
+        protected virtual void RemoveBlock(in ModifyContext context, Injector injector, in Position3Int position)
+            => injector.EvaluateVoxelChange(position, new VoxelChange {hasBlock = false, natural = false});
 
-        protected virtual void RemoveVoxelRadius(SessionBase session, int playerId, Injector injector, in Position3Int position)
-            => injector.ApplyVoxelChange(position, new VoxelChange {magnitude = -m_DestroyRadius, replaceGrassWithDirt = true});
+        protected virtual void RemoveVoxelRadius(in ModifyContext context, Injector injector, in Position3Int position)
+            => injector.EvaluateVoxelChange(position, new VoxelChange {magnitude = -m_DestroyRadius, replaceGrassWithDirt = true});
 
         protected static bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
@@ -59,35 +59,36 @@ namespace Voxelfield.Item
             return !optionalVoxel.HasValue || !voxel.IsBreakable;
         }
 
-        protected bool WithoutServerHit(SessionBase session, int playerId, float distance, out RaycastHit hit)
+        protected bool WithoutServerHit(in ModifyContext context, float distance, out RaycastHit hit)
         {
-            if (session.GetModifyingPayerFromId(playerId).Without<ServerTag>())
+            if (context.player.Without<ServerTag>())
             {
                 hit = default;
                 return true;
             }
-            Ray ray = session.GetRayForPlayerId(playerId);
+            Ray ray = context.session.GetRayForPlayerId(context.playerId);
             return !Physics.Raycast(ray, out hit, distance, m_ChunkMask);
         }
 
-        protected bool WithoutClientHit(SessionBase session, int playerId, float distance, out RaycastHit hit)
+        protected bool WithoutClientHit(in ModifyContext context, float distance, out RaycastHit hit)
         {
-            Container player = session.GetModifyingPayerFromId(playerId);
+            Container player = context.player;
             if (player.With<ServerTag>() && player.Without<HostTag>())
             {
                 hit = default;
                 return true;
             }
-            Ray ray = session.GetRayForPlayerId(playerId);
+            Ray ray = context.session.GetRayForPlayerId(context.playerId);
             return !Physics.Raycast(ray, out hit, distance, m_ChunkMask);
         }
 
         private Position3Int? m_CachedPosition; // Guaranteed set by can use and tested in actual use 
 
-        protected override bool CanSecondaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory)
+        protected override bool CanSecondaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory)
         {
-            if (!base.CanPrimaryUse(item, inventory) || WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit)
-                                                     || WithoutOuterVoxel(hit, out Position3Int position, out Voxel.Voxel _))
+            if (!base.CanPrimaryUse(item, inventory) || WithoutServerHit(context, m_EditDistance, out RaycastHit hit)
+                                                     || WithoutOuterVoxel(hit, out Position3Int position, out Voxel.Voxel _)
+                                                     || NoSolution(context.player, position))
             {
                 m_CachedPosition = null;
                 return false;
@@ -97,43 +98,64 @@ namespace Voxelfield.Item
             // return AdjustPosition(m_CachedPosition.Value, session.GetModifyingPayerFromId(playerId));
         }
 
-        protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
+        protected override void SecondaryUse(in ModifyContext context)
         {
             // TODO:feature add client side prediction for placing blocks
             if (!(m_CachedPosition is Position3Int position)) return;
 
-            var voxelInjector = (Injector) session.Injector;
-            Container player = session.GetModifyingPayerFromId(playerId);
-            byte texture = player.With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
+            var voxelInjector = (Injector) context.session.Injector;
+            byte texture = context.player.With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
                 ? designer.selectedVoxelId
                 : VoxelId.Dirt;
-            voxelInjector.ApplyVoxelChange(position, new VoxelChange {hasBlock = true, id = texture});
-
-            AdjustPosition(position, player, 1.0f);
+            voxelInjector.EvaluateVoxelChange(position, new VoxelChange {hasBlock = true, id = texture});
         }
 
-        private bool AdjustPosition(in Position3Int position, Container player, float radius)
+        private bool NoSolution(Container player, in Position3Int position, float radius = 0.9f)
         {
-            if (!m_PreventPlacingOnSelf) return true;
-            Vector3 playerPosition = player.Require<MoveComponent>().position.Value;
-            float distance = Mathf.Abs(position.y - playerPosition.y);
-            if (distance > radius)
-            {
-                if (playerPosition.y > position.y)
-                {
-                    
-                }
-                else
-                {
-                
-                }
-            }
-            return position != playerPosition && position != playerPosition + new Position3Int {y = 1};
+            if (!m_PreventPlacingOnSelf) return false;
+            
+            var move = player.Require<MoveComponent>();
+            Vector3 eyePosition = SessionBase.GetPlayerEyePosition(move);
+            return ExtraMath.SquareDistance(eyePosition, position) < radius * radius;
+            
+            // var playerCollider = session.GetPlayerModifier(player, playerId).GetComponentInChildren<PlayerTrigger>().GetComponent<Collider>();
+            // Chunk chunk = ChunkManager.Singleton.GetChunkFromWorldPosition((Position3Int) playerCollider.transform.position);
+            // Collider chunkCollider = chunk.MeshCollider;
+            // if (Physics.ComputePenetration(playerCollider, playerCollider.transform.position, playerCollider.transform.rotation,
+            //                                chunkCollider, chunkCollider.transform.position, chunkCollider.transform.rotation,
+            //                                out Vector3 direction, out float distance))
+            // {
+            //     var move = player.Require<MoveComponent>();
+            //     move.position.Value += direction * distance;
+            //     Debug.Log(direction * distance, chunk);
+            // }
+            // ChunkManager.Singleton.GetVoxel((Position3Int) eyePosition)
+            // Voxel.Voxel? _voxel = ChunkManager.Singleton.GetVoxel((Position3Int) eyePosition);
+            // return _voxel is Voxel.Voxel voxel && voxel.HasBlock;
+            // float distance = position.y - move.position.Value.y,
+            //       absoluteDistance = Mathf.Abs(distance);
+            // if (absoluteDistance > radius)
+            // {
+            //     if (distance > 0.0f)
+            //     {
+            //         move.position.Value += new Vector3 {y = absoluteDistance};
+            //     }
+            //     else
+            //     {
+            //     }
+            // }
+            // return position != playerPosition && position != playerPosition + new Position3Int {y = 1};
+
+            // if (voxel.HasBlock) return true;
+            // float height = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch);
+            // if (Physics.Raycast(eyePosition, Vector3.down, out RaycastHit hit, height + 0.05f, ChunkMask))
+            //     move.position.Value += new Vector3 {y = height - hit.distance};
         }
 
-        protected override bool CanTernaryUse(SessionBase session, int playerId, ItemComponent item, InventoryComponent inventory)
+        protected override bool CanTernaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory)
         {
-            if (!base.CanPrimaryUse(item, inventory) || WithoutServerHit(session, playerId, m_EditDistance, out RaycastHit hit))
+            if (!base.CanPrimaryUse(item, inventory) || WithoutServerHit(context, m_EditDistance, out RaycastHit hit)
+                                                     || NoSolution(context.player, (Position3Int) hit.point, m_AdditiveRadius))
             {
                 m_CachedPosition = null;
                 return false;
@@ -143,14 +165,12 @@ namespace Voxelfield.Item
             return true;
         }
 
-        protected override void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs)
+        protected override void TernaryUse(in ModifyContext context, ItemComponent item)
         {
             if (!(m_CachedPosition is Position3Int position)) return;
 
-            var voxelInjector = (Injector) session.Injector;
-            voxelInjector.ApplyVoxelChange(position, new VoxelChange{id = VoxelId.Dirt, magnitude = m_AdditiveRadius});
-            
-            AdjustPosition(position, session.GetModifyingPayerFromId(playerId), m_AdditiveRadius);
+            var voxelInjector = (Injector) context.session.Injector;
+            voxelInjector.EvaluateVoxelChange(position, new VoxelChange {id = VoxelId.Dirt, magnitude = m_AdditiveRadius, form = VoxelVolumeForm.Sperhical});
         }
     }
 }
