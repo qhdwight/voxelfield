@@ -162,7 +162,7 @@ namespace Swihoni.Sessions.Components
         public override string ToString() => $"Tick: {tick}, Time: {timeUs}, Duration: {durationUs}";
     }
 
-    [Serializable, ClientTrusted]
+    [Serializable, OnlyServerTrusted]
     public class UsernameProperty : StringProperty
     {
         public UsernameProperty() : base(32) { }

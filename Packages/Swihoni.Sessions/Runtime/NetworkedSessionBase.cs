@@ -86,7 +86,6 @@ namespace Swihoni.Sessions
             command.Require<CameraComponent>().Zero();
             command.Require<InputFlagProperty>().Zero();
             command.Require<WantedItemIndexProperty>().Zero();
-            command.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Client");
         }
 
         public override Container GetModifyingPayerFromId(int playerId, Container session = null) => (session ?? GetLatestSession()).GetPlayer(playerId);
@@ -141,10 +140,5 @@ namespace Swihoni.Sessions
             RollbackHitboxes(playerId);
             base.RollbackHitboxesFor(playerId);
         }
-    }
-
-    internal static class NetworkSessionExtensions
-    {
-        internal static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
     }
 }

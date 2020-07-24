@@ -1,5 +1,10 @@
+#if UNITY_EDITOR
+#define VOXELFIELD_RELEASE_SERVER
+#endif
+
 using System;
 using LiteNetLib.Utils;
+using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Entities;
@@ -13,7 +18,10 @@ namespace Voxelfield.Session
     [Serializable]
     public class RequestConnectionComponent : ComponentBase
     {
-        public StringProperty version, gameLiftPlayerSessionId;
+        public StringProperty version;
+        public GameLiftPlayerSessionIdProperty gameLiftPlayerSessionId;
+        public SteamAuthenticationTicketProperty steamAuthenticationToken;
+        public SteamIdProperty steamPlayerId;
     }
 
     public class Injector : SessionInjectorBase
@@ -31,14 +39,17 @@ namespace Voxelfield.Session
             => ChunkManager.Singleton.SetVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, isAdditive, additiveChange, changedVoxels);
 
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
+        protected AuthTicket m_SteamAuthenticationTicket;
 
-        public override NetDataWriter GetConnectWriter()
+        protected bool TryGetSteamAuthTicket()
         {
-            var writer = new NetDataWriter();
-            m_RequestConnection.version.SetTo(Application.version);
-            m_RequestConnection.gameLiftPlayerSessionId.SetTo(GameLiftClientManager.PlayerSessionId);
-            m_RequestConnection.Serialize(writer);
-            return writer;
+            if (m_SteamAuthenticationTicket != null) throw new Exception("Authentication ticket has already been obtained");
+            if (SteamClient.IsValid && SteamClient.IsLoggedOn)
+            {
+                m_SteamAuthenticationTicket = SteamUser.GetAuthSessionTicket();
+                return true;
+            }
+            return false;
         }
 
         protected override void OnRenderMode(Container session)
@@ -50,6 +61,11 @@ namespace Voxelfield.Session
         }
 
         protected override void Dispose() => MapManager.Singleton.UnloadMap();
+
+        public override void OnStop()
+        {
+            if (SteamClient.IsValid) m_SteamAuthenticationTicket?.Cancel();
+        }
 
         protected override void OnSettingsTick(Container session)
         {

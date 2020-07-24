@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using LiteNetLib.Utils;
+using UnityEngine;
 
 namespace Swihoni.Components
 {
@@ -16,6 +17,7 @@ namespace Swihoni.Components
 
         public StringProperty(int maxSize)
         {
+            if (m_MaxSize > ushort.MaxValue) Debug.Log($"String properties have a max length of {ushort.MaxValue}");
             m_MaxSize = maxSize;
             Builder = new StringBuilder(maxSize);
         }
@@ -57,13 +59,14 @@ namespace Swihoni.Components
 
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put((byte) Builder.Length);
+            if (m_MaxSize <= byte.MaxValue) writer.Put((byte) Builder.Length);
+            else writer.Put((ushort) Builder.Length);
             for (var i = 0; i < Builder.Length; i++) writer.Put(Builder[i]);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            int size = reader.GetByte();
+            int size = m_MaxSize <= byte.MaxValue ? reader.GetByte() : reader.GetUShort();
             ThrowIfOverMaxSize(size);
             Zero();
             for (var _ = 0; _ < size; _++) Builder.Append(reader.GetChar());
@@ -118,10 +121,14 @@ namespace Swihoni.Components
         public override void SetTo(PropertyBase other)
         {
             if (!(other is StringProperty otherString)) throw new ArgumentException("Other property is not a string!");
-            ThrowIfOverMaxSize(otherString.Builder.Length);
-            Zero();
-            Builder.AppendPropertyValue(otherString);
-            WithValue = true;
+            if (otherString.WithValue)
+            {
+                ThrowIfOverMaxSize(otherString.Builder.Length);
+                Zero();
+                Builder.AppendPropertyValue(otherString);
+                WithValue = true;
+            }
+            else Clear();
         }
 
         public void SetTo(string @string)

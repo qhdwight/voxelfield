@@ -4,9 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -18,7 +18,6 @@ using UnityEngine;
 using Voxel;
 using Voxel.Map;
 using Voxelfield.Session.Mode;
-using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
 using System.IO;
 using UnityEditor;
@@ -36,7 +35,7 @@ namespace Voxelfield.Session
     public class SessionManager : SingletonBehavior<SessionManager>
     {
         private static IPAddress DefaultAddress => IPAddress.Loopback;
-        public static int DefaultPort => 7777;
+        public static int DefaultPort => 27015;
         private static readonly IPEndPoint DefaultEndPoint = new IPEndPoint(DefaultAddress, DefaultPort);
         private static readonly string[] IpSeparator = {":"};
 
@@ -79,18 +78,7 @@ namespace Voxelfield.Session
                 }
             });
 #if ENABLE_MONO
-            ConsoleCommandExecutor.SetCommand("wsl_connect", args =>
-            {
-                var processInfo = new ProcessStartInfo("wsl", "-- hostname -I") {CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true};
-                Process process = Process.Start(processInfo);
-                if (process != null)
-                {
-                    process.WaitForExit();
-                    string result = process.StandardOutput.ReadLine();
-                    ConsoleCommandExecutor.ExecuteCommand($"connect {result}");
-                    process.Close();
-                }
-            });
+            ConsoleCommandExecutor.SetCommand("wsl_connect", args => ConsoleCommandExecutor.ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
 #endif
             ConsoleCommandExecutor.SetCommand("online_quick_play", args => GameLiftClientManager.QuickPlay());
             ConsoleCommandExecutor.SetCommand("online_start_new", args => GameLiftClientManager.StartNew());
@@ -111,6 +99,12 @@ namespace Voxelfield.Session
 
             ConsoleCommandExecutor.SetCommand("rollback_override", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
             ConsoleCommandExecutor.SetCommand("open_log", args => Application.OpenURL($"file://{Application.consoleLogPath}"));
+
+            ConsoleCommandExecutor.SetCommand("steam_status", args =>
+            {
+                if (SteamClient.IsValid) Debug.Log($"Logged in as {SteamClient.Name}, ID: {SteamClient.SteamId}");
+                else Debug.LogWarning("Not connected to steam");
+            });
 
             Debug.Log("Started session manager");
             AnalysisLogger.Reset(string.Empty);
@@ -216,7 +210,7 @@ namespace Voxelfield.Session
                     // TODO:refactor use session and count number of player session id's?
                     int activePlayerSessionCount = server.Socket.NetworkManager.ConnectedPeersCount;
                     if (activePlayerSessionCount == 0) AddTime();
-                    else m_InactiveServerElapsedSeconds = 0.0f;   
+                    else m_InactiveServerElapsedSeconds = 0.0f;
                 }
                 else AddTime();
             }
@@ -355,7 +349,7 @@ namespace Voxelfield.Session
         [MenuItem("Build/Release Windows Player", priority = 200)]
         private static void BuildWindowsRelease()
             => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Release Windows IL2CPP Player", defines: new[] {"VOXELFIELD_RELEASE_CLIENT"});
-        
+
         [MenuItem("Build/Release Server", priority = 200)]
         private static void BuildReleaseServer()
             => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Release Linux Mono Server", true, new[] {"VOXELFIELD_RELEASE_SERVER"});
@@ -370,7 +364,7 @@ namespace Voxelfield.Session
         private static void Build(ScriptingImplementation scripting, BuildTarget target, string name, bool isServer = false, string[] defines = null)
         {
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, scripting);
-            string executablePath = Path.Combine("Builds", name.Replace(' ', Path.DirectorySeparatorChar), "Voxelfield");
+            string executablePath = Path.Combine("Builds", name.Replace(' ', Path.DirectorySeparatorChar), Application.productName);
             switch (target)
             {
                 case BuildTarget.StandaloneWindows64:
@@ -397,7 +391,7 @@ namespace Voxelfield.Session
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"{name} build succeeded: {summary.totalSize / 1_000_000:F1} mb");
+                    Debug.Log($"{name} build succeeded: {summary.totalSize / 1_000_000:F1} mb in {summary.totalTime}");
                     break;
                 case BuildResult.Unknown:
                 case BuildResult.Failed:

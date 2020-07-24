@@ -45,10 +45,20 @@ namespace Swihoni.Collections
 
         public TKey GetReverse(TValue value) => m_Reverse[value];
 
-        public void Remove(TValue entry)
+        public void Remove(TValue value)
         {
-            m_Forward.Remove(m_Reverse[entry]);
-            m_Reverse.Remove(entry);
+            m_Forward.Remove(m_Reverse[value]);
+            m_Reverse.Remove(value);
         }
+        
+        public void Remove(TKey key)
+        {
+            m_Reverse.Remove(m_Forward[key]);
+            m_Forward.Remove(key);
+        }
+
+        public bool TryGetForward(TKey key, out TValue value) => m_Forward.TryGetValue(key, out value);
+
+        public bool TryGetReverse(TValue value, out TKey key) => m_Reverse.TryGetValue(value, out key);
     }
 }

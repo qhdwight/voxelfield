@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Voxel
 {
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    [SuppressMessage("ReSharper", "InconsistentNaming"), SuppressMessage("ReSharper", "UnusedMember.Local")]
     public static class VoxelVersionSerializer
     {
         private delegate VoxelChangeData Deserializer(NetDataReader reader);
@@ -36,6 +36,9 @@ namespace Voxel
             if (FlagUtil.HasFlag(flags, 6)) data.color = reader.GetColor32();
             return data;
         }
+        
+        [Deserializer("0.0.12")]
+        private static VoxelChangeData Deserialize_0_0_12(NetDataReader reader) => DeserializeLatest(reader);
 
         private static readonly Dictionary<string, Deserializer> Deserializers = typeof(VoxelVersionSerializer)
                                                                                 .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
@@ -44,7 +47,17 @@ namespace Voxel
                                                                                               method => (Deserializer) Delegate.CreateDelegate(typeof(Deserializer), null, method));
 
         public static VoxelChangeData Deserialize(NetDataReader reader, string version)
-            => version == null || version == Application.version ? Deserialize(reader) : Deserializers[version](reader);
+        {
+            try
+            {
+                return version == null || version == Application.version ? DeserializeLatest(reader) : Deserializers[version](reader);
+            }
+            catch (KeyNotFoundException)
+            {
+                Debug.LogError($"No available way to convert save: {version}");
+                throw;
+            }
+        }
 
         public static void Serialize(in VoxelChangeData changeData, NetDataWriter writer)
         {
@@ -91,7 +104,7 @@ namespace Voxel
             FastBitConverter.GetBytes(writer.Data, position, flags);
         }
 
-        private static VoxelChangeData Deserialize(NetDataReader reader)
+        private static VoxelChangeData DeserializeLatest(NetDataReader reader)
         {
             ushort flags = reader.GetUShort();
             VoxelChangeData data = default;

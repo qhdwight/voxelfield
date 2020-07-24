@@ -182,12 +182,33 @@ namespace Swihoni.Components
 
         public static bool operator !=(PropertyBase<T> p1, PropertyBase<T> p2) => !(p1 == p2);
 
-        public PropertyBase<T> IfWith(Action<T> action)
+        public bool SetValueIfEmpty(in T value)
+        {
+            if (WithoutValue)
+            {
+                Value = value;
+                return true;
+            }
+            return false;
+        }
+        
+        public bool TryWithValue(out T value)
+        {
+            if (WithValue)
+            {
+                value = Value;
+                return true;
+            }
+            value = default;
+            return false;
+        }
+
+        public PropertyBase<T> If(Action<T> action)
         {
             if (WithValue) action(m_Value);
             return this;
         }
-
+        
         public override void Zero() => Value = default;
 
         public T Else(T @default) => WithValue ? m_Value : @default;

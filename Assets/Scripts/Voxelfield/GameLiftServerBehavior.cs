@@ -9,6 +9,7 @@ using Amazon;
 using Amazon.Runtime;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
+using Swihoni.Sessions;
 #endif
 #if VOXELFIELD_RELEASE_SERVER
 using GameSession = Aws.GameLift.Server.Model.GameSession;
@@ -75,6 +76,10 @@ namespace Voxelfield
         [MenuItem("Build/Create Game Lift Fleet", priority = 300)]
         private static async void CreateFleet()
         {
+            Debug.Log("Executing upload zsh script...");
+            string uploadResult = SessionExtensions.ExecuteProcess($"{Application.dataPath}/Builds/gamelift_publish.zsh");
+            Debug.Log($"Upload standard output: {uploadResult}");
+
             var config = new AmazonGameLiftConfig {RegionEndpoint = RegionEndpoint.USWest1};
             var credentials = new BasicAWSCredentials(@"AKIAWKQVDVRWSC42QICS", @"upFhGo0YCcbw+ljii4btFV7EW0TUz3PXTNgk+tje");
             var client = new AmazonGameLiftClient(credentials, config);

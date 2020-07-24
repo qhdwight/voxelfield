@@ -1,4 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Text;
+using LiteNetLib.Utils;
+using Steamworks;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -24,6 +28,21 @@ namespace Voxelfield.Session
 
         protected internal override void VoxelTransaction(VoxelChangeTransaction uncommitted) { }
 
+        public override NetDataWriter GetConnectWriter()
+        {
+            var writer = new NetDataWriter();
+            RequestConnectionComponent request = m_RequestConnection;
+            request.version.SetTo(Application.version);
+            if (TryGetSteamAuthTicket())
+            {
+                request.steamAuthenticationToken.SetTo(Convert.ToBase64String(m_SteamAuthenticationTicket.Data));
+                request.steamPlayerId.Value = SteamClient.SteamId;
+            }
+            request.gameLiftPlayerSessionId.SetTo(GameLiftClientManager.PlayerSessionId);
+            request.Serialize(writer);
+            return writer;
+        }
+        
         protected override void OnReceive(ServerSessionContainer serverSession)
         {
             var changed = serverSession.Require<ChangedVoxelsProperty>();
@@ -42,7 +61,7 @@ namespace Voxelfield.Session
             if (m_Pointer.WithoutValue || serverTick - m_Pointer == 1 || (tickSkipped = serverTick - m_Pointer > serverSession.Require<TickRateProperty>() * 3))
             {
                 ApplyStoredChanges();
-                if (m_Pointer.WithValue && tickSkipped) Debug.LogError($"Did not receive voxel changes for {m_Pointer}");
+                if (m_Pointer.TryWithValue(out uint pointer) && tickSkipped) Debug.LogError($"Did not receive voxel changes for {pointer}");
                 m_Pointer.Value = serverTick;
             }
         }

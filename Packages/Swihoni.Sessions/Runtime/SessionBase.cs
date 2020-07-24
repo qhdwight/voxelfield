@@ -60,8 +60,8 @@ namespace Swihoni.Sessions
 
         protected internal virtual void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
 
-        protected internal virtual void OnServerNewConnection(ConnectionRequest request) => request.AcceptIfKey(Application.version);
-
+        protected internal virtual void OnServerNewConnection(ConnectionRequest socketRequest) => socketRequest.AcceptIfKey(Application.version);
+        
         protected internal virtual void Dispose() { }
 
         public virtual bool IsLoading(Container session) => false;
@@ -70,7 +70,7 @@ namespace Swihoni.Sessions
 
         public virtual void OnReceiveCode(NetPeer fromPeer, NetDataReader reader, byte code) { }
 
-        public virtual void Start() { }
+        public virtual void OnStart() { }
 
         public virtual NetDataWriter GetConnectWriter()
         {
@@ -80,10 +80,18 @@ namespace Swihoni.Sessions
         }
 
         public virtual void OnServerLoseConnection(NetPeer peer, Container player) { }
+
+        public virtual void OnKillPlayer(in DamageContext context) { }
+
+        public virtual void OnPlayerRegisterAppend(Container player) { }
         
-        public virtual void OnKillPlayer(in DamageContext context) {  }
+        public virtual string GetUsername(in ModifyContext context) => $"Player #{context.playerId}";
         
-        public virtual void OnPlayerRegisterAppend(Container player) {  }
+        public virtual void OnSetupHost(in ModifyContext context) {  }
+        
+        public virtual void OnStop() {  }
+        
+        public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.Require<HealthProperty>().WithoutValue;
     }
 
     public abstract class SessionBase : IDisposable
@@ -170,12 +178,22 @@ namespace Swihoni.Sessions
 
             _sessions.Add(this);
 
-            m_Injector.Start();
+            m_Injector.OnStart();
         }
 
         public virtual void Stop()
         {
-            if (!IsDisposed) Dispose();
+            if (!IsDisposed)
+            {
+                try
+                {
+                    m_Injector.OnStop();
+                }
+                finally
+                {
+                    Dispose();
+                }
+            }
         }
 
         public virtual int GetPeerPlayerId(NetPeer peer) => peer.Id;
@@ -393,5 +411,31 @@ namespace Swihoni.Sessions
 
         public static StringBuilder BuildUsername(Container sessionContainer, StringBuilder builder, Container player)
             => ModeManager.GetMode(sessionContainer).BuildUsername(builder, player);
+    }
+
+    public static class SessionExtensions
+    {
+        public static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
+
+        public static string ExecuteProcess(string command)
+        {
+            int firstSpace = command.IndexOf(" ", StringComparison.Ordinal);
+            var processInfo = new ProcessStartInfo {CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true};
+            if (firstSpace == -1) processInfo.FileName = command;
+            else
+            {
+                processInfo.FileName = command.Substring(0, firstSpace);
+                processInfo.Arguments = command.Substring(firstSpace + 1);
+            }
+            Process process = Process.Start(processInfo);
+            if (process != null)
+            {
+                process.WaitForExit();
+                string result = process.StandardOutput.ReadToEnd();
+                process.Close();
+                return result;
+            }
+            return string.Empty;
+        }
     }
 }

@@ -144,7 +144,7 @@ namespace Swihoni.Sessions
                 case ClientCommandsCode:
                 {
                     m_EmptyClientCommands.Deserialize(reader);
-                    if (!IsLoading && serverPlayer.Require<HealthProperty>().WithoutValue)
+                    if (CanSetupNewPlayer(serverPlayer))
                     {
                         Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {clientId}");
                         var modifyContext = new ModifyContext(this, serverSession, playerId: clientId, player: serverPlayer);
@@ -167,6 +167,8 @@ namespace Swihoni.Sessions
                 }
             }
         }
+
+        private bool CanSetupNewPlayer(Container serverPlayer) => !IsLoading && m_Injector.ShouldSetupPlayer(serverPlayer);
 
         private static uint _timeUs, _durationUs;
 
@@ -355,6 +357,7 @@ namespace Swihoni.Sessions
             player.Require<ServerPingComponent>().Zero();
             player.Require<ClientStampComponent>().Clear();
             player.Require<ServerStampComponent>().Clear();
+            player.Require<UsernameProperty>().SetTo(m_Injector.GetUsername(context));
         }
 
         public override Ray GetRayForPlayerId(int playerId) => GetRayForPlayer(GetLatestSession().GetPlayer(playerId));

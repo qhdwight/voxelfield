@@ -144,10 +144,10 @@ namespace Swihoni.Sessions
             if (hostPlayer.Require<HealthProperty>().WithValue) return;
             // Set up new player component data
             var context = new ModifyContext(this, tickSession, playerId: HostPlayerId, player: hostPlayer);
+            m_Injector.OnSetupHost(context);
             SetupNewPlayer(context);
             tickSession.Require<LocalPlayerId>().Value = HostPlayerId;
             m_HostCommands.CopyFrom(hostPlayer);
-            m_HostCommands.Require<UsernameProperty>().SetTo(SteamClient.IsValid ? SteamClient.Name : "Host");
         }
 
         protected override void RollbackHitboxes(int playerId)

@@ -77,7 +77,8 @@ namespace Voxel.Map
             }
         }
 
-        private static string GetMapPath(StringProperty mapName) => Path.ChangeExtension(Path.Combine(GetDirectory(MapSaveFolder), mapName.Builder.ToString()), MapSaveExtension);
+        private static string GetMapPath(StringProperty mapName)
+            => Path.ChangeExtension(Path.Combine(GetDirectory(MapSaveFolder), mapName.Builder.ToString()), MapSaveExtension);
 
         private static MapContainer ReadNamedMap(StringProperty mapName)
         {
@@ -97,7 +98,11 @@ namespace Voxel.Map
         {
             if (fileName != null) map.name.SetTo(fileName);
             map.version.SetTo(Application.version);
+#if VOXELFIELD_RELEASE_CLIENT
+            string mapPath = GetMapPath(map.name);
+#else
             string mapPath = $"C:/Users/qhdwi/Projects/Programming/Unity/Compound/Assets/Resources/Maps/{map.name}.bytes";
+#endif
             var writer = new NetDataWriter();
             map.Serialize(writer);
             File.WriteAllBytes(mapPath, writer.CopyData());

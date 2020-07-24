@@ -4,6 +4,7 @@
 
 using System;
 using System.Net;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
@@ -47,6 +48,9 @@ namespace Voxelfield
         {
             try
             {
+#if VOXELFIELD_RELEASE_CLIENT
+                if (!SteamClient.IsValid || !SteamClient.IsLoggedOn) throw new AuthenticationException("You need to be connected to Steam to play an online game.");
+#endif
                 string playerId = GetPlayerId();
                 GameSession gameSession = await sessionGetter(playerId);
                 await StartClientForGameSession(gameSession, playerId);
@@ -55,7 +59,7 @@ namespace Voxelfield
             {
                 if (Debug.isDebugBuild)
                 {
-                    Debug.LogError(exception);
+                    Debug.LogError($"Unable to get game session: {exception}");
                     throw;
                 }
                 Debug.LogError($"Unable to start online game. Error: {exception.Message}");
@@ -78,7 +82,7 @@ namespace Voxelfield
         private static string GetPlayerId()
         {
             string playerId = SteamClient.IsValid && SteamClient.IsLoggedOn
-                ? BitConverter.ToString(SteamUser.GetAuthSessionTicket().Data)
+                ? SteamClient.SteamId.ToString()
                 : Guid.NewGuid().ToString();
             return playerId;
         }
@@ -117,10 +121,10 @@ namespace Voxelfield
             var newSessionRequest = new CreateGameSessionRequest
             {
                 CreatorId = playerId,
-#if UNITY_EDITOR
-                FleetId = "fleet-0",
-#else
+#if VOXELFIELD_RELEASE_CLIENT
                 AliasId = FleetAlias,
+#else
+                FleetId = "fleet-0",
 #endif
                 MaximumPlayerSessionCount = SessionBase.MaxPlayers
             };
