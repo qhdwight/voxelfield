@@ -25,7 +25,7 @@ namespace Voxel
         private int m_ChunkSize;
         private Voxel[] m_Voxels;
 
-        public Position3Int Position => m_Position;
+        public ref Position3Int Position => ref m_Position;
 
         public override int GetHashCode() => m_Position.GetHashCode();
 
@@ -84,7 +84,7 @@ namespace Voxel
             if (m_MeshCollider.sharedMesh) m_MeshCollider.sharedMesh.Clear();
         }
 
-        private bool InsideChunk(in Position3Int pos) => pos.x < m_ChunkSize && pos.y < m_ChunkSize && pos.z < m_ChunkSize
+        public bool InsideChunk(in Position3Int pos) => pos.x < m_ChunkSize && pos.y < m_ChunkSize && pos.z < m_ChunkSize
                                                       && pos.x >= 0 && pos.y >= 0 && pos.z >= 0;
 
         public void SetVoxelDataNoCheck(in Position3Int position, in VoxelChange change)
@@ -97,8 +97,8 @@ namespace Voxel
                 : m_ChunkManager.GetVoxel(internalPosition + m_Position * m_ChunkSize);
         }
 
-        public Voxel GetVoxelNoCheck(in Position3Int position)
-            => m_Voxels[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)];
+        public ref Voxel GetVoxelNoCheck(in Position3Int position)
+            => ref m_Voxels[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)];
 
         public ref Voxel GetVoxelNoCheck(int index) => ref m_Voxels[index];
 
@@ -177,15 +177,15 @@ namespace Voxel
             Profiler.BeginSample("Set General");
             mesh.Clear();
             mesh.SetVertices(data.vertices);
-            mesh.SetIndices(data.triangleIndices.ToArray(), MeshTopology.Triangles, 0);
+            mesh.SetIndices(data.triangleIndices, MeshTopology.Triangles, 0);
             mesh.SetUVs(0, data.uvs);
             mesh.SetColors(data.colors);
             Profiler.EndSample();
             if (data.normals.Count == 0) mesh.RecalculateNormals();
             else mesh.SetNormals(data.normals);
-            Profiler.BeginSample("Calculate Tangents");
-            mesh.RecalculateTangents();
-            Profiler.EndSample();
+            // Profiler.BeginSample("Calculate Tangents");
+            // mesh.RecalculateTangents();
+            // Profiler.EndSample();
         }
     }
 }

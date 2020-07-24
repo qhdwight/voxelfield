@@ -13,13 +13,14 @@ namespace Voxelfield.Session
 {
     public class ClientInjector : Injector
     {
-        private readonly Pool<VoxelChangeTransaction> m_TransactionPool = new Pool<VoxelChangeTransaction>(1, () => new VoxelChangeTransaction());
+        private readonly Pool<VoxelChangesProperty> m_ChangesPool = new Pool<VoxelChangesProperty>(1, () => new EvaluatedVoxelsTransaction());
         private readonly UIntProperty m_Pointer = new UIntProperty();
-        private readonly SortedDictionary<uint, VoxelChangeTransaction> m_Transactions = new SortedDictionary<uint, VoxelChangeTransaction>();
+        private readonly SortedDictionary<uint, VoxelChangesProperty> m_Changes = new SortedDictionary<uint, VoxelChangesProperty>();
+        private readonly EvaluatedVoxelsTransaction m_Transaction = new EvaluatedVoxelsTransaction();
 
         protected internal override void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true) { }
 
-        protected internal override void VoxelTransaction(VoxelChangeTransaction uncommitted) { }
+        protected internal override void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted) { }
 
         public override NetDataWriter GetConnectWriter()
         {
@@ -35,19 +36,17 @@ namespace Voxelfield.Session
             request.Serialize(writer);
             return writer;
         }
-        
+
         protected override void OnReceive(ServerSessionContainer serverSession)
         {
-            var changed = serverSession.Require<ChangedVoxelsProperty>();
-
+            var serverChanges = serverSession.Require<VoxelChangesProperty>();
             UIntProperty serverTick = serverSession.Require<ServerStampComponent>().tick;
 
-            if (changed.Count > 0)
+            if (serverChanges.Count > 0)
             {
-                VoxelChangeTransaction transaction = m_TransactionPool.Obtain();
-                foreach (KeyValuePair<Position3Int, VoxelChange> pair in changed.Map)
-                    transaction.AddChange(pair.Key, pair.Value);
-                m_Transactions.Add(serverTick, transaction);
+                VoxelChangesProperty changes = m_ChangesPool.Obtain();
+                changes.SetTo(serverChanges);
+                m_Changes.Add(serverTick, changes);
             }
 
             var tickSkipped = false;
@@ -61,10 +60,14 @@ namespace Voxelfield.Session
 
         private void ApplyStoredChanges()
         {
-            foreach (VoxelChangeTransaction transaction in m_Transactions.Values)
-                transaction.Commit();
-            m_Transactions.Clear();
-            m_TransactionPool.ReturnAll();
+            foreach (VoxelChangesProperty changes in m_Changes.Values)
+            foreach (KeyValuePair<Position3Int, VoxelChange> pair in changes.Map)
+            {
+                ChunkManager.Singleton.EvaluateVoxelChange(pair.Key, pair.Value, null, false, false, m_Transaction);
+            }
+            m_Transaction.Commit();
+            m_Changes.Clear();
+            m_ChangesPool.ReturnAll();
         }
     }
 }

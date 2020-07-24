@@ -155,7 +155,7 @@ namespace Voxelfield.Session
             SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent),
                                                      typeof(BrokeVoxelTickProperty));
             SessionElements.commandElements.AppendAll(typeof(WantedItemComponent));
-            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(ChangedVoxelsProperty),
+            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(VoxelChangesProperty),
                                                typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent), typeof(DualScoresComponent));
         }
     }

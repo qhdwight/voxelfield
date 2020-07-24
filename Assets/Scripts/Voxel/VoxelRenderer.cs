@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
@@ -418,9 +417,10 @@ namespace Voxel
         {
             Position3Int lowerBound = manager.Map.dimension.lowerBound;
             var rawIndex = 0;
-            for (var x = 0; x < manager.ChunkSize; x++)
-            for (var y = 0; y < manager.ChunkSize; y++)
-            for (var z = 0; z < manager.ChunkSize; z++)
+            int chunkSize = manager.ChunkSize;
+            for (var x = 0; x < chunkSize; x++)
+            for (var y = 0; y < chunkSize; y++)
+            for (var z = 0; z < chunkSize; z++)
             {
                 // Voxel voxel = chunk.GetVoxelNoCheck(new Position3Int(x, y, z));
                 ref Voxel voxel = ref chunk.GetVoxelNoCheck(rawIndex++);
@@ -443,12 +443,18 @@ namespace Voxel
                     for (var i = 0; i < 8; i++)
                     {
                         Position3Int internalPosition = new Position3Int(x, y, z) + Positions[i];
-                        Voxel? v = chunk.GetVoxel(internalPosition);
-                        bool useEmpty = !v.HasValue
-                                     || internalPosition.x == 0 && lowerBound.x == chunk.Position.x
-                                     || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
-                                     || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
-                        float density = useEmpty ? 0.0f : (float) v.Value.density / byte.MaxValue * 2;
+                        bool isInsideChunk = chunk.InsideChunk(internalPosition);
+                        float density;
+                        if (isInsideChunk) density = (float) chunk.GetVoxelNoCheck(internalPosition).density / byte.MaxValue * 2;
+                        else
+                        {
+                            Voxel? v = manager.GetVoxel(internalPosition + chunk.Position * chunkSize);
+                            bool isOnWorldEdge = internalPosition.x == 0 && lowerBound.x == chunk.Position.x
+                                              || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
+                                              || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
+                            bool useEmpty = !v.HasValue || isOnWorldEdge;
+                            density = useEmpty ? 0.0f : (float) v.Value.density / byte.MaxValue * 2;
+                        }
                         CachedDensities[i] = density;
                         if (density < IsoLevel) cubeIndex |= 1 << i;
                         CachedPositions[i] = new Vector3(x, y, z) + Positions[i];

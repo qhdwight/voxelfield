@@ -58,7 +58,7 @@ namespace Voxel
                                                                                 .ToDictionary(method => method.GetCustomAttribute<DeserializerAttribute>().Version,
                                                                                               method => (Deserializer) Delegate.CreateDelegate(typeof(Deserializer), null, method));
 
-        public static VoxelChange Deserialize(NetDataReader reader, string version)
+        public static VoxelChange Deserialize(NetDataReader reader, string version = null)
         {
             try
             {

@@ -13,7 +13,7 @@ namespace Voxelfield
 
             string message = $"Starting voxelfield version v{Application.version}",
                    separator = string.Concat(Enumerable.Repeat("=", message.Length));
-            Debug.Log($"{separator}{Environment.NewLine}{message}{Environment.NewLine}{separator}");
+            Debug.Log($"{separator}\n{message}\n{separator}");
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Voxelfield.Item
     [CreateAssetMenu(fileName = "Voxel Wand", menuName = "Item/Voxel Wand", order = 0)]
     public class VoxelWand : SculptingItem
     {
-        private readonly VoxelChangeTransaction m_Transaction = new VoxelChangeTransaction();
+        private readonly EvaluatedVoxelsTransaction m_Transaction = new EvaluatedVoxelsTransaction();
 
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("set", "revert", "breakable");
@@ -98,7 +98,7 @@ namespace Voxelfield.Item
             for (int z = Math.Min(p1.z, p2.z); z <= Math.Max(p1.z, p2.z); z++)
             {
                 var worldPosition = new Position3Int(x, y, z);
-                m_Transaction.AddChange(worldPosition, function(worldPosition));
+                m_Transaction.Set(worldPosition, function(worldPosition));
             }
             Debug.Log($"Set {p1} to {p2}");
             voxelInjector.VoxelTransaction(m_Transaction);

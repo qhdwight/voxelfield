@@ -35,7 +35,7 @@ namespace Voxel
 
     public class ChunkManager : SingletonBehavior<ChunkManager>
     {
-        private static readonly VoxelChangeTransaction UpdateMeshTransaction = new VoxelChangeTransaction();
+        private static readonly EvaluatedVoxelsTransaction EvaluationTransaction = new EvaluatedVoxelsTransaction();
 
         [SerializeField] private GameObject m_ChunkPrefab = default;
         [SerializeField] private int m_ChunkSize = default;
@@ -137,8 +137,8 @@ namespace Voxel
                 }
             }
             if (actionType == ChunkActionType.Generate)
-                foreach (KeyValuePair<Position3Int, VoxelChange> pair in map.changedVoxels.Map)
-                    ApplyVoxelChange(pair.Key, pair.Value, updateMesh: false, updateSave: false);
+                foreach (KeyValuePair<Position3Int, VoxelChange> pair in map.m_VoxelChanges.Map)
+                    EvaluateVoxelChange(pair.Key, pair.Value, updateMesh: false, updateSave: false);
         }
 
         /// <summary>
@@ -174,9 +174,12 @@ namespace Voxel
         /// <param name="chunk">Chunk that we know it is in. If null, we will try to find it</param>
         /// <param name="updateMesh">Whether or not to actually update the chunk's mesh</param>
         /// <param name="updateSave">Whether or not to update map save component</param>
-        public void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true, bool updateSave = true)
+        /// <param name="existingTransaction">Merge to existing transaction</param>
+        public void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true, bool updateSave = true,
+                                        EvaluatedVoxelsTransaction existingTransaction = null)
         {
             Profiler.BeginSample("Apply Voxel Change");
+            EvaluatedVoxelsTransaction transaction = existingTransaction ?? EvaluationTransaction;
             if (change.magnitude is float radius)
             {
                 bool isAdditive = radius > 0.0f;
@@ -219,10 +222,8 @@ namespace Voxel
                     if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && inSphere && voxel.Value.HasBlock)
                         evaluatedChange.hasBlock = false;
                     if (inSphere) evaluatedChange.natural = false;
-                    if (!UpdateMeshTransaction.HasChangeAt(voxelWorldPosition))
-                        UpdateMeshTransaction.AddChange(voxelWorldPosition, evaluatedChange);
+                    transaction.Set(voxelWorldPosition, evaluatedChange);
                 }
-                UpdateMeshTransaction.Commit();
             }
             else
             {
@@ -231,10 +232,11 @@ namespace Voxel
                 Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
                 // ReSharper disable once PossibleNullReferenceException
                 chunk.SetVoxelDataNoCheck(voxelChunkPosition, change);
-                if (updateSave) Map.changedVoxels.Set(worldPosition, change);
-                if (updateMesh) UpdateChunkMesh(chunk, voxelChunkPosition);
+                transaction.Set(worldPosition, change);
             }
             Profiler.EndSample();
+            if (updateSave) Map.m_VoxelChanges.Set(worldPosition, change);
+            if (updateMesh) transaction.Commit();
         }
 
         public VoxelChange? GetMapSaveVoxel(in Position3Int worldPosition)

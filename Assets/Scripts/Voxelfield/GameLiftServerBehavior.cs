@@ -39,13 +39,13 @@ namespace Voxelfield
                 GameLiftServerAPI.ProcessReady(processParameters);
                 const string message = "GameLift server process ready";
                 string separator = string.Concat(Enumerable.Repeat("=", message.Length));
-                Debug.Log($"{separator}{Environment.NewLine}{message}{Environment.NewLine}{separator}");
+                Debug.Log($"{separator}\n{message}\n{separator}");
             }
             else
             {
                 string message = $"Failed to initialize server SDK {outcome.Error}",
                        separator = string.Concat(Enumerable.Repeat("=", message.Length));
-                Debug.LogError($"{separator}{Environment.NewLine}{message}{Environment.NewLine}{separator}");
+                Debug.LogError($"{separator}\n{message}\n{separator}");
             }
         }
 

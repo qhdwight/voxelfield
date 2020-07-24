@@ -16,6 +16,12 @@ namespace Swihoni.Sessions.Config
             ["quit"] = _ => Application.Quit()
         };
 
+        static ConsoleCommandExecutor() => Commands["help"] = _ =>
+        {
+            string allCommands = string.Join(", ", Commands.Keys.OrderBy(name => name));
+            Debug.Log($"Available commands:\n{allCommands}");
+        };
+
         public static void SetCommand(string commandName, Action<string[]> command) => Commands[commandName] = command;
 
         public static void SetAlias(string alias, string realCommand) => Commands[alias] = args => ExecuteCommand(realCommand);

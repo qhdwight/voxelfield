@@ -54,21 +54,21 @@ namespace Voxelfield.Session
         private readonly DualDictionary<NetPeer, string> m_GameLiftPlayerSessionIds = new DualDictionary<NetPeer, string>();
 #endif
 
-        private readonly ChangedVoxelsProperty m_MasterChanges = new ChangedVoxelsProperty();
+        private readonly VoxelChangesProperty m_MasterChanges = new VoxelChangesProperty();
         private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new DualDictionary<NetPeer, SteamId>();
 
         protected internal override void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
         {
             if (MapManager.Singleton.Models.ContainsKey(worldPosition)) return;
-            var changed = Session.GetLatestSession().Require<ChangedVoxelsProperty>();
+            var changed = Session.GetLatestSession().Require<VoxelChangesProperty>();
             base.ApplyVoxelChange(worldPosition, change, chunk, updateMesh);
             changed.Set(worldPosition, change);
             m_MasterChanges.AddAllFrom(changed);
         }
 
-        protected internal override void VoxelTransaction(VoxelChangeTransaction uncommitted)
+        protected internal override void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted)
         {
-            var changed = Session.GetLatestSession().Require<ChangedVoxelsProperty>();
+            var changed = Session.GetLatestSession().Require<VoxelChangesProperty>();
             foreach (KeyValuePair<Position3Int, VoxelChange> pair in uncommitted.Map)
                 changed.Set(pair.Key, pair.Value);
             m_MasterChanges.AddAllFrom(changed);
@@ -77,7 +77,7 @@ namespace Voxelfield.Session
 
         protected override void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession)
         {
-            var changedVoxels = sendSession.Require<ChangedVoxelsProperty>();
+            var changedVoxels = sendSession.Require<VoxelChangesProperty>();
             changedVoxels.SetTo(m_MasterChanges);
         }
 

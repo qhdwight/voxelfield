@@ -19,7 +19,7 @@ namespace Voxel.Map
         public DimensionComponent dimension;
         public NoiseComponent noise;
 
-        public ChangedVoxelsProperty changedVoxels;
+        public VoxelChangesProperty m_VoxelChanges;
         public ModelsProperty models;
         public BoolProperty breakableEdges;
 
@@ -28,7 +28,7 @@ namespace Voxel.Map
             foreach (ElementBase element in Elements)
             {
                 element.Deserialize(reader);
-                if (ReferenceEquals(element, version)) changedVoxels.Version = version.AsNewString();
+                if (ReferenceEquals(element, version)) m_VoxelChanges.Version = version.AsNewString();
             }
             if (version != Application.version) Debug.Log($"Converting map container to newest version, from {version} to {Application.version}");
             return this;

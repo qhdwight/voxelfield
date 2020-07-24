@@ -7,7 +7,7 @@ using Swihoni.Util.Math;
 namespace Voxel
 {
     [Serializable, SingleTick]
-    public class ChangedVoxelsProperty : DictPropertyBase<Position3Int, VoxelChange>
+    public class VoxelChangesProperty : DictPropertyBase<Position3Int, VoxelChange>
     {
         public string Version { get; set; }
         
@@ -35,7 +35,7 @@ namespace Voxel
 
         public override void SetTo(PropertyBase other)
         {
-            if (!(other is ChangedVoxelsProperty otherChanged)) throw new ArgumentException("Other was not changed voxels");
+            if (!(other is VoxelChangesProperty otherChanged)) throw new ArgumentException("Other was not changed voxels");
             Clear();
             AddAllFrom(otherChanged);
             WithValue = true;

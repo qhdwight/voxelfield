@@ -29,9 +29,9 @@ namespace Voxelfield.Session
         protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
 
         protected internal virtual void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
-            => ChunkManager.Singleton.ApplyVoxelChange(worldPosition, change, chunk, updateMesh);
+            => ChunkManager.Singleton.EvaluateVoxelChange(worldPosition, change, chunk, updateMesh);
 
-        protected internal virtual void VoxelTransaction(VoxelChangeTransaction uncommitted) => uncommitted.Commit();
+        protected internal virtual void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted) => uncommitted.Commit();
         
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
         protected AuthTicket m_SteamAuthenticationTicket;
