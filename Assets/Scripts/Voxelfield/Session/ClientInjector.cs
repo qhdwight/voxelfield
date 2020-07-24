@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using LiteNetLib.Utils;
 using Steamworks;
 using Swihoni.Collections;
@@ -18,13 +17,7 @@ namespace Voxelfield.Session
         private readonly UIntProperty m_Pointer = new UIntProperty();
         private readonly SortedDictionary<uint, VoxelChangeTransaction> m_Transactions = new SortedDictionary<uint, VoxelChangeTransaction>();
 
-        protected internal override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true) { }
-
-        protected internal override void SetVoxelRadius(in Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false,
-                                                        bool destroyBlocks = false, bool isAdditive = false, in VoxelChangeData additiveChange = default,
-                                                        ChangedVoxelsProperty changedVoxels = null)
-        {
-        }
+        protected internal override void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true) { }
 
         protected internal override void VoxelTransaction(VoxelChangeTransaction uncommitted) { }
 
@@ -52,7 +45,7 @@ namespace Voxelfield.Session
             if (changed.Count > 0)
             {
                 VoxelChangeTransaction transaction = m_TransactionPool.Obtain();
-                foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in changed.Map)
+                foreach (KeyValuePair<Position3Int, VoxelChange> pair in changed.Map)
                     transaction.AddChange(pair.Key, pair.Value);
                 m_Transactions.Add(serverTick, transaction);
             }

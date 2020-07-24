@@ -6,20 +6,20 @@ namespace Voxel
 {
     public class VoxelChangeTransaction
     {
-        private readonly Dictionary<Position3Int, VoxelChangeData> m_Changes;
+        private readonly Dictionary<Position3Int, VoxelChange> m_Changes;
         private readonly HashSet<Chunk> m_ChunksToUpdate;
 
-        public Dictionary<Position3Int, VoxelChangeData> Map => m_Changes;
+        public Dictionary<Position3Int, VoxelChange> Map => m_Changes;
 
         public VoxelChangeTransaction() : this(0) { }
 
         public VoxelChangeTransaction(int size)
         {
-            m_Changes = new Dictionary<Position3Int, VoxelChangeData>(size);
+            m_Changes = new Dictionary<Position3Int, VoxelChange>(size);
             m_ChunksToUpdate = new HashSet<Chunk>();
         }
 
-        public void AddChange(in Position3Int worldPosition, in VoxelChangeData changeData) => m_Changes.Add(worldPosition, changeData);
+        public void AddChange(in Position3Int worldPosition, in VoxelChange change) => m_Changes.Add(worldPosition, change);
 
         public bool HasChangeAt(in Position3Int worldPosition) => m_Changes.ContainsKey(worldPosition);
 
@@ -28,7 +28,7 @@ namespace Voxel
         /// </summary>
         public void Commit()
         {
-            foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in m_Changes)
+            foreach (KeyValuePair<Position3Int, VoxelChange> pair in m_Changes)
             {
                 Chunk chunk = ChunkManager.Singleton.GetChunkFromWorldPosition(pair.Key);
                 if (!chunk) continue;

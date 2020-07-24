@@ -17,20 +17,20 @@ namespace Voxelfield.Item
             var designer = session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>();
             var voxelInjector = (Injector) session.Injector;
             var position = (Position3Int) hit.point;
-            voxelInjector.SetVoxelRadius(position, designer.editRadius, additiveChange: new VoxelChangeData {id = designer.selectedVoxelId.AsNullable}, isAdditive: true);
+            voxelInjector.ApplyVoxelChange(position, new VoxelChange{id = designer.selectedVoxelId.AsNullable, magnitude = designer.editRadius});
         }
 
         protected override void RemoveBlock(SessionBase session, Injector injector, in Position3Int position)
         {
-            VoxelChangeData mapSaveVoxel = ChunkManager.Singleton.GetMapSaveVoxel(position).Value;
-            injector.SetVoxelData(position, new VoxelChangeData {id = mapSaveVoxel.id, hasBlock = false, natural = true});
+            if (ChunkManager.Singleton.GetMapSaveVoxel(position) is VoxelChange save)
+                injector.ApplyVoxelChange(position, new VoxelChange {id = save.id, hasBlock = false, natural = true});
         }
 
         protected override void RemoveVoxelRadius(SessionBase session, int playerId, Injector injector, in Position3Int position)
         {
             float radius = session.GetModifyingPayerFromId(playerId).Require<DesignerPlayerComponent>().editRadius;
             if (radius > Mathf.Epsilon)
-                injector.SetVoxelRadius(position, radius);
+                injector.ApplyVoxelChange(position, new VoxelChange{magnitude = -radius});
         }
     }
 }

@@ -4,6 +4,7 @@ using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Voxel.Map;
 
 namespace Voxel
@@ -34,7 +35,7 @@ namespace Voxel
 
     public class ChunkManager : SingletonBehavior<ChunkManager>
     {
-        private static readonly VoxelChangeTransaction Transaction = new VoxelChangeTransaction();
+        private static readonly VoxelChangeTransaction UpdateMeshTransaction = new VoxelChangeTransaction();
 
         [SerializeField] private GameObject m_ChunkPrefab = default;
         [SerializeField] private int m_ChunkSize = default;
@@ -136,8 +137,8 @@ namespace Voxel
                 }
             }
             if (actionType == ChunkActionType.Generate)
-                foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in map.changedVoxels.Map)
-                    SetVoxelData(pair.Key, pair.Value, updateMesh: false, updateMap: false);
+                foreach (KeyValuePair<Position3Int, VoxelChange> pair in map.changedVoxels.Map)
+                    ApplyVoxelChange(pair.Key, pair.Value, updateMesh: false, updateSave: false);
         }
 
         /// <summary>
@@ -169,26 +170,79 @@ namespace Voxel
         /// Change the data of a chunk in the array.
         /// </summary>
         /// <param name="worldPosition">World position of the voxel</param>
-        /// <param name="changeData">Data to change on voxel</param>
+        /// <param name="change">Data to change on voxel</param>
         /// <param name="chunk">Chunk that we know it is in. If null, we will try to find it</param>
         /// <param name="updateMesh">Whether or not to actually update the chunk's mesh</param>
-        /// <param name="updateMap">Whether or not to update map save component</param>
-        public void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData changeData, Chunk chunk = null, bool updateMesh = true, bool updateMap = true)
+        /// <param name="updateSave">Whether or not to update map save component</param>
+        public void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true, bool updateSave = true)
         {
-            if (!chunk) chunk = GetChunkFromWorldPosition(worldPosition);
-            if (!chunk) return;
-            Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-            chunk.SetVoxelDataNoCheck(voxelChunkPosition, changeData);
-            if (updateMap) Map.changedVoxels.Set(worldPosition, changeData);
-            if (updateMesh) UpdateChunkMesh(chunk, voxelChunkPosition);
+            Profiler.BeginSample("Apply Voxel Change");
+            if (change.magnitude is float radius)
+            {
+                bool isAdditive = radius > 0.0f;
+                float absoluteRadius = Mathf.Abs(radius);
+                int roundedRadius = Mathf.CeilToInt(absoluteRadius);
+                for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
+                for (int iy = -roundedRadius; iy <= roundedRadius; iy++)
+                for (int iz = -roundedRadius; iz <= roundedRadius; iz++)
+                {
+                    Position3Int voxelWorldPosition = worldPosition + new Position3Int(ix, iy, iz);
+                    chunk = GetChunkFromWorldPosition(voxelWorldPosition);
+                    if (!chunk) continue;
+                    Voxel? voxel = GetVoxel(voxelWorldPosition, chunk);
+                    if (!voxel.HasValue) continue;
+
+                    float distance = Position3Int.Distance(worldPosition, voxelWorldPosition);
+                    byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(distance / absoluteRadius * 0.5f) * byte.MaxValue)),
+                         currentDensity = voxel.Value.density;
+                    VoxelChange evaluatedChange = default;
+
+                    if (voxel.Value.IsBreakable)
+                    {
+                        if (isAdditive)
+                        {
+                            newDensity = checked((byte) (byte.MaxValue - newDensity));
+                            if (newDensity > currentDensity)
+                            {
+                                evaluatedChange.density = newDensity;
+                                if (voxel.Value.OnlySmooth) evaluatedChange.Merge(change);
+                            }
+                        }
+                        else
+                        {
+                            if (newDensity < currentDensity) evaluatedChange.density = newDensity;
+                        }
+                    }
+                    if (!isAdditive && change.replaceGrassWithDirt.GetValueOrDefault() && voxel.Value.texture == VoxelId.Grass)
+                        evaluatedChange.id = VoxelId.Dirt;
+                    bool inSphere = distance < roundedRadius;
+                    if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && inSphere && voxel.Value.HasBlock)
+                        evaluatedChange.hasBlock = false;
+                    if (inSphere) evaluatedChange.natural = false;
+                    if (!UpdateMeshTransaction.HasChangeAt(voxelWorldPosition))
+                        UpdateMeshTransaction.AddChange(voxelWorldPosition, evaluatedChange);
+                }
+                UpdateMeshTransaction.Commit();
+            }
+            else
+            {
+                if (!chunk) chunk = GetChunkFromWorldPosition(worldPosition);
+                if (!chunk) return;
+                Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
+                // ReSharper disable once PossibleNullReferenceException
+                chunk.SetVoxelDataNoCheck(voxelChunkPosition, change);
+                if (updateSave) Map.changedVoxels.Set(worldPosition, change);
+                if (updateMesh) UpdateChunkMesh(chunk, voxelChunkPosition);
+            }
+            Profiler.EndSample();
         }
 
-        public VoxelChangeData? GetMapSaveVoxel(in Position3Int worldPosition)
+        public VoxelChange? GetMapSaveVoxel(in Position3Int worldPosition)
         {
             Chunk chunk = GetChunkFromWorldPosition(worldPosition);
             if (!chunk) return null;
             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-            VoxelChangeData change = chunk.GetChangeDataFromSave(voxelChunkPosition, m_LoadedMap);
+            VoxelChange change = chunk.GetChangeDataFromSave(voxelChunkPosition, m_LoadedMap);
             return change;
         }
 
@@ -201,6 +255,7 @@ namespace Voxel
         public Voxel? GetVoxel(in Position3Int worldPosition, Chunk chunk = null)
         {
             if (!chunk) chunk = GetChunkFromWorldPosition(worldPosition);
+            // ReSharper disable once PossibleNullReferenceException
             if (chunk) return chunk.GetVoxelNoCheck(WorldVoxelToChunkVoxel(worldPosition, chunk));
             return null;
         }
@@ -274,58 +329,6 @@ namespace Voxel
             chunk.Decommission();
             Chunks.Remove(chunk.Position);
             m_ChunkPool.Push(chunk);
-        }
-
-        public void SetVoxelRadius(in Position3Int worldPositionCenter, float radius,
-                                   bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool additive = false, in VoxelChangeData change = default,
-                                   ChangedVoxelsProperty changedVoxels = null)
-        {
-            int roundedRadius = Mathf.CeilToInt(radius);
-            for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
-            {
-                for (int iy = -roundedRadius; iy <= roundedRadius; iy++)
-                {
-                    for (int iz = -roundedRadius; iz <= roundedRadius; iz++)
-                    {
-                        Position3Int voxelWorldPosition = worldPositionCenter + new Position3Int(ix, iy, iz);
-                        Chunk chunk = GetChunkFromWorldPosition(voxelWorldPosition);
-                        if (!chunk) continue;
-                        Voxel? voxel = GetVoxel(voxelWorldPosition, chunk);
-                        if (!voxel.HasValue) continue;
-
-                        float distance = Position3Int.Distance(worldPositionCenter, voxelWorldPosition);
-                        byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(distance / radius * 0.5f) * byte.MaxValue)),
-                             currentDensity = voxel.Value.density;
-                        var changeData = new VoxelChangeData();
-                        if (voxel.Value.IsBreakable)
-                        {
-                            if (additive)
-                            {
-                                newDensity = checked((byte) (byte.MaxValue - newDensity));
-                                if (newDensity > currentDensity)
-                                {
-                                    changeData.density = newDensity;
-                                    if (voxel.Value.OnlySmooth) changeData.Merge(change);
-                                }
-                            }
-                            else
-                            {
-                                if (newDensity < currentDensity) changeData.density = newDensity;
-                            }
-                        }
-                        if (!additive && replaceGrassWithDirt && voxel.Value.texture == VoxelId.Grass)
-                            changeData.id = VoxelId.Dirt;
-                        bool inSphere = distance < Mathf.Ceil(radius);
-                        if (!additive && destroyBlocks && inSphere && voxel.Value.HasBlock)
-                            changeData.hasBlock = false;
-                        if (inSphere) changeData.natural = false;
-                        changedVoxels?.Set(voxelWorldPosition, changeData);
-                        if (!Transaction.HasChangeAt(voxelWorldPosition))
-                            Transaction.AddChange(voxelWorldPosition, changeData);
-                    }
-                }
-            }
-            Transaction.Commit();
         }
 
         public Position3Int WorldVoxelToChunkVoxel(in Position3Int worldPosition, Chunk chunk) => worldPosition - chunk.Position * m_ChunkSize;

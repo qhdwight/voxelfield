@@ -191,8 +191,10 @@ namespace Voxelfield.Session.Mode
             {
                 if (flagTeam == playerTeam) continue; // Continue if friendly flag
                 FlagArrayElement enemyFlags = ctf.teamFlags[flagTeam];
-                foreach (FlagComponent enemyFlag in enemyFlags)
+                // ReSharper disable once ForCanBeConvertedToForeach - Avoid allocation of getting enumerator
+                for (var i = 0; i < enemyFlags.Length; i++)
                 {
+                    FlagComponent enemyFlag = enemyFlags[i];
                     if (enemyFlag.capturingPlayerId.WithValueEqualTo((byte) player.PlayerId)
                      && enemyFlag.captureElapsedTimeUs > TakeFlagDurationUs) // Test if friendly returning enemy flag
                     {

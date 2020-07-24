@@ -205,9 +205,12 @@ namespace Swihoni.Sessions.Config
 
         public static void UpdateSessionConfig(ComponentBase session)
         {
-            foreach (ElementBase element in session.Elements)
-                if (element is PropertyBase property && Active.m_TypeToConfig.TryGetValue(property.GetType(), out (PropertyBase, ConfigAttribute) tuple))
+            // ReSharper disable once ForCanBeConvertedToForeach - Avoid allocation of getting enumerator
+            for (var i = 0; i < session.Count; i++)
+            {
+                if (session[i] is PropertyBase property && Active.m_TypeToConfig.TryGetValue(property.GetType(), out (PropertyBase, ConfigAttribute) tuple))
                     property.SetFromIfWith(tuple.Item1);
+            }
         }
 
         private static string GetConfigFile()

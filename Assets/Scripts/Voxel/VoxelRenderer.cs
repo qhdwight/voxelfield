@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Voxel
 {
@@ -416,62 +417,68 @@ namespace Voxel
         public static void RenderVoxels(ChunkManager manager, Chunk chunk, MeshData solidMesh, MeshData foliageMesh)
         {
             Position3Int lowerBound = manager.Map.dimension.lowerBound;
+            var rawIndex = 0;
             for (var x = 0; x < manager.ChunkSize; x++)
+            for (var y = 0; y < manager.ChunkSize; y++)
+            for (var z = 0; z < manager.ChunkSize; z++)
             {
-                for (var y = 0; y < manager.ChunkSize; y++)
+                // Voxel voxel = chunk.GetVoxelNoCheck(new Position3Int(x, y, z));
+                ref Voxel voxel = ref chunk.GetVoxelNoCheck(rawIndex++);
+                if (voxel.HasBlock)
                 {
-                    for (var z = 0; z < manager.ChunkSize; z++)
+                    Profiler.BeginSample("Generate Block");
+                    for (var i = 0; i < 6; i++)
                     {
-                        Voxel voxel = chunk.GetVoxelNoCheck(new Position3Int(x, y, z));
-                        if (voxel.HasBlock)
-                        {
-                            for (var i = 0; i < 6; i++)
-                            {
-                                var orientation = (byte) (i + 1);
-                                Voxel? adjacentVoxel = chunk.GetVoxel(new Position3Int(x, y, z) + Adjacents[orientation]);
-                                if (adjacentVoxel?.ShouldRenderBlock(orientation) ?? true)
-                                    GenerateBlock(ref voxel, x, y, z, orientation, solidMesh);
-                            }
-                        }
-                        else
-                        {
-                            var cubeIndex = 0;
-                            for (var i = 0; i < 8; i++)
-                            {
-                                Position3Int internalPosition = new Position3Int(x, y, z) + Positions[i];
-                                Voxel? v = chunk.GetVoxel(internalPosition);
-                                bool useEmpty = !v.HasValue
-                                             || internalPosition.x == 0 && lowerBound.x == chunk.Position.x
-                                             || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
-                                             || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
-                                float density = useEmpty ? 0.0f : (float) v.Value.density / byte.MaxValue * 2;
-                                CachedDensities[i] = density;
-                                if (density < IsoLevel) cubeIndex |= 1 << i;
-                                CachedPositions[i] = new Vector3(x, y, z) + Positions[i];
-                            }
-                            if (cubeIndex == 0 || cubeIndex == 255) continue;
-                            for (var i = 0; i < 12; i++)
-                                CachedVertList[i] = (EdgeTable[cubeIndex] & (1 << i)) != 0
-                                    ? InterpolateVertex(CachedPositions[VertIdx1[i]],
-                                                        CachedPositions[VertIdx2[i]], CachedDensities[VertIdx1[i]],
-                                                        CachedDensities[VertIdx2[i]])
-                                    : Vector3.zero;
-                            for (var i = 0; TriangleTable[cubeIndex][i] != -1; i += 3)
-                            {
-                                for (var j = 0; j < 3; j++)
-                                {
-                                    int index = solidMesh.vertices.Count;
-                                    solidMesh.vertices.Add(CachedVertList[TriangleTable[cubeIndex][i + j]] - Offset);
-                                    solidMesh.colors.Add(voxel.color);
-                                    solidMesh.triangleIndices.Add(index);
-                                }
-                                if (voxel.texture == VoxelId.Grass && voxel.IsNatural)
-                                    GenerateFoliage(solidMesh, foliageMesh, ref voxel);
-                                int length = voxel.FaceUVs(CachedUvs);
-                                for (var j = 0; j < length; j++) solidMesh.uvs.Add(CachedUvs[j]);
-                            }
-                        }
+                        var orientation = (byte) (i + 1);
+                        Voxel? adjacentVoxel = chunk.GetVoxel(new Position3Int(x, y, z) + Adjacents[orientation]);
+                        if (adjacentVoxel?.ShouldRenderBlock(orientation) ?? true)
+                            GenerateBlock(ref voxel, x, y, z, orientation, solidMesh);
                     }
+                    Profiler.EndSample();
+                }
+                else
+                {
+                    Profiler.BeginSample("Get Densities");
+                    var cubeIndex = 0;
+                    for (var i = 0; i < 8; i++)
+                    {
+                        Position3Int internalPosition = new Position3Int(x, y, z) + Positions[i];
+                        Voxel? v = chunk.GetVoxel(internalPosition);
+                        bool useEmpty = !v.HasValue
+                                     || internalPosition.x == 0 && lowerBound.x == chunk.Position.x
+                                     || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
+                                     || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
+                        float density = useEmpty ? 0.0f : (float) v.Value.density / byte.MaxValue * 2;
+                        CachedDensities[i] = density;
+                        if (density < IsoLevel) cubeIndex |= 1 << i;
+                        CachedPositions[i] = new Vector3(x, y, z) + Positions[i];
+                    }
+                    Profiler.EndSample();
+                    if (cubeIndex == 0 || cubeIndex == 255) continue;
+                    Profiler.BeginSample("Generate Vertices");
+                    for (var i = 0; i < 12; i++)
+                        CachedVertList[i] = (EdgeTable[cubeIndex] & (1 << i)) != 0
+                            ? InterpolateVertex(CachedPositions[VertIdx1[i]],
+                                                CachedPositions[VertIdx2[i]], CachedDensities[VertIdx1[i]],
+                                                CachedDensities[VertIdx2[i]])
+                            : Vector3.zero;
+                    Profiler.EndSample();
+                    Profiler.BeginSample("Add to Mesh");
+                    for (var i = 0; TriangleTable[cubeIndex][i] != -1; i += 3)
+                    {
+                        for (var j = 0; j < 3; j++)
+                        {
+                            int index = solidMesh.vertices.Count;
+                            solidMesh.vertices.Add(CachedVertList[TriangleTable[cubeIndex][i + j]] - Offset);
+                            solidMesh.colors.Add(voxel.color);
+                            solidMesh.triangleIndices.Add(index);
+                        }
+                        if (voxel.texture == VoxelId.Grass && voxel.IsNatural)
+                            GenerateFoliage(solidMesh, foliageMesh, ref voxel);
+                        int length = voxel.FaceUVs(CachedUvs);
+                        for (var j = 0; j < length; j++) solidMesh.uvs.Add(CachedUvs[j]);
+                    }
+                    Profiler.EndSample();
                 }
             }
         }

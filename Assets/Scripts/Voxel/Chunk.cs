@@ -23,7 +23,7 @@ namespace Voxel
         private Position3Int m_Position;
         private bool m_InCommission, m_Generating, m_Updating;
         private int m_ChunkSize;
-        private Voxel[,,] m_Voxels;
+        private Voxel[] m_Voxels;
 
         public Position3Int Position => m_Position;
 
@@ -53,7 +53,7 @@ namespace Voxel
         {
             m_ChunkManager = chunkManager;
             m_ChunkSize = chunkSize;
-            m_Voxels = new Voxel[m_ChunkSize, m_ChunkSize, m_ChunkSize];
+            m_Voxels = new Voxel[m_ChunkSize * m_ChunkSize * m_ChunkSize];
         }
 
         public void Decommission()
@@ -87,7 +87,8 @@ namespace Voxel
         private bool InsideChunk(in Position3Int pos) => pos.x < m_ChunkSize && pos.y < m_ChunkSize && pos.z < m_ChunkSize
                                                       && pos.x >= 0 && pos.y >= 0 && pos.z >= 0;
 
-        public void SetVoxelDataNoCheck(in Position3Int pos, in VoxelChangeData changeData) => m_Voxels?[pos.x, pos.y, pos.z].SetVoxelData(changeData);
+        public void SetVoxelDataNoCheck(in Position3Int position, in VoxelChange change)
+            => m_Voxels?[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)].SetVoxelData(change);
 
         public Voxel? GetVoxel(in Position3Int internalPosition)
         {
@@ -96,9 +97,12 @@ namespace Voxel
                 : m_ChunkManager.GetVoxel(internalPosition + m_Position * m_ChunkSize);
         }
 
-        public Voxel GetVoxelNoCheck(in Position3Int position) => m_Voxels[position.x, position.y, position.z];
+        public Voxel GetVoxelNoCheck(in Position3Int position)
+            => m_Voxels[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)];
 
-        public VoxelChangeData GetChangeDataFromSave(in Position3Int voxelPosition, MapContainer save)
+        public ref Voxel GetVoxelNoCheck(int index) => ref m_Voxels[index];
+
+        public VoxelChange GetChangeDataFromSave(in Position3Int voxelPosition, MapContainer save)
         {
             float
                 noiseHeight = Noise.Simplex(m_Position.x * m_ChunkSize + voxelPosition.x,
@@ -106,13 +110,14 @@ namespace Voxel
                 height = noiseHeight + save.terrainHeight - voxelPosition.y - m_Position.y * m_ChunkSize,
                 floatDensity = Mathf.Clamp(height, 0.0f, 2.0f);
             var density = (byte) (floatDensity * byte.MaxValue / 2.0f);
+            // TODO:bug discrepancy between blocks and smooth causes lower edges to have one block less modifiable
             bool breakable = save.breakableEdges || !(m_Position.x == save.dimension.lowerBound.Value.x && voxelPosition.x <= 1
                                                    || m_Position.x == save.dimension.upperBound.Value.x && voxelPosition.x == m_ChunkSize - 1
                                                    || m_Position.y == save.dimension.lowerBound.Value.y && voxelPosition.y <= 1
                                                    || m_Position.y == save.dimension.upperBound.Value.y && voxelPosition.y == m_ChunkSize - 1
                                                    || m_Position.z == save.dimension.lowerBound.Value.z && voxelPosition.z <= 1
                                                    || m_Position.z == save.dimension.upperBound.Value.z && voxelPosition.z == m_ChunkSize - 1);
-            return new VoxelChangeData
+            return new VoxelChange
             {
                 id = height > 5.0f ? VoxelId.Stone : VoxelId.Grass,
                 hasBlock = false, density = density, isBreakable = breakable, orientation = Orientation.None, natural = true,
@@ -123,31 +128,13 @@ namespace Voxel
         public void CreateTerrainFromSave(MapContainer save)
         {
             m_Generating = true;
-//            foreach (BrushStroke stroke in save.BrushStrokes)
-//            {
-//                Position3Int center = stroke.center;
-//                byte radius = stroke.radius;
-//                if
-//                (
-//                       center.x - radius > m_Position.x && center.x + radius < m_Position.x
-//                    || center.y - radius > m_Position.y && center.y + radius < m_Position.y
-//                    || center.z - radius > m_Position.z && center.z + radius < m_Position.z
-//                )
-//                {
-//
-//                }    
-//            }
             for (var x = 0; x < m_ChunkSize; x++)
+            for (var z = 0; z < m_ChunkSize; z++)
+            for (var y = 0; y < m_ChunkSize; y++)
             {
-                for (var z = 0; z < m_ChunkSize; z++)
-                {
-                    for (var y = 0; y < m_ChunkSize; y++)
-                    {
-                        var position = new Position3Int(x, y, z);
-                        VoxelChangeData changeData = GetChangeDataFromSave(position, save);
-                        SetVoxelDataNoCheck(position, changeData);
-                    }
-                }
+                var position = new Position3Int(x, y, z);
+                VoxelChange change = GetChangeDataFromSave(position, save);
+                SetVoxelDataNoCheck(position, change);
             }
             m_Generating = false;
         }
@@ -187,14 +174,18 @@ namespace Voxel
 
         private static void ApplyMesh(Mesh mesh, MeshData data)
         {
+            Profiler.BeginSample("Set General");
             mesh.Clear();
             mesh.SetVertices(data.vertices);
             mesh.SetIndices(data.triangleIndices.ToArray(), MeshTopology.Triangles, 0);
             mesh.SetUVs(0, data.uvs);
             mesh.SetColors(data.colors);
+            Profiler.EndSample();
             if (data.normals.Count == 0) mesh.RecalculateNormals();
             else mesh.SetNormals(data.normals);
+            Profiler.BeginSample("Calculate Tangents");
             mesh.RecalculateTangents();
+            Profiler.EndSample();
         }
     }
 }

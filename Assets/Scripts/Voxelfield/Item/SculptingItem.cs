@@ -37,10 +37,10 @@ namespace Voxelfield.Item
         }
 
         protected virtual void RemoveBlock(SessionBase session, Injector injector, in Position3Int position)
-            => injector.SetVoxelData(position, new VoxelChangeData {hasBlock = false, natural = false});
+            => injector.ApplyVoxelChange(position, new VoxelChange {hasBlock = false, natural = false});
 
         protected virtual void RemoveVoxelRadius(SessionBase session, int playerId, Injector injector, in Position3Int position)
-            => injector.SetVoxelRadius(position, m_DestroyRadius, true);
+            => injector.ApplyVoxelChange(position, new VoxelChange {magnitude = -m_DestroyRadius, replaceGrassWithDirt = true});
 
         protected static bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
@@ -93,7 +93,8 @@ namespace Voxelfield.Item
                 return false;
             }
             m_CachedPosition = position;
-            return CanPlace(m_CachedPosition.Value, session.GetModifyingPayerFromId(playerId));
+            return true;
+            // return AdjustPosition(m_CachedPosition.Value, session.GetModifyingPayerFromId(playerId));
         }
 
         protected override void SecondaryUse(SessionBase session, int playerId, uint durationUs)
@@ -106,13 +107,27 @@ namespace Voxelfield.Item
             byte texture = player.With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
                 ? designer.selectedVoxelId
                 : VoxelId.Dirt;
-            voxelInjector.SetVoxelData(position, new VoxelChangeData {hasBlock = true, id = texture});
+            voxelInjector.ApplyVoxelChange(position, new VoxelChange {hasBlock = true, id = texture});
+
+            AdjustPosition(position, player, 1.0f);
         }
 
-        private bool CanPlace(in Position3Int position, Container player)
+        private bool AdjustPosition(in Position3Int position, Container player, float radius)
         {
             if (!m_PreventPlacingOnSelf) return true;
-            var playerPosition = (Position3Int) player.Require<MoveComponent>().position.Value;
+            Vector3 playerPosition = player.Require<MoveComponent>().position.Value;
+            float distance = Mathf.Abs(position.y - playerPosition.y);
+            if (distance > radius)
+            {
+                if (playerPosition.y > position.y)
+                {
+                    
+                }
+                else
+                {
+                
+                }
+            }
             return position != playerPosition && position != playerPosition + new Position3Int {y = 1};
         }
 
@@ -124,7 +139,8 @@ namespace Voxelfield.Item
                 return false;
             }
             m_CachedPosition = (Position3Int) hit.point;
-            return CanPlace(m_CachedPosition.Value, session.GetModifyingPayerFromId(playerId));
+            // return AdjustPosition(m_CachedPosition.Value, session.GetModifyingPayerFromId(playerId));
+            return true;
         }
 
         protected override void TernaryUse(SessionBase session, int playerId, ItemComponent item, uint durationUs)
@@ -132,7 +148,9 @@ namespace Voxelfield.Item
             if (!(m_CachedPosition is Position3Int position)) return;
 
             var voxelInjector = (Injector) session.Injector;
-            voxelInjector.SetVoxelRadius(position, m_AdditiveRadius, additiveChange: new VoxelChangeData {id = VoxelId.Dirt}, isAdditive: true);
+            voxelInjector.ApplyVoxelChange(position, new VoxelChange{id = VoxelId.Dirt, magnitude = m_AdditiveRadius});
+            
+            AdjustPosition(position, session.GetModifyingPayerFromId(playerId), m_AdditiveRadius);
         }
     }
 }

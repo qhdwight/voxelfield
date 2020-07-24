@@ -54,6 +54,8 @@ namespace Swihoni.Components
 
         public ElementBase this[int index] => Elements[index];
 
+        public int Count => Elements.Count;
+
         protected void VerifyFieldsRegistered()
         {
             if (m_Elements != null) return;

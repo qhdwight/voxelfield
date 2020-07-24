@@ -28,16 +28,11 @@ namespace Voxelfield.Session
     {
         protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
 
-        protected internal virtual void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true)
-            => ChunkManager.Singleton.SetVoxelData(worldPosition, change, chunk, updateMesh);
+        protected internal virtual void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
+            => ChunkManager.Singleton.ApplyVoxelChange(worldPosition, change, chunk, updateMesh);
 
         protected internal virtual void VoxelTransaction(VoxelChangeTransaction uncommitted) => uncommitted.Commit();
-
-        protected internal virtual void SetVoxelRadius(in Position3Int worldPosition, float radius, bool replaceGrassWithDirt = false,
-                                                       bool destroyBlocks = false, bool isAdditive = false, in VoxelChangeData additiveChange = default,
-                                                       ChangedVoxelsProperty changedVoxels = null)
-            => ChunkManager.Singleton.SetVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, isAdditive, additiveChange, changedVoxels);
-
+        
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
         protected AuthTicket m_SteamAuthenticationTicket;
 
@@ -81,7 +76,7 @@ namespace Voxelfield.Session
         public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
         {
             var center = (Position3Int) throwableBehavior.transform.position;
-            SetVoxelRadius(center, throwableBehavior.Radius * 0.4f, true, true);
+            ApplyVoxelChange(center, new VoxelChange{magnitude = throwableBehavior.Radius * -0.4f, replaceGrassWithDirt = true, modifiesBlocks = true});
         }
     }
 }

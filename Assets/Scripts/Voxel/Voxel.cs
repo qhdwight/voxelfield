@@ -78,15 +78,15 @@ namespace Voxel
             }
         }
 
-        public void SetVoxelData(in VoxelChangeData changeData)
+        public void SetVoxelData(in VoxelChange change)
         {
-            if (changeData.id.HasValue) texture = changeData.id.Value;
-            if (changeData.hasBlock.HasValue) HasBlock = changeData.hasBlock.Value;
-            if (changeData.density.HasValue) density = changeData.density.Value;
-            if (changeData.isBreakable.HasValue) IsBreakable = changeData.isBreakable.Value;
-            if (changeData.orientation.HasValue) orientation = changeData.orientation.Value;
-            if (changeData.natural.HasValue) IsNatural = changeData.natural.Value;
-            if (changeData.color.HasValue) color = changeData.color.Value;
+            if (change.id.HasValue) texture = change.id.Value;
+            if (change.hasBlock.HasValue) HasBlock = change.hasBlock.Value;
+            if (change.density.HasValue) density = change.density.Value;
+            if (change.isBreakable.HasValue) IsBreakable = change.isBreakable.Value;
+            if (change.orientation.HasValue) orientation = change.orientation.Value;
+            if (change.natural.HasValue) IsNatural = change.natural.Value;
+            if (change.color.HasValue) color = change.color.Value;
         }
 
         public Vector2Int TexturePosition()

@@ -57,29 +57,19 @@ namespace Voxelfield.Session
         private readonly ChangedVoxelsProperty m_MasterChanges = new ChangedVoxelsProperty();
         private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new DualDictionary<NetPeer, SteamId>();
 
-        protected internal override void SetVoxelData(in Position3Int worldPosition, in VoxelChangeData change, Chunk chunk = null, bool updateMesh = true)
+        protected internal override void ApplyVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
         {
             if (MapManager.Singleton.Models.ContainsKey(worldPosition)) return;
             var changed = Session.GetLatestSession().Require<ChangedVoxelsProperty>();
-            base.SetVoxelData(worldPosition, change, chunk, updateMesh);
+            base.ApplyVoxelChange(worldPosition, change, chunk, updateMesh);
             changed.Set(worldPosition, change);
-            m_MasterChanges.AddAllFrom(changed);
-        }
-
-        protected internal override void SetVoxelRadius(in Position3Int worldPosition, float radius,
-                                                        bool replaceGrassWithDirt = false, bool destroyBlocks = false, bool isAdditive = false,
-                                                        in VoxelChangeData additiveChange = default,
-                                                        ChangedVoxelsProperty changedVoxels = null)
-        {
-            var changed = Session.GetLatestSession().Require<ChangedVoxelsProperty>();
-            base.SetVoxelRadius(worldPosition, radius, replaceGrassWithDirt, destroyBlocks, isAdditive, additiveChange, changed);
             m_MasterChanges.AddAllFrom(changed);
         }
 
         protected internal override void VoxelTransaction(VoxelChangeTransaction uncommitted)
         {
             var changed = Session.GetLatestSession().Require<ChangedVoxelsProperty>();
-            foreach (KeyValuePair<Position3Int, VoxelChangeData> pair in uncommitted.Map)
+            foreach (KeyValuePair<Position3Int, VoxelChange> pair in uncommitted.Map)
                 changed.Set(pair.Key, pair.Value);
             m_MasterChanges.AddAllFrom(changed);
             base.VoxelTransaction(uncommitted); // Commit
@@ -154,9 +144,9 @@ namespace Voxelfield.Session
             m_AddKill.Key["SteamId"].N = steamIdString;
             DynamoClient.UpdateItemAsync(m_AddKill);
         }
-
-        public override void OnPlayerRegisterAppend(Container player) => player.RegisterAppend(typeof(SteamIdProperty));
 #endif
+        
+        public override void OnPlayerRegisterAppend(Container player) => player.RegisterAppend(typeof(SteamIdProperty));
 
         protected override void OnServerNewConnection(ConnectionRequest socketRequest)
         {
