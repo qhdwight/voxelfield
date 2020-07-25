@@ -184,10 +184,11 @@ namespace Voxelfield.Session
             {
                 NetPeer peer = socketRequest.Accept();
                 Container player = Session.GetModifyingPayerFromId(Session.GetPeerPlayerId(peer));
-                player.Require<SteamIdProperty>().SetTo(request.steamPlayerId);
 #if VOXELFIELD_RELEASE_SERVER
                 m_GameLiftPlayerSessionIds.Add(peer, request.gameLiftPlayerSessionId.AsNewString());
 #endif
+                if (!SteamClient.IsValid) return;
+                player.Require<SteamIdProperty>().SetTo(request.steamPlayerId);
                 m_SteamPlayerIds.Add(peer, request.steamPlayerId.Value);
             }
 

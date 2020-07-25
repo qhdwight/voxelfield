@@ -55,9 +55,15 @@ namespace Swihoni.Components.Networking
 
         private void Receive(NetPeer fromPeer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
-            byte code = reader.GetByte();
-            Receiver?.OnReceive(fromPeer, reader, code);
-            reader.Recycle();
+            try
+            {
+                byte code = reader.GetByte();
+                Receiver?.OnReceive(fromPeer, reader, code);
+            }
+            finally
+            {
+                reader.Recycle();
+            }
         }
 
         public void PollEvents() => m_NetworkManager.PollEvents();

@@ -170,6 +170,9 @@ namespace Voxelation
             if (FlagUtil.HasFlag(flags, 1)) change.density = reader.GetByte();
             if (FlagUtil.HasFlag(flags, 2)) change.orientation = reader.GetByte();
             if (FlagUtil.HasFlag(flags, 3)) change.color = reader.GetColor32();
+            if (FlagUtil.HasFlag(flags, 4)) change.magnitude = reader.GetFloat();
+            if (FlagUtil.HasFlag(flags, 5)) change.yaw = reader.GetFloat();
+            if (FlagUtil.HasFlag(flags, 6)) change.form = (VoxelVolumeForm) reader.GetByte();
             // switch (change.texture)
             // {
             //     case 1:

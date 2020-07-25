@@ -397,17 +397,14 @@ namespace Swihoni.Sessions
                 // Inject trusted component
                 commands.Require<ClientStampComponent>().SetTo(predictedStamp);
                 predictedPlayer.MergeFrom(commands);
-                if (!IsLoading && predictedStamp.durationUs.WithValue)
-                {
-                    PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
-                    if (modifier)
-                    {
-                        var context = new ModifyContext(this, GetLatestSession(), commands, localPlayerId, predictedPlayer,
-                                                        timeUs: timeUs, durationUs: predictedStamp.durationUs, tickDelta: 1);
-                        Debug.Log(context.durationUs / 1000f);
-                        modifier.ModifyChecked(context);
-                    }
-                }
+                if (IsLoading || predictedStamp.durationUs.WithoutValue) return;
+                
+                PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
+                if (!modifier) return;
+                
+                var context = new ModifyContext(this, GetLatestSession(), commands, localPlayerId, predictedPlayer,
+                                                timeUs: timeUs, durationUs: predictedStamp.durationUs, tickDelta: 1);
+                modifier.ModifyChecked(context);
             }
         }
 
@@ -431,102 +428,58 @@ namespace Swihoni.Sessions
 
         private void CheckPrediction(Container serverPlayer, int localPlayerId)
         {
-            UIntProperty targetTick = serverPlayer.Require<ClientStampComponent>().tick;
-
-            if (targetTick.WithoutValue)
+            UIntProperty targetClientTick = serverPlayer.Require<ClientStampComponent>().tick;
+            if (targetClientTick.WithoutValue)
                 return;
-            for (var playerHistoryIndex = 0; playerHistoryIndex < m_PlayerPredictionHistory.Size; playerHistoryIndex++)
+            
+            var playerHistoryIndex = 0;
+            Container basePredictedPlayer = null;
+            for (; playerHistoryIndex < m_PlayerPredictionHistory.Size; playerHistoryIndex++)
             {
                 Container predictedPlayer = m_PlayerPredictionHistory.Get(-playerHistoryIndex);
-                if (predictedPlayer.Require<ClientStampComponent>().tick != targetTick) continue;
-                /* We are checking predicted */
-                _predictionIsAccurate = true;
-                Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
-                ElementExtensions.NavigateZipped(VisitPredictedFunction, predictedPlayer, latestPredictedPlayer, serverPlayer);
-                if (_predictionIsAccurate) break;
-                /* We did not predict properly */
-                PredictionErrors++;
-                // Place base from verified server
-                predictedPlayer.SetTo(serverPlayer);
-                // Replay old commands up until most recent to get back on track
-                for (int commandHistoryIndex = playerHistoryIndex - 1; commandHistoryIndex >= 0; commandHistoryIndex--)
+                if (predictedPlayer.Require<ClientStampComponent>().tick == targetClientTick)
                 {
-                    ClientCommandsContainer commands = m_CommandHistory.Get(-commandHistoryIndex);
-                    Container pastPredictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
-                    ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
-                    pastPredictedPlayer.SetTo(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
-                    pastPredictedPlayer.Require<ClientStampComponent>().SetTo(stamp);
-                    PlayerModifierDispatcherBehavior localPlayerModifier = GetPlayerModifier(pastPredictedPlayer, localPlayerId);
-                    if (commands.Require<ClientStampComponent>().durationUs.WithValue)
-                    {
-                        // localPlayerModifier.ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().durationUs);
-                        var context = new ModifyContext(this, GetLatestSession(), commands, localPlayerId, pastPredictedPlayer,
-                                                        durationUs: commands.Require<ClientStampComponent>().durationUs, tickDelta: 1);
-                        localPlayerModifier.ModifyChecked(context);
-                    }
-                    else
-                    {
-                        Debug.LogError("Should not happen");
-                    }
+                    basePredictedPlayer = predictedPlayer;
+                    break;
                 }
-                break;
+            }
+            if (basePredictedPlayer is null)
+                return;
+            
+            /* We are checking predicted */
+            Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
+            _predictionIsAccurate = true; // Set by the following navigation
+            ElementExtensions.NavigateZipped(VisitPredictedFunction, basePredictedPlayer, latestPredictedPlayer, serverPlayer);
+            if (_predictionIsAccurate)
+                return;
+            
+            /* We did not predict properly */
+            PredictionErrors++;
+            // Place base from verified server
+            basePredictedPlayer.SetTo(serverPlayer);
+            // Replay old commands up until most recent to get back on track
+            for (int commandHistoryIndex = playerHistoryIndex - 1; commandHistoryIndex >= 0; commandHistoryIndex--)
+            {
+                ClientCommandsContainer commands = m_CommandHistory.Get(-commandHistoryIndex);
+                Container pastPredictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
+                ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
+                pastPredictedPlayer.SetTo(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
+                pastPredictedPlayer.Require<ClientStampComponent>().SetTo(stamp);
+                PlayerModifierDispatcherBehavior localPlayerModifier = GetPlayerModifier(pastPredictedPlayer, localPlayerId);
+                if (commands.Require<ClientStampComponent>().durationUs.WithValue)
+                {
+                    // TODO:architecture use latest session?
+                    Container serverSession = GetLatestSession();
+                    var context = new ModifyContext(this, serverSession, commands, localPlayerId, pastPredictedPlayer,
+                                                    durationUs: commands.Require<ClientStampComponent>().durationUs, tickDelta: 1);
+                    localPlayerModifier.ModifyChecked(context);
+                }
+                else
+                {
+                    Debug.LogError("Should not happen");
+                }
             }
         }
-        
-        // private void CheckPrediction(Container serverPlayer, int localPlayerId)
-        // {
-        //     UIntProperty targetClientTick = serverPlayer.Require<ClientStampComponent>().tick;
-        //     if (targetClientTick.WithoutValue)
-        //         return;
-        //     
-        //     var playerHistoryIndex = 0;
-        //     Container basePredictedPlayer = null;
-        //     for (; playerHistoryIndex < m_PlayerPredictionHistory.Size; playerHistoryIndex++)
-        //     {
-        //         Container predictedPlayer = m_PlayerPredictionHistory.Get(-playerHistoryIndex);
-        //         if (predictedPlayer.Require<ClientStampComponent>().tick == targetClientTick)
-        //         {
-        //             basePredictedPlayer = predictedPlayer;
-        //             break;
-        //         }
-        //     }
-        //     if (basePredictedPlayer is null)
-        //         return;
-        //     
-        //     /* We are checking predicted */
-        //     Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
-        //     _predictionIsAccurate = true; // Set by the following navigation
-        //     ElementExtensions.NavigateZipped(VisitPredictedFunction, basePredictedPlayer, latestPredictedPlayer, serverPlayer);
-        //     if (_predictionIsAccurate)
-        //         return;
-        //     
-        //     /* We did not predict properly */
-        //     PredictionErrors++;
-        //     // Place base from verified server
-        //     basePredictedPlayer.SetTo(serverPlayer);
-        //     // Replay old commands up until most recent to get back on track
-        //     for (int commandHistoryIndex = playerHistoryIndex - 1; commandHistoryIndex >= 0; commandHistoryIndex--)
-        //     {
-        //         ClientCommandsContainer commands = m_CommandHistory.Get(-commandHistoryIndex);
-        //         Container pastPredictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
-        //         ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
-        //         pastPredictedPlayer.SetTo(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
-        //         pastPredictedPlayer.Require<ClientStampComponent>().SetTo(stamp);
-        //         PlayerModifierDispatcherBehavior localPlayerModifier = GetPlayerModifier(pastPredictedPlayer, localPlayerId);
-        //         if (commands.Require<ClientStampComponent>().durationUs.WithValue)
-        //         {
-        //             // TODO:architecture use latest session?
-        //             Container serverSession = GetLatestSession();
-        //             var context = new ModifyContext(this, serverSession, commands, localPlayerId, pastPredictedPlayer,
-        //                                             durationUs: commands.Require<ClientStampComponent>().durationUs, tickDelta: 1);
-        //             localPlayerModifier.ModifyChecked(context);
-        //         }
-        //         else
-        //         {
-        //             Debug.LogError("Should not happen");
-        //         }
-        //     }
-        // }
 
         private static Navigation VisitPredicted(ElementBase _predicted, ElementBase _latestPredicted, ElementBase _server)
         {
@@ -599,7 +552,7 @@ namespace Swihoni.Sessions
 
         protected override void RollbackHitboxes(int playerId)
         {
-            if (!DebugBehavior.Singleton.IsDebugMode) return;
+            if (!DebugBehavior.Singleton.SendDebug) return;
             for (var i = 0; i < MaxPlayers; i++)
             {
                 // int copiedPlayerId = i;

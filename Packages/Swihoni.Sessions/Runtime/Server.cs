@@ -155,9 +155,11 @@ namespace Swihoni.Sessions
                 }
                 case DebugClientViewCode:
                 {
+#if !VOXELFIELD_RELEASE_SERVER
                     var clientView = new ClientCommandsContainer(m_EmptyDebugClientView.ElementTypes);
                     clientView.Deserialize(reader);
                     DebugBehavior.Singleton.Render(this, clientId, clientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
+#endif
                     break;
                 }
                 default:

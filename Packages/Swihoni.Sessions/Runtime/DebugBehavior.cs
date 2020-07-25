@@ -9,15 +9,17 @@ using UnityEngine;
 
 namespace Swihoni.Sessions
 {
+    [DefaultExecutionOrder(50)]
     public class DebugBehavior : SingletonBehavior<DebugBehavior>
     {
         private static GameObject _visualizerPrefab;
 
         [SerializeField] private string m_AutoCommand = string.Empty;
+        [SerializeField] private bool m_RunAutoCommand = default;
         
         private StrictPool<PlayerVisualizerBehavior> m_Pool;
 
-        public bool IsDebugMode;
+        public bool SendDebug;
         public UIntProperty RollbackOverrideUs;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -36,7 +38,7 @@ namespace Swihoni.Sessions
 
         private void Start()
         {
-            if (string.IsNullOrEmpty(m_AutoCommand)) return;
+            if (!m_RunAutoCommand || string.IsNullOrEmpty(m_AutoCommand)) return;
             ConsoleCommandExecutor.ExecuteCommand(m_AutoCommand);
         }
 
@@ -50,7 +52,7 @@ namespace Swihoni.Sessions
 
         public void Render(SessionBase session, int playerId, Container player, Color color)
         {
-            if (!IsDebugMode) return;
+            if (!SendDebug) return;
             if (m_Pool == null) m_Pool = CreatePool();
             PlayerVisualizerBehavior visualizer = m_Pool.Obtain();
             visualizer.gameObject.SetActive(true);
