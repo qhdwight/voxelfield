@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Swihoni.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Util.Interface;
 using TMPro;
@@ -10,8 +11,6 @@ namespace Swihoni.Sessions.Interfaces
 {
     public class ConsoleInterface : SingletonInterfaceBehavior<ConsoleInterface>
     {
-        private const int MaxPreviousCommands = 20;
-
         private struct LogItem
         {
             public string logString;
@@ -35,7 +34,6 @@ namespace Swihoni.Sessions.Interfaces
         private string m_AutocompleteColorHex;
         private readonly Queue<LogItem> m_LogItems = new Queue<LogItem>();
         private readonly StringBuilder m_LogBuilder = new StringBuilder();
-        private readonly List<string> m_PreviousCommands = new List<string>(MaxPreviousCommands + 1);
         private int m_CommandHistoryIndex;
         private string m_CurrentAutocomplete;
         private bool m_OpenedForCommand, m_NeedsTextUpdate;
@@ -116,18 +114,18 @@ namespace Swihoni.Sessions.Interfaces
             {
                 bool wantsNextCommand =
                          InputProvider.GetInputDown(InputType.PreviousConsoleCommand) &&
-                         m_CommandHistoryIndex + 1 < m_PreviousCommands.Count,
+                         m_CommandHistoryIndex + 1 < ConsoleCommandExecutor.PreviousCommands.Count,
                      wantsPreviousCommand =
                          InputProvider.GetInputDown(InputType.NextConsoleCommand) &&
                          m_CommandHistoryIndex - 1 >= 0;
-                if (!wantsNextCommand && !wantsPreviousCommand) return;
-                m_ConsoleInput.text = wantsNextCommand
-                    ? m_PreviousCommands[++m_CommandHistoryIndex]
-                    : m_PreviousCommands[--m_CommandHistoryIndex];
-                m_ConsoleInput.MoveTextEnd(false);
+                if (wantsNextCommand)
+                    m_ConsoleInput.text = ConsoleCommandExecutor.PreviousCommands[++m_CommandHistoryIndex];
+                else if (wantsPreviousCommand)
+                    m_ConsoleInput.text = ConsoleCommandExecutor.PreviousCommands[--m_CommandHistoryIndex];
+                if (wantsNextCommand || wantsPreviousCommand)
+                    m_ConsoleInput.MoveTextEnd(false);
             }
-            else
-                m_CommandHistoryIndex = -1;
+            else m_CommandHistoryIndex = -1;
         }
 
         private void Log(string logString, string stackTrace, LogType type)
@@ -184,9 +182,7 @@ namespace Swihoni.Sessions.Interfaces
             if (string.IsNullOrWhiteSpace(consoleInput)) return;
 
             ConsoleCommandExecutor.ExecuteCommand(consoleInput);
-            m_PreviousCommands.Insert(0, consoleInput);
-            if (m_PreviousCommands.Count > MaxPreviousCommands)
-                m_PreviousCommands.RemoveAt(m_PreviousCommands.Count - 1);
+            ConsoleCommandExecutor.InsertPreviousCommand(consoleInput);
             m_ConsoleInput.text = string.Empty;
             m_ConsoleInput.ActivateInputField();
             m_ConsoleInput.Select();

@@ -56,6 +56,9 @@ MonoBehaviour:
   logPredictionErrors:
     m_Flags: 1
     m_Value: 0
+  consoleHistory:
+    m_Flags: 1
+    m_List: []
   resolutionWidth:
     m_Flags: 0
     m_Value: 0

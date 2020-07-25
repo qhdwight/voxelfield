@@ -2,14 +2,14 @@ using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Config;
+using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Util.Interface;
 using UnityEngine;
 using Voxelfield.Session;
 
 namespace Voxelfield.Interface
 {
-    public class LoadOutInterface : InterfaceBehaviorBase
+    public class LoadOutInterface : SessionInterfaceBehavior
     {
         private LoadOutButton[][] m_LoadOutButtons;
 
@@ -35,7 +35,7 @@ namespace Voxelfield.Interface
 
         internal void Render(InventoryComponent inventory)
         {
-            if (!SessionBase.InterruptingInterface && InputProvider.GetInputDown(InputType.Buy)) ToggleInterfaceActive();
+            if (NoInterrupting && InputProvider.GetInputDown(InputType.Buy)) ToggleInterfaceActive();
 
             for (var i = 1; i <= m_LoadOutButtons.Length; i++)
             {
@@ -45,11 +45,13 @@ namespace Voxelfield.Interface
             }
         }
 
-        public void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
+        public override void Render(SessionBase session, Container sessionContainer) {  }
+
+        public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
             if (WantedItem.id.WithoutValue || WantedItem.index.WithoutValue) return;
 
-            commands.Require<WantedItemComponent>().CopyFrom(WantedItem);
+            commands.Require<WantedItemComponent>().SetTo(WantedItem);
             WantedItem.Clear();
         }
     }

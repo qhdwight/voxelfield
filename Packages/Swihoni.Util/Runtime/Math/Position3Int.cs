@@ -6,8 +6,6 @@ namespace Swihoni.Util.Math
 {
     public struct Position3Int : IEquatable<Position3Int>
     {
-        private static int SquareInt(int i) => i * i;
-
         public int x, y, z;
 
 //        public static readonly Position3Int zero = new Position3Int(0, 0, 0);
@@ -53,11 +51,11 @@ namespace Swihoni.Util.Math
 
         public static float Distance(Position3Int p1, Position3Int p2) => Mathf.Sqrt(DistanceSquared(p1, p2));
 
-        public static float DistanceSquared(Position3Int p1, Position3Int p2) => SquareInt(p2.x - p1.x) + SquareInt(p2.y - p1.y) + SquareInt(p2.z - p1.z);
+        public static float DistanceSquared(Position3Int p1, Position3Int p2) => (p2.x - p1.x).Square() + (p2.y - p1.y).Square() + (p2.z - p1.z).Square();
 
-        public static float DistanceFromOrigin(Position3Int p) => Mathf.Sqrt(SquareInt(p.x) + SquareInt(p.y) + SquareInt(p.z));
+        public static float DistanceFromOrigin(Position3Int p) => Mathf.Sqrt(p.x.Square() + p.y.Square() + p.z.Square());
 
-        public static float DistanceFromOriginSquared(Position3Int p) => SquareInt(p.x) + SquareInt(p.y) + SquareInt(p.z);
+        public static float DistanceFromOriginSquared(Position3Int p) => p.x.Square() + p.y.Square() + p.z.Square();
 
         public static bool operator ==(Position3Int p1, Position3Int p2) => p1.x == p2.x && p1.y == p2.y && p1.z == p2.z;
 

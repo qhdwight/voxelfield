@@ -302,7 +302,7 @@ namespace Swihoni.Sessions
                 var tooRecent = false;
                 if (!toTimeUs.WithValue || !fromTimeUs.WithValue || (tooRecent = historyIndex == 0 && toTimeUs < renderTimeUs))
                 {
-                    renderContainer.CopyFrom(getInHistory(0));
+                    renderContainer.SetTo(getInHistory(0));
                     // if (tooRecent) Debug.LogWarning("Not enough recent");
                     return;
                 }
@@ -319,7 +319,7 @@ namespace Swihoni.Sessions
             }
             // Take last if we do not have enough history
             // Debug.LogWarning("Not enough history");
-            renderContainer.CopyFrom(getInHistory(1));
+            renderContainer.SetTo(getInHistory(1));
         }
 
         protected static Func<int, Container> _getInHistory;

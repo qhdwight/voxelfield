@@ -81,7 +81,7 @@ namespace Swihoni.Sessions
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (!tickRate.WithValue) return;
 
-            m_RenderSession.CopyFrom(GetLatestSession());
+            m_RenderSession.SetTo(GetLatestSession());
             Profiler.EndSample();
 
             Profiler.BeginSample("Host Spectate Setup");
@@ -97,7 +97,7 @@ namespace Swihoni.Sessions
                 if (isActualLocalPlayer)
                 {
                     // Inject host player component
-                    renderPlayer.CopyFrom(m_HostCommands);
+                    renderPlayer.SetTo(m_HostCommands);
                 }
                 else
                 {
@@ -148,7 +148,7 @@ namespace Swihoni.Sessions
             m_Injector.OnSetupHost(context);
             SetupNewPlayer(context);
             tickSession.Require<LocalPlayerId>().Value = HostPlayerId;
-            m_HostCommands.CopyFrom(hostPlayer);
+            m_HostCommands.SetTo(hostPlayer);
         }
 
         protected override void RollbackHitboxes(int playerId)

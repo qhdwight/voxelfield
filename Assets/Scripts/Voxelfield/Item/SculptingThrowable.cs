@@ -16,7 +16,8 @@ namespace Voxelfield.Item
             if (context.session.Injector is Injector injector)
             {
                 var center = (Position3Int) transform.position;
-                injector.EvaluateVoxelChange(center, new VoxelChange {color = Sand, form = VoxelVolumeForm.Cylindrical, texture = VoxelTexture.Solid});
+                var changes = new VoxelChange {color = Sand, magnitude = m_Radius, form = VoxelVolumeForm.Cylindrical, texture = VoxelTexture.Solid, natural = false};
+                injector.EvaluateVoxelChange(center, changes);
             }
         }
     }

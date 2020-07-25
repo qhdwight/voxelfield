@@ -34,18 +34,12 @@ namespace Swihoni.Components
         public override bool ValueEquals(in uint value) => value == Value;
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation) => Value = InterpolateUInt(p1.Value, p2.Value, interpolation);
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-
+        public override void ParseValue(string stringValue) => Value = uint.Parse(stringValue);
+        
         public static uint InterpolateUInt(uint u1, uint u2, float interpolation)
         {
             decimal d1 = u1, d2 = u2, i = (decimal) interpolation;
             return (uint) Math.Round(d1 + (d2 - d1) * i);
-        }
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!uint.TryParse(stringValue.Expand(), out uint @uint)) return false;
-            Value = @uint;
-            return true;
         }
     }
 
@@ -85,13 +79,7 @@ namespace Swihoni.Components
         public override bool ValueEquals(in ulong value) => value == Value;
         public override void ValueInterpolateFrom(PropertyBase<ulong> p1, PropertyBase<ulong> p2, float interpolation) => throw new NotImplementedException();
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!ulong.TryParse(stringValue.Expand(), out ulong @ulong)) return false;
-            Value = @ulong;
-            return true;
-        }
+        public override void ParseValue(string stringValue) => Value = ulong.Parse(stringValue);
     }
 
     [Serializable]
@@ -103,13 +91,7 @@ namespace Swihoni.Components
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetInt();
         public override bool ValueEquals(in int value) => value == Value;
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!int.TryParse(stringValue, out int @int)) return false;
-            Value = @int;
-            return true;
-        }
+        public override void ParseValue(string stringValue) => Value = int.Parse(stringValue);
     }
 
     [Serializable]
@@ -121,13 +103,7 @@ namespace Swihoni.Components
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetUShort();
         public override bool ValueEquals(in ushort value) => value == Value;
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!ushort.TryParse(stringValue, out ushort @ushort)) return false;
-            Value = @ushort;
-            return true;
-        }
+        public override void ParseValue(string stringValue) => Value = ushort.Parse(stringValue);
     }
 
     [Serializable]
@@ -139,13 +115,7 @@ namespace Swihoni.Components
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetShort();
         public override bool ValueEquals(in short value) => value == Value;
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!short.TryParse(stringValue, out short @short)) return false;
-            Value = @short;
-            return true;
-        }
+        public override void ParseValue(string stringValue) => Value = short.Parse(stringValue);
     }
 
     [Serializable]
@@ -157,13 +127,7 @@ namespace Swihoni.Components
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetSByte();
         public override bool ValueEquals(in sbyte value) => value == Value;
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!sbyte.TryParse(stringValue, out sbyte @sbyte)) return false;
-            Value = @sbyte;
-            return true;
-        }
+        public override void ParseValue(string stringValue) => Value = sbyte.Parse(stringValue);
     }
 
     [Serializable]
@@ -176,13 +140,7 @@ namespace Swihoni.Components
         public override bool ValueEquals(in byte value) => value == Value;
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
         public override int GetHashCode() => Value.GetHashCode();
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!byte.TryParse(stringValue, out byte @byte)) return false;
-            Value = @byte;
-            return true;
-        }
+        public override void ParseValue(string stringValue) => Value = byte.Parse(stringValue);
     }
 
     [Serializable]
@@ -211,13 +169,7 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetBool();
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!bool.TryParse(stringValue, out bool @bool)) return false;
-            Value = @bool;
-            return true;
-        }
+        public override void ParseValue(string stringValue) => Value = bool.Parse(stringValue);
     }
 
     [Serializable]
@@ -275,12 +227,7 @@ namespace Swihoni.Components
             else Value = Mathf.Lerp(f1, f2, interpolation);
         }
 
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!float.TryParse(stringValue, out float @float)) return false;
-            Value = @float;
-            return true;
-        }
+        public override void ParseValue(string stringValue) => Value = float.Parse(stringValue);
     }
 
     [Serializable]

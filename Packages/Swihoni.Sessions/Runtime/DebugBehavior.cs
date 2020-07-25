@@ -1,6 +1,8 @@
+using System;
 using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player;
 using Swihoni.Util;
 using UnityEngine;
@@ -11,6 +13,8 @@ namespace Swihoni.Sessions
     {
         private static GameObject _visualizerPrefab;
 
+        [SerializeField] private string m_AutoCommand = string.Empty;
+        
         private StrictPool<PlayerVisualizerBehavior> m_Pool;
 
         public bool IsDebugMode;
@@ -29,6 +33,12 @@ namespace Swihoni.Sessions
                 instance.SetActive(false);
                 return visualizer;
             });
+
+        private void Start()
+        {
+            if (string.IsNullOrEmpty(m_AutoCommand)) return;
+            ConsoleCommandExecutor.ExecuteCommand(m_AutoCommand);
+        }
 
         private void OnApplicationQuit()
         {

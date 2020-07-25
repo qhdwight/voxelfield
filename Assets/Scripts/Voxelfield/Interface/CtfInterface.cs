@@ -87,8 +87,5 @@ namespace Voxelfield.Interface
             m_TakeProgress.SetInterfaceActive(isTaking);
             m_RespawnText.enabled = isRespawnVisible;
         }
-
-        public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
-            => m_LoadOutInterface.ModifyLocalTrusted(localPlayerId, session, commands);
     }
 }

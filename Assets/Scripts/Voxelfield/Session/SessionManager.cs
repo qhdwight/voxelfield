@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-#define VOXELFIELD_RELEASE_SERVER
+// #define VOXELFIELD_RELEASE_SERVER
 #endif
 
 using System;
@@ -22,6 +22,7 @@ using Voxelfield.Session.Mode;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+
 #else
 using LiteNetLib;
 #endif
@@ -348,11 +349,13 @@ namespace Voxelfield.Session
 
         [MenuItem("Build/Release Windows Player", priority = 200)]
         private static void BuildWindowsRelease()
-            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Release Windows IL2CPP Player", defines: new[] {"VOXELFIELD_RELEASE_CLIENT"});
+            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Release Windows IL2CPP Player",
+                     defines: new[] {"VOXELFIELD_RELEASE_CLIENT", "VOXELFIELD_RELEASE"});
 
         [MenuItem("Build/Release Server", priority = 200)]
         private static void BuildReleaseServer()
-            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Release Linux Mono Server", true, new[] {"VOXELFIELD_RELEASE_SERVER"});
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Release Linux Mono Server", true, 
+                     new[] {"VOXELFIELD_RELEASE_SERVER", "VOXELFIELD_RELEASE"});
 
         [MenuItem("Build/Release All", priority = 200)]
         public static void BuildRelease()

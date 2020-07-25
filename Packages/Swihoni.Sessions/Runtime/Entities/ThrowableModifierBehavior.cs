@@ -18,7 +18,8 @@ namespace Swihoni.Sessions.Entities
         }
 
         [SerializeField] private uint m_PopTimeUs = default, m_PopDurationUs = default;
-        [SerializeField] private float m_Radius = default, m_Damage = default, m_Interval = default;
+        [SerializeField] protected float m_Radius = default;
+        [SerializeField] private float m_Damage = default, m_Interval = default;
         [SerializeField] private LayerMask m_Mask = default;
         [SerializeField] private float m_MinimumDamageRatio = 0.2f;
         [SerializeField] private float m_CollisionVelocityMultiplier = 0.5f;

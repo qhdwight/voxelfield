@@ -39,7 +39,7 @@ namespace Swihoni.Sessions.Entities
             if (hasPopped)
             {
                 bool hasJustPopped = m_LastThrownElapsedUs < throwable.popTimeUs;
-                if (hasJustPopped) m_PopAudioSource.PlayOneShot(m_PopAudioSource.clip, 1.0f);
+                if (m_PopAudioSource && hasJustPopped) m_PopAudioSource.PlayOneShot(m_PopAudioSource.clip, 1.0f);
                 uint particleElapsedUs = throwable.thrownElapsedUs - throwable.popTimeUs;
                 foreach (ParticleSystem particle in m_Particles)
                 {
@@ -50,7 +50,7 @@ namespace Swihoni.Sessions.Entities
             }
             else
             {
-                if (throwable.contactElapsedUs < m_LastContactElapsedUs)
+                if (m_ContactAudioSource && throwable.contactElapsedUs < m_LastContactElapsedUs)
                     m_ContactAudioSource.PlayOneShot(m_ContactAudioSource.clip, 1.0f);
                 if (m_ContinuousPopAudioSource) m_ContinuousPopAudioSource.Stop();
             }

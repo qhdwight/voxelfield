@@ -105,7 +105,7 @@ namespace Swihoni.Sessions
             var tickRate = GetLatestSession().Require<TickRateProperty>();
             if (tickRate.WithoutValue) return;
 
-            m_RenderSession.CopyFrom(GetLatestSession());
+            m_RenderSession.SetTo(GetLatestSession());
             Profiler.EndSample();
 
             Profiler.BeginSample("Client Spectate Setup");
@@ -248,7 +248,7 @@ namespace Swihoni.Sessions
                             for (var i = 0; i < delta - 1; i++) // We skipped tick(s). Reserve spaces to fill later
                             {
                                 ServerSessionContainer reserved = m_SessionHistory.ClaimNext();
-                                reserved.CopyFrom(previousServerSession);
+                                reserved.SetTo(previousServerSession);
                             }
                             serverSession = m_SessionHistory.ClaimNext();
                         }
@@ -375,8 +375,8 @@ namespace Swihoni.Sessions
                                     commands = m_CommandHistory.ClaimNext();
             if (predictedPlayer.Without(out ClientStampComponent predictedStamp)) return;
 
-            predictedPlayer.CopyFrom(previousPredictedPlayer);
-            commands.CopyFrom(previousCommand);
+            predictedPlayer.SetTo(previousPredictedPlayer);
+            commands.SetTo(previousCommand);
 
             if (IsLoading)
             {
@@ -395,15 +395,16 @@ namespace Swihoni.Sessions
                 }
 
                 // Inject trusted component
-                commands.Require<ClientStampComponent>().CopyFrom(predictedStamp);
+                commands.Require<ClientStampComponent>().SetTo(predictedStamp);
                 predictedPlayer.MergeFrom(commands);
                 if (!IsLoading && predictedStamp.durationUs.WithValue)
                 {
                     PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
                     if (modifier)
                     {
-                        var context = new ModifyContext(this, commands: commands, playerId: localPlayerId, player: predictedPlayer,
+                        var context = new ModifyContext(this, GetLatestSession(), commands, localPlayerId, predictedPlayer,
                                                         timeUs: timeUs, durationUs: predictedStamp.durationUs, tickDelta: 1);
+                        Debug.Log(context.durationUs / 1000f);
                         modifier.ModifyChecked(context);
                     }
                 }
@@ -446,19 +447,20 @@ namespace Swihoni.Sessions
                 /* We did not predict properly */
                 PredictionErrors++;
                 // Place base from verified server
-                predictedPlayer.CopyFrom(serverPlayer);
+                predictedPlayer.SetTo(serverPlayer);
                 // Replay old commands up until most recent to get back on track
                 for (int commandHistoryIndex = playerHistoryIndex - 1; commandHistoryIndex >= 0; commandHistoryIndex--)
                 {
                     ClientCommandsContainer commands = m_CommandHistory.Get(-commandHistoryIndex);
                     Container pastPredictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
                     ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
-                    pastPredictedPlayer.CopyFrom(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
-                    pastPredictedPlayer.Require<ClientStampComponent>().CopyFrom(stamp);
+                    pastPredictedPlayer.SetTo(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
+                    pastPredictedPlayer.Require<ClientStampComponent>().SetTo(stamp);
                     PlayerModifierDispatcherBehavior localPlayerModifier = GetPlayerModifier(pastPredictedPlayer, localPlayerId);
                     if (commands.Require<ClientStampComponent>().durationUs.WithValue)
                     {
-                        var context = new ModifyContext(this, commands: commands, playerId: localPlayerId, player: pastPredictedPlayer,
+                        // localPlayerModifier.ModifyChecked(this, localPlayerId, pastPredictedPlayer, commands, commands.Require<ClientStampComponent>().durationUs);
+                        var context = new ModifyContext(this, GetLatestSession(), commands, localPlayerId, pastPredictedPlayer,
                                                         durationUs: commands.Require<ClientStampComponent>().durationUs, tickDelta: 1);
                         localPlayerModifier.ModifyChecked(context);
                     }
@@ -470,6 +472,61 @@ namespace Swihoni.Sessions
                 break;
             }
         }
+        
+        // private void CheckPrediction(Container serverPlayer, int localPlayerId)
+        // {
+        //     UIntProperty targetClientTick = serverPlayer.Require<ClientStampComponent>().tick;
+        //     if (targetClientTick.WithoutValue)
+        //         return;
+        //     
+        //     var playerHistoryIndex = 0;
+        //     Container basePredictedPlayer = null;
+        //     for (; playerHistoryIndex < m_PlayerPredictionHistory.Size; playerHistoryIndex++)
+        //     {
+        //         Container predictedPlayer = m_PlayerPredictionHistory.Get(-playerHistoryIndex);
+        //         if (predictedPlayer.Require<ClientStampComponent>().tick == targetClientTick)
+        //         {
+        //             basePredictedPlayer = predictedPlayer;
+        //             break;
+        //         }
+        //     }
+        //     if (basePredictedPlayer is null)
+        //         return;
+        //     
+        //     /* We are checking predicted */
+        //     Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
+        //     _predictionIsAccurate = true; // Set by the following navigation
+        //     ElementExtensions.NavigateZipped(VisitPredictedFunction, basePredictedPlayer, latestPredictedPlayer, serverPlayer);
+        //     if (_predictionIsAccurate)
+        //         return;
+        //     
+        //     /* We did not predict properly */
+        //     PredictionErrors++;
+        //     // Place base from verified server
+        //     basePredictedPlayer.SetTo(serverPlayer);
+        //     // Replay old commands up until most recent to get back on track
+        //     for (int commandHistoryIndex = playerHistoryIndex - 1; commandHistoryIndex >= 0; commandHistoryIndex--)
+        //     {
+        //         ClientCommandsContainer commands = m_CommandHistory.Get(-commandHistoryIndex);
+        //         Container pastPredictedPlayer = m_PlayerPredictionHistory.Get(-commandHistoryIndex);
+        //         ClientStampComponent stamp = pastPredictedPlayer.Require<ClientStampComponent>().Clone(); // TODO:performance remove clone
+        //         pastPredictedPlayer.SetTo(m_PlayerPredictionHistory.Get(-commandHistoryIndex - 1));
+        //         pastPredictedPlayer.Require<ClientStampComponent>().SetTo(stamp);
+        //         PlayerModifierDispatcherBehavior localPlayerModifier = GetPlayerModifier(pastPredictedPlayer, localPlayerId);
+        //         if (commands.Require<ClientStampComponent>().durationUs.WithValue)
+        //         {
+        //             // TODO:architecture use latest session?
+        //             Container serverSession = GetLatestSession();
+        //             var context = new ModifyContext(this, serverSession, commands, localPlayerId, pastPredictedPlayer,
+        //                                             durationUs: commands.Require<ClientStampComponent>().durationUs, tickDelta: 1);
+        //             localPlayerModifier.ModifyChecked(context);
+        //         }
+        //         else
+        //         {
+        //             Debug.LogError("Should not happen");
+        //         }
+        //     }
+        // }
 
         private static Navigation VisitPredicted(ElementBase _predicted, ElementBase _latestPredicted, ElementBase _server)
         {
@@ -520,11 +577,11 @@ namespace Swihoni.Sessions
                 return Navigation.Continue;
             }, previousServerSession, serverSession, receivedServerSession);
             // TODO:refactor need some sort of zip longest
-            serverSession.Require<LocalizedClientStampComponent>().CopyFrom(previousServerSession.Require<LocalizedClientStampComponent>());
+            serverSession.Require<LocalizedClientStampComponent>().SetTo(previousServerSession.Require<LocalizedClientStampComponent>());
             var previousArray = previousServerSession.Require<PlayerContainerArrayElement>();
             var array = serverSession.Require<PlayerContainerArrayElement>();
             for (var playerIndex = 0; playerIndex < array.Length; playerIndex++)
-                array[playerIndex].Require<LocalizedClientStampComponent>().CopyFrom(previousArray[playerIndex].Require<LocalizedClientStampComponent>());
+                array[playerIndex].Require<LocalizedClientStampComponent>().SetTo(previousArray[playerIndex].Require<LocalizedClientStampComponent>());
         }
 
         private static bool GetLocalPlayerId(Container session, out int localPlayerId)
@@ -572,7 +629,7 @@ namespace Swihoni.Sessions
         private void SendDebug(Container player)
         {
             DebugClientView debug = m_EmptyDebugClientView.Clone();
-            debug.CopyFrom(player);
+            debug.SetTo(player);
             m_Socket.SendToServer(debug, DeliveryMethod.ReliableOrdered);
         }
 

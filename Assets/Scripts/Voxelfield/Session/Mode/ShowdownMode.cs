@@ -200,8 +200,7 @@ namespace Voxelfield.Session.Mode
 
         protected override float CalculateWeaponDamage(in PlayerHitContext context)
         {
-            if (!InWarmup(context.modifyContext.session.GetLatestSession())
-             && context.hitPlayer.Require<TeamProperty>() == context.modifyContext.player.Require<TeamProperty>()) return 0.0f;
+            if (!InWarmup(context.modifyContext.sessionContainer) && context.hitPlayer.Require<TeamProperty>() == context.modifyContext.player.Require<TeamProperty>()) return 0.0f;
 
             float baseDamage = base.CalculateWeaponDamage(context);
             return CalculateDamageWithMovement(context, baseDamage);

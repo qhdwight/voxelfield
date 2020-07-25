@@ -179,6 +179,7 @@ namespace Voxelation
                                         EvaluatedVoxelsTransaction existingTransaction = null)
         {
             Profiler.BeginSample("Apply Voxel Change");
+            Random.InitState(worldPosition.GetHashCode());
             EvaluatedVoxelsTransaction transaction = existingTransaction ?? EvaluationTransaction;
             if (change.magnitude is float radius)
             {
@@ -195,34 +196,37 @@ namespace Voxelation
                     Voxel? _voxel = GetVoxel(voxelWorldPosition, chunk);
                     if (!(_voxel is Voxel voxel)) continue;
 
-                    float distance = Position3Int.Distance(worldPosition, voxelWorldPosition);
-                    byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(distance / absoluteRadius * 0.5f) * byte.MaxValue)),
+                    float distance = change.form.GetValueOrDefault() == VoxelVolumeForm.Cylindrical
+                        ? Mathf.Sqrt((worldPosition.x - voxelWorldPosition.x).Square() + (worldPosition.z - voxelWorldPosition.z).Square())
+                        : Position3Int.Distance(worldPosition, voxelWorldPosition);
+                    byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(distance / absoluteRadius * 0.5f * Random.Range(0.8f, 1.0f)) * byte.MaxValue)),
                          currentDensity = voxel.density;
                     VoxelChange evaluatedChange = default;
 
-                    if (voxel.IsBreakable)
+                    if (voxel.IsUnbreakable) continue;
+
+                    if (isAdditive)
                     {
-                        if (isAdditive)
+                        newDensity = checked((byte) (byte.MaxValue - newDensity));
+                        if (newDensity > currentDensity)
                         {
-                            newDensity = checked((byte) (byte.MaxValue - newDensity));
-                            if (newDensity > currentDensity)
-                            {
-                                evaluatedChange.density = newDensity;
-                                if (voxel.OnlySmooth) evaluatedChange.Merge(change);
-                            }
-                        }
-                        else
-                        {
-                            if (newDensity < currentDensity) evaluatedChange.density = newDensity;
+                            evaluatedChange.density = newDensity;
+                            if (voxel.OnlySmooth) evaluatedChange.Merge(change);
                         }
                     }
+                    else
+                    {
+                        if (newDensity < currentDensity) evaluatedChange.density = newDensity;
+                    }
+                    if (voxel.HasBlock && !change.modifiesBlocks.GetValueOrDefault()) continue;
+
                     if (!isAdditive && change.texture is byte texture)
                         evaluatedChange.texture = texture;
-                    if (change.color is Color32 color) evaluatedChange.color = Color32.Lerp(voxel.color, color, 0.75f);
-                    bool inSphere = distance < roundedRadius;
-                    if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && inSphere && voxel.HasBlock)
+                    if (change.color is Color32 color) evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
+                    bool inside = distance < roundedRadius;
+                    if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && inside && voxel.HasBlock)
                         evaluatedChange.hasBlock = false;
-                    if (inSphere) evaluatedChange.natural = false;
+                    evaluatedChange.natural = false;
                     transaction.Set(voxelWorldPosition, evaluatedChange);
                 }
             }

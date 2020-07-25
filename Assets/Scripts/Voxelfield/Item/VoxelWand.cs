@@ -93,7 +93,7 @@ namespace Voxelfield.Item
         {
             if (designer.positionOne.WithoutValue || designer.positionTwo.WithoutValue) return;
 
-            var voxelInjector = (Injector) session.Injector;
+            var injector = (Injector) session.Injector;
             Position3Int p1 = designer.positionOne, p2 = designer.positionTwo;
             for (int x = Math.Min(p1.x, p2.x); x <= Math.Max(p1.x, p2.x); x++)
             for (int y = Math.Min(p1.y, p2.y); y <= Math.Max(p1.y, p2.y); y++)
@@ -103,7 +103,7 @@ namespace Voxelfield.Item
                 m_Transaction.Set(worldPosition, function(worldPosition));
             }
             Debug.Log($"Set {p1} to {p2}");
-            voxelInjector.VoxelTransaction(m_Transaction);
+            injector.VoxelTransaction(m_Transaction);
         }
     }
 }

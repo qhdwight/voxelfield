@@ -57,11 +57,6 @@ namespace Swihoni.Components
 
         public static void AppendAll<T>(this List<T> enumerable, params T[] elements) => enumerable.AddRange(elements);
 
-        public static StringBuilder AppendProperty(this StringBuilder builder, PropertyBase property)
-            => property.WithValue ? property.AppendValue(builder) : builder.Append("None");
-
-        public static StringBuilder AppendPropertyValue(this StringBuilder builder, PropertyBase property) => property.AppendValue(builder);
-
         /// <summary>
         /// Un-sets with value flag.
         /// If you instead want to zero, see <see cref="Zero{T}"/>

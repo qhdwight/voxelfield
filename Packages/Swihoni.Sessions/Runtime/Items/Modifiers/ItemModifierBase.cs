@@ -40,7 +40,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           MissileLauncher = 13,
                           Smg = 14,
                           SuperPickaxe = 15,
-                          ImpactGrenade = 16;
+                          ImpactGrenade = 16,
+                          SandBomb = 17;
     }
 
     [Serializable]
@@ -64,8 +65,6 @@ namespace Swihoni.Sessions.Items.Modifiers
         public virtual void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             // TODO:refactor move frozen into CanUse
-            int playerId = context.playerId;
-            SessionBase session = context.session;
             bool notFrozen = context.player.Without(out FrozenProperty frozen) || frozen.WithoutValue || !frozen;
             if (notFrozen)
             {
@@ -98,6 +97,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                     uint statusElapsedUs = status.elapsedUs;
                     byte? nextStatus = FinishStatus(context, item, inventory, inputs);
                     StartStatus(context, inventory, item, nextStatus ?? ItemStatusId.Idle, statusElapsedUs - modifierProperties.durationUs);
+                    // StartStatus(context, inventory, item, nextStatus ?? ItemStatusId.Idle);
                     if (nextStatus == ItemStatusId.RequestRemoval) break;
                 }
             }

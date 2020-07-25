@@ -53,11 +53,6 @@ namespace Swihoni.Components
 
         public override void Zero() => m_Map.Clear();
 
-        public override void SetFromIfWith(PropertyBase other)
-        {
-            if (other.WithValue) SetTo(other);
-        }
-
         public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => throw new Exception("Cannot interpolate dictionary");
 
         public override string ToString() => $"Count: {m_Map.Count}";
@@ -73,11 +68,14 @@ namespace Swihoni.Components
             if (!(other is DictPropertyBase<TKey, TValue> otherMap)) throw new ArgumentException("Other was not same type map");
             Clear();
             AddAllFrom(otherMap);
-            WithValue = true;
         }
 
         public TValue this[TKey key] => m_Map[key];
 
-        public virtual void Set(in TKey key, in TValue value) => m_Map[key] = value;
+        public virtual void Set(in TKey key, in TValue value)
+        {
+            m_Map[key] = value;
+            WithValue = true;
+        }
     }
 }

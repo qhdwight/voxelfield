@@ -81,6 +81,8 @@ namespace Voxelation
                 else flags &= ~VoxelFlags.Natural;
             }
         }
+        
+        public bool IsUnbreakable => !IsBreakable;
 
         public void SetVoxelData(in VoxelChange change)
         {

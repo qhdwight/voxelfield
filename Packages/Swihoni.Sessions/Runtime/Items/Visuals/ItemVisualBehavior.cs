@@ -120,7 +120,7 @@ namespace Swihoni.Sessions.Items.Visuals
                 SampleEvent(item, animationEvent);
             }
             if (lastRenderedInventory == null) m_PlayerItemAnimator.LastRenderedInventory = inventory.Clone();
-            else lastRenderedInventory.CopyFrom(inventory);
+            else lastRenderedInventory.SetTo(inventory);
         }
 
         protected virtual void SampleEvent(ItemComponent item, ItemStatusVisualProperties.AnimationEvent animationEvent)

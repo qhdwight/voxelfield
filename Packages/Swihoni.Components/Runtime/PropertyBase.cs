@@ -77,17 +77,34 @@ namespace Swihoni.Components
         public abstract void Deserialize(NetDataReader reader);
         public abstract bool Equals(PropertyBase other);
         public abstract void Zero();
-        public abstract void SetFromIfWith(PropertyBase other);
         public abstract void SetTo(PropertyBase other);
         public abstract void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation);
-
-        public virtual void Clear() => WithValue = false;
-
+        
         public virtual StringBuilder AppendValue(StringBuilder builder)
             => throw new NotSupportedException($"Appending this property is not supported. Override {GetType().Name}.{nameof(AppendValue)} if this is not intentional.");
 
-        public virtual bool TryParseValue(string stringValue)
-            => throw new NotSupportedException($"Parsing this property is not supported. Override {GetType().Name}.{nameof(TryParseValue)} if this is not intentional.");
+        public virtual void ParseValue(string stringValue)
+            => throw new NotSupportedException($"Parsing this property is not supported. Override {GetType().Name}.{nameof(ParseValue)} if this is not intentional.");
+
+        public virtual bool TryParse(string propertyString)
+        {
+            try
+            {
+                ParseValue(propertyString);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        
+        public virtual void Clear() => WithValue = false;
+
+        public virtual void SetFromIfWith(PropertyBase other)
+        {
+            if (other.WithValue) SetTo(other);
+        }
     }
 
     public class WithoutValueException : Exception
@@ -108,13 +125,7 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put((int) (object) Value);
         public override void DeserializeValue(NetDataReader reader) => Value = (TEnum) (object) reader.GetInt();
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-
-        public override bool TryParseValue(string stringValue)
-        {
-            if (!Enum.TryParse(stringValue, out TEnum mode)) return false;
-            Value = mode;
-            return true;
-        }
+        public override void ParseValue(string stringValue) => Value = (TEnum) Enum.Parse(typeof(TEnum), stringValue);
     }
 
     /// <summary>
@@ -123,7 +134,7 @@ namespace Swihoni.Components
     /// This means that extra care needs to be taken with using properties.
     /// They should only ever belong to one container.
     /// They should never be null. Use the <see cref="PropertyBase.WithValue"/> feature instead.
-    /// To set values, use <see cref="SetFromIfWith"/> or <see cref="Value"/>. Clear with <see cref="Clear"/>.
+    /// To set values, use <see cref="SetFromIfWith"/> or <see cref="Value"/>. Clear with <see cref="PropertyBase.Clear"/>.
     /// Do not assign one property directly to another, as this replaces the reference instead of copying value!
     /// Equality operators are overriden to compare values instead of pointers.
     /// </summary>
@@ -136,7 +147,7 @@ namespace Swihoni.Components
 
         /// <summary>
         /// Use only if this property is with a value.
-        /// If you are unsure, use <see cref="PropertyBase.WithValue"/> or <see cref="IfWith"/>.
+        /// If you are unsure, use <see cref="PropertyBase.WithValue"/> or <see cref="TryWithValue"/>.
         /// </summary>
         /// <returns>Value wrapped by property.</returns>
         /// <exception cref="WithoutValueException">If without value.</exception>
@@ -177,8 +188,10 @@ namespace Swihoni.Components
 
         public static implicit operator T(PropertyBase<T> property) => property.Value;
 
+        // ReSharper disable PossibleNullReferenceException - Properties should not be null
         public static bool operator ==(PropertyBase<T> p1, PropertyBase<T> p2) => p1.WithValue && p2.WithValue && p1.ValueEquals(p2)
                                                                                || p1.WithoutValue && p2.WithoutValue;
+        // ReSharper restore PossibleNullReferenceException
 
         public static bool operator !=(PropertyBase<T> p1, PropertyBase<T> p2) => !(p1 == p2);
 

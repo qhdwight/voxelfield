@@ -144,7 +144,7 @@ namespace Swihoni.Sessions.Player.Components
         {
             if (i1.id == ItemId.None)
             {
-                this.CopyFrom(i1);
+                this.SetTo(i1);
                 return;
             }
             _modifier = ItemAssetLink.GetModifier(i1.id);
@@ -187,7 +187,7 @@ namespace Swihoni.Sessions.Player.Components
             var i2 = (InventoryComponent) c2;
             if (i1.HasNoItemEquipped || i2.HasNoItemEquipped || i1.equippedIndex != i2.equippedIndex)
             {
-                this.CopyFrom(i1);
+                this.SetTo(i1);
                 return;
             }
             // TODO:feature handle when id of equipped weapon changes

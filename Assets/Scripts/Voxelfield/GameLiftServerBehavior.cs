@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-#define VOXELFIELD_RELEASE_SERVER
+// #define VOXELFIELD_RELEASE_SERVER
 #endif
 
 using UnityEditor;
@@ -10,12 +10,13 @@ using Amazon.Runtime;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
 using Swihoni.Sessions;
+using System.Linq;
+using Voxelfield.Session;
+using System.Collections.Generic;
+
 #endif
 #if VOXELFIELD_RELEASE_SERVER
 using GameSession = Aws.GameLift.Server.Model.GameSession;
-using Voxelfield.Session;
-using System.Linq;
-using System.Collections.Generic;
 using Aws.GameLift;
 using Aws.GameLift.Server;
 

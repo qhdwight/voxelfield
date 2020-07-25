@@ -31,11 +31,7 @@ namespace Swihoni.Components
             return builder;
         }
 
-        public override bool TryParseValue(string stringValue)
-        {
-            SetTo(stringValue);
-            return true;
-        }
+        public override void ParseValue(string stringValue) => SetTo(stringValue);
 
         public bool AsNewString(out string @string)
         {
@@ -112,11 +108,6 @@ namespace Swihoni.Components
         }
 
         public override void Zero() => Builder.Clear();
-
-        public override void SetFromIfWith(PropertyBase other)
-        {
-            if (other.WithValue) SetTo(other);
-        }
 
         public override void SetTo(PropertyBase other)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
@@ -59,6 +60,19 @@ namespace Swihoni.Sessions
 
         public ModifierBehaviorBase[] UnsafeModifiers => m_Modifiers;
         public VisualBehaviorBase[] UnsafeVisuals => m_Visuals;
+
+        public ModifierBehaviorBase GetModifierPrefab(int id)
+        {
+            try
+            {
+                return m_ModifierPrefabs[id - 1];
+            }
+            catch (KeyNotFoundException)
+            {
+                Debug.LogWarning($"Behavior modifier prefab not found for ID: {id}. All IDs must be ascending with no skipping.");
+                throw;
+            }
+        }
 
         protected BehaviorManagerBase(int count, string resourceFolder)
         {
@@ -183,9 +197,7 @@ namespace Swihoni.Sessions
             pool.Return(modifier);
             m_Modifiers[index] = null;
         }
-
-        public ModifierBehaviorBase GetModifierPrefab(int id) => m_ModifierPrefabs[id - 1];
-
+        
         // public void Modify(int index, Container session, Action<ModifierBehaviorBase, Container> action)
         // {
         //     var element = (Container) ExtractArray(session).GetValue(index);

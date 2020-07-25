@@ -10,6 +10,10 @@ namespace Swihoni.Sessions.Config
     {
         private static readonly string[] CommandSeparator = {"&&"};
 
+        private const int MaxPreviousCommands = 48;
+
+        public static List<string> PreviousCommands { get; } = new List<string>(MaxPreviousCommands);
+        
         private static readonly Dictionary<string, Action<string[]>> Commands = new Dictionary<string, Action<string[]>>
         {
             ["clear"] = args => ConsoleInterface.Singleton.ClearConsole(),
@@ -22,6 +26,18 @@ namespace Swihoni.Sessions.Config
             Debug.Log($"Available commands:\n{allCommands}");
         };
 
+        public static void BackLoadPreviousCommand(string command)
+        {
+            while (PreviousCommands.Count > MaxPreviousCommands - 1) PreviousCommands.RemoveAt(PreviousCommands.Count - 1);
+            PreviousCommands.Add(command);
+        }
+        
+        public static void InsertPreviousCommand(string command)
+        {
+            PreviousCommands.Insert(0, command);
+            while (PreviousCommands.Count > MaxPreviousCommands) PreviousCommands.RemoveAt(PreviousCommands.Count - 1);
+        }
+
         public static void SetCommand(string commandName, Action<string[]> command) => Commands[commandName] = command;
 
         public static void SetAlias(string alias, string realCommand) => Commands[alias] = args => ExecuteCommand(realCommand);
@@ -30,6 +46,7 @@ namespace Swihoni.Sessions.Config
 
         public static void ExecuteCommand(string fullCommand)
         {
+            ConfigManagerBase.OnCommand(fullCommand);
             foreach (string[] args in GetArgs(fullCommand))
             {
                 string commandName = args.First().Replace("?", string.Empty);

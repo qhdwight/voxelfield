@@ -12,7 +12,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         [SerializeField] private float m_Distance = 2.0f;
 
-        protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item) { Swing(context, item); }
+        protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item) => Swing(context, item);
 
         protected virtual void Swing(in ModifyContext context, ItemComponent item)
         {
@@ -22,6 +22,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             session.RollbackHitboxesFor(playerId);
             int count = Physics.RaycastNonAlloc(ray, RaycastHits, m_Distance, m_RaycastMask);
             if (count == 0) return;
+            
             RaycastHit hit = RaycastHits[0];
             if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId) return;
 

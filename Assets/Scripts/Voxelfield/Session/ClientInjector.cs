@@ -39,23 +39,23 @@ namespace Voxelfield.Session
 
         protected override void OnReceive(ServerSessionContainer serverSession)
         {
-            var serverChanges = serverSession.Require<VoxelChangesProperty>();
-            UIntProperty serverTick = serverSession.Require<ServerStampComponent>().tick;
-
-            if (serverChanges.Count > 0)
-            {
-                VoxelChangesProperty changes = m_ChangesPool.Obtain();
-                changes.SetTo(serverChanges);
-                m_Changes.Add(serverTick, changes);
-            }
-
-            var tickSkipped = false;
-            if (m_Pointer.WithoutValue || serverTick - m_Pointer == 1 || (tickSkipped = serverTick - m_Pointer > serverSession.Require<TickRateProperty>() * 3))
-            {
-                ApplyStoredChanges();
-                if (m_Pointer.TryWithValue(out uint pointer) && tickSkipped) Debug.LogError($"Did not receive voxel changes for {pointer}");
-                m_Pointer.Value = serverTick;
-            }
+            // var serverChanges = serverSession.Require<VoxelChangesProperty>();
+            // UIntProperty serverTick = serverSession.Require<ServerStampComponent>().tick;
+            //
+            // if (serverChanges.Count > 0)
+            // {
+            //     VoxelChangesProperty changes = m_ChangesPool.Obtain();
+            //     changes.SetTo(serverChanges);
+            //     m_Changes.Add(serverTick, changes);
+            // }
+            //
+            // var tickSkipped = false;
+            // if (m_Pointer.WithoutValue || serverTick - m_Pointer == 1 || (tickSkipped = serverTick - m_Pointer > serverSession.Require<TickRateProperty>() * 3))
+            // {
+            //     ApplyStoredChanges();
+            //     if (m_Pointer.TryWithValue(out uint pointer) && tickSkipped) Debug.LogError($"Did not receive voxel changes for {pointer}");
+            //     m_Pointer.Value = serverTick;
+            // }
         }
 
         private void ApplyStoredChanges()

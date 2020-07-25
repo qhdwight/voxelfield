@@ -61,7 +61,7 @@ namespace Swihoni.Sessions.Modes
         public readonly WeaponModifierBase weapon;
         public readonly RaycastHit hit;
 
-        public PlayerHitContext(in ModifyContext modifyContext, PlayerHitbox hitbox, WeaponModifierBase weapon, RaycastHit hit)
+        public PlayerHitContext(in ModifyContext modifyContext, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
         {
             this.modifyContext = modifyContext;
             this.hitbox = hitbox;

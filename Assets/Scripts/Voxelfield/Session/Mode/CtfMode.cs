@@ -81,7 +81,7 @@ namespace Voxelfield.Session.Mode
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
             {
                 FlagComponent flag = ctf.teamFlags[flagTeam][flagId];
-                HandlePlayersNearFlag(context.session, flag, flagTeam, flagId, ctf, context.sessionContainer.Require<DualScoresComponent>());
+                HandlePlayersNearFlag(context, flag, flagTeam, flagId, ctf, context.sessionContainer.Require<DualScoresComponent>());
                 if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += context.durationUs;
             }
         }
@@ -138,7 +138,7 @@ namespace Voxelfield.Session.Mode
                 ? 0.0f
                 : ShowdownMode.CalculateDamageWithMovement(context, base.CalculateWeaponDamage(context));
 
-        private void HandlePlayersNearFlag(SessionBase session, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresComponent scores)
+        private void HandlePlayersNearFlag(in ModifyContext context, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresComponent scores)
         {
             int count = Physics.OverlapSphereNonAlloc(m_FlagBehaviors[flagTeam][flagId].transform.position, m_CaptureRadius, m_CachedColliders, m_PlayerMask);
             Container enemyTakingIn = null;
@@ -147,7 +147,7 @@ namespace Voxelfield.Session.Mode
                 if (!m_CachedColliders[i].TryGetComponent(out PlayerTrigger playerTrigger)) continue;
 
                 var playerIdInFlag = (byte) playerTrigger.PlayerId;
-                Container player = session.GetModifyingPayerFromId(playerIdInFlag);
+                Container player = context.GetModifyingPlayer(playerIdInFlag);
                 if (player.Require<TeamProperty>() == flagTeam)
                 {
                     TryReturnCapturedFlag(flagTeam, scores, ctf, playerTrigger); // Possibly returning captured enemy flag to friendly flag
@@ -173,7 +173,7 @@ namespace Voxelfield.Session.Mode
             if (enemyTakingIn is null && flag.capturingPlayerId.WithValue)
             {
                 // Flag is taken, but the capturing player is outside the radius of taking
-                enemyTaking = session.GetModifyingPayerFromId(flag.capturingPlayerId);
+                enemyTaking = context.GetModifyingPlayer(flag.capturingPlayerId);
                 // Return flag if capturing player disconnects / dies or if they have not fully taken
                 if (enemyTaking.Require<HealthProperty>().IsInactiveOrDead || flag.captureElapsedTimeUs < TakeFlagDurationUs) enemyTaking = null;
             }

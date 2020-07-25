@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-#define VOXELFIELD_RELEASE_SERVER
+// #define VOXELFIELD_RELEASE_SERVER
 #endif
 
 using System;

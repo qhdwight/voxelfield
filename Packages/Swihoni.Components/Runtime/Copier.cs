@@ -15,7 +15,7 @@ namespace Swihoni.Components
         /// <summary>
         /// Set properties on destination that are with values.
         /// If a property on the source is without a value, keep destination value instead of clearing.
-        /// Use <see cref="CopyFrom{T}"/> if you prefer to clear instead.
+        /// Use <see cref="SetTo{T}"/> if you prefer to clear instead.
         /// </summary>
         public static void MergeFrom<T>(this T destination, T source) where T : ElementBase
         {
@@ -30,7 +30,7 @@ namespace Swihoni.Components
         /// <summary>
         /// Clears all properties on destination. Then sets from properties on the source with values.
         /// </summary>
-        public static void CopyFrom<T>(this T destination, T source) where T : ElementBase
+        public static void SetTo<T>(this T destination, T source) where T : ElementBase
         {
             ElementExtensions.NavigateZipped((_destination, _source) =>
             {

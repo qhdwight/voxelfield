@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Interfaces;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Config
@@ -95,6 +96,7 @@ namespace Swihoni.Sessions.Config
         [Config("input_bindings")] public InputBindingProperty input = new InputBindingProperty();
         [Config("fps_update_rate")] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
         [Config("log_prediction_errors")] public BoolProperty logPredictionErrors = new BoolProperty();
+        [Config("previous_commands")] public ListProperty<StringProperty> consoleHistory = new ListProperty<StringProperty>(32);
 
         [DisplayConfig("resolution_width")] public IntProperty resolutionWidth = new IntProperty();
         [DisplayConfig("resolution_height")] public IntProperty resolutionHeight = new IntProperty();
@@ -183,7 +185,7 @@ namespace Swihoni.Sessions.Config
                         }
                         else
                         {
-                            property.TryParseValue(split[1]);
+                            property.TryParse(split[1]);
                             Debug.Log($"Set {split[0]} to {split[1]}");
                         }
                         OnConfigUpdated(property, attribute);
@@ -249,11 +251,12 @@ namespace Swihoni.Sessions.Config
                     foreach (string line in lines)
                     {
                         string[] cells = line.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
-                        string key = cells[0], stringValue = cells[1].Trim();
+                        string key = cells[0], stringValue = cells.Length == 1 ? string.Empty : cells[1].Trim();
                         PropertyBase property = Active.m_NameToConfig[key].Item1;
                         if (stringValue == "None") property.Clear();
-                        else property.TryParseValue(stringValue);
+                        else property.ParseValue(stringValue);
                     }
+                    OnActiveLoaded();
                 }
                 else
                 {
@@ -268,14 +271,27 @@ namespace Swihoni.Sessions.Config
             catch (Exception exception)
             {
                 SetActiveToDefault();
-                Debug.LogError($"Failed to write config. Check permissions? {exception.Message}");
+                Debug.LogError($"Failed to parse config. Using defaults. Check permissions? {exception.Message}");
+                if (Debug.isDebugBuild) Debug.LogError(exception);
             }
+        }
+
+        private static void OnActiveLoaded()
+        {
+            foreach (StringProperty command in Active.consoleHistory.List)
+                ConsoleCommandExecutor.BackLoadPreviousCommand(command.AsNewString());
         }
 
         private static void SetActiveToDefault()
         {
             foreach (KeyValuePair<string, (PropertyBase, ConfigAttribute)> pair in Default.Value.m_NameToConfig)
                 Active.m_NameToConfig[pair.Key].Item1.SetTo(pair.Value.Item1);
+        }
+
+        public static void OnCommand(string command)
+        {
+            Active.consoleHistory.Add(new StringProperty(command));
+            WriteActive();
         }
     }
 }

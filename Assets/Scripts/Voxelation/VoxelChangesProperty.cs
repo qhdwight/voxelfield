@@ -32,15 +32,7 @@ namespace Voxelation
             }
             WithValue = true;
         }
-
-        public override void SetTo(PropertyBase other)
-        {
-            if (!(other is VoxelChangesProperty otherChanged)) throw new ArgumentException("Other was not changed voxels");
-            Clear();
-            AddAllFrom(otherChanged);
-            WithValue = true;
-        }
-
+        
         public override void Set(in Position3Int position, in VoxelChange change)
         {
             VoxelChange final = change;

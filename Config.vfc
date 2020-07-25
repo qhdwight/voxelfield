@@ -17,14 +17,15 @@ respawn_duration: 5000000
 respawn_health: 100
 restart_mode: False
 fov: 60
-target_fps: 200
+target_fps: 0
 volume: 0.5
 sensitivity: 2
 ads_multiplier: 1
 crosshair_thickness: 1
-input_bindings: Forward=W, Backward=S, Left=A, Right=D, Jump=Space, Crouch=LeftControl, Sprint=LeftShift, Walk=LeftAlt, Suicide=End, Interact=E, Map=M, UseOne=Mouse0, UseTwo=Mouse1, UseThree=Mouse2, Reload=R, ItemOne=Alpha1, ItemTwo=Alpha2, ItemThree=Alpha3, ItemFour=Alpha4, ItemFive=Alpha5, ItemSix=Alpha6, ItemSeven=Alpha7, ItemEight=Alpha8, ItemNine=Alpha9, ItemTen=Alpha0, ItemLast=Q, DropItem=G, Ads=Mouse1, ToggleConsole=BackQuote, ConsoleCommand=Slash, OpenScoreboard=Tab, AutocompleteConsole=Tab, PreviousConsoleCommand=UpArrow, NextConsoleCommand=DownArrow, Fly=F, Buy=B, Throw=G, OpenModelSelect=M, OpenVoxelSelect=V, TogglePauseMenu=Escape, ToggleChat=T, Respawn=Return
+input_bindings: Forward=W; Backward=S; Left=A; Right=D; Jump=Space; Crouch=LeftControl; Sprint=LeftShift; Walk=LeftAlt; Suicide=End; Interact=E; Map=M; UseOne=Mouse0; UseTwo=Mouse1; UseThree=Mouse2; Reload=R; ItemOne=Alpha1; ItemTwo=Alpha2; ItemThree=Alpha3; ItemFour=Alpha4; ItemFive=Alpha5; ItemSix=Alpha6; ItemSeven=Alpha7; ItemEight=Alpha8; ItemNine=Alpha9; ItemTen=Alpha0; ItemLast=Q; DropItem=G; Ads=Mouse1; ToggleConsole=BackQuote; ConsoleCommand=Slash; OpenScoreboard=Tab; AutocompleteConsole=Tab; PreviousConsoleCommand=UpArrow; NextConsoleCommand=DownArrow; Fly=F; Buy=B; Throw=G; OpenModelSelect=M; OpenVoxelSelect=V; TogglePauseMenu=Escape; ToggleChat=T; Respawn=Return
 fps_update_rate: 0.4
-log_prediction_errors: False
+log_prediction_errors: True
+previous_commands: give_item 16; give_item 17; give_item 17; give_item 17; give_item 17; give_item 17; give_item 17 2; give_item 17 2; give_item 17; give_item 17; give_item 17 3; give_item 16; give_item 17; give_item 17; give_item 17; give_item 17; give_item 17; give_item 17; give_item 17; log; log_prediction_errors; give_item 3; give_item 3; tick_rate 20; serve; serve; serve && connect; serve && connect
 resolution_width: None
 resolution_height: None
 refresh_rate: None

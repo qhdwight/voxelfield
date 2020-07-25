@@ -1,12 +1,10 @@
 #if UNITY_EDITOR
-#define VOXELFIELD_RELEASE_SERVER
+// #define VOXELFIELD_RELEASE_SERVER
 #endif
 
 using System;
 using System.Collections.Generic;
 using System.Net;
-using Amazon;
-using Amazon.DynamoDBv2.Model;
 using LiteNetLib;
 using Steamworks;
 using Swihoni.Collections;
@@ -18,7 +16,10 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxelation;
 using Voxelation.Map;
+
 #if VOXELFIELD_RELEASE_SERVER
+using Amazon;
+using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2;
 using Amazon.Runtime;
 using Aws.GameLift;
@@ -47,6 +48,8 @@ namespace Voxelfield.Session
 
     public class ServerInjector : Injector
     {
+        private bool AuthenticateSteam = false;
+
 #if VOXELFIELD_RELEASE_SERVER
         private static readonly BasicAWSCredentials DynamoCredentials = new BasicAWSCredentials(@"AKIAWKQVDVRW5MFWZJMG", @"rPxMDaGjpBiaJ9OuT/he5XU4g6rft8ykzXJDgLYP");
         private static readonly AmazonDynamoDBConfig DynamoConfig = new AmazonDynamoDBConfig {RegionEndpoint = RegionEndpoint.USWest1};
@@ -61,17 +64,17 @@ namespace Voxelfield.Session
         public override void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
         {
             if (MapManager.Singleton.Models.ContainsKey(worldPosition)) return;
+            
             var changed = Session.GetLatestSession().Require<VoxelChangesProperty>();
-            base.EvaluateVoxelChange(worldPosition, change, chunk, updateMesh);
+            base.EvaluateVoxelChange(worldPosition, change, chunk, updateMesh); // Apply on mesh
             changed.Set(worldPosition, change);
-            m_MasterChanges.AddAllFrom(changed);
+            m_MasterChanges.Set(worldPosition, change);
         }
 
         public override void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted)
         {
             var changed = Session.GetLatestSession().Require<VoxelChangesProperty>();
-            foreach (KeyValuePair<Position3Int, VoxelChange> pair in uncommitted.Map)
-                changed.Set(pair.Key, pair.Value);
+            changed.AddAllFrom(uncommitted);
             m_MasterChanges.AddAllFrom(changed);
             base.VoxelTransaction(uncommitted); // Commit
         }
@@ -95,23 +98,26 @@ namespace Voxelfield.Session
             else Debug.LogError($"Peer {peer.EndPoint} did not have Game Lift player session id!");
 #endif
 
-            if (m_SteamPlayerIds.TryGetForward(peer, out SteamId steamId))
+            if (SteamServer.IsValid)
             {
-                try
+                if (m_SteamPlayerIds.TryGetForward(peer, out SteamId steamId))
                 {
-                    SteamServer.EndSession(steamId);
-                    Debug.Log($"Removed Steam ID: {steamId}");
+                    try
+                    {
+                        SteamServer.EndSession(steamId);
+                        Debug.Log($"Removed Steam ID: {steamId}");
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.LogError($"Failed to remove Steam ID: {steamId} for reason: {exception.Message}");
+                    }
+                    finally
+                    {
+                        m_SteamPlayerIds.Remove(peer);
+                    }
                 }
-                catch (Exception exception)
-                {
-                    Debug.LogError($"Failed to remove Steam ID: {steamId} for reason: {exception.Message}");
-                }
-                finally
-                {
-                    m_SteamPlayerIds.Remove(peer);
-                }
+                else Debug.LogError($"Peer {peer.EndPoint} did not have steam id!");
             }
-            else Debug.LogError($"Peer {peer.EndPoint} did not have steam id!");
         }
 
 #if VOXELFIELD_RELEASE_SERVER
@@ -160,8 +166,7 @@ namespace Voxelfield.Session
             }
 
             request.Deserialize(socketRequest.Data);
-            string version = request.version.AsNewString(),
-                   playerSessionId = request.gameLiftPlayerSessionId.AsNewString();
+            string version = request.version.AsNewString();
             if (version != Application.version)
             {
                 Reject("Your version does not match that of the server.");
@@ -205,6 +210,7 @@ namespace Voxelfield.Session
 
         public override void OnStart()
         {
+            if (!AuthenticateSteam) return;
             try
             {
                 var server = (Server) Session;
@@ -274,7 +280,8 @@ namespace Voxelfield.Session
             base.OnSettingsTick(session);
         }
 
-        public override bool ShouldSetupPlayer(Container serverPlayer) => base.ShouldSetupPlayer(serverPlayer) && serverPlayer.Require<SteamIdProperty>().WithValue;
+        public override bool ShouldSetupPlayer(Container serverPlayer) => base.ShouldSetupPlayer(serverPlayer)
+                                                                       && (!SteamServer.IsValid || serverPlayer.Require<SteamIdProperty>().WithValue);
 
         public override string GetUsername(in ModifyContext context)
         {
@@ -309,7 +316,7 @@ namespace Voxelfield.Session
             Physics.queriesHitBackfaces = true;
             if (move.groundTick > 0)
             {
-                int count = Physics.RaycastNonAlloc(move, Vector3.down, CachedHits, 1.0f);
+                int count = Physics.RaycastNonAlloc(move + new Vector3 {y = 0.05f}, Vector3.down, CachedHits, float.PositiveInfinity);
                 bool isOnBackface = count != 0 && CachedHits[0].normal.y < 0.0f;
                 if (isOnBackface)
                 {

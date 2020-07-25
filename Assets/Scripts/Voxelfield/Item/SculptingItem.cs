@@ -28,9 +28,9 @@ namespace Voxelfield.Item
             if (WithoutServerHit(context, m_EditDistance, out RaycastHit hit)
              || WithoutInnerVoxel(hit, out Position3Int position, out Voxel voxel)) return;
 
-            var voxelInjector = (Injector) context.session.Injector;
-            if (voxel.HasBlock) RemoveBlock(context, voxelInjector, position);
-            else RemoveVoxelRadius(context, voxelInjector, position);
+            var injector = (Injector) context.session.Injector;
+            if (voxel.HasBlock) RemoveBlock(context, injector, position);
+            else RemoveVoxelRadius(context, injector, position);
             var brokeVoxelTickProperty = context.player.Require<BrokeVoxelTickProperty>();
             if (brokeVoxelTickProperty.WithValue) brokeVoxelTickProperty.Value++;
             else brokeVoxelTickProperty.Value = 0;

@@ -73,6 +73,8 @@ namespace Swihoni.Sessions.Config
     [Serializable]
     public class InputBindingProperty : DictProperty<ByteProperty, KeyCodeProperty>
     {
+        private const string Separator = ";";
+        
         private static ByteProperty _lookupProperty = new ByteProperty();
 
         public KeyCode GetKeyCode(byte @byte)
@@ -86,35 +88,26 @@ namespace Swihoni.Sessions.Config
             var afterFirst = false;
             foreach (KeyValuePair<ByteProperty, KeyCodeProperty> pair in m_Map)
             {
-                if (afterFirst) builder.Append(", ");
+                if (afterFirst) builder.Append(Separator).Append(" ");
                 builder.Append(InputType.Names.GetForward(pair.Key)).Append("=").AppendPropertyValue(pair.Value);
                 afterFirst = true;
             }
             return builder;
         }
 
-        public override bool TryParseValue(string stringValue)
+        public override void ParseValue(string stringValue)
         {
-            try
+            Zero();
+            string[] pairs = stringValue.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string pair in pairs)
             {
-                m_Map.Clear();
-                string[] pairs = stringValue.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string pair in pairs)
-                {
-                    var keyProperty = Activator.CreateInstance<ByteProperty>();
-                    var valueProperty = Activator.CreateInstance<KeyCodeProperty>();
-                    string[] keyAndValue = pair.Split(new[] {"="}, StringSplitOptions.RemoveEmptyEntries);
-                    string key = keyAndValue[0].Trim(), value = keyAndValue[1];
-                    keyProperty.Value = InputType.Names.GetReverse(key);
-                    valueProperty.TryParseValue(value);
-                    m_Map.Add(keyProperty, valueProperty);
-                }
-                WithValue = true;
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
+                var keyProperty = Activator.CreateInstance<ByteProperty>();
+                var valueProperty = Activator.CreateInstance<KeyCodeProperty>();
+                string[] keyAndValue = pair.Split(new[] {"="}, StringSplitOptions.RemoveEmptyEntries);
+                string key = keyAndValue[0].Trim(), value = keyAndValue[1];
+                keyProperty.Value = InputType.Names.GetReverse(key);
+                valueProperty.ParseValue(value);
+                Set(keyProperty, valueProperty);
             }
         }
 

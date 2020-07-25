@@ -4342,6 +4342,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75bfa6a2e5724c1c818772ff876c90cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_AutoCommand: serve && connect
   IsDebugMode: 0
   RollbackOverrideUs:
     m_Flags: 0
@@ -4815,6 +4816,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_NeedsCursor: 1
   m_InterruptsCommands: 1
+  m_IsDuringGame: 1
 --- !u!225 &652685198
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -11596,7 +11598,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22ff533082484fe9811b662bfe327a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TruncateDimension: 0
+  m_TruncateDimension: 1
 --- !u!1 &1358705398
 GameObject:
   m_ObjectHideFlags: 0

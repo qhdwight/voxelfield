@@ -1,4 +1,4 @@
-#undef UNITY_EDITOR
+// #undef UNITY_EDITOR
 
 using UnityEngine;
 #if !UNITY_EDITOR

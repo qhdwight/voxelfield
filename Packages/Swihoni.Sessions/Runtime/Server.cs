@@ -321,8 +321,8 @@ namespace Swihoni.Sessions
 
                     if (!IsLoading)
                     {
-                        var context = new ModifyContext(this, serverSession, receivedClientCommands, clientId, serverPlayer, durationUs: clientStamp.durationUs,
-                                                        tickDelta: tickDelta);
+                        var context = new ModifyContext(this, serverSession, receivedClientCommands, clientId, serverPlayer,
+                                                        durationUs: clientStamp.durationUs, tickDelta: tickDelta);
                         GetPlayerModifier(serverPlayer, clientId).ModifyChecked(context);
                         mode.ModifyPlayer(context);
                     }
@@ -340,7 +340,7 @@ namespace Swihoni.Sessions
             {
                 if (_client.WithAttribute<ClientTrustedAttribute>())
                 {
-                    _server.CopyFrom(_client);
+                    _server.SetTo(_client);
                     return Navigation.SkipDescendents;
                 }
                 return Navigation.Continue;

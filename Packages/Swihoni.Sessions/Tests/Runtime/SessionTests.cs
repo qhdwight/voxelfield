@@ -49,7 +49,7 @@ namespace Swihoni.Sessions.Tests
             s2.RegisterAppend(typeof(LocalizedClientStampComponent));
 
             float start = Time.realtimeSinceStartup;
-            s1.CopyFrom(s2);
+            s1.SetTo(s2);
             Debug.Log(1e3f * (Time.realtimeSinceStartup - start));
         }
 
