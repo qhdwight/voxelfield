@@ -16,6 +16,13 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.PutColor(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetColor();
     }
+    
+    [Serializable]
+    public class Color32Property : PropertyBase<Color32>
+    {
+        public override void SerializeValue(NetDataWriter writer) => writer.PutColor32(Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = reader.GetColor32();
+    }
 
     [Serializable]
     public class UIntProperty : PropertyBase<uint>

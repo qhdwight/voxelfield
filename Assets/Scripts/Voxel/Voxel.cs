@@ -3,28 +3,27 @@ using UnityEngine;
 
 namespace Voxel
 {
-    public static class VoxelId
+    public static class VoxelTexture
     {
-        public const byte Dirt = 1, Grass = 2, Stone = 3, Wood = 4, Last = Wood;
+        public const byte Solid = 0, Checkered = 1, Striped = 2, Last = Striped;
 
         public static string Name(byte id)
         {
             switch (id)
             {
-                case Dirt:  return nameof(Dirt);
-                case Grass: return nameof(Grass);
-                case Stone: return nameof(Stone);
-                case Wood:  return nameof(Wood);
-                default:    throw new ArgumentOutOfRangeException(nameof(id), id, null);
+                case Solid:     return nameof(Solid);
+                case Checkered: return nameof(Checkered);
+                case Striped:   return nameof(Striped);
+                default:        throw new ArgumentOutOfRangeException(nameof(id), id, null);
             }
         }
     }
-    
+
     public static class Orientation
     {
         public const byte None = 0, North = 1, East = 2, South = 3, West = 4, Up = 5, Down = 6;
     }
-    
+
     [Flags]
     public enum VoxelFlags : ushort
     {
@@ -36,6 +35,11 @@ namespace Voxel
 
     public struct Voxel
     {
+        public static readonly Color32 Dirt = new Color32(39, 25, 10, 255),
+                                       Stone = new Color32(39, 39, 39, 255),
+                                       Grass = new Color32(68, 144, 71, 255),
+                                       Wood = new Color32(132, 83, 40, 255);
+        
         public const float
             TileSize = 256.0f,
             ImageSize = 1024.0f,
@@ -45,11 +49,11 @@ namespace Voxel
         public byte texture, density, orientation;
         public VoxelFlags flags;
         public Color32 color;
-        
+
         public bool HasBlock
         {
             get => (flags & VoxelFlags.Block) == VoxelFlags.Block;
-            set
+            private set
             {
                 if (value) flags |= VoxelFlags.Block;
                 else flags &= ~VoxelFlags.Block;
@@ -57,21 +61,21 @@ namespace Voxel
         }
 
         public bool OnlySmooth => !HasBlock;
-        
+
         public bool IsBreakable
         {
             get => (flags & VoxelFlags.Breakable) == VoxelFlags.Breakable;
-            set
+            private set
             {
                 if (value) flags |= VoxelFlags.Breakable;
                 else flags &= ~VoxelFlags.Breakable;
             }
         }
-        
+
         public bool IsNatural
         {
             get => (flags & VoxelFlags.Natural) == VoxelFlags.Natural;
-            set
+            private set
             {
                 if (value) flags |= VoxelFlags.Natural;
                 else flags &= ~VoxelFlags.Natural;
@@ -80,7 +84,7 @@ namespace Voxel
 
         public void SetVoxelData(in VoxelChange change)
         {
-            if (change.id.HasValue) texture = change.id.Value;
+            if (change.texture.HasValue) texture = change.texture.Value;
             if (change.hasBlock.HasValue) HasBlock = change.hasBlock.Value;
             if (change.density.HasValue) density = change.density.Value;
             if (change.isBreakable.HasValue) IsBreakable = change.isBreakable.Value;
@@ -94,19 +98,17 @@ namespace Voxel
             Vector2Int tile;
             switch (texture)
             {
-                default:
-                case VoxelId.Stone:
+                case VoxelTexture.Checkered:
                     tile = new Vector2Int(0, 0);
                     break;
-                case VoxelId.Dirt:
-                    tile = new Vector2Int(3, 0);
-                    break;
-                case VoxelId.Grass:
+                case VoxelTexture.Solid:
                     tile = new Vector2Int(1, 0);
                     break;
-                case VoxelId.Wood:
+                case VoxelTexture.Striped:
                     tile = new Vector2Int(0, 1);
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(texture), texture, null);
             }
             return tile;
         }

@@ -479,7 +479,7 @@ namespace Voxel
                             solidMesh.colors.Add(voxel.color);
                             solidMesh.triangleIndices.Add(index);
                         }
-                        if (voxel.texture == VoxelId.Grass && voxel.IsNatural)
+                        if (voxel.texture == VoxelTexture.Solid && voxel.IsNatural)
                             GenerateFoliage(solidMesh, foliageMesh, ref voxel);
                         int length = voxel.FaceUVs(CachedUvs);
                         for (var j = 0; j < length; j++) solidMesh.uvs.Add(CachedUvs[j]);
@@ -493,29 +493,27 @@ namespace Voxel
         {
             Vector3 normal = Vector3.Cross(solidMesh.vertices.FromEnd(2) - solidMesh.vertices.FromEnd(0),
                                            solidMesh.vertices.FromEnd(1) - solidMesh.vertices.FromEnd(0));
-            if (normal.y > 0.0f)
+            if (normal.y < 0.0f) return;
+            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1) + Vector3.up);
+            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1));
+            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0));
+            foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0) + Vector3.up);
+            for (var k = 0; k < 4; k++)
             {
-                foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1) + Vector3.up);
-                foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(1));
-                foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0));
-                foliageMesh.vertices.Add(solidMesh.vertices.FromEnd(0) + Vector3.up);
-                for (var k = 0; k < 4; k++)
-                {
-                    foliageMesh.colors.Add(voxel.color);
-                    foliageMesh.normals.Add(Vector3.up);
-                }
-                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
-                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 3);
-                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 2);
-                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
-                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 2);
-                foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 1);
-                Vector2 uv = Voxel.TileRatio * (Vector2) voxel.TexturePosition();
-                foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio, y = Voxel.TileRatio});
-                foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio});
-                foliageMesh.uvs.Add(uv);
-                foliageMesh.uvs.Add(uv + new Vector2 {y = Voxel.TileRatio});
+                foliageMesh.colors.Add(voxel.color);
+                foliageMesh.normals.Add(Vector3.up);
             }
+            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
+            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 3);
+            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 2);
+            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 4);
+            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 2);
+            foliageMesh.triangleIndices.Add(foliageMesh.vertices.Count - 1);
+            Vector2 uv = Voxel.TileRatio * (Vector2) voxel.TexturePosition();
+            foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio, y = Voxel.TileRatio});
+            foliageMesh.uvs.Add(uv + new Vector2 {x = Voxel.TileRatio});
+            foliageMesh.uvs.Add(uv);
+            foliageMesh.uvs.Add(uv + new Vector2 {y = Voxel.TileRatio});
         }
 
         private static void Diminish(this ref Color32 color, float amount)

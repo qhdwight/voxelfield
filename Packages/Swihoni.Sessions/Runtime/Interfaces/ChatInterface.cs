@@ -7,7 +7,7 @@ namespace Swihoni.Sessions.Interfaces
     {
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            if (InputProvider.GetInputDown(InputType.ToggleChat)) ToggleInterfaceActive();
+            if (NoInterrupting && InputProvider.GetInputDown(InputType.ToggleChat)) ToggleInterfaceActive();
         }
     }
 }

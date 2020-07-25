@@ -28,6 +28,7 @@ namespace Voxel.Map
             foreach (ElementBase element in Elements)
             {
                 element.Deserialize(reader);
+                // ReSharper disable once PossibleNullReferenceException
                 if (ReferenceEquals(element, version)) m_VoxelChanges.Version = version.AsNewString();
             }
             if (version != Application.version) Debug.Log($"Converting map container to newest version, from {version} to {Application.version}");

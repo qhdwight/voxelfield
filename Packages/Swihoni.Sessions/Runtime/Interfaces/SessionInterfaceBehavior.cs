@@ -19,6 +19,6 @@ namespace Swihoni.Sessions.Interfaces
             if (m_IsDuringGame && isActive) SetInterfaceActive(false);
         }
 
-        protected bool NoInterrupting() => !SessionBase.InterruptingInterface || SessionBase.InterruptingInterface == this;
+        protected bool NoInterrupting => !SessionBase.InterruptingInterface || SessionBase.InterruptingInterface == this;
     }
 }

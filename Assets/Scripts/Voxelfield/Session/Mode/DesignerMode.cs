@@ -42,7 +42,7 @@ namespace Voxelfield.Session.Mode
                 _p.Clear();
                 _p.IsOverride = true;
             });
-            designer.selectedVoxelId.Value = VoxelId.Stone;
+            designer.selectedVoxelId.Value = VoxelTexture.Checkered;
         }
     }
 }

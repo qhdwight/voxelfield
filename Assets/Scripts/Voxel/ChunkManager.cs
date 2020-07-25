@@ -192,15 +192,15 @@ namespace Voxel
                     Position3Int voxelWorldPosition = worldPosition + new Position3Int(ix, iy, iz);
                     chunk = GetChunkFromWorldPosition(voxelWorldPosition);
                     if (!chunk) continue;
-                    Voxel? voxel = GetVoxel(voxelWorldPosition, chunk);
-                    if (!voxel.HasValue) continue;
+                    Voxel? _voxel = GetVoxel(voxelWorldPosition, chunk);
+                    if (!(_voxel is Voxel voxel)) continue;
 
                     float distance = Position3Int.Distance(worldPosition, voxelWorldPosition);
                     byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(distance / absoluteRadius * 0.5f) * byte.MaxValue)),
-                         currentDensity = voxel.Value.density;
+                         currentDensity = voxel.density;
                     VoxelChange evaluatedChange = default;
 
-                    if (voxel.Value.IsBreakable)
+                    if (voxel.IsBreakable)
                     {
                         if (isAdditive)
                         {
@@ -208,7 +208,7 @@ namespace Voxel
                             if (newDensity > currentDensity)
                             {
                                 evaluatedChange.density = newDensity;
-                                if (voxel.Value.OnlySmooth) evaluatedChange.Merge(change);
+                                if (voxel.OnlySmooth) evaluatedChange.Merge(change);
                             }
                         }
                         else
@@ -216,10 +216,11 @@ namespace Voxel
                             if (newDensity < currentDensity) evaluatedChange.density = newDensity;
                         }
                     }
-                    if (!isAdditive && change.replaceGrassWithDirt.GetValueOrDefault() && voxel.Value.texture == VoxelId.Grass)
-                        evaluatedChange.id = VoxelId.Dirt;
+                    if (!isAdditive && change.replaceGrassWithDirt.GetValueOrDefault() && voxel.texture == VoxelTexture.Solid)
+                        evaluatedChange.texture = VoxelTexture.Checkered;
+                    if (change.color is Color32 color) evaluatedChange.color = Color32.Lerp(voxel.color, color, 0.75f);
                     bool inSphere = distance < roundedRadius;
-                    if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && inSphere && voxel.Value.HasBlock)
+                    if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && inSphere && voxel.HasBlock)
                         evaluatedChange.hasBlock = false;
                     if (inSphere) evaluatedChange.natural = false;
                     transaction.Set(voxelWorldPosition, evaluatedChange);

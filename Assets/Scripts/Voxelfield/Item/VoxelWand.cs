@@ -48,7 +48,7 @@ namespace Voxelfield.Item
             if (player.Without<ServerTag>()) return;
 
             var designer = player.Require<DesignerPlayerComponent>();
-            DimensionFunction(context.session, designer, _ => new VoxelChange {id = designer.selectedVoxelId, hasBlock = true});
+            DimensionFunction(context.session, designer, _ => new VoxelChange {texture = designer.selectedVoxelId, hasBlock = true});
         }
 
         public override void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
@@ -68,7 +68,7 @@ namespace Voxelfield.Item
                             var designer = player.Require<DesignerPlayerComponent>();
                             if (args.Length > 1 && byte.TryParse(args[1], out byte blockId))
                                 designer.selectedVoxelId.ValueOverride = blockId;
-                            DimensionFunction(session, designer, _ => new VoxelChange {id = designer.selectedVoxelId.AsNullable, hasBlock = true});
+                            DimensionFunction(session, designer, _ => new VoxelChange {texture = designer.selectedVoxelId.AsNullable, hasBlock = true});
                             break;
                         }
                         case "revert":

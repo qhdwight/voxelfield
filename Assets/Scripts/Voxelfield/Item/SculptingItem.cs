@@ -40,7 +40,7 @@ namespace Voxelfield.Item
             => injector.EvaluateVoxelChange(position, new VoxelChange {hasBlock = false, natural = false});
 
         protected virtual void RemoveVoxelRadius(in ModifyContext context, Injector injector, in Position3Int position)
-            => injector.EvaluateVoxelChange(position, new VoxelChange {magnitude = -m_DestroyRadius, replaceGrassWithDirt = true});
+            => injector.EvaluateVoxelChange(position, new VoxelChange {magnitude = -m_DestroyRadius, replaceGrassWithDirt = true, color = Voxel.Voxel.Dirt});
 
         protected static bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel.Voxel voxel)
         {
@@ -106,18 +106,18 @@ namespace Voxelfield.Item
             var voxelInjector = (Injector) context.session.Injector;
             byte texture = context.player.With(out DesignerPlayerComponent designer) && designer.selectedVoxelId.WithValue
                 ? designer.selectedVoxelId
-                : VoxelId.Dirt;
-            voxelInjector.EvaluateVoxelChange(position, new VoxelChange {hasBlock = true, id = texture});
+                : VoxelTexture.Checkered;
+            voxelInjector.EvaluateVoxelChange(position, new VoxelChange {hasBlock = true, texture = texture, color = Voxel.Voxel.Dirt});
         }
 
         private bool NoSolution(Container player, in Position3Int position, float radius = 0.9f)
         {
             if (!m_PreventPlacingOnSelf) return false;
-            
+
             var move = player.Require<MoveComponent>();
             Vector3 eyePosition = SessionBase.GetPlayerEyePosition(move);
             return ExtraMath.SquareDistance(eyePosition, position) < radius * radius;
-            
+
             // var playerCollider = session.GetPlayerModifier(player, playerId).GetComponentInChildren<PlayerTrigger>().GetComponent<Collider>();
             // Chunk chunk = ChunkManager.Singleton.GetChunkFromWorldPosition((Position3Int) playerCollider.transform.position);
             // Collider chunkCollider = chunk.MeshCollider;
@@ -167,10 +167,11 @@ namespace Voxelfield.Item
 
         protected override void TernaryUse(in ModifyContext context, ItemComponent item)
         {
-            if (!(m_CachedPosition is Position3Int position)) return;
+            if (!(m_CachedPosition is Position3Int position) || !(ChunkManager.Singleton.GetVoxel(position) is Voxel.Voxel voxel)) return;
 
             var voxelInjector = (Injector) context.session.Injector;
-            voxelInjector.EvaluateVoxelChange(position, new VoxelChange {id = VoxelId.Dirt, magnitude = m_AdditiveRadius, form = VoxelVolumeForm.Sperhical});
+            var change = new VoxelChange {texture = VoxelTexture.Checkered, color = Voxel.Voxel.Dirt, magnitude = m_AdditiveRadius, form = VoxelVolumeForm.Sperhical};
+            voxelInjector.EvaluateVoxelChange(position, change);
         }
     }
 }

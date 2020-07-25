@@ -35,7 +35,7 @@ namespace Voxelfield.Interface
 
         internal void Render(InventoryComponent inventory)
         {
-            if (InputProvider.GetInputDown(InputType.Buy)) ToggleInterfaceActive();
+            if (!SessionBase.InterruptingInterface && InputProvider.GetInputDown(InputType.Buy)) ToggleInterfaceActive();
 
             for (var i = 1; i <= m_LoadOutButtons.Length; i++)
             {

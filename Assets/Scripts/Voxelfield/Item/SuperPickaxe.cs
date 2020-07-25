@@ -17,13 +17,13 @@ namespace Voxelfield.Item
             var designer = context.player.Require<DesignerPlayerComponent>();
             var voxelInjector = (Injector) context.session.Injector;
             var position = (Position3Int) hit.point;
-            voxelInjector.EvaluateVoxelChange(position, new VoxelChange{id = designer.selectedVoxelId.AsNullable, magnitude = designer.editRadius, form = VoxelVolumeForm.Sperhical});
+            voxelInjector.EvaluateVoxelChange(position, new VoxelChange{texture = designer.selectedVoxelId.AsNullable, magnitude = designer.editRadius, form = VoxelVolumeForm.Sperhical});
         }
 
         protected override void RemoveBlock(in ModifyContext context, Injector injector, in Position3Int position)
         {
             if (ChunkManager.Singleton.GetMapSaveVoxel(position) is VoxelChange save)
-                injector.EvaluateVoxelChange(position, new VoxelChange {id = save.id, hasBlock = false, natural = true});
+                injector.EvaluateVoxelChange(position, new VoxelChange {texture = save.texture, hasBlock = false, natural = true});
         }
 
         protected override void RemoveVoxelRadius(in ModifyContext context, Injector injector, in Position3Int position)

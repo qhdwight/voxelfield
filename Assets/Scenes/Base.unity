@@ -1087,7 +1087,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1571494958}
   m_HandleRect: {fileID: 1571494957}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -11596,7 +11596,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22ff533082484fe9811b662bfe327a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TruncateDimension: 0
+  m_TruncateDimension: 1
 --- !u!1 &1358705398
 GameObject:
   m_ObjectHideFlags: 0
@@ -18390,7 +18390,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1658342019}
   m_HandleRect: {fileID: 1658342018}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:

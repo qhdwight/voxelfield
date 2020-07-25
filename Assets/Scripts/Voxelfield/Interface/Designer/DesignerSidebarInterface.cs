@@ -39,7 +39,7 @@ namespace Voxelfield.Interface.Designer
                     case ItemId.VoxelWand:
                         AppendProperty("P1: ", designer.positionOne, builder).Append("\n");
                         AppendProperty("P2: ", designer.positionTwo, builder).Append("\n");
-                        builder.Append("Selected: ").Append(designer.selectedVoxelId.WithValue ? VoxelId.Name(designer.selectedVoxelId) : "None");
+                        builder.Append("Selected: ").Append(designer.selectedVoxelId.WithValue ? VoxelTexture.Name(designer.selectedVoxelId) : "None");
                         break;
                     case ItemId.ModelWand:
                         builder.Append("Selected: ").Append(designer.selectedModelId.WithValue ? MapManager.ModelPrefabs[designer.selectedModelId].ModelName : "None");

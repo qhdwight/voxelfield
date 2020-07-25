@@ -16,7 +16,7 @@ namespace Voxelfield.Interface
     {
         public override void Render(SessionBase session, Container sessionContainer)
         {
-            if (InputProvider.GetInputDown(InputType.TogglePauseMenu)) ToggleInterfaceActive();
+            if (NoInterrupting && InputProvider.GetInputDown(InputType.TogglePauseMenu)) ToggleInterfaceActive();
         }
 
         public void ConfigurationButton() { }

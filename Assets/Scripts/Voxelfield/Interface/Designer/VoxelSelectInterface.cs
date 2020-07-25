@@ -18,18 +18,18 @@ namespace Voxelfield.Interface.Designer
 
         private void Start()
         {
-            for (byte id = 1; id <= VoxelId.Last; id++)
+            for (byte id = 1; id <= VoxelTexture.Last; id++)
             {
                 Button button = Instantiate(m_ButtonPrefab, transform);
                 var text = button.GetComponentInChildren<TextMeshProUGUI>();
-                text.SetText(VoxelId.Name(id));
+                text.SetText(VoxelTexture.Name(id));
                 int _modelId = id;
                 button.onClick.AddListener(() => m_WantedId = _modelId);
             }
         }
 
         public override void Render(SessionBase session, Container sessionContainer)
-            => SetInterfaceActive(NoInterrupting() && sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer &&
+            => SetInterfaceActive(NoInterrupting && sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer &&
                                   InputProvider.GetInput(InputType.OpenVoxelSelect));
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)

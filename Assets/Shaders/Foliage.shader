@@ -25,6 +25,7 @@
 
         struct Input {
             float2 uv_MainTex;
+            float4 vertColor : COLOR;
         };
 
         void vert (inout appdata_full v) {
@@ -39,7 +40,7 @@
         fixed4 _Color;
 
         void surf(Input IN, inout SurfaceOutputStandard o) {
-            fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
+            fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color * IN.vertColor;
             o.Albedo = c.rgb;
             o.Alpha = c.a;
         }

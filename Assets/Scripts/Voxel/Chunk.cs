@@ -117,11 +117,12 @@ namespace Voxel
                                                    || m_Position.y == save.dimension.upperBound.Value.y && voxelPosition.y == m_ChunkSize - 1
                                                    || m_Position.z == save.dimension.lowerBound.Value.z && voxelPosition.z <= 1
                                                    || m_Position.z == save.dimension.upperBound.Value.z && voxelPosition.z == m_ChunkSize - 1);
+            bool isStone = height > 5.0f;
             return new VoxelChange
             {
-                id = height > 5.0f ? VoxelId.Stone : VoxelId.Grass,
+                texture = isStone ? VoxelTexture.Checkered : VoxelTexture.Solid,
                 hasBlock = false, density = density, isBreakable = breakable, orientation = Orientation.None, natural = true,
-                color = new Color32(255, 255, 255, 255)
+                color = isStone ? Voxel.Stone : Voxel.Grass
             };
         }
 
