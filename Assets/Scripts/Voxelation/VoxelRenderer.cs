@@ -4,7 +4,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using UnityEngine.Profiling;
 
-namespace Voxel
+namespace Voxelation
 {
     /// <summary>
     /// ==========================================

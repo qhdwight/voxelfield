@@ -7,7 +7,7 @@ using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxel;
+using Voxelation;
 
 namespace Voxelfield.Session
 {

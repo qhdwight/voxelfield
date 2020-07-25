@@ -7,8 +7,8 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
-using Voxel;
-using Voxel.Map;
+using Voxelation;
+using Voxelation.Map;
 using Voxelfield.Session;
 
 namespace Voxelfield.Interface.Designer

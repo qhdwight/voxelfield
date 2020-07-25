@@ -7,7 +7,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxel;
+using Voxelation;
 using Voxelfield.Session;
 
 namespace Voxelfield.Item
@@ -23,7 +23,7 @@ namespace Voxelfield.Item
         protected override void Swing(in ModifyContext context, ItemComponent item)
         {
             if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)
-             || WithoutInnerVoxel(hit, out Position3Int position, out Voxel.Voxel voxel)) return;
+             || WithoutInnerVoxel(hit, out Position3Int position, out Voxel voxel)) return;
 
             if (voxel.HasBlock)
             {

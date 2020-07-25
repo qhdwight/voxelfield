@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Voxel.Editor
+namespace Voxelation.Editor
 {
     [CustomEditor(typeof(ChunkManager))]
     public class ChunkManagerEditor : UnityEditor.Editor

@@ -4,7 +4,6 @@
 
 using System;
 using System.Net;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;

@@ -2,7 +2,7 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxel;
+using Voxelation;
 using Voxelfield.Session;
 
 namespace Voxelfield.Item
@@ -17,7 +17,8 @@ namespace Voxelfield.Item
             var designer = context.player.Require<DesignerPlayerComponent>();
             var voxelInjector = (Injector) context.session.Injector;
             var position = (Position3Int) hit.point;
-            voxelInjector.EvaluateVoxelChange(position, new VoxelChange{texture = designer.selectedVoxelId.AsNullable, magnitude = designer.editRadius, form = VoxelVolumeForm.Sperhical});
+            voxelInjector.EvaluateVoxelChange(position,
+                                              new VoxelChange {texture = designer.selectedVoxelId.AsNullable, magnitude = designer.editRadius, form = VoxelVolumeForm.Sperhical});
         }
 
         protected override void RemoveBlock(in ModifyContext context, Injector injector, in Position3Int position)
@@ -30,7 +31,7 @@ namespace Voxelfield.Item
         {
             float radius = context.player.Require<DesignerPlayerComponent>().editRadius;
             if (radius > Mathf.Epsilon)
-                injector.EvaluateVoxelChange(position, new VoxelChange{magnitude = -radius, form = VoxelVolumeForm.Sperhical});
+                injector.EvaluateVoxelChange(position, new VoxelChange {magnitude = -radius, form = VoxelVolumeForm.Sperhical});
         }
     }
 }

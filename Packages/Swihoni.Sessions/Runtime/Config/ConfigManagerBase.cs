@@ -95,12 +95,12 @@ namespace Swihoni.Sessions.Config
         [Config("input_bindings")] public InputBindingProperty input = new InputBindingProperty();
         [Config("fps_update_rate")] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
         [Config("log_prediction_errors")] public BoolProperty logPredictionErrors = new BoolProperty();
-        
+
         [DisplayConfig("resolution_width")] public IntProperty resolutionWidth = new IntProperty();
         [DisplayConfig("resolution_height")] public IntProperty resolutionHeight = new IntProperty();
         [DisplayConfig("refresh_rate")] public IntProperty refreshRate = new IntProperty();
         [DisplayConfig("fullscreen_mode")] public BoxedEnumProperty<FullScreenMode> fullScreen = new BoxedEnumProperty<FullScreenMode>();
-        
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {

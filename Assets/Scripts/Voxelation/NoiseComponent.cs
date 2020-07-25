@@ -1,7 +1,7 @@
 ﻿using System;
 using Swihoni.Components;
 
-namespace Voxel
+namespace Voxelation
 {
     [Serializable]
     public class NoiseComponent : ComponentBase

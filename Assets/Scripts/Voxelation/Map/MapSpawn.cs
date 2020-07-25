@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Voxel.Map
+namespace Voxelation.Map
 {
     public class MapSpawn : MonoBehaviour
     {

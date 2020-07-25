@@ -3,9 +3,9 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
-using Voxel.Map;
+using Voxelation.Map;
 
-namespace Voxel
+namespace Voxelation
 {
     [RequireComponent(typeof(MeshCollider), typeof(MeshRenderer), typeof(MeshFilter))]
     public class Chunk : MonoBehaviour
@@ -85,7 +85,7 @@ namespace Voxel
         }
 
         public bool InsideChunk(in Position3Int pos) => pos.x < m_ChunkSize && pos.y < m_ChunkSize && pos.z < m_ChunkSize
-                                                      && pos.x >= 0 && pos.y >= 0 && pos.z >= 0;
+                                                     && pos.x >= 0 && pos.y >= 0 && pos.z >= 0;
 
         public void SetVoxelDataNoCheck(in Position3Int position, in VoxelChange change)
             => m_Voxels?[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)].SetVoxelData(change);

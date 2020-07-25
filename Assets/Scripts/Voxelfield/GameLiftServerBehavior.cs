@@ -13,7 +13,6 @@ using Swihoni.Sessions;
 #endif
 #if VOXELFIELD_RELEASE_SERVER
 using GameSession = Aws.GameLift.Server.Model.GameSession;
-using System;
 using Voxelfield.Session;
 using System.Linq;
 using System.Collections.Generic;

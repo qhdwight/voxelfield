@@ -1,21 +1,24 @@
 ﻿using UnityEngine;
 
-namespace Voxel
+namespace Voxelation
 {
     public enum VoxelVolumeForm : byte
     {
-        Sperhical, Cylindrical, Wall
+        Sperhical,
+        Cylindrical,
+        Wall
     }
-    
+
     public struct VoxelChange
     {
         public byte? texture, density, orientation;
-        public bool? hasBlock, isBreakable, natural, replaceGrassWithDirt, modifiesBlocks;
+        public bool? hasBlock, isBreakable, natural, replace, modifiesBlocks;
         public Color32? color;
         public float? magnitude, yaw;
         public VoxelVolumeForm? form;
 
-        public override string ToString() => $"Texture: {texture}, Is Block: {hasBlock}, Density: {density}, Orientation: {orientation}, Breakable: {isBreakable}, Form: {form}, Magnitude: {magnitude}, Yaw: {yaw}";
+        public override string ToString() =>
+            $"Texture: {texture}, Is Block: {hasBlock}, Density: {density}, Orientation: {orientation}, Breakable: {isBreakable}, Form: {form}, Magnitude: {magnitude}, Yaw: {yaw}";
 
         public void Merge(in VoxelChange newChange)
         {
@@ -25,7 +28,7 @@ namespace Voxel
             if (newChange.orientation.HasValue) orientation = newChange.orientation.Value;
             if (newChange.isBreakable.HasValue) isBreakable = newChange.isBreakable.Value;
             if (newChange.natural.HasValue) natural = newChange.natural.Value;
-            if (newChange.replaceGrassWithDirt.HasValue) replaceGrassWithDirt = newChange.replaceGrassWithDirt.Value;
+            if (newChange.replace.HasValue) replace = newChange.replace.Value;
             if (newChange.modifiesBlocks.HasValue) modifiesBlocks = newChange.modifiesBlocks.Value;
             if (newChange.color.HasValue) color = newChange.color.Value;
             if (newChange.magnitude.HasValue) magnitude = newChange.magnitude.Value;

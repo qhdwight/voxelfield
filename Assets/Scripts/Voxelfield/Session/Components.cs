@@ -4,8 +4,8 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
-using Voxel;
-using Voxel.Map;
+using Voxelation;
+using Voxelation.Map;
 
 namespace Voxelfield.Session
 {

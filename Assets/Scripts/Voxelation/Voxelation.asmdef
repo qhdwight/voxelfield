@@ -1,12 +1,10 @@
 {
-    "name": "Voxelfield",
+    "name": "Voxelation",
     "references": [
-        "GUID:70d0ab44ec86f354e892f6445447b475",
         "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7",
-        "GUID:f3a68b7e3f7640a4d8d06a2fdadbcd13",
-        "GUID:b39737e480a94dd48ac62c0be48da42b",
-        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:30dd5701ffd546dfba8df9f8a97a33d3",
         "GUID:41ae8d015f0f51041807bae5ccc13017",
+        "GUID:f3a68b7e3f7640a4d8d06a2fdadbcd13",
         "GUID:0973fa815d434514e9ad7174c0d75ca9"
     ],
     "includePlatforms": [],

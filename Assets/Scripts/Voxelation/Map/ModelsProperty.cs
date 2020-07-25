@@ -4,7 +4,7 @@ using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Util.Math;
 
-namespace Voxel.Map
+namespace Voxelation.Map
 {
     [Serializable]
     public class ModelIdProperty : UShortProperty

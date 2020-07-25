@@ -1,10 +1,10 @@
 #undef UNITY_EDITOR
 
+using UnityEngine;
 #if !UNITY_EDITOR
 using System;
 using Steamworks;
 #endif
-using UnityEngine;
 
 namespace Swihoni.Util
 {

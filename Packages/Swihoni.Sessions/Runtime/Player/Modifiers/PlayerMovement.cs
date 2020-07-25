@@ -88,7 +88,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public override void ModifyChecked(in ModifyContext context)
         {
             if (context.tickDelta < 1) return;
-            
+
             Container player = context.player;
             if (player.Without(out MoveComponent move)) return;
 

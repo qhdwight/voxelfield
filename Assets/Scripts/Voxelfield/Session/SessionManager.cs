@@ -15,8 +15,8 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxel;
-using Voxel.Map;
+using Voxelation;
+using Voxelation.Map;
 using Voxelfield.Session.Mode;
 #if UNITY_EDITOR
 using System.IO;

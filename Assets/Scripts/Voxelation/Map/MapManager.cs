@@ -9,7 +9,7 @@ using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 
-namespace Voxel.Map
+namespace Voxelation.Map
 {
     public class MapManager : SingletonBehavior<MapManager>
     {

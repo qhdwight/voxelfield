@@ -1,7 +1,7 @@
 using System;
 using Swihoni.Components;
 
-namespace Voxel.Map
+namespace Voxelation.Map
 {
     [Serializable]
     public class DimensionComponent : ComponentBase

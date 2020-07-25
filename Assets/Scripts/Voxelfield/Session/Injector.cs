@@ -9,9 +9,8 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Entities;
 using Swihoni.Util.Math;
-using UnityEngine;
-using Voxel;
-using Voxel.Map;
+using Voxelation;
+using Voxelation.Map;
 
 namespace Voxelfield.Session
 {
@@ -76,7 +75,7 @@ namespace Voxelfield.Session
         public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
         {
             var center = (Position3Int) throwableBehavior.transform.position;
-            var change = new VoxelChange {magnitude = throwableBehavior.Radius * -0.4f, replaceGrassWithDirt = true, modifiesBlocks = true, form = VoxelVolumeForm.Sperhical};
+            var change = new VoxelChange {magnitude = throwableBehavior.Radius * -0.4f, replace = true, modifiesBlocks = true, form = VoxelVolumeForm.Sperhical};
             EvaluateVoxelChange(center, change);
         }
     }

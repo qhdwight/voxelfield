@@ -4,13 +4,13 @@ using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Util.Math;
 
-namespace Voxel
+namespace Voxelation
 {
     [Serializable, SingleTick]
     public class VoxelChangesProperty : DictPropertyBase<Position3Int, VoxelChange>
     {
         public string Version { get; set; }
-        
+
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(m_Map.Count);

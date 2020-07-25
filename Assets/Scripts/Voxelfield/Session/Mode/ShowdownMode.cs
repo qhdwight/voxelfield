@@ -11,7 +11,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxel.Map;
+using Voxelation.Map;
 using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode

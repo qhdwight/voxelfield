@@ -1,6 +1,6 @@
 using LiteNetLib.Utils;
 using NUnit.Framework;
-using Voxel;
+using Voxelation;
 
 namespace Voxelfield.Tests
 {
@@ -9,7 +9,7 @@ namespace Voxelfield.Tests
         [Test]
         public static void TestVoxelSerialization()
         {
-            var change = new VoxelChange{magnitude = 5};
+            var change = new VoxelChange {magnitude = 5};
             var writer = new NetDataWriter();
             VoxelVersionSerializer.Serialize(change, writer);
             var reader = new NetDataReader(writer.Data);

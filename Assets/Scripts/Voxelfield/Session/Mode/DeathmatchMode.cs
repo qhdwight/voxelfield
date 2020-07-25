@@ -2,8 +2,8 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Modes;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxel;
-using Voxel.Map;
+using Voxelation;
+using Voxelation.Map;
 
 namespace Voxelfield.Session.Mode
 {

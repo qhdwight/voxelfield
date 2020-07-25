@@ -3,7 +3,7 @@ using LiteNetLib.Utils;
 using Swihoni.Components;
 using UnityEngine;
 
-namespace Voxel.Map
+namespace Voxelation.Map
 {
     [Serializable]
     public class VersionProperty : StringProperty

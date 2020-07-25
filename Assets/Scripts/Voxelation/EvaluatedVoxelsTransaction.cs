@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Swihoni.Util.Math;
-using Voxel.Map;
+using Voxelation.Map;
 
-namespace Voxel
+namespace Voxelation
 {
     public class EvaluatedVoxelsTransaction : VoxelChangesProperty
     {

@@ -50,7 +50,7 @@ namespace Swihoni.Collections
             m_Forward.Remove(m_Reverse[value]);
             m_Reverse.Remove(value);
         }
-        
+
         public void Remove(TKey key)
         {
             m_Reverse.Remove(m_Forward[key]);

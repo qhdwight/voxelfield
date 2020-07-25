@@ -16,8 +16,8 @@ using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxel;
-using Voxel.Map;
+using Voxelation;
+using Voxelation.Map;
 #if VOXELFIELD_RELEASE_SERVER
 using Amazon.DynamoDBv2;
 using Amazon.Runtime;
@@ -289,7 +289,7 @@ namespace Voxelfield.Session
                 return base.GetUsername(context);
             }
         }
-        
+
         private static readonly RaycastHit[] CachedHits = new RaycastHit[2];
 
         public override void OnServerModify(in ModifyContext context, MoveComponent component)
@@ -314,7 +314,7 @@ namespace Voxelfield.Session
                 if (isOnBackface)
                 {
                     var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");
-                    context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);   
+                    context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
                 }
             }
             Physics.queriesHitBackfaces = hitBackFaces;

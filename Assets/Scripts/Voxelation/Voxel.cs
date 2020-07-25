@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Voxel
+namespace Voxelation
 {
     public static class VoxelTexture
     {
@@ -39,7 +39,7 @@ namespace Voxel
                                        Stone = new Color32(39, 39, 39, 255),
                                        Grass = new Color32(68, 144, 71, 255),
                                        Wood = new Color32(132, 83, 40, 255);
-        
+
         public const float
             TileSize = 256.0f,
             ImageSize = 1024.0f,

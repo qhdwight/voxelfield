@@ -1,7 +1,7 @@
 ﻿using LiteNetLib.Utils;
 using Swihoni.Util.Math;
 
-namespace Voxel
+namespace Voxelation
 {
     public struct BrushStroke
     {

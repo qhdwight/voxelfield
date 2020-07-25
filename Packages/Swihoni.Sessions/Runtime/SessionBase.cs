@@ -61,7 +61,7 @@ namespace Swihoni.Sessions
         protected internal virtual void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
 
         protected internal virtual void OnServerNewConnection(ConnectionRequest socketRequest) => socketRequest.AcceptIfKey(Application.version);
-        
+
         protected internal virtual void Dispose() { }
 
         public virtual bool IsLoading(Container session) => false;
@@ -84,16 +84,16 @@ namespace Swihoni.Sessions
         public virtual void OnKillPlayer(in DamageContext context) { }
 
         public virtual void OnPlayerRegisterAppend(Container player) { }
-        
+
         public virtual string GetUsername(in ModifyContext context) => $"Player #{context.playerId}";
-        
-        public virtual void OnSetupHost(in ModifyContext context) {  }
-        
-        public virtual void OnStop() {  }
-        
+
+        public virtual void OnSetupHost(in ModifyContext context) { }
+
+        public virtual void OnStop() { }
+
         public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.Require<HealthProperty>().WithoutValue;
-        
-        public virtual void OnServerModify(in ModifyContext context, MoveComponent component) {  }
+
+        public virtual void OnServerModify(in ModifyContext context, MoveComponent component) { }
     }
 
     public abstract class SessionBase : IDisposable

@@ -5,9 +5,9 @@ using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using UnityEngine.Profiling;
-using Voxel.Map;
+using Voxelation.Map;
 
-namespace Voxel
+namespace Voxelation
 {
     public delegate void MapProgressCallback(in MapProgressInfo mapProgressInfoCallback);
 
@@ -216,8 +216,8 @@ namespace Voxel
                             if (newDensity < currentDensity) evaluatedChange.density = newDensity;
                         }
                     }
-                    if (!isAdditive && change.replaceGrassWithDirt.GetValueOrDefault() && voxel.texture == VoxelTexture.Solid)
-                        evaluatedChange.texture = VoxelTexture.Checkered;
+                    if (!isAdditive && change.texture is byte texture)
+                        evaluatedChange.texture = texture;
                     if (change.color is Color32 color) evaluatedChange.color = Color32.Lerp(voxel.color, color, 0.75f);
                     bool inSphere = distance < roundedRadius;
                     if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && inSphere && voxel.HasBlock)

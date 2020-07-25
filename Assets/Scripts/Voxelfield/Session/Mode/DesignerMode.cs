@@ -7,7 +7,7 @@ using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
-using Voxel;
+using Voxelation;
 
 namespace Voxelfield.Session.Mode
 {

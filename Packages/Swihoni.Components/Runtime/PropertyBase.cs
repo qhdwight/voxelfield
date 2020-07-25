@@ -191,7 +191,7 @@ namespace Swihoni.Components
             }
             return false;
         }
-        
+
         public bool TryWithValue(out T value)
         {
             if (WithValue)
@@ -208,7 +208,7 @@ namespace Swihoni.Components
             if (WithValue) action(m_Value);
             return this;
         }
-        
+
         public override void Zero() => Value = default;
 
         public T Else(T @default) => WithValue ? m_Value : @default;

@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Util;
-using UnityEngine;
 
-namespace Voxel
+namespace Voxelation
 {
     [SuppressMessage("ReSharper", "InconsistentNaming"), SuppressMessage("ReSharper", "UnusedMember.Local")]
     public static class VoxelVersionSerializer
@@ -142,10 +137,10 @@ namespace Voxel
                 FlagUtil.SetFlag(ref flags, 22);
                 if (change.modifiesBlocks.Value) FlagUtil.SetFlag(ref flags, 23);
             }
-            if (change.replaceGrassWithDirt.HasValue)
+            if (change.replace.HasValue)
             {
                 FlagUtil.SetFlag(ref flags, 24);
-                if (change.replaceGrassWithDirt.Value) FlagUtil.SetFlag(ref flags, 25);
+                if (change.replace.Value) FlagUtil.SetFlag(ref flags, 25);
             }
             if (change.hasBlock.HasValue)
             {
@@ -202,7 +197,7 @@ namespace Voxel
             // if (FlagUtil.HasFlag(flags, 12)) change.isBreakable = FlagUtil.HasFlag(flags, 13);
             // if (FlagUtil.HasFlag(flags, 14)) change.natural = FlagUtil.HasFlag(flags, 15);
             if (FlagUtil.HasFlag(flags, 22)) change.modifiesBlocks = FlagUtil.HasFlag(flags, 23);
-            if (FlagUtil.HasFlag(flags, 24)) change.replaceGrassWithDirt = FlagUtil.HasFlag(flags, 25);
+            if (FlagUtil.HasFlag(flags, 24)) change.replace = FlagUtil.HasFlag(flags, 25);
             if (FlagUtil.HasFlag(flags, 26)) change.hasBlock = FlagUtil.HasFlag(flags, 27);
             if (FlagUtil.HasFlag(flags, 28)) change.isBreakable = FlagUtil.HasFlag(flags, 29);
             if (FlagUtil.HasFlag(flags, 30)) change.natural = FlagUtil.HasFlag(flags, 31);

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Voxel
+namespace Voxelation
 {
     public static class Noise
     {
