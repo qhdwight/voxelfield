@@ -10,13 +10,19 @@ namespace Swihoni.Sessions.Interfaces
 
         public bool IsDuringGame => m_IsDuringGame;
 
+        protected override void Awake()
+        {
+            base.Awake();
+            SetInterfaceActive(false);
+        }
+
         public abstract void Render(SessionBase session, Container sessionContainer);
 
         public virtual void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands) { }
 
         public virtual void SessionStateChange(bool isActive)
         {
-            if (m_IsDuringGame && isActive) SetInterfaceActive(false);
+            if (m_IsDuringGame && !isActive) SetInterfaceActive(false);
         }
 
         protected bool NoInterrupting => !SessionBase.InterruptingInterface || SessionBase.InterruptingInterface == this;

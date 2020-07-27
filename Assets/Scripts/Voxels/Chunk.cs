@@ -3,9 +3,9 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
-using Voxelation.Map;
+using Voxels.Map;
 
-namespace Voxelation
+namespace Voxels
 {
     [RequireComponent(typeof(MeshCollider), typeof(MeshRenderer), typeof(MeshFilter))]
     public class Chunk : MonoBehaviour
@@ -102,28 +102,30 @@ namespace Voxelation
 
         public ref Voxel GetVoxelNoCheck(int index) => ref m_Voxels[index];
 
-        public VoxelChange GetChangeDataFromSave(in Position3Int voxelPosition, MapContainer save)
+        public VoxelChange GetChangeFromMap(in Position3Int voxelPosition, MapContainer map)
         {
             float
                 noiseHeight = Noise.Simplex(m_Position.x * m_ChunkSize + voxelPosition.x,
-                                            m_Position.z * m_ChunkSize + voxelPosition.z, save.noise),
-                height = noiseHeight + save.terrainHeight - voxelPosition.y - m_Position.y * m_ChunkSize,
+                                            m_Position.z * m_ChunkSize + voxelPosition.z, map.terrainGeneration),
+                height = noiseHeight + map.terrainHeight - voxelPosition.y - m_Position.y * m_ChunkSize,
                 floatDensity = Mathf.Clamp(height, 0.0f, 2.0f);
             var density = (byte) (floatDensity * byte.MaxValue / 2.0f);
             // TODO:bug discrepancy between blocks and smooth causes lower edges to have one block less modifiable
-            bool breakable = save.breakableEdges || !(m_Position.x == save.dimension.lowerBound.Value.x && voxelPosition.x <= 1
-                                                   || m_Position.x == save.dimension.upperBound.Value.x && voxelPosition.x == m_ChunkSize - 1
-                                                   || m_Position.y == save.dimension.lowerBound.Value.y && voxelPosition.y <= 1
-                                                   || m_Position.y == save.dimension.upperBound.Value.y && voxelPosition.y == m_ChunkSize - 1
-                                                   || m_Position.z == save.dimension.lowerBound.Value.z && voxelPosition.z <= 1
-                                                   || m_Position.z == save.dimension.upperBound.Value.z && voxelPosition.z == m_ChunkSize - 1);
+            bool breakable = map.breakableEdges || !(m_Position.x == map.dimension.lowerBound.Value.x && voxelPosition.x <= 1
+                                                   || m_Position.x == map.dimension.upperBound.Value.x && voxelPosition.x == m_ChunkSize - 1
+                                                   || m_Position.y == map.dimension.lowerBound.Value.y && voxelPosition.y <= 1
+                                                   || m_Position.y == map.dimension.upperBound.Value.y && voxelPosition.y == m_ChunkSize - 1
+                                                   || m_Position.z == map.dimension.lowerBound.Value.z && voxelPosition.z <= 1
+                                                   || m_Position.z == map.dimension.upperBound.Value.z && voxelPosition.z == m_ChunkSize - 1);
             bool isStone = height > 5.0f;
-            return new VoxelChange
+            VoxelChange baseChange = isStone
+                ? map.terrainGeneration.stoneVoxel.Else(new VoxelChange{texture = VoxelTexture.Checkered, color = Voxel.Stone})
+                : map.terrainGeneration.grassVoxel.Else(new VoxelChange{texture = VoxelTexture.Solid, color = Voxel.Grass});
+            baseChange.Merge(new VoxelChange
             {
-                texture = isStone ? VoxelTexture.Checkered : VoxelTexture.Solid,
-                hasBlock = false, density = density, isBreakable = breakable, orientation = Orientation.None, natural = true,
-                color = isStone ? Voxel.Stone : Voxel.Grass
-            };
+                hasBlock = false, density = density, isBreakable = breakable, orientation = Orientation.None, natural = true, form = VoxelVolumeForm.Single
+            });
+            return baseChange;
         }
 
         public void CreateTerrainFromSave(MapContainer save)
@@ -134,7 +136,7 @@ namespace Voxelation
             for (var y = 0; y < m_ChunkSize; y++)
             {
                 var position = new Position3Int(x, y, z);
-                VoxelChange change = GetChangeDataFromSave(position, save);
+                VoxelChange change = GetChangeFromMap(position, save);
                 SetVoxelDataNoCheck(position, change);
             }
             m_Generating = false;

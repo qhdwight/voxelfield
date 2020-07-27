@@ -13,7 +13,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxelation.Map;
+using Voxels.Map;
 using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
@@ -80,7 +80,7 @@ namespace Voxelfield.Session.Mode
 
         public override void EndModify(in ModifyContext context)
         {
-            ForEachActivePlayer(context, (in ModifyContext playerModifyContext) =>
+            context.ForEachActivePlayer((in ModifyContext playerModifyContext) =>
             {
                 Container player = playerModifyContext.player;
                 player.ZeroIfWith<FrozenProperty>();
@@ -354,7 +354,7 @@ namespace Voxelfield.Session.Mode
             bool isLastRound = secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_Config.maxRounds;
             if (isLastRound)
             {
-                ForEachActivePlayer(context, (in ModifyContext playerModifyContext) => playerModifyContext.player.Require<FrozenProperty>().Value = true);
+                context.ForEachActivePlayer((in ModifyContext playerModifyContext) => playerModifyContext.player.Require<FrozenProperty>().Value = true);
             }
             else
             {
@@ -364,7 +364,7 @@ namespace Voxelfield.Session.Mode
                     site.Zero();
                     site.timeUs.Value = m_Config.secureDurationUs;
                 }
-                ForEachActivePlayer(context, (in ModifyContext playerModifyContext) =>
+                context.ForEachActivePlayer((in ModifyContext playerModifyContext) =>
                 {
                     SpawnPlayer(playerModifyContext);
                     if (secureArea.lastWinningTeam.WithValue)

@@ -7,21 +7,17 @@ using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxelation;
+using Voxels;
 
 namespace Voxelfield.Session
 {
     public class ClientInjector : Injector
     {
-        private readonly Pool<VoxelChangesProperty> m_ChangesPool = new Pool<VoxelChangesProperty>(1, () => new EvaluatedVoxelsTransaction());
+        private readonly Pool<OrderedVoxelChangesProperty> m_ChangesPool = new Pool<OrderedVoxelChangesProperty>(1, () => new OrderedVoxelChangesProperty());
         private readonly UIntProperty m_Pointer = new UIntProperty();
-        private readonly SortedDictionary<uint, VoxelChangesProperty> m_Changes = new SortedDictionary<uint, VoxelChangesProperty>();
-        private readonly EvaluatedVoxelsTransaction m_Transaction = new EvaluatedVoxelsTransaction();
-
-        public override void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true) { }
-
-        public override void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted) { }
-
+        private readonly SortedDictionary<uint, OrderedVoxelChangesProperty> m_OrderedTickChanges = new SortedDictionary<uint, OrderedVoxelChangesProperty>();
+        private readonly TouchedChunks m_TouchedChunks = new TouchedChunks();
+        
         public override NetDataWriter GetConnectWriter()
         {
             var writer = new NetDataWriter();
@@ -39,14 +35,14 @@ namespace Voxelfield.Session
 
         protected override void OnReceive(ServerSessionContainer serverSession)
         {
-            var serverChanges = serverSession.Require<VoxelChangesProperty>();
+            var serverChanges = serverSession.Require<OrderedVoxelChangesProperty>();
             UIntProperty serverTick = serverSession.Require<ServerStampComponent>().tick;
             
             if (serverChanges.Count > 0)
             {
-                VoxelChangesProperty changes = m_ChangesPool.Obtain();
+                OrderedVoxelChangesProperty changes = m_ChangesPool.Obtain();
                 changes.SetTo(serverChanges);
-                m_Changes.Add(serverTick, changes);
+                m_OrderedTickChanges.Add(serverTick, changes);
             }
             
             var tickSkipped = false;
@@ -60,13 +56,12 @@ namespace Voxelfield.Session
 
         private void ApplyStoredChanges()
         {
-            foreach (VoxelChangesProperty changes in m_Changes.Values)
-            foreach (KeyValuePair<Position3Int, VoxelChange> pair in changes.Map)
-            {
-                ChunkManager.Singleton.EvaluateVoxelChange(pair.Key, pair.Value, null, false, false, m_Transaction);
-            }
-            m_Transaction.Commit();
-            m_Changes.Clear();
+            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator - Avoid allocation
+            foreach (OrderedVoxelChangesProperty changes in m_OrderedTickChanges.Values)
+            foreach (Position3Int position in changes.OrderedKeys)
+                ChunkManager.Singleton.EvaluateVoxelChange(position, changes[position], existingTouched: m_TouchedChunks);
+            m_TouchedChunks.UpdateMesh();
+            m_OrderedTickChanges.Clear();
             m_ChangesPool.ReturnAll();
         }
     }

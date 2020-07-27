@@ -12,7 +12,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxelation.Map;
+using Voxels.Map;
 
 namespace Voxelfield.Session.Mode
 {
@@ -52,11 +52,11 @@ namespace Voxelfield.Session.Mode
             var ctf = context.sessionContainer.Require<CtfComponent>();
             context.sessionContainer.Require<DualScoresComponent>().Zero();
             ctf.teamFlags.Clear();
-            ForEachActivePlayer(context, (in ModifyContext playerModifyContext) =>
+            context.ForEachActivePlayer((in ModifyContext playerContext) =>
             {
-                playerModifyContext.player.Require<HealthProperty>().Value = 0;
-                playerModifyContext.player.Require<MoveComponent>().Clear();
-                playerModifyContext.player.Require<InventoryComponent>().Zero();
+                playerContext.player.Require<HealthProperty>().Value = 0;
+                playerContext.player.Require<MoveComponent>().Clear();
+                playerContext.player.Require<InventoryComponent>().Zero();
             });
         }
 

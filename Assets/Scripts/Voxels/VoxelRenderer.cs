@@ -4,7 +4,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using UnityEngine.Profiling;
 
-namespace Voxelation
+namespace Voxels
 {
     /// <summary>
     /// ==========================================
@@ -443,15 +443,15 @@ namespace Voxelation
                     for (var i = 0; i < 8; i++)
                     {
                         Position3Int internalPosition = new Position3Int(x, y, z) + Positions[i];
-                        bool isInsideChunk = chunk.InsideChunk(internalPosition);
+                        bool isOnWorldEdge = internalPosition.x == 0 && lowerBound.x == chunk.Position.x
+                                          || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
+                                          || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
                         float density;
-                        if (isInsideChunk) density = (float) chunk.GetVoxelNoCheck(internalPosition).density / byte.MaxValue * 2;
+                        if (isOnWorldEdge) density = 0.0f;
+                        else if (chunk.InsideChunk(internalPosition)) density = (float) chunk.GetVoxelNoCheck(internalPosition).density / byte.MaxValue * 2;
                         else
                         {
                             Voxel? v = manager.GetVoxel(internalPosition + chunk.Position * chunkSize);
-                            bool isOnWorldEdge = internalPosition.x == 0 && lowerBound.x == chunk.Position.x
-                                              || internalPosition.y == 0 && lowerBound.y == chunk.Position.y
-                                              || internalPosition.z == 0 && lowerBound.z == chunk.Position.z;
                             bool useEmpty = !v.HasValue || isOnWorldEdge;
                             density = useEmpty ? 0.0f : (float) v.Value.density / byte.MaxValue * 2;
                         }

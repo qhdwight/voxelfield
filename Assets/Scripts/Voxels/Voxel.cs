@@ -1,11 +1,11 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Voxelation
+namespace Voxels
 {
     public static class VoxelTexture
     {
-        public const byte Solid = 0, Checkered = 1, Striped = 2, Last = Striped;
+        public const byte Solid = 0, Checkered = 1, Striped = 2, Speckled = 3, Last = Speckled;
 
         public static string Name(byte id)
         {
@@ -14,6 +14,7 @@ namespace Voxelation
                 case Solid:     return nameof(Solid);
                 case Checkered: return nameof(Checkered);
                 case Striped:   return nameof(Striped);
+                case Speckled:  return nameof(Speckled);
                 default:        throw new ArgumentOutOfRangeException(nameof(id), id, null);
             }
         }
@@ -37,6 +38,7 @@ namespace Voxelation
     {
         public static readonly Color32 Dirt = new Color32(39, 25, 10, 255),
                                        Stone = new Color32(39, 39, 39, 255),
+                                       // Grass = new Color32(68, 144, 71, 255),
                                        Grass = new Color32(68, 144, 71, 255),
                                        Wood = new Color32(132, 83, 40, 255);
 
@@ -81,7 +83,7 @@ namespace Voxelation
                 else flags &= ~VoxelFlags.Natural;
             }
         }
-        
+
         public bool IsUnbreakable => !IsBreakable;
 
         public void SetVoxelData(in VoxelChange change)
@@ -108,6 +110,9 @@ namespace Voxelation
                     break;
                 case VoxelTexture.Striped:
                     tile = new Vector2Int(0, 1);
+                    break;
+                case VoxelTexture.Speckled:
+                    tile = new Vector2Int(1, 1);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(texture), texture, null);

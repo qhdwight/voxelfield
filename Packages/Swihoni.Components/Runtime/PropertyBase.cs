@@ -176,6 +176,8 @@ namespace Swihoni.Components
             }
         }
 
+        public ref T DirectValue => ref m_Value;
+
         public T? AsNullable => WithValue ? m_Value : (T?) null;
 
         protected PropertyBase() { }
@@ -224,8 +226,8 @@ namespace Swihoni.Components
 
         public override void Zero() => Value = default;
 
-        public T Else(T @default) => WithValue ? m_Value : @default;
-
+        public T Else(T @default = default) => WithValue ? m_Value : @default;
+        
         /// <returns>False if types are different. Equal if both values are the same, or if both do not have values.</returns>
         public sealed override bool Equals(PropertyBase other) => this == (PropertyBase<T>) other;
 

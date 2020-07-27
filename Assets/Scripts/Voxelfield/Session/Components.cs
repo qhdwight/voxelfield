@@ -4,8 +4,8 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
-using Voxelation;
-using Voxelation.Map;
+using Voxels;
+using Voxels.Map;
 
 namespace Voxelfield.Session
 {
@@ -111,7 +111,7 @@ namespace Voxelfield.Session
     public class DesignerPlayerComponent : ComponentBase
     {
         public Position3IntProperty positionOne, positionTwo;
-        public ByteProperty selectedVoxelId;
+        public VoxelChangeProperty selectedVoxel;
         public UShortProperty selectedModelId;
         public FloatProperty editRadius;
     }
@@ -155,7 +155,7 @@ namespace Voxelfield.Session
             SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent),
                                                      typeof(BrokeVoxelTickProperty));
             SessionElements.commandElements.AppendAll(typeof(WantedItemComponent));
-            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(VoxelChangesProperty),
+            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(OrderedVoxelChangesProperty),
                                                typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent), typeof(DualScoresComponent));
         }
     }

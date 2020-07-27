@@ -3,19 +3,18 @@
 #endif
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using LiteNetLib;
 using Steamworks;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions;
-using Swihoni.Sessions.Modes;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxelation;
-using Voxelation.Map;
+using Voxels;
+using Voxels.Map;
 
 #if VOXELFIELD_RELEASE_SERVER
 using Amazon;
@@ -58,30 +57,30 @@ namespace Voxelfield.Session
         private readonly DualDictionary<NetPeer, string> m_GameLiftPlayerSessionIds = new DualDictionary<NetPeer, string>();
 #endif
 
-        private readonly VoxelChangesProperty m_MasterChanges = new VoxelChangesProperty();
+        private readonly OrderedVoxelChangesProperty m_MasterChanges = new OrderedVoxelChangesProperty();
         private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new DualDictionary<NetPeer, SteamId>();
 
-        public override void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
+        public void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, TouchedChunks touchedChunks = null,
+                                        bool overrideBreakable = false)
         {
             if (MapManager.Singleton.Models.ContainsKey(worldPosition)) return;
-            
-            var changed = Session.GetLatestSession().Require<VoxelChangesProperty>();
-            base.EvaluateVoxelChange(worldPosition, change, chunk, updateMesh); // Apply on mesh
+
+            var changed = Session.GetLatestSession().Require<OrderedVoxelChangesProperty>();
+            ChunkManager.Singleton.EvaluateVoxelChange(worldPosition, change, true, touchedChunks, overrideBreakable);
             changed.Set(worldPosition, change);
             m_MasterChanges.Set(worldPosition, change);
         }
 
-        public override void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted)
+        public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
         {
-            var changed = Session.GetLatestSession().Require<VoxelChangesProperty>();
-            changed.AddAllFrom(uncommitted);
-            m_MasterChanges.AddAllFrom(changed);
-            base.VoxelTransaction(uncommitted); // Commit
+            var center = (Position3Int) throwableBehavior.transform.position;
+            var change = new VoxelChange {magnitude = throwableBehavior.Radius * -0.4f, replace = true, modifiesBlocks = true, form = VoxelVolumeForm.Spherical};
+            EvaluateVoxelChange(center, change);
         }
 
         protected override void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession)
         {
-            var changedVoxels = sendSession.Require<VoxelChangesProperty>();
+            var changedVoxels = sendSession.Require<OrderedVoxelChangesProperty>();
             changedVoxels.SetTo(m_MasterChanges);
         }
 
@@ -307,25 +306,24 @@ namespace Voxelfield.Session
             var move = context.player.Require<MoveComponent>();
             if (move.position.WithoutValue || move.type == MoveType.Flying) return;
 
-            Vector3 eyePosition = SessionBase.GetPlayerEyePosition(move);
-            float height = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch);
-            // TODO:refactor chunk layer mask no magic value
-            if (Physics.Raycast(eyePosition, Vector3.down, out RaycastHit hit, height - 0.1f, 1 << 15))
-                move.position.Value += new Vector3 {y = height - hit.distance};
-
-            bool hitBackFaces = Physics.queriesHitBackfaces;
+            /* If the normal of the contact (of the upwards raycast) is aligned with the upward vector, it is a backface and we are in the terrain */
             Physics.queriesHitBackfaces = true;
-            if (move.groundTick > 0)
             {
-                int count = Physics.RaycastNonAlloc(move + new Vector3 {y = 0.05f}, Vector3.down, CachedHits, float.PositiveInfinity);
-                bool isOnBackface = count != 0 && CachedHits[0].normal.y < 0.0f;
+                int count = Physics.RaycastNonAlloc(move + new Vector3 {y = 0.1f}, Vector3.up, CachedHits, float.PositiveInfinity, 1 << 15);
+                bool isOnBackface = count != 0 && CachedHits[0].normal.y > 0.0f;
                 if (isOnBackface)
                 {
-                    var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");
-                    context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
+                    float distance = CachedHits[0].distance;
+                    // if (distance > 4.0f)
+                    // {
+                    //     var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");
+                    //     context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
+                    // }
+                    // else
+                    move.position.Value += new Vector3 {y = distance + 0.05f};
                 }
             }
-            Physics.queriesHitBackfaces = hitBackFaces;
+            Physics.queriesHitBackfaces = false;
             // Vector3 normal = context.session.GetPlayerModifier(context.player, context.playerId).Movement.Hit.
             // Debug.Log(normal);
             // if (Vector3.Dot(normal, Vector3.down) > 0.0f)

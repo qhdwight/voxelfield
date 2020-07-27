@@ -13,11 +13,9 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
-using Swihoni.Util.Math;
 using UnityEngine;
-using Voxelation;
-using Voxelation.Map;
-using Voxelfield.Session.Mode;
+using Voxels;
+using Voxels.Map;
 #if UNITY_EDITOR
 using System.IO;
 using UnityEditor;
@@ -285,7 +283,9 @@ namespace Voxelfield.Session
             AnalysisLogger.FlushAll();
         }
 
-        public static void SaveTestMap()
+#if UNITY_EDITOR
+        [MenuItem("Voxelfield/Save Custom Map")]
+        public static void SaveCustomMap()
         {
             var models = new ModelsProperty();
             // void AddSpawn(Position3Int position, byte team) =>
@@ -297,36 +297,38 @@ namespace Voxelfield.Session
             // for (byte i = 0; i < 9; i++)
             //     models.Add(new Position3Int(i * 2 + 5, 5, 5),
             //                new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(ModeIdProperty.Showdown)));
-            models.Set(new Position3Int(32, 5, 32),
-                       new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Set(new Position3Int(32, 5, -32),
-                       new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Set(new Position3Int(-32, 5, 32),
-                       new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            models.Set(new Position3Int(-32, 5, -32),
-                       new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+            // models.Set(new Position3Int(32, 5, 32),
+            //            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+            // models.Set(new Position3Int(32, 5, -32),
+            //            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+            // models.Set(new Position3Int(-32, 5, 32),
+            //            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+            // models.Set(new Position3Int(-32, 5, -32),
+            //            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
             var testMap = new MapContainer
             {
-                name = new StringProperty("Test"),
-                terrainHeight = new IntProperty(7),
+                name = new StringProperty("Fort"),
+                terrainHeight = new IntProperty(9),
                 dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-2, 0, -2), upperBound = new Position3IntProperty(2, 1, 2)},
-                noise = new NoiseComponent
+                terrainGeneration = new TerrainGenerationComponent
                 {
-                    seed = new IntProperty(0),
+                    seed = new IntProperty(1337),
                     octaves = new ByteProperty(3),
                     lateralScale = new FloatProperty(35.0f),
                     verticalScale = new FloatProperty(1.5f),
-                    persistance = new FloatProperty(0.5f),
-                    lacunarity = new FloatProperty(0.5f)
+                    persistence = new FloatProperty(0.5f),
+                    lacunarity = new FloatProperty(0.5f),
+                    grassVoxel = new VoxelChangeProperty(new VoxelChange {texture = VoxelTexture.Solid, color = new Color32(255, 172, 7, 255)}),
+                    stoneVoxel = new VoxelChangeProperty(new VoxelChange {texture = VoxelTexture.Checkered, color = new Color32(28, 28, 28, 255)}),
                 },
                 models = models,
                 breakableEdges = new BoolProperty(false)
             };
             MapManager.SaveMapSave(testMap);
-            Debug.Log("Saved Test Map");
+            AssetDatabase.Refresh();
+            Debug.Log("Saved Custom Map");
         }
 
-#if UNITY_EDITOR
         [MenuItem("Build/Windows IL2CPP Player", priority = 100)]
         public static void BuildWindowsIl2CppPlayer()
             => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Debug Windows IL2CPP Player");
@@ -354,7 +356,7 @@ namespace Voxelfield.Session
 
         [MenuItem("Build/Release Server", priority = 200)]
         private static void BuildReleaseServer()
-            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Release Linux Mono Server", true, 
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Release Linux Mono Server", true,
                      new[] {"VOXELFIELD_RELEASE_SERVER", "VOXELFIELD_RELEASE"});
 
         [MenuItem("Build/Release All", priority = 200)]

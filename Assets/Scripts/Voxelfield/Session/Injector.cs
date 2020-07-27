@@ -9,8 +9,8 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Entities;
 using Swihoni.Util.Math;
-using Voxelation;
-using Voxelation.Map;
+using Voxels;
+using Voxels.Map;
 
 namespace Voxelfield.Session
 {
@@ -26,12 +26,7 @@ namespace Voxelfield.Session
     public class Injector : SessionInjectorBase
     {
         protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
-
-        public virtual void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true)
-            => ChunkManager.Singleton.EvaluateVoxelChange(worldPosition, change, chunk, updateMesh);
-
-        public virtual void VoxelTransaction(EvaluatedVoxelsTransaction uncommitted) => uncommitted.Commit();
-
+        
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
         protected AuthTicket m_SteamAuthenticationTicket;
 
@@ -71,12 +66,5 @@ namespace Voxelfield.Session
 
         public override bool IsLoading(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
                                                           || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
-
-        public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
-        {
-            var center = (Position3Int) throwableBehavior.transform.position;
-            var change = new VoxelChange {magnitude = throwableBehavior.Radius * -0.4f, replace = true, modifiesBlocks = true, form = VoxelVolumeForm.Sperhical};
-            EvaluateVoxelChange(center, change);
-        }
     }
 }

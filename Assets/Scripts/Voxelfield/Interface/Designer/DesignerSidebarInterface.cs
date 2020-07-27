@@ -7,9 +7,9 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
-using Voxelation;
-using Voxelation.Map;
 using Voxelfield.Session;
+using Voxels;
+using Voxels.Map;
 
 namespace Voxelfield.Interface.Designer
 {
@@ -39,7 +39,9 @@ namespace Voxelfield.Interface.Designer
                     case ItemId.VoxelWand:
                         AppendProperty("P1: ", designer.positionOne, builder).Append("\n");
                         AppendProperty("P2: ", designer.positionTwo, builder).Append("\n");
-                        builder.Append("Selected: ").Append(designer.selectedVoxelId.WithValue ? VoxelTexture.Name(designer.selectedVoxelId) : "None");
+                        AppendNullable("Texture: ", designer.selectedVoxel.DirectValue.texture, builder).Append("\n");
+                        AppendNullable("Density: ", designer.selectedVoxel.DirectValue.density, builder).Append("\n");
+                        AppendNullable("Color: ", designer.selectedVoxel.DirectValue.color, builder);
                         break;
                     case ItemId.ModelWand:
                         builder.Append("Selected: ").Append(designer.selectedModelId.WithValue ? MapManager.ModelPrefabs[designer.selectedModelId].ModelName : "None");
@@ -48,6 +50,14 @@ namespace Voxelfield.Interface.Designer
                 builder.Commit(m_InformationText);
             }
             SetInterfaceActive(isVisible);
+        }
+
+        private static StringBuilder AppendNullable<T>(string prefix, T? nullable, StringBuilder builder) where T : struct
+        {
+            builder.Append(prefix);
+            if (nullable.HasValue) builder.Append(nullable.Value);
+            else builder.Append("None");
+            return builder;
         }
 
         private static StringBuilder AppendProperty(string prefix, PropertyBase position, StringBuilder builder)

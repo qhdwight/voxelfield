@@ -3,7 +3,7 @@ using LiteNetLib.Utils;
 using Swihoni.Components;
 using UnityEngine;
 
-namespace Voxelation.Map
+namespace Voxels.Map
 {
     [Serializable]
     public class VersionProperty : StringProperty
@@ -17,9 +17,9 @@ namespace Voxelation.Map
         public VersionProperty version;
         public IntProperty terrainHeight;
         public DimensionComponent dimension;
-        public NoiseComponent noise;
+        public TerrainGenerationComponent terrainGeneration;
 
-        public VoxelChangesProperty m_VoxelChanges;
+        public OrderedVoxelChangesProperty voxelChanges;
         public ModelsProperty models;
         public BoolProperty breakableEdges;
 
@@ -29,8 +29,9 @@ namespace Voxelation.Map
             {
                 element.Deserialize(reader);
                 // ReSharper disable once PossibleNullReferenceException
-                if (ReferenceEquals(element, version)) m_VoxelChanges.Version = version.AsNewString();
+                if (ReferenceEquals(element, version)) voxelChanges.Version = version.AsNewString();
             }
+            Debug.Log($"Changed voxels: {voxelChanges.Count}");
             if (version != Application.version) Debug.Log($"Converting map container to newest version, from {version} to {Application.version}");
             return this;
         }

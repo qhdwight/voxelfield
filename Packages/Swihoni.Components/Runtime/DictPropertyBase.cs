@@ -70,7 +70,7 @@ namespace Swihoni.Components
             AddAllFrom(otherMap);
         }
 
-        public TValue this[TKey key] => m_Map[key];
+        public virtual TValue this[TKey key] => m_Map[key];
 
         public virtual void Set(in TKey key, in TValue value)
         {

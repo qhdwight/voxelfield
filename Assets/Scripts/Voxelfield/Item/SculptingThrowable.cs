@@ -2,8 +2,8 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Entities;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxelation;
 using Voxelfield.Session;
+using Voxels;
 
 namespace Voxelfield.Item
 {
@@ -13,12 +13,11 @@ namespace Voxelfield.Item
 
         protected override void JustPopped(in ModifyContext context)
         {
-            if (context.session.Injector is Injector injector)
-            {
-                var center = (Position3Int) transform.position;
-                var changes = new VoxelChange {color = Sand, magnitude = m_Radius, form = VoxelVolumeForm.Cylindrical, texture = VoxelTexture.Solid, natural = false};
-                injector.EvaluateVoxelChange(center, changes);
-            }
+            var server = (ServerInjector) context.session.Injector;
+            
+            var center = (Position3Int) (transform.position + new Vector3 {y = m_Radius * 0.75f});
+            var changes = new VoxelChange {color = Sand, magnitude = m_Radius, texture = VoxelTexture.Speckled, natural = false, form = VoxelVolumeForm.Cylindrical};
+            server.EvaluateVoxelChange(center, changes);
         }
     }
 }

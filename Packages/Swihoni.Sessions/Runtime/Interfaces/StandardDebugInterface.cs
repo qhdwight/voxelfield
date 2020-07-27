@@ -64,7 +64,7 @@ namespace Swihoni.Sessions.Interfaces
             m_PacketLossText.gameObject.SetActive(areNetworkStatsVisible);
             m_PacketSizeText.gameObject.SetActive(areNetworkStatsVisible);
 
-            m_AllocationRateText.StartBuild().AppendFormat("GC: {0:F1} kb/s", memoryRate / 1000.0f).Commit(m_AllocationRateText);
+            m_AllocationRateText.StartBuild().AppendFormat("Alloc: {0:F1} kb/s", memoryRate / 1000.0f).Commit(m_AllocationRateText);
             m_LastUpdateTime = time;
             SetInterfaceActive(true);
         }

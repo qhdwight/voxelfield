@@ -34,7 +34,7 @@ namespace Voxelfield.Session.Mode
             if (isFlagTaken)
             {
                 Container capturingPlayer = session.GetModifyingPayerFromId(flag.capturingPlayerId);
-                spritePosition = SessionBase.GetPlayerEyePosition(capturingPlayer.Require<MoveComponent>()) + new Vector3 {y = 0.2f};
+                spritePosition = capturingPlayer.Require<MoveComponent>().GetPlayerEyePosition() + new Vector3 {y = 0.2f};
             }
             else spritePosition = transform.position + new Vector3 {y = 2.8f};
 

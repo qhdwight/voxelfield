@@ -6,25 +6,41 @@ using Swihoni.Sessions.Interfaces;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Voxelation;
 using Voxelfield.Session;
+using Voxels;
 
 namespace Voxelfield.Interface.Designer
 {
     public class VoxelSelectInterface : SessionInterfaceBehavior
     {
         [SerializeField] private Button m_ButtonPrefab = default;
-        private int? m_WantedId;
+        [SerializeField] private ColorSelector[] m_ColorValueSelectors = default;
+
+        private int m_WantedTexture = VoxelTexture.Solid;
+        private Color32 m_WantedColor = new Color32(255, 255, 255, 255);
 
         private void Start()
         {
-            for (byte id = 1; id <= VoxelTexture.Last; id++)
+            for (byte modelId = 0; modelId <= VoxelTexture.Last; modelId++)
             {
                 Button button = Instantiate(m_ButtonPrefab, transform);
                 var text = button.GetComponentInChildren<TextMeshProUGUI>();
-                text.SetText(VoxelTexture.Name(id));
-                int _modelId = id;
-                button.onClick.AddListener(() => m_WantedId = _modelId);
+                text.SetText(VoxelTexture.Name(modelId));
+                int _modelId = modelId;
+                button.onClick.AddListener(() => m_WantedTexture = _modelId);
+            }
+            void SelectorListener(int index, float floatValue)
+            {
+                var value = (byte) Mathf.RoundToInt(floatValue);
+                m_WantedColor[index] = value;
+                foreach (ColorSelector selector in m_ColorValueSelectors)
+                    selector.SetColor(m_WantedColor);
+            }
+            for (var colorIndex = 0; colorIndex < m_ColorValueSelectors.Length; colorIndex++)
+            {
+                ColorSelector selector = m_ColorValueSelectors[colorIndex];
+                int _colorIndex = colorIndex;
+                selector.OnValueChanged.AddListener(floatValue => SelectorListener(_colorIndex, floatValue));
             }
         }
 
@@ -34,12 +50,11 @@ namespace Voxelfield.Interface.Designer
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
-            if (m_WantedId.HasValue)
-            {
-                Container localCommands = session.GetLocalCommands();
-                localCommands.Require<DesignerPlayerComponent>().selectedVoxelId.Value = (byte) m_WantedId.Value;
-            }
-            m_WantedId = null;
+            Container localCommands = session.GetLocalCommands();
+            var designer = localCommands.Require<DesignerPlayerComponent>();
+            ref VoxelChange voxel = ref designer.selectedVoxel.DirectValue;
+            voxel.texture = (byte) m_WantedTexture;
+            voxel.color = m_WantedColor;
         }
     }
 }

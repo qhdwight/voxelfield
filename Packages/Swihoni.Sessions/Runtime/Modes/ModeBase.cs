@@ -126,7 +126,7 @@ namespace Swihoni.Sessions.Modes
         protected virtual Vector3 GetSpawnPosition(in ModifyContext context) => new Vector3 {y = 8.0f};
 
         public virtual void BeginModify(in ModifyContext context)
-            => ForEachActivePlayer(context, (in ModifyContext playerModifyContext) => SpawnPlayer(playerModifyContext));
+            => context.ForEachActivePlayer((in ModifyContext playerModifyContext) => SpawnPlayer(playerModifyContext));
 
         protected virtual void KillPlayer(in DamageContext context)
         {
@@ -253,21 +253,6 @@ namespace Swihoni.Sessions.Modes
         }
 
         public virtual void SetupNewPlayer(in ModifyContext context) => SpawnPlayer(context);
-
-        public delegate void ModifyPlayerAction(in ModifyContext playerModifyContext);
-
-        protected static void ForEachActivePlayer(in ModifyContext context, ModifyPlayerAction action)
-        {
-            for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
-            {
-                Container player = context.GetModifyingPlayer(playerId);
-                if (player.Require<HealthProperty>().WithValue)
-                {
-                    var playerModifyContext = new ModifyContext(existing: context, player: player, playerId: playerId);
-                    action(playerModifyContext);
-                }
-            }
-        }
 
         public virtual void EndModify(in ModifyContext context) { }
 

@@ -7,7 +7,7 @@ using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
-using Voxelation;
+using Voxels;
 
 namespace Voxelfield.Session.Mode
 {
@@ -42,7 +42,7 @@ namespace Voxelfield.Session.Mode
                 _p.Clear();
                 _p.IsOverride = true;
             });
-            designer.selectedVoxelId.Value = VoxelTexture.Checkered;
+            designer.selectedVoxel.Value = new VoxelChange {texture = VoxelTexture.Checkered};
         }
     }
 }

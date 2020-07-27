@@ -5,8 +5,17 @@ using LiteNetLib.Utils;
 namespace Swihoni.Components
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
-    public class NoSerialization : Attribute
+    public class NoSerializationAttribute : Attribute
     {
+        public bool ExceptRead { get; }
+        public bool ExceptWrite { get; }
+
+        public NoSerializationAttribute(bool exceptRead = false, bool exceptWrite = false)
+        {
+            if (exceptRead && exceptWrite) throw new ArgumentException("Remove attribute if reading and writing are enabled");
+            ExceptRead = exceptRead;
+            ExceptWrite = exceptWrite;
+        }
     }
 
     public static class Serializer
@@ -23,7 +32,7 @@ namespace Swihoni.Components
             _writer = writer; // Prevents heap allocation in closure
             element.Navigate(_element =>
             {
-                if (_element.WithAttribute<NoSerialization>()) return Navigation.SkipDescendents;
+                if (_element.TryAttribute(out NoSerializationAttribute attribute) && !attribute.ExceptWrite) return Navigation.SkipDescendents;
                 if (_element is PropertyBase property) property.Serialize(_writer);
                 return Navigation.Continue;
             });
@@ -37,7 +46,7 @@ namespace Swihoni.Components
             _reader = reader;
             element.Navigate(_element =>
             {
-                if (_element.WithAttribute<NoSerialization>()) return Navigation.SkipDescendents;
+                if (_element.TryAttribute(out NoSerializationAttribute attribute) && !attribute.ExceptRead) return Navigation.SkipDescendents;
                 if (_element is PropertyBase property)
                 {
                     property.Clear();

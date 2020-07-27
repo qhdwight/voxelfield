@@ -1,7 +1,7 @@
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using UnityEngine;
-using Voxelation.Map;
+using Voxels.Map;
 
 namespace Voxelfield
 {

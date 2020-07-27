@@ -117,7 +117,7 @@ namespace Swihoni.Sessions.Entities
                     {
                         throwable.popTimeUs.Value = throwable.thrownElapsedUs;
                         resetContact = false;
-                        HurtNearby(context, true);
+                        if (m_Damage > 0) HurtNearby(context, true);
                     }
                     if (collisionType == CollisionType.World && !m_ExplodeOnContact)
                     {

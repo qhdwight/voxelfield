@@ -11,7 +11,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxelation.Map;
+using Voxels.Map;
 using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
@@ -83,7 +83,7 @@ namespace Voxelfield.Session.Mode
 
         public bool IsLookingAt<TBehavior>(Container player, out TBehavior behavior)
         {
-            Ray ray = SessionBase.GetRayForPlayer(player);
+            Ray ray = player.GetRayForPlayer();
             int count = Physics.RaycastNonAlloc(ray, m_CachedHits, 2.0f, m_ModelMask);
             if (count > 0 && m_CachedHits[0].collider.TryGetComponent(out behavior))
                 return true;
@@ -159,7 +159,7 @@ namespace Voxelfield.Session.Mode
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
             SetActiveCures(stage);
-            ForEachActivePlayer(context, (in ModifyContext playerModifyContext) => FirstStageSpawn(playerModifyContext, spawns));
+            context.ForEachActivePlayer((in ModifyContext playerModifyContext) => FirstStageSpawn(playerModifyContext, spawns));
             Debug.Log("Started first stage");
         }
 

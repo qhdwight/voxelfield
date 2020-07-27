@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Items.Modifiers
 {
-    [CreateAssetMenu(fileName = "Launcher", menuName = "Item/Launcher", order = 0)]
+    [CreateAssetMenu(fileName = "Launcher", menuName = "Item/Launcher", order = 300)]
     public class LauncherModifier : GunWithMagazineModifier
     {
         [SerializeField] protected ThrowableModifierBehavior m_ThrowablePrefab = default;

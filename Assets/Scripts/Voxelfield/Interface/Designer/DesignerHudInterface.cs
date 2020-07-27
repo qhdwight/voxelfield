@@ -36,7 +36,7 @@ namespace Voxelfield.Interface.Designer
             }
             if (isVisible)
             {
-                if (Physics.RaycastNonAlloc(SessionBase.GetRayForPlayer(localPlayer), m_CachedHits, m_SculptingItem.EditDistance, m_SculptingItem.ChunkMask) > 0)
+                if (Physics.RaycastNonAlloc(localPlayer.GetRayForPlayer(), m_CachedHits, m_SculptingItem.EditDistance, m_SculptingItem.ChunkMask) > 0)
                 {
                     Matrix4x4 matrix = Matrix4x4.TRS(m_CachedHits.First().point, Quaternion.identity, Vector3.one * editRadius * 1.5f);
                     Graphics.DrawMesh(m_SphereMesh, matrix, m_Material, 0, SessionBase.ActiveCamera, 0, null, ShadowCastingMode.Off, false);

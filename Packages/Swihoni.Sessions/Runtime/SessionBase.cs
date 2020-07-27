@@ -352,21 +352,6 @@ namespace Swihoni.Sessions
 
         public virtual Container GetLocalCommands() => throw new NotImplementedException();
 
-        public static Ray GetRayForPlayer(Container player)
-        {
-            var camera = player.Require<CameraComponent>();
-            // Convert from spherical coordinates to cartesian vector
-            Vector3 direction = camera.GetForward();
-            var move = player.Require<MoveComponent>();
-            // TODO:refactor magic numbers
-            Vector3 position = GetPlayerEyePosition(move);
-
-            var ray = new Ray(position, direction);
-            return ray;
-        }
-
-        public static Vector3 GetPlayerEyePosition(MoveComponent move) => move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
-
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public virtual ModeBase GetModifyingMode(Container session = null)
         {
@@ -439,5 +424,36 @@ namespace Swihoni.Sessions
             }
             return string.Empty;
         }
+
+        public delegate void ModifyPlayerAction(in ModifyContext playerModifyContext);
+
+        public static void ForEachActivePlayer(this in ModifyContext context, ModifyPlayerAction action)
+        {
+            for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
+            {
+                Container player = context.GetModifyingPlayer(playerId);
+                if (player.Require<HealthProperty>().WithValue)
+                {
+                    var playerModifyContext = new ModifyContext(existing: context, player: player, playerId: playerId);
+                    action(playerModifyContext);
+                }
+            }
+        }
+
+        public static Ray GetRayForPlayer(this Container player)
+        {
+            var camera = player.Require<CameraComponent>();
+            // Convert from spherical coordinates to cartesian vector
+            Vector3 direction = camera.GetForward();
+            var move = player.Require<MoveComponent>();
+            // TODO:refactor magic numbers
+            Vector3 position = move.GetPlayerEyePosition();
+
+            var ray = new Ray(position, direction);
+            return ray;
+        }
+
+        public static Vector3 GetPlayerEyePosition(this MoveComponent move)
+            => move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
     }
 }

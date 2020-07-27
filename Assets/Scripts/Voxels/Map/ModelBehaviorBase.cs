@@ -2,7 +2,7 @@ using Swihoni.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
 
-namespace Voxelation.Map
+namespace Voxels.Map
 {
     public abstract class ModelBehaviorBase : MonoBehaviour
     {

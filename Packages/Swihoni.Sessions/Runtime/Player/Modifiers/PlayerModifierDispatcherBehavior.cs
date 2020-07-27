@@ -42,8 +42,13 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(context);
 
-            if (context.player.With(out MoveComponent move) && context.player.With<ServerTag>())
+            bool isOnServer = context.player.With<ServerTag>();
+            
+            if (isOnServer && context.player.With(out MoveComponent move))
                 context.session.Injector.OnServerModify(context, move);
+
+            if (isOnServer && context.player.WithPropertyWithValue(out FlashProperty flash))
+                flash.Value -= context.durationUs / 2_000_000f;
 
             if (PlayerModifierBehaviorBase.TryServerCommands(context.player, out IEnumerable<string[]> stringCommands))
                 foreach (string[] stringCommand in stringCommands)

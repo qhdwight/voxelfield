@@ -7,16 +7,14 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxelation;
 using Voxelfield.Session;
+using Voxels;
 
 namespace Voxelfield.Item
 {
     [CreateAssetMenu(fileName = "Voxel Wand", menuName = "Item/Voxel Wand", order = 0)]
     public class VoxelWand : SculptingItem
     {
-        private readonly EvaluatedVoxelsTransaction m_Transaction = new EvaluatedVoxelsTransaction();
-
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("set", "revert", "breakable");
 
@@ -48,7 +46,13 @@ namespace Voxelfield.Item
             if (player.Without<ServerTag>()) return;
 
             var designer = player.Require<DesignerPlayerComponent>();
-            DimensionFunction(context.session, designer, _ => new VoxelChange {texture = designer.selectedVoxelId, hasBlock = true});
+            if (designer.positionOne.WithoutValue || designer.positionTwo.WithoutValue) return;
+
+            VoxelChange change = designer.selectedVoxel;
+            change.Merge(new VoxelChange {hasBlock = true, upperBound = designer.positionTwo, form = VoxelVolumeForm.Prism});
+
+            var server = (ServerInjector) context.session.Injector;
+            server.EvaluateVoxelChange(designer.positionOne, change, overrideBreakable: true);
         }
 
         public override void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
@@ -61,27 +65,33 @@ namespace Voxelfield.Item
             {
                 foreach (string[] args in commands)
                 {
+                    var designer = player.Require<DesignerPlayerComponent>();
                     switch (args[0])
                     {
                         case "set":
                         {
-                            var designer = player.Require<DesignerPlayerComponent>();
-                            if (args.Length > 1 && byte.TryParse(args[1], out byte blockId))
-                                designer.selectedVoxelId.ValueOverride = blockId;
-                            DimensionFunction(session, designer, _ => new VoxelChange {texture = designer.selectedVoxelId.AsNullable, hasBlock = true});
+                            VoxelChange change = designer.selectedVoxel;
+                            change.Merge(new VoxelChange {upperBound = designer.positionTwo, hasBlock = true, form = VoxelVolumeForm.Prism});
+
+                            var server = (ServerInjector) session.Injector;
+                            server.EvaluateVoxelChange(designer.positionOne, change, overrideBreakable: true);
                             break;
                         }
                         case "revert":
                         {
                             // ReSharper disable once PossibleInvalidOperationException
-                            DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => ChunkManager.Singleton.GetMapSaveVoxel(position).Value);
+                            DimensionFunction(session, designer, position => ChunkManager.Singleton.GetMapSaveVoxel(position).Value);
                             break;
                         }
                         case "breakable":
                         {
                             var breakable = true;
                             if (args.Length > 1 && bool.TryParse(args[1], out bool parsedBreakable)) breakable = parsedBreakable;
-                            DimensionFunction(session, player.Require<DesignerPlayerComponent>(), position => new VoxelChange {isBreakable = breakable});
+
+                            var change = new VoxelChange {upperBound = designer.positionTwo, isBreakable = breakable, form = VoxelVolumeForm.Prism};
+
+                            var server = (ServerInjector) session.Injector;
+                            server.EvaluateVoxelChange(designer.positionOne, change, overrideBreakable: true);
                             break;
                         }
                     }
@@ -89,21 +99,22 @@ namespace Voxelfield.Item
             }
         }
 
-        private void DimensionFunction(SessionBase session, DesignerPlayerComponent designer, Func<Position3Int, VoxelChange> function)
+        private static void DimensionFunction(SessionBase session, DesignerPlayerComponent designer, Func<Position3Int, VoxelChange> function)
         {
             if (designer.positionOne.WithoutValue || designer.positionTwo.WithoutValue) return;
 
-            var injector = (Injector) session.Injector;
+            var server = (ServerInjector) session.Injector;
             Position3Int p1 = designer.positionOne, p2 = designer.positionTwo;
+            var touchedChunks = new TouchedChunks();
             for (int x = Math.Min(p1.x, p2.x); x <= Math.Max(p1.x, p2.x); x++)
             for (int y = Math.Min(p1.y, p2.y); y <= Math.Max(p1.y, p2.y); y++)
             for (int z = Math.Min(p1.z, p2.z); z <= Math.Max(p1.z, p2.z); z++)
             {
                 var worldPosition = new Position3Int(x, y, z);
-                m_Transaction.Set(worldPosition, function(worldPosition));
+                server.EvaluateVoxelChange(worldPosition, function(worldPosition), touchedChunks, true);
             }
             Debug.Log($"Set {p1} to {p2}");
-            injector.VoxelTransaction(m_Transaction);
+            touchedChunks.UpdateMesh();
         }
     }
 }

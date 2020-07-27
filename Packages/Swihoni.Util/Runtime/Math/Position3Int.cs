@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using LiteNetLib.Utils;
 using UnityEngine;
 
@@ -21,6 +22,7 @@ namespace Swihoni.Util.Math
 
         public override bool Equals(object other) => other is Position3Int && GetHashCode() == other.GetHashCode();
 
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
         public override int GetHashCode()
         {
             unchecked

@@ -159,8 +159,8 @@ MonoBehaviour:
   id: 6
   m_PopTimeUs: 2000000
   m_PopDurationUs: 500000
-  m_Radius: 2.5
-  m_Damage: 70
+  m_Radius: 2.1
+  m_Damage: 10
   m_Interval: 0
   m_Mask:
     serializedVersion: 2

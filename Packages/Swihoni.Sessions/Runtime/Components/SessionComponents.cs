@@ -5,8 +5,6 @@ using Swihoni.Util;
 
 namespace Swihoni.Sessions.Components
 {
-    using ServerOnly = NoSerialization;
-
     public class OnlyServerTrustedAttribute : Attribute
     {
     }
@@ -37,23 +35,23 @@ namespace Swihoni.Sessions.Components
     {
     }
 
-    [Serializable, ServerOnly]
+    [Serializable, NoSerialization]
     public class ServerTag : ComponentBase
     {
     }
 
-    [Serializable, ServerOnly]
+    [Serializable, NoSerialization]
     public class HostTag : ComponentBase
     {
     }
 
-    [Serializable, ServerOnly]
+    [Serializable, NoSerialization]
     public class ServerPingComponent : ComponentBase
     {
         public UIntProperty latencyUs;
     }
 
-    [Serializable, ServerOnly]
+    [Serializable, NoSerialization]
     public class HasSentInitialData : BoolProperty
     {
     }
@@ -194,6 +192,11 @@ namespace Swihoni.Sessions.Components
 
     [Serializable, ClientTrusted, SingleTick]
     public class ChatEntryProperty : StringProperty
+    {
+    }
+
+    [Serializable, OnlyServerTrusted]
+    public class FlashProperty : FloatProperty
     {
     }
 }

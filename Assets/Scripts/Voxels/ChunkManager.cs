@@ -1,13 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using UnityEngine.Profiling;
-using Voxelation.Map;
+using Voxels.Map;
+using Random = UnityEngine.Random;
 
-namespace Voxelation
+namespace Voxels
 {
     public delegate void MapProgressCallback(in MapProgressInfo mapProgressInfoCallback);
 
@@ -35,8 +37,6 @@ namespace Voxelation
 
     public class ChunkManager : SingletonBehavior<ChunkManager>
     {
-        private static readonly EvaluatedVoxelsTransaction EvaluationTransaction = new EvaluatedVoxelsTransaction();
-
         [SerializeField] private GameObject m_ChunkPrefab = default;
         [SerializeField] private int m_ChunkSize = default;
         private readonly Stack<Chunk> m_ChunkPool = new Stack<Chunk>();
@@ -97,48 +97,44 @@ namespace Voxelation
             var progress = 0.0f;
             Position3Int lower = map.dimension.lowerBound, upper = map.dimension.upperBound;
             for (int x = lower.x; x <= upper.x; x++)
+            for (int y = lower.y; y <= upper.y; y++)
+            for (int z = lower.z; z <= upper.z; z++)
             {
-                for (int y = lower.y; y <= upper.y; y++)
+                var chunkPosition = new Position3Int(x, y, z);
+                progress += 1.0f / m_PoolSize;
+                var progressInfo = new MapProgressInfo {progress = progress};
+                switch (actionType)
                 {
-                    for (int z = lower.z; z <= upper.z; z++)
+                    case ChunkActionType.Commission:
                     {
-                        var chunkPosition = new Position3Int(x, y, z);
-                        progress += 1.0f / m_PoolSize;
-                        var progressInfo = new MapProgressInfo {progress = progress};
-                        switch (actionType)
-                        {
-                            case ChunkActionType.Commission:
-                            {
-                                CommissionChunkFromPoolIntoPosition(chunkPosition);
-                                progressInfo.stage = MapLoadingStage.SettingUp;
-                                break;
-                            }
-                            case ChunkActionType.Generate:
-                            {
-                                GetChunkFromPosition(chunkPosition).CreateTerrainFromSave(map);
-                                progressInfo.stage = MapLoadingStage.Generating;
-                                break;
-                            }
-                            case ChunkActionType.UpdateMesh:
-                            {
-                                UpdateChunkMesh(GetChunkFromPosition(chunkPosition));
-                                progressInfo.stage = MapLoadingStage.UpdatingMesh;
-                                break;
-                            }
-                            default:
-                            {
-                                Debug.LogWarning($"Unrecognized chunk action type {actionType}");
-                                break;
-                            }
-                        }
-                        ProgressInfo = progressInfo;
-                        yield return null;
+                        CommissionChunkFromPoolIntoPosition(chunkPosition);
+                        progressInfo.stage = MapLoadingStage.SettingUp;
+                        break;
+                    }
+                    case ChunkActionType.Generate:
+                    {
+                        GetChunkFromPosition(chunkPosition).CreateTerrainFromSave(map);
+                        progressInfo.stage = MapLoadingStage.Generating;
+                        break;
+                    }
+                    case ChunkActionType.UpdateMesh:
+                    {
+                        UpdateChunkMesh(GetChunkFromPosition(chunkPosition));
+                        progressInfo.stage = MapLoadingStage.UpdatingMesh;
+                        break;
+                    }
+                    default:
+                    {
+                        Debug.LogWarning($"Unrecognized chunk action type {actionType}");
+                        break;
                     }
                 }
+                ProgressInfo = progressInfo;
+                yield return null;
             }
             if (actionType == ChunkActionType.Generate)
-                foreach (KeyValuePair<Position3Int, VoxelChange> pair in map.m_VoxelChanges.Map)
-                    EvaluateVoxelChange(pair.Key, pair.Value, updateMesh: false, updateSave: false);
+                foreach (Position3Int position in map.voxelChanges.OrderedKeys)
+                    EvaluateVoxelChange(position, map.voxelChanges[position], false, TouchedChunks);
         }
 
         /// <summary>
@@ -166,82 +162,133 @@ namespace Voxelation
             }
         }
 
+        private static readonly TouchedChunks TouchedChunks = new TouchedChunks();
+
         /// <summary>
         /// Change the data of a chunk in the array.
         /// </summary>
         /// <param name="worldPosition">World position of the voxel</param>
         /// <param name="change">Data to change on voxel</param>
-        /// <param name="chunk">Chunk that we know it is in. If null, we will try to find it</param>
-        /// <param name="updateMesh">Whether or not to actually update the chunk's mesh</param>
         /// <param name="updateSave">Whether or not to update map save component</param>
-        /// <param name="existingTransaction">Merge to existing transaction</param>
-        public void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, Chunk chunk = null, bool updateMesh = true, bool updateSave = true,
-                                        EvaluatedVoxelsTransaction existingTransaction = null)
+        /// <param name="existingTouched"></param>
+        /// <param name="overrideBreakable"></param>
+        public void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, bool updateSave = true, TouchedChunks existingTouched = null,
+                                        bool overrideBreakable = false)
         {
             Profiler.BeginSample("Apply Voxel Change");
             Random.InitState(worldPosition.GetHashCode());
-            EvaluatedVoxelsTransaction transaction = existingTransaction ?? EvaluationTransaction;
-            if (change.magnitude is float radius)
+            TouchedChunks touched = existingTouched ?? TouchedChunks;
+            VoxelVolumeForm form = change.form.Value;
+            switch (form)
             {
-                bool isAdditive = radius > 0.0f;
-                float absoluteRadius = Mathf.Abs(radius);
-                int roundedRadius = Mathf.CeilToInt(absoluteRadius);
-                for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
-                for (int iy = -roundedRadius; iy <= roundedRadius; iy++)
-                for (int iz = -roundedRadius; iz <= roundedRadius; iz++)
+                case VoxelVolumeForm.Single:
                 {
-                    Position3Int voxelWorldPosition = worldPosition + new Position3Int(ix, iy, iz);
-                    chunk = GetChunkFromWorldPosition(voxelWorldPosition);
-                    if (!chunk) continue;
-                    Voxel? _voxel = GetVoxel(voxelWorldPosition, chunk);
-                    if (!(_voxel is Voxel voxel)) continue;
-
-                    float distance = change.form.GetValueOrDefault() == VoxelVolumeForm.Cylindrical
-                        ? Mathf.Sqrt((worldPosition.x - voxelWorldPosition.x).Square() + (worldPosition.z - voxelWorldPosition.z).Square())
-                        : Position3Int.Distance(worldPosition, voxelWorldPosition);
-                    byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(distance / absoluteRadius * 0.5f * Random.Range(0.8f, 1.0f)) * byte.MaxValue)),
-                         currentDensity = voxel.density;
-                    VoxelChange evaluatedChange = default;
-
-                    if (voxel.IsUnbreakable) continue;
-
-                    if (isAdditive)
-                    {
-                        newDensity = checked((byte) (byte.MaxValue - newDensity));
-                        if (newDensity > currentDensity)
-                        {
-                            evaluatedChange.density = newDensity;
-                            if (voxel.OnlySmooth) evaluatedChange.Merge(change);
-                        }
-                    }
-                    else
-                    {
-                        if (newDensity < currentDensity) evaluatedChange.density = newDensity;
-                    }
-                    if (voxel.HasBlock && !change.modifiesBlocks.GetValueOrDefault()) continue;
-
-                    if (!isAdditive && change.texture is byte texture)
-                        evaluatedChange.texture = texture;
-                    if (change.color is Color32 color) evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
-                    bool inside = distance < roundedRadius;
-                    if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && inside && voxel.HasBlock)
-                        evaluatedChange.hasBlock = false;
-                    evaluatedChange.natural = false;
-                    transaction.Set(voxelWorldPosition, evaluatedChange);
+                    Chunk chunk = GetChunkFromWorldPosition(worldPosition);
+                    if (!chunk) return;
+                    
+                    Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
+                    // ReSharper disable once PossibleNullReferenceException
+                    chunk.SetVoxelDataNoCheck(voxelChunkPosition, change);
+                    if (updateSave) Map.voxelChanges.Set(worldPosition, change);
+                    AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                    break;
                 }
+                case VoxelVolumeForm.Prism:
+                {
+                    Position3Int l = worldPosition, u = change.upperBound.Value;
+                    for (int x = Math.Min(l.x, u.x); x <= Math.Max(l.x, u.x); x++)
+                    for (int y = Math.Min(l.y, u.y); y <= Math.Max(l.y, u.y); y++)
+                    for (int z = Math.Min(l.z, u.z); z <= Math.Max(l.z, u.z); z++)
+                    {
+                        var voxelWorldPosition = new Position3Int(x, y, z);
+                        Chunk chunk = GetChunkFromWorldPosition(voxelWorldPosition);
+                        if (!chunk) continue;
+
+                        Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
+                        
+                        VoxelChange evaluatedChange = change;
+                        evaluatedChange.form = VoxelVolumeForm.Single;
+                        chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
+                        if (updateSave) Map.voxelChanges.Set(voxelWorldPosition, evaluatedChange);
+                        AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                    }
+                    break;
+                }
+                case VoxelVolumeForm.Spherical:
+                case VoxelVolumeForm.Cylindrical:
+                {
+                    float radius = change.magnitude.Value;
+                    bool isAdditive = radius > 0.0f;
+                    float absoluteRadius = Mathf.Abs(radius);
+                    int roundedRadius = Mathf.CeilToInt(absoluteRadius);
+                    for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
+                    for (int iy = -roundedRadius; iy <= roundedRadius; iy++)
+                    for (int iz = -roundedRadius; iz <= roundedRadius; iz++)
+                    {
+                        Position3Int voxelWorldPosition = worldPosition + new Position3Int(ix, iy, iz);
+                        Chunk chunk = GetChunkFromWorldPosition(voxelWorldPosition);
+                        if (!chunk) continue;
+
+                        Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
+                        ref Voxel voxel = ref chunk.GetVoxelNoCheck(voxelChunkPosition);
+
+                        float GetDistance(VoxelVolumeForm _form, Vector3 _center, Vector3 _voxel) => _form == VoxelVolumeForm.Cylindrical
+                            ? Mathf.Sqrt((_center.x - _voxel.x).Square() + (_center.z - _voxel.z).Square())
+                            : Vector3.Distance(_center, _voxel);
+
+                        float distance = GetDistance(form, worldPosition, voxelWorldPosition),
+                              f = distance / absoluteRadius * 0.5f;
+                        if (!change.noRandom.GetValueOrDefault()) f *= Random.Range(0.85f, 1.0f);
+                        byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(f) * byte.MaxValue)),
+                             currentDensity = voxel.density;
+                        VoxelChange evaluatedChange = default;
+
+                        if (!overrideBreakable && voxel.IsUnbreakable) continue;
+
+                        if (isAdditive)
+                        {
+                            newDensity = checked((byte) (byte.MaxValue - newDensity));
+                            if (newDensity > currentDensity)
+                            {
+                                evaluatedChange.density = newDensity;
+                                if (voxel.OnlySmooth) evaluatedChange.Merge(change);
+                            }
+                        }
+                        else
+                        {
+                            if (newDensity < currentDensity) evaluatedChange.density = newDensity;
+                        }
+                        if (voxel.HasBlock && !change.modifiesBlocks.GetValueOrDefault()) continue;
+
+                        bool isInside = GetDistance(form, worldPosition, voxelWorldPosition + new Vector3(0.5f, 0.5f, 0.5f)) < absoluteRadius * 1.5f;
+
+                        if (isInside)
+                        {
+                            if (!isAdditive)
+                            {
+                                if (change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
+                                    evaluatedChange.hasBlock = false;
+                            }
+                            if (change.color is Color32 color)
+                                evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
+                            if (change.texture is byte texture)
+                                evaluatedChange.texture = texture;
+                        }
+                        evaluatedChange.natural = false;
+
+                        evaluatedChange.form = VoxelVolumeForm.Single;
+                        chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
+                        if (updateSave) Map.voxelChanges.Set(voxelWorldPosition, evaluatedChange);
+                        AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                    }
+                    break;
+                }
+                case VoxelVolumeForm.Wall:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(form), form, null);
             }
-            else
-            {
-                if (!chunk) chunk = GetChunkFromWorldPosition(worldPosition);
-                if (!chunk) return;
-                Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-                // ReSharper disable once PossibleNullReferenceException
-                chunk.SetVoxelDataNoCheck(voxelChunkPosition, change);
-                transaction.Set(worldPosition, change);
-            }
-            Profiler.EndSample();
-            if (updateSave) Map.m_VoxelChanges.Set(worldPosition, change);
-            if (updateMesh) transaction.Commit();
+            if (existingTouched is null) TouchedChunks.UpdateMesh();
         }
 
         public VoxelChange? GetMapSaveVoxel(in Position3Int worldPosition)
@@ -249,7 +296,7 @@ namespace Voxelation
             Chunk chunk = GetChunkFromWorldPosition(worldPosition);
             if (!chunk) return null;
             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-            VoxelChange change = chunk.GetChangeDataFromSave(voxelChunkPosition, m_LoadedMap);
+            VoxelChange change = chunk.GetChangeFromMap(voxelChunkPosition, m_LoadedMap);
             return change;
         }
 

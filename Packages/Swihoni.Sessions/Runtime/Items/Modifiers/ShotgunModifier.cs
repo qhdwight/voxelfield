@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Swihoni.Sessions.Items.Modifiers
 {
-    [CreateAssetMenu(fileName = "Shotgun", menuName = "Item/Shotgun", order = 2)]
+    [CreateAssetMenu(fileName = "Shotgun", menuName = "Item/Shotgun", order = 100)]
     public class ShotgunModifier : GunWithMagazineModifier
     {
         protected override void ReloadAmmo(ItemComponent item)

@@ -173,6 +173,6 @@ namespace Swihoni.Sessions
             => playerId == HostPlayerId ? m_HostCommands : base.GetModifyingPayerFromId(playerId, session);
 
         public override Ray GetRayForPlayerId(int playerId)
-            => playerId == HostPlayerId ? GetRayForPlayer(m_HostCommands) : base.GetRayForPlayerId(playerId);
+            => playerId == HostPlayerId ? m_HostCommands.GetRayForPlayer() : base.GetRayForPlayerId(playerId);
     }
 }

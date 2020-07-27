@@ -5,6 +5,8 @@ namespace Swihoni.Util.Math
     public static class ExtraMath
     {
         public static int Square(this int i) => i * i;
+        
+        public static float Square(this float f) => f * f;
 
         public static float LateralMagnitude(this in Vector3 v) => Mathf.Sqrt(v.x * v.x + v.z * v.z);
 

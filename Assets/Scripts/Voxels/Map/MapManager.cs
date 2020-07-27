@@ -8,8 +8,11 @@ using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
-namespace Voxelation.Map
+namespace Voxels.Map
 {
     public class MapManager : SingletonBehavior<MapManager>
     {
@@ -101,12 +104,15 @@ namespace Voxelation.Map
 #if VOXELFIELD_RELEASE_CLIENT
             string mapPath = GetMapPath(map.name);
 #else
-            string mapPath = $"C:/Users/qhdwi/Projects/Programming/Unity/Compound/Assets/Resources/Maps/{map.name}.bytes";
+            string mapPath = $@"C:\Users\qhdwi\Projects\Programming\Unity\Compound\Assets\Resources\Maps\{map.name}.bytes";
 #endif
             var writer = new NetDataWriter();
             map.Serialize(writer);
             File.WriteAllBytes(mapPath, writer.CopyData());
             Debug.Log($"Saved map to {mapPath}");
+#if UNITY_EDITOR
+            AssetDatabase.Refresh();
+#endif
             return true;
         }
 
@@ -124,17 +130,13 @@ namespace Voxelation.Map
 
             yield return LoadMapSave(map);
 
-            // var transaction = new VoxelChangeTransaction(map.changedVoxels.Count);
-            // foreach ((Position3Int position, VoxelChangeData change) in map.changedVoxels)
-            //     transaction.AddChange(position, change);
-            // transaction.Commit();
-
             LoadModels(map);
 
-            // PlaceTrees(mapName, mapSave);z
+            // PlaceTrees(mapName, mapSave);
+
+            Map = map;
 
             Debug.Log($"Finished loading map: {mapName}");
-            Map = map;
         }
 
         private void LoadModels(MapContainer map)

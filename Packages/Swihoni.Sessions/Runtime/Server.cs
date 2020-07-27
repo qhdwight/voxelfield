@@ -363,7 +363,7 @@ namespace Swihoni.Sessions
             player.Require<UsernameProperty>().SetTo(m_Injector.GetUsername(context));
         }
 
-        public override Ray GetRayForPlayerId(int playerId) => GetRayForPlayer(GetLatestSession().GetPlayer(playerId));
+        public override Ray GetRayForPlayerId(int playerId) => GetLatestSession().GetPlayer(playerId).GetRayForPlayer();
 
         protected override void RollbackHitboxes(int playerId)
         {

@@ -48,7 +48,8 @@ namespace Swihoni.Sessions.Player.Visualization
 
         private readonly StringBuilder m_DamageNotifierBuilder = new StringBuilder();
 
-        private static Vector3 GetPosition(Container session, int playerId) => SessionBase.GetPlayerEyePosition(session.GetPlayer(playerId).Require<MoveComponent>());
+        private static Vector3 GetPosition(Container session, int playerId)
+            => session.GetPlayer(playerId).Require<MoveComponent>().GetPlayerEyePosition();
 
         public void Render(SessionBase session, Container sessionContainer, int playerId, Container player, bool isLocalPlayer)
         {

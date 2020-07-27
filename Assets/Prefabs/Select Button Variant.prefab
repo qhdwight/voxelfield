@@ -1,5 +1,25 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &5454633347782131164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4046236808161120218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: -1
+  m_PreferredHeight: 20
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!1001 &8381092450949847327
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -115,7 +135,7 @@ PrefabInstance:
     - target: {fileID: 5505793332982257349, guid: f4e36e9af0d634f40b7c147703cdae3c,
         type: 3}
       propertyPath: m_Name
-      value: Model Button
+      value: Select Button Variant
       objectReference: {fileID: 0}
     - target: {fileID: 5505793334059496352, guid: f4e36e9af0d634f40b7c147703cdae3c,
         type: 3}
@@ -129,3 +149,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f4e36e9af0d634f40b7c147703cdae3c, type: 3}
+--- !u!1 &4046236808161120218 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5505793332982257349, guid: f4e36e9af0d634f40b7c147703cdae3c,
+    type: 3}
+  m_PrefabInstance: {fileID: 8381092450949847327}
+  m_PrefabAsset: {fileID: 0}

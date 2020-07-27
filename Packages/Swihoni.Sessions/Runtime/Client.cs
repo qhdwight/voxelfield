@@ -548,7 +548,7 @@ namespace Swihoni.Sessions
             return false;
         }
 
-        public override Ray GetRayForPlayerId(int playerId) => GetRayForPlayer(m_PlayerPredictionHistory.Peek());
+        public override Ray GetRayForPlayerId(int playerId) => m_PlayerPredictionHistory.Peek().GetRayForPlayer();
 
         protected override void RollbackHitboxes(int playerId)
         {

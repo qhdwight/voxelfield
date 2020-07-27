@@ -10,8 +10,8 @@ namespace Voxelfield.Editor
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            bool forceUpdate = GUILayout.Button("Save Test Map");
-            if (forceUpdate) SessionManager.SaveTestMap();
+            bool forceUpdate = GUILayout.Button("Save Custom Map");
+            if (forceUpdate) SessionManager.SaveCustomMap();
         }
     }
 }

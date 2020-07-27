@@ -2,7 +2,7 @@ using System.Linq;
 using Swihoni.Sessions;
 using Swihoni.Util.Interface;
 using UnityEngine.UI;
-using Voxelation;
+using Voxels;
 
 namespace Voxelfield.Interface
 {

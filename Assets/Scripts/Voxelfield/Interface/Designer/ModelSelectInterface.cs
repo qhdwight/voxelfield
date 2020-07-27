@@ -6,8 +6,8 @@ using Swihoni.Sessions.Interfaces;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Voxelation.Map;
 using Voxelfield.Session;
+using Voxels.Map;
 
 namespace Voxelfield.Interface.Designer
 {

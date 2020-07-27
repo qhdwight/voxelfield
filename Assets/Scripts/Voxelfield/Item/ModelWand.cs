@@ -6,9 +6,9 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
-using Voxelation.Map;
 using Voxelfield.Session;
 using Voxelfield.Session.Mode;
+using Voxels.Map;
 
 namespace Voxelfield.Item
 {

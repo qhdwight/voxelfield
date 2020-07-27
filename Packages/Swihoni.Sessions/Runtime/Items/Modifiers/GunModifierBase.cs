@@ -19,7 +19,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
     public abstract class GunModifierBase : WeaponModifierBase
     {
-        private const int MaxRaycastDetections = 16;
+        private const int MaxRaycastDetections = 8;
 
         private static readonly RaycastHit[] RaycastHits = new RaycastHit[MaxRaycastDetections];
 

@@ -35,7 +35,7 @@ namespace Swihoni.Components
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation) => Value = InterpolateUInt(p1.Value, p2.Value, interpolation);
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
         public override void ParseValue(string stringValue) => Value = uint.Parse(stringValue);
-        
+
         public static uint InterpolateUInt(uint u1, uint u2, float interpolation)
         {
             decimal d1 = u1, d2 = u2, i = (decimal) interpolation;
@@ -151,6 +151,9 @@ namespace Swihoni.Components
         public override bool ValueEquals(in Position3Int value) => value == Value;
         public override void SerializeValue(NetDataWriter writer) => Position3Int.Serialize(Value, writer);
         public override void DeserializeValue(NetDataReader reader) => Value = Position3Int.Deserialize(reader);
+
+        public override StringBuilder AppendValue(StringBuilder builder)
+            => builder.Append("[").Append(DirectValue.x).Append(",").Append(DirectValue.y).Append(",").Append(DirectValue.z).Append("]");
     }
 
     [Serializable]
@@ -181,7 +184,7 @@ namespace Swihoni.Components
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetQuaternion();
 
         public override void ValueInterpolateFrom(PropertyBase<Quaternion> p1, PropertyBase<Quaternion> p2, float interpolation) =>
-            Value = Quaternion.Lerp(p1.Value, p2.Value, interpolation);
+            Value = Quaternion.Lerp(p1.DirectValue, p2.DirectValue, interpolation);
     }
 
     [Serializable]
@@ -236,7 +239,7 @@ namespace Swihoni.Components
         public VectorProperty(Vector3 value) : base(value) { }
         public VectorProperty(float x, float y, float z) : base(new Vector3(x, y, z)) { }
         public VectorProperty() { }
-        public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
+        public override void SerializeValue(NetDataWriter writer) => writer.Put(DirectValue);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetVector3();
 
         public override bool ValueEquals(in Vector3 value)
@@ -246,9 +249,9 @@ namespace Swihoni.Components
         }
 
         public bool CheckWithinTolerance(in Vector3 other, float tolerance)
-            => Mathf.Abs(Value.x - other.x) < tolerance
-            && Mathf.Abs(Value.y - other.y) < tolerance
-            && Mathf.Abs(Value.z - other.z) < tolerance;
+            => Mathf.Abs(DirectValue.x - other.x) < tolerance
+            && Mathf.Abs(DirectValue.y - other.y) < tolerance
+            && Mathf.Abs(DirectValue.z - other.z) < tolerance;
 
         public override void ValueInterpolateFrom(PropertyBase<Vector3> p1, PropertyBase<Vector3> p2, float interpolation)
         {

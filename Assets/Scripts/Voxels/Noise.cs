@@ -1,10 +1,26 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-namespace Voxelation
+namespace Voxels
 {
     public static class Noise
     {
-        private static readonly byte[] Permutations =
+        private static void Shuffle<T>(this IList<T> list, int seed)  
+        {  
+            Random.InitState(seed);
+            int n = list.Count;  
+            while (n > 1) {  
+                n--;  
+                int k = Random.Range(0, n);  
+                T value = list[k];  
+                list[k] = list[n];  
+                list[n] = value;  
+            }  
+        }
+
+        private static int LastSeed;
+        
+        private static readonly List<byte> Permutations = new List<byte>
         {
             151, 160, 137, 91, 90, 15,
             131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
@@ -34,19 +50,17 @@ namespace Voxelation
         private static float Grad(int hash, float x, float y)
         {
             int h = hash & 0x3F;
-            float
-                u = h < 4 ? x : y,
-                v = h < 4 ? y : x;
+            float u = h < 4 ? x : y,
+                  v = h < 4 ? y : x;
             return ((h & 1) != 0 ? -u : u) + ((h & 2) != 0 ? -2.0f * v : 2.0f * v);
         }
 
         public static float RawSimplex(float x, float y)
         {
             float n0, n1, n2;
-            float
-                s = (x + y) * F2,
-                xs = x + s,
-                ys = y + s;
+            float s = (x + y) * F2,
+                  xs = x + s,
+                  ys = y + s;
             int i = Mathf.FloorToInt(xs), j = Mathf.FloorToInt(ys);
             float t = (i + j) * G2, X0 = i - t, Y0 = j - t, x0 = x - X0, y0 = y - Y0;
             int i1, j1;
@@ -60,13 +74,11 @@ namespace Voxelation
                 i1 = 0;
                 j1 = 1;
             }
-            float
-                x1 = x0 - i1 + G2,
-                y1 = y0 - j1 + G2,
-                x2 = x0 - 1.0f + 2.0f * G2,
-                y2 = y0 - 1.0f + 2.0f * G2;
-            int
-                gi0 = Perm(i + Perm(j)),
+            float x1 = x0 - i1 + G2,
+                  y1 = y0 - j1 + G2,
+                  x2 = x0 - 1.0f + 2.0f * G2,
+                  y2 = y0 - 1.0f + 2.0f * G2;
+            int gi0 = Perm(i + Perm(j)),
                 gi1 = Perm(i + i1 + Perm(j + j1)),
                 gi2 = Perm(i + 1 + Perm(j + 1));
             float t0 = 0.5f - x0 * x0 - y0 * y0;
@@ -102,17 +114,28 @@ namespace Voxelation
             return 45.23065f * (n0 + n1 + n2);
         }
 
-        public static float Simplex(float x, float y, NoiseComponent noise)
+        private static void EnsureSeed(int seed)
         {
-            float output = 0.0f, denominator = 0.0f, frequency = 1.0f, amplitude = 1.0f;
-            for (var i = 0; i < noise.octaves; i++)
+            if (seed != LastSeed)
             {
-                output += amplitude * RawSimplex(x * frequency / noise.lateralScale, y * frequency / noise.lateralScale);
-                denominator += amplitude;
-                frequency *= noise.lacunarity;
-                amplitude *= noise.persistance;
+                Random.InitState(seed);
+                Permutations.Shuffle(seed);
+                LastSeed = seed;
             }
-            return output / denominator * noise.verticalScale;
+        }
+
+        public static float Simplex(float x, float y, TerrainGenerationComponent terrainGeneration)
+        {
+            EnsureSeed(terrainGeneration.seed);
+            float output = 0.0f, denominator = 0.0f, frequency = 1.0f, amplitude = 1.0f;
+            for (var i = 0; i < terrainGeneration.octaves; i++)
+            {
+                output += amplitude * RawSimplex(x * frequency / terrainGeneration.lateralScale, y * frequency / terrainGeneration.lateralScale);
+                denominator += amplitude;
+                frequency *= terrainGeneration.lacunarity;
+                amplitude *= terrainGeneration.persistence;
+            }
+            return output / denominator * terrainGeneration.verticalScale;
         }
     }
 }
