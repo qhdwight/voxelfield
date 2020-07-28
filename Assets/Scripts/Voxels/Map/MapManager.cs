@@ -10,6 +10,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
+
 #endif
 
 namespace Voxels.Map
@@ -104,7 +105,11 @@ namespace Voxels.Map
 #if VOXELFIELD_RELEASE_CLIENT
             string mapPath = GetMapPath(map.name);
 #else
+#if UNITY_EDITOR
+            string mapPath = Path.ChangeExtension(Path.Combine(Application.dataPath, "Resources", "Maps", map.name.AsNewString()), "bytes");
+#else
             string mapPath = $@"C:\Users\qhdwi\Projects\Programming\Unity\Compound\Assets\Resources\Maps\{map.name}.bytes";
+#endif
 #endif
             var writer = new NetDataWriter();
             map.Serialize(writer);

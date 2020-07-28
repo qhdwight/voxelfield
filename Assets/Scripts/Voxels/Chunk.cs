@@ -1,4 +1,5 @@
-﻿using Swihoni.Util;
+﻿using System.Runtime.CompilerServices;
+using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -84,6 +85,7 @@ namespace Voxels
             if (MeshCollider.sharedMesh) MeshCollider.sharedMesh.Clear();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool InsideChunk(in Position3Int pos) => pos.x < m_ChunkSize && pos.y < m_ChunkSize && pos.z < m_ChunkSize
                                                      && pos.x >= 0 && pos.y >= 0 && pos.z >= 0;
 
