@@ -237,9 +237,9 @@ namespace Voxels
                             : Vector3.Distance(_center, _voxel);
 
                         float distance = GetDistance(form, worldPosition, voxelWorldPosition),
-                              f = distance / absoluteRadius * 0.5f;
-                        if (!change.noRandom.GetValueOrDefault()) f *= Random.Range(0.85f, 1.0f);
-                        byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(f) * byte.MaxValue)),
+                              floatDensity = distance / absoluteRadius * 0.5f;
+                        if (!change.noRandom.GetValueOrDefault()) floatDensity *= Random.Range(0.85f, 1.0f);
+                        byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(floatDensity) * byte.MaxValue)),
                              currentDensity = voxel.density;
                         VoxelChange evaluatedChange = default;
 

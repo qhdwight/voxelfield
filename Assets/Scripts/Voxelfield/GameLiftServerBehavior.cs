@@ -34,6 +34,7 @@ namespace Voxelfield
             if (outcome.Success)
             {
                 var logParameters = new LogParameters(new List<string> {Application.consoleLogPath});
+                // Note: Callbacks are not invoked from main Unity thread
                 var processParameters = new ProcessParameters(OnStartGameSession, OnProcessTerminate, OnHealthCheck,
                                                               SessionManager.DefaultPort, logParameters);
                 GameLiftServerAPI.ProcessReady(processParameters);
@@ -49,7 +50,11 @@ namespace Voxelfield
             }
         }
 
-        private static void OnProcessTerminate() => Debug.Log("Terminated game session");
+        private static void OnProcessTerminate()
+        {
+            Debug.Log("Terminated game session");
+            SessionManager.WantsQuit = true;
+        }
 
         private static void OnStartGameSession(GameSession session)
         {

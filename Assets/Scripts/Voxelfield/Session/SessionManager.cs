@@ -38,6 +38,8 @@ namespace Voxelfield.Session
         private static readonly IPEndPoint DefaultEndPoint = new IPEndPoint(DefaultAddress, DefaultPort);
         private static readonly string[] IpSeparator = {":"};
 
+        public static bool WantsApplicationQuit { get; set; }
+        
 #if VOXELFIELD_RELEASE_SERVER
         public static bool GameLiftReady { get; set; }
         private float m_InactiveServerElapsedSeconds;
@@ -177,6 +179,12 @@ namespace Voxelfield.Session
 
         private void Update()
         {
+            if (WantsApplicationQuit)
+            {
+                Application.Quit();
+                return;
+            }
+            
             SessionBase.HandleCursorLockState();
             Application.targetFrameRate = ConfigManagerBase.Active.targetFps;
             AudioListener.volume = ConfigManagerBase.Active.volume;
@@ -220,7 +228,12 @@ namespace Voxelfield.Session
             if (m_InactiveServerElapsedSeconds > maxIdleTimeSeconds)
             {
                 DisconnectAll();
-                GameLiftServerAPI.ProcessEnding();
+                GenericOutcome outcome = GameLiftServerAPI.ProcessEnding();
+                if (!outcome.Success)
+                {
+                    Debug.LogError($"Failed to graciously process ending: {outcome.Error}");
+                    WantsApplicationQuit = true;
+                }
 #if UNITY_EDITOR
                 EditorApplication.isPlaying = false;
 #else
