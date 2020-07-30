@@ -1,13 +1,31 @@
 fileFormatVersion: 2
-guid: 8c5de9d583e6e482e87ec822c49bb584
+guid: d11dfab4b5eefd84fbfdb0346427a9ad
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4356236313849050022
-    second: Headshot Icon_0
+      213: 1161201145128540330
+    second: Icons_0
   - first:
-      213: -2034752885970939261
-    second: Headshot Icon_0
+      213: 2130535880278150251
+    second: Icons_1
+  - first:
+      213: 184950751378207249
+    second: Icons_2
+  - first:
+      213: -5939463070795172742
+    second: Icons_0
+  - first:
+      213: 6725019411808010661
+    second: Icons_1
+  - first:
+      213: -3917391801751258802
+    second: Icons_2
+  - first:
+      213: 1202984965197363600
+    second: Icons_3
+  - first:
+      213: 3366042427789280657
+    second: Icons_3
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -72,7 +90,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 2
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -84,7 +102,19 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -95,7 +125,49 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Headshot Icon_0
+      name: Icons_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 128
+        width: 128
+        height: 128
+      alignment: 6
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a74f3b44ec9c29da0800000000000000
+      internalID: -5939463070795172742
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icons_1
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 128
+        width: 128
+        height: 128
+      alignment: 6
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5a14c6c3681145d50800000000000000
+      internalID: 6725019411808010661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icons_2
       rect:
         serializedVersion: 2
         x: 0
@@ -109,8 +181,29 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3825002e70b13c3e0800000000000000
-      internalID: -2034752885970939261
+      spriteID: e49b69a59e0a2a9c0800000000000000
+      internalID: -3917391801751258802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icons_3
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 128
+        height: 128
+      alignment: 6
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 195064701c596be20800000000000000
+      internalID: 3366042427789280657
       vertices: []
       indices: 
       edges: []
@@ -127,7 +220,7 @@ TextureImporter:
     secondaryTextures: []
   spritePackingTag: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
+  pSDShowRemoveMatteOption: 1
   userData: 
   assetBundleName: 
   assetBundleVariant: 

@@ -36,21 +36,71 @@ MonoBehaviour:
     m_StrikethroughOffset: 0
     m_StrikethroughThickness: 0
     m_TabWidth: 0
-  spriteSheet: {fileID: 2800000, guid: 8c5de9d583e6e482e87ec822c49bb584, type: 3}
+  spriteSheet: {fileID: 2800000, guid: d11dfab4b5eefd84fbfdb0346427a9ad, type: 3}
   m_SpriteCharacterTable:
   - m_ElementType: 2
     m_Unicode: 65534
     m_GlyphIndex: 0
     m_Scale: 1
-    m_Name: Headshot Icon
-    m_HashCode: -382612925
+    m_Name: Headshot
+    m_HashCode: 152713928
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 1
+    m_Scale: 1
+    m_Name: Play
+    m_HashCode: 2854148
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 2
+    m_Scale: 1
+    m_Name: Exit
+    m_HashCode: 2401952
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 3
+    m_Scale: 1
+    m_Name: Gear
+    m_HashCode: 2584113
   m_SpriteGlyphTable:
   - m_Index: 0
     m_Metrics:
       m_Width: 128
       m_Height: 128
-      m_HorizontalBearingX: -0
-      m_HorizontalBearingY: 110
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 112
+      m_HorizontalAdvance: 128
+    m_GlyphRect:
+      m_X: 0
+      m_Y: 128
+      m_Width: 128
+      m_Height: 128
+    m_Scale: 1
+    m_AtlasIndex: 0
+    sprite: {fileID: 1161201145128540330, guid: d11dfab4b5eefd84fbfdb0346427a9ad,
+      type: 3}
+  - m_Index: 1
+    m_Metrics:
+      m_Width: 128
+      m_Height: 128
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 112
+      m_HorizontalAdvance: 128
+    m_GlyphRect:
+      m_X: 128
+      m_Y: 128
+      m_Width: 128
+      m_Height: 128
+    m_Scale: 1
+    m_AtlasIndex: 0
+    sprite: {fileID: 2130535880278150251, guid: d11dfab4b5eefd84fbfdb0346427a9ad,
+      type: 3}
+  - m_Index: 2
+    m_Metrics:
+      m_Width: 128
+      m_Height: 128
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 112
       m_HorizontalAdvance: 128
     m_GlyphRect:
       m_X: 0
@@ -59,7 +109,22 @@ MonoBehaviour:
       m_Height: 128
     m_Scale: 1
     m_AtlasIndex: 0
-    sprite: {fileID: -4356236313849050022, guid: 8c5de9d583e6e482e87ec822c49bb584,
+    sprite: {fileID: 184950751378207249, guid: d11dfab4b5eefd84fbfdb0346427a9ad, type: 3}
+  - m_Index: 3
+    m_Metrics:
+      m_Width: 128
+      m_Height: 128
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 112
+      m_HorizontalAdvance: 128
+    m_GlyphRect:
+      m_X: 128
+      m_Y: 0
+      m_Width: 128
+      m_Height: 128
+    m_Scale: 1
+    m_AtlasIndex: 0
+    sprite: {fileID: 1202984965197363600, guid: d11dfab4b5eefd84fbfdb0346427a9ad,
       type: 3}
   spriteInfoList: []
   fallbackSpriteAssets: []
@@ -83,7 +148,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 8c5de9d583e6e482e87ec822c49bb584, type: 3}
+        m_Texture: {fileID: 2800000, guid: d11dfab4b5eefd84fbfdb0346427a9ad, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
