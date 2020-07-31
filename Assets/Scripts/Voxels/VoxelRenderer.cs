@@ -414,7 +414,7 @@ namespace Voxels
         private static readonly Vector3[] CachedPositions = new Vector3[8], CachedVertList = new Vector3[12];
         private static readonly Vector2[] CachedUvs = new Vector2[4];
         private static readonly float[] CachedDensities = new float[8];
-        
+
         private static readonly ProfilerMarker
             GenerateBlockMarker = new ProfilerMarker("Generate Block"),
             GetDensitiesMarker = new ProfilerMarker("Get Densities"),
@@ -475,9 +475,8 @@ namespace Voxels
                     {
                         for (var i = 0; i < 12; i++)
                             CachedVertList[i] = (EdgeTable[cubeIndex] & (1 << i)) != 0
-                                ? InterpolateVertex(CachedPositions[VertIdx1[i]],
-                                                    CachedPositions[VertIdx2[i]], CachedDensities[VertIdx1[i]],
-                                                    CachedDensities[VertIdx2[i]])
+                                ? InterpolateVertex(CachedPositions[VertIdx1[i]], CachedPositions[VertIdx2[i]],
+                                                    CachedDensities[VertIdx1[i]], CachedDensities[VertIdx2[i]])
                                 : Vector3.zero;
                     }
                     using (AddToMeshMarker.Auto())

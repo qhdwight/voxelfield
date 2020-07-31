@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels.Map;
+using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
 {
@@ -114,23 +116,30 @@ namespace Voxelfield.Session.Mode
 
         protected override Vector3 GetSpawnPosition(in ModifyContext context)
         {
-            KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
-                                                                                                              && modelId == ModelsProperty.Spawn
-                                                                                                              && pair.Value.With<TeamProperty>())
-                                                                         .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
-                                                                         .OrderBy(spawnGroup => spawnGroup.Key)
-                                                                         .Select(spawnGroup => spawnGroup.ToArray())
-                                                                         .ToArray();
-            byte team = context.player.Require<TeamProperty>();
-            KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
-            int spawnIndex = Random.Range(0, teamSpawns.Length);
-            Vector3 spawnPosition = teamSpawns[spawnIndex].Key;
-            for (var _ = 0; _ < 16; _++, spawnPosition += new Vector3 {y = 3.0f})
+            try
             {
-                if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
-                    return hit.point + new Vector3 {y = 0.1f};
+                KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
+                                                                                                                  && modelId == ModelsProperty.Spawn
+                                                                                                                  && pair.Value.With<TeamProperty>())
+                                                                             .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
+                                                                             .OrderBy(spawnGroup => spawnGroup.Key)
+                                                                             .Select(spawnGroup => spawnGroup.ToArray())
+                                                                             .ToArray();
+                byte team = context.player.Require<TeamProperty>();
+                KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
+                int spawnIndex = Random.Range(0, teamSpawns.Length);
+                Vector3 spawnPosition = teamSpawns[spawnIndex].Key;
+                for (var _ = 0; _ < 16; _++, spawnPosition += new Vector3 {y = 3.0f})
+                {
+                    if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
+                        return hit.point + new Vector3 {y = 0.1f};
+                }
+                throw new Exception("No non-obstructed spawn points");
             }
-            return DeathmatchMode.GetRandomSpawn();
+            catch (Exception)
+            {
+                return DeathmatchMode.GetRandomSpawn();
+            }
         }
 
         protected override float CalculateWeaponDamage(in PlayerHitContext context)

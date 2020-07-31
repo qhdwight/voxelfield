@@ -130,9 +130,8 @@ namespace Swihoni.Sessions.Modes
 
         protected virtual void KillPlayer(in DamageContext context)
         {
-            SessionBase session = context.modifyContext.session;
-            session.Injector.OnKillPlayer(context);
-            Container player = context.modifyContext.player;
+            context.modifyContext.session.Injector.OnKillPlayer(context);
+            Container player = context.hitPlayer;
             player.ZeroIfWith<HealthProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
@@ -187,7 +186,7 @@ namespace Swihoni.Sessions.Modes
         {
             if (playerHitContext.hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive && playerHitContext.hitPlayer.With<ServerTag>())
             {
-                var damage = checked((byte) Mathf.Clamp(CalculateWeaponDamage(playerHitContext), 0.0f, 255.0f));
+                var damage = checked((byte) Mathf.Clamp(CalculateWeaponDamage(playerHitContext), 0.0f, 200.0f));
                 var damageContext = new DamageContext(damage: damage, weaponName: playerHitContext.weapon.itemName, isHeadShot: playerHitContext.hitbox.IsHead,
                                                       playerHitContext: playerHitContext);
                 InflictDamage(damageContext);

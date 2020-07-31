@@ -149,13 +149,18 @@ namespace Swihoni.Sessions
         public static void RegisterSessionCommand(params string[] commands)
         {
             foreach (string command in commands)
-                ConsoleCommandExecutor.SetCommand(command, IssueCommand);
+                ConsoleCommandExecutor.SetCommand(command, IssueSessionCommand);
         }
 
-        public static void IssueCommand(string[] args)
+        public static void IssueSessionCommand(string[] arguments)
         {
+            if (SessionCount == 0)
+            {
+                ConfigManagerBase.HandleArguments(arguments);
+                return;
+            }
             foreach (SessionBase session in SessionEnumerable)
-                session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", args));
+                session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", arguments));
         }
 
         public void SetApplicationPauseState(bool isPaused)

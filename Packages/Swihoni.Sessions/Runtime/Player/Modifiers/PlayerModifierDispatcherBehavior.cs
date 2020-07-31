@@ -52,7 +52,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             if (PlayerModifierBehaviorBase.TryServerCommands(context.player, out IEnumerable<string[]> stringCommands))
                 foreach (string[] stringCommand in stringCommands)
-                    ConfigManagerBase.HandleArgs(stringCommand);
+                    ConfigManagerBase.HandleArguments(stringCommand);
         }
 
         public void ModifyTrusted(in ModifyContext context, Container verifiedPlayer)
@@ -103,7 +103,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 commands = default;
                 return false;
             }
-            commands = ConsoleCommandExecutor.GetArgs(command.Builder.ToString());
+            commands = ConsoleCommandExecutor.GetArguments(command.Builder.ToString());
             return true;
         }
 

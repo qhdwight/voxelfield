@@ -60,22 +60,21 @@ namespace Voxelfield.Session
         private readonly OrderedVoxelChangesProperty m_MasterChanges = new OrderedVoxelChangesProperty();
         private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new DualDictionary<NetPeer, SteamId>();
 
-        public void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, TouchedChunks touchedChunks = null,
-                                        bool overrideBreakable = false)
+        public void ApplyVoxelChanges(in VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
         {
-            if (MapManager.Singleton.Models.ContainsKey(worldPosition)) return;
+            if (MapManager.Singleton.Models.ContainsKey(change.position.Value)) return;
 
             var changed = Session.GetLatestSession().Require<OrderedVoxelChangesProperty>();
-            ChunkManager.Singleton.EvaluateVoxelChange(worldPosition, change, true, touchedChunks, overrideBreakable);
-            changed.Set(worldPosition, change);
-            m_MasterChanges.Set(worldPosition, change);
+            ChunkManager.Singleton.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
+            changed.Add(change);
+            m_MasterChanges.Add(change);
         }
 
         public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
         {
             var center = (Position3Int) throwableBehavior.transform.position;
-            var change = new VoxelChange {magnitude = throwableBehavior.Radius * -0.4f, replace = true, modifiesBlocks = true, form = VoxelVolumeForm.Spherical};
-            EvaluateVoxelChange(center, change);
+            var change = new VoxelChange {position = center, magnitude = throwableBehavior.Radius * -0.4f, replace = true, modifiesBlocks = true, form = VoxelVolumeForm.Spherical};
+            ApplyVoxelChanges(change);
         }
 
         protected override void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession)

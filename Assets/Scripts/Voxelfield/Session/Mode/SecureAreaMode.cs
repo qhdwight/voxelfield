@@ -267,10 +267,10 @@ namespace Voxelfield.Session.Mode
 
             if (PlayerModifierBehaviorBase.TryServerCommands(player, out IEnumerable<string[]> stringCommands))
             {
-                foreach (string[] args in stringCommands)
-                    switch (args[0])
+                foreach (string[] arguments in stringCommands)
+                    switch (arguments[0])
                     {
-                        case "give_money" when args.Length > 1 && ConfigManagerBase.Active.allowCheats && ushort.TryParse(args[1].Expand(), out ushort bonus):
+                        case "give_money" when arguments.Length > 1 && ConfigManagerBase.Active.allowCheats && ushort.TryParse(arguments[1].Expand(), out ushort bonus):
                         {
                             player.Require<MoneyComponent>().count.Value += bonus;
                             break;

@@ -48,26 +48,26 @@ namespace Voxelfield.Session
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
-            ConsoleCommandExecutor.SetCommand("host", args => StartHost());
-            ConsoleCommandExecutor.SetCommand("edit", args => StartEdit(args));
-            ConsoleCommandExecutor.SetCommand("save", args =>
+            ConsoleCommandExecutor.SetCommand("host", arguments => StartHost());
+            ConsoleCommandExecutor.SetCommand("edit", arguments => StartEdit(arguments));
+            ConsoleCommandExecutor.SetCommand("save", arguments =>
             {
-                string newFile = args.Length > 1 ? args[1] : null;
+                string newFile = arguments.Length > 1 ? arguments[1] : null;
                 if (newFile != null)
                 {
                     SessionBase.SessionEnumerable.First().GetLatestSession().Require<VoxelMapNameProperty>().SetTo(newFile);
                 }
                 MapManager.Singleton.SaveCurrentMap(newFile);
             });
-            ConsoleCommandExecutor.SetCommand("serve", args => StartServer(DefaultEndPoint));
-            ConsoleCommandExecutor.SetCommand("connect", args =>
+            ConsoleCommandExecutor.SetCommand("serve", arguments => StartServer(DefaultEndPoint));
+            ConsoleCommandExecutor.SetCommand("connect", arguments =>
             {
                 try
                 {
-                    string[] colonSplit = args.Length > 1 ? args[1].Split(IpSeparator, StringSplitOptions.RemoveEmptyEntries) : null;
-                    if (colonSplit?.Length == 2) args = args.Take(1).Concat(colonSplit).ToArray();
-                    IPAddress address = args.Length > 1 ? IPAddress.Parse(args[1]) : DefaultAddress;
-                    int port = args.Length > 2 ? int.Parse(args[2]) : DefaultPort;
+                    string[] colonSplit = arguments.Length > 1 ? arguments[1].Split(IpSeparator, StringSplitOptions.RemoveEmptyEntries) : null;
+                    if (colonSplit?.Length == 2) arguments = arguments.Take(1).Concat(colonSplit).ToArray();
+                    IPAddress address = arguments.Length > 1 ? IPAddress.Parse(arguments[1]) : DefaultAddress;
+                    int port = arguments.Length > 2 ? int.Parse(arguments[2]) : DefaultPort;
                     var endPoint = new IPEndPoint(address, port);
 
                     Client client = StartClient(endPoint);
@@ -79,29 +79,29 @@ namespace Voxelfield.Session
                 }
             });
 #if ENABLE_MONO
-            ConsoleCommandExecutor.SetCommand("wsl_connect", args => ConsoleCommandExecutor.ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
+            ConsoleCommandExecutor.SetCommand("wsl_connect", arguments => ConsoleCommandExecutor.ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
 #endif
-            ConsoleCommandExecutor.SetCommand("online_quick_play", args => GameLiftClientManager.QuickPlay());
-            ConsoleCommandExecutor.SetCommand("online_start_new", args => GameLiftClientManager.StartNew());
-            ConsoleCommandExecutor.SetCommand("disconnect", args => DisconnectAll());
+            ConsoleCommandExecutor.SetCommand("online_quick_play", arguments => GameLiftClientManager.QuickPlay());
+            ConsoleCommandExecutor.SetCommand("online_start_new", arguments => GameLiftClientManager.StartNew());
+            ConsoleCommandExecutor.SetCommand("disconnect", arguments => DisconnectAll());
 #if UNITY_EDITOR
-            ConsoleCommandExecutor.SetCommand("disconnect_client", args => SessionBase.SessionEnumerable.First(session => session is Client).Stop());
+            ConsoleCommandExecutor.SetCommand("disconnect_client", arguments => SessionBase.SessionEnumerable.First(session => session is Client).Stop());
 #endif
-            ConsoleCommandExecutor.SetCommand("update_chunks", args =>
+            ConsoleCommandExecutor.SetCommand("update_chunks", arguments =>
             {
                 foreach (Chunk chunk in ChunkManager.Singleton.Chunks.Values)
                     chunk.UpdateAndApply();
             });
-            ConsoleCommandExecutor.SetCommand("switch_teams", args =>
+            ConsoleCommandExecutor.SetCommand("switch_teams", arguments =>
             {
-                if (args.Length > 1 && byte.TryParse(args[1], out byte team))
+                if (arguments.Length > 1 && byte.TryParse(arguments[1], out byte team))
                     SessionBase.SessionEnumerable.First().GetLocalCommands().Require<WantedTeamProperty>().Value = team;
             });
 
-            ConsoleCommandExecutor.SetCommand("rollback_override", args => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(args[1]));
-            ConsoleCommandExecutor.SetCommand("open_log", args => Application.OpenURL($"file://{Application.consoleLogPath}"));
+            ConsoleCommandExecutor.SetCommand("rollback_override", arguments => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(arguments[1]));
+            ConsoleCommandExecutor.SetCommand("open_log", arguments => Application.OpenURL($"file://{Application.consoleLogPath}"));
 
-            ConsoleCommandExecutor.SetCommand("steam_status", args =>
+            ConsoleCommandExecutor.SetCommand("steam_status", arguments =>
             {
                 if (SteamClient.IsValid) Debug.Log($"Logged in as {SteamClient.Name}, ID: {SteamClient.SteamId}");
                 else Debug.LogWarning("Not connected to steam");
@@ -126,12 +126,12 @@ namespace Voxelfield.Session
 #endif
         }
 
-        private static Host StartEdit(IReadOnlyList<string> args)
+        private static Host StartEdit(IReadOnlyList<string> arguments)
         {
             var edit = new Host(VoxelfieldComponents.SessionElements, DefaultEndPoint, new ServerInjector());
 
             var config = (ConfigManager) ConfigManagerBase.Active;
-            if (args.Count > 1) config.mapName.SetTo(args[1]);
+            if (arguments.Count > 1) config.mapName.SetTo(arguments[1]);
             config.modeId.Value = ModeIdProperty.Designer;
 
             return StartSession(edit);

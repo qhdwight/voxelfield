@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Swihoni.Components;
 using Swihoni.Sessions;
-using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
@@ -20,39 +19,37 @@ namespace Voxelfield.Item
 
         protected override void Swing(in ModifyContext context, ItemComponent item)
         {
-            if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)
-             || WithoutInnerVoxel(hit, out Position3Int position, out Voxel voxel)) return;
+            if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)) return;
 
-            if (voxel.HasBlock)
+            var position = (Position3Int) (hit.point - hit.normal * 0.1f);
+            if (WithoutBreakableVoxel(position, out Voxel voxel) || voxel.OnlySmooth) return;
+
+            var designer = context.session.GetLocalCommands().Require<DesignerPlayerComponent>();
+            if (designer.positionOne.WithoutValue || designer.positionTwo.WithValue)
             {
-                var designer = context.session.GetLocalCommands().Require<DesignerPlayerComponent>();
-                if (designer.positionOne.WithoutValue || designer.positionTwo.WithValue)
-                {
-                    Debug.Log($"Set position one: {position}");
-                    designer.positionOne.Value = position;
-                    designer.positionTwo.Clear();
-                }
-                else
-                {
-                    Debug.Log($"Set position two: {position}");
-                    designer.positionTwo.Value = position;
-                }
+                Debug.Log($"Set position one: {position}");
+                designer.positionOne.Value = position;
+                designer.positionTwo.Clear();
+            }
+            else
+            {
+                Debug.Log($"Set position two: {position}");
+                designer.positionTwo.Value = position;
             }
         }
 
         protected override void SecondaryUse(in ModifyContext context)
         {
             Container player = context.player;
-            if (player.Without<ServerTag>()) return;
+            if (!(context.session.Injector is ServerInjector server)) return;
 
             var designer = player.Require<DesignerPlayerComponent>();
             if (designer.positionOne.WithoutValue || designer.positionTwo.WithoutValue) return;
 
             VoxelChange change = designer.selectedVoxel;
-            change.Merge(new VoxelChange {hasBlock = true, upperBound = designer.positionTwo, form = VoxelVolumeForm.Prism});
+            change.Merge(new VoxelChange {position = designer.positionOne, form = VoxelVolumeForm.Prism, hasBlock = true, upperBound = designer.positionTwo});
 
-            var server = (ServerInjector) context.session.Injector;
-            server.EvaluateVoxelChange(designer.positionOne, change, overrideBreakable: true);
+            server.ApplyVoxelChanges(change, overrideBreakable: true);
         }
 
         public override void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
@@ -63,18 +60,18 @@ namespace Voxelfield.Item
             SessionBase session = context.session;
             if (PlayerModifierBehaviorBase.TryServerCommands(player, out IEnumerable<string[]> commands))
             {
-                foreach (string[] args in commands)
+                foreach (string[] arguments in commands)
                 {
                     var designer = player.Require<DesignerPlayerComponent>();
-                    switch (args[0])
+                    switch (arguments[0])
                     {
                         case "set":
                         {
                             VoxelChange change = designer.selectedVoxel;
-                            change.Merge(new VoxelChange {upperBound = designer.positionTwo, hasBlock = true, form = VoxelVolumeForm.Prism});
+                            change.Merge(new VoxelChange {position = designer.positionOne, upperBound = designer.positionTwo, hasBlock = true, form = VoxelVolumeForm.Prism});
 
                             var server = (ServerInjector) session.Injector;
-                            server.EvaluateVoxelChange(designer.positionOne, change, overrideBreakable: true);
+                            server.ApplyVoxelChanges(change, overrideBreakable: true);
                             break;
                         }
                         case "revert":
@@ -86,12 +83,16 @@ namespace Voxelfield.Item
                         case "breakable":
                         {
                             var breakable = true;
-                            if (args.Length > 1 && bool.TryParse(args[1], out bool parsedBreakable)) breakable = parsedBreakable;
+                            if (arguments.Length > 1 && bool.TryParse(arguments[1], out bool parsedBreakable)) breakable = parsedBreakable;
 
-                            var change = new VoxelChange {upperBound = designer.positionTwo, isBreakable = breakable, form = VoxelVolumeForm.Prism};
+                            var change = new VoxelChange
+                            {
+                                position = designer.positionOne, form = VoxelVolumeForm.Prism,
+                                upperBound = designer.positionTwo, isBreakable = breakable
+                            };
 
                             var server = (ServerInjector) session.Injector;
-                            server.EvaluateVoxelChange(designer.positionOne, change, overrideBreakable: true);
+                            server.ApplyVoxelChanges(change, overrideBreakable: true);
                             break;
                         }
                     }
@@ -111,7 +112,9 @@ namespace Voxelfield.Item
             for (int z = Math.Min(p1.z, p2.z); z <= Math.Max(p1.z, p2.z); z++)
             {
                 var worldPosition = new Position3Int(x, y, z);
-                server.EvaluateVoxelChange(worldPosition, function(worldPosition), touchedChunks, true);
+                VoxelChange change = function(worldPosition);
+                change.position = worldPosition;
+                server.ApplyVoxelChanges(change, touchedChunks, true);
             }
             Debug.Log($"Set {p1} to {p2}");
             touchedChunks.UpdateMesh();

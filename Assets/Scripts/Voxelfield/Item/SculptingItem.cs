@@ -25,12 +25,13 @@ namespace Voxelfield.Item
         protected override void Swing(in ModifyContext context, ItemComponent item)
         {
             base.Swing(context, item); // Melee damage
-            if (WithoutServerHit(context, m_EditDistance, out RaycastHit hit)
-             || WithoutInnerVoxel(hit, out Position3Int position, out Voxel voxel)) return;
+            if (!(context.session.Injector is ServerInjector server)|| WithoutHit(context, m_EditDistance, out RaycastHit hit)) return;
+            
+            var position = (Position3Int) (hit.point - hit.normal * 0.1f);
+            if (WithoutBreakableVoxel(position, out Voxel voxel)) return;
 
-            var server = (ServerInjector) context.session.Injector;
             if (voxel.HasBlock) RemoveBlock(context, server, position);
-            else RemoveVoxelRadius(context, server, (Position3Int) (hit.point));
+            else RemoveVoxelRadius(context, server, position);
             // else RemoveVoxelRadius(context, server, position);
             var brokeVoxelTickProperty = context.player.Require<BrokeVoxelTickProperty>();
             if (brokeVoxelTickProperty.WithValue) brokeVoxelTickProperty.Value++;
@@ -38,40 +39,31 @@ namespace Voxelfield.Item
         }
 
         protected virtual void RemoveBlock(in ModifyContext context, ServerInjector server, in Position3Int position)
-            => server.EvaluateVoxelChange(position, new VoxelChange {hasBlock = false, natural = false, form = VoxelVolumeForm.Single});
+            => server.ApplyVoxelChanges(new VoxelChange {position = position, form = VoxelVolumeForm.Single, hasBlock = false, natural = false});
 
         protected virtual void RemoveVoxelRadius(in ModifyContext context, ServerInjector server, in Position3Int position)
         {
-            var change = new VoxelChange {magnitude = -m_DestroyRadius, replace = true, color = Voxel.Dirt, texture = VoxelTexture.Checkered, form = VoxelVolumeForm.Spherical};
-            server.EvaluateVoxelChange(position, change);
+            var change = new VoxelChange
+            {
+                position = position, form = VoxelVolumeForm.Spherical,
+                magnitude = -m_DestroyRadius, replace = true, color = Voxel.Dirt, texture = VoxelTexture.Checkered
+            };
+            server.ApplyVoxelChanges(change);
         }
-
-        protected bool WithoutInnerVoxel(in RaycastHit hit, out Position3Int position, out Voxel voxel)
+        
+        protected bool WithoutBreakableVoxel(in Position3Int position, out Voxel voxel)
         {
-            // TODO:refactor similar to outer
-            position = (Position3Int) (hit.point - hit.normal * 0.1f);
-            Voxel? optionalVoxel = ChunkManager.Singleton.GetVoxel(position);
-            voxel = optionalVoxel ?? default;
-            return !optionalVoxel.HasValue || !voxel.IsBreakable && !OverrideBreakable;
-        }
-
-        protected bool WithoutOuterVoxel(in RaycastHit hit, out Position3Int position, out Voxel voxel)
-        {
-            position = (Position3Int) (hit.point + hit.normal * 0.1f);
             Voxel? _voxel = ChunkManager.Singleton.GetVoxel(position);
             voxel = _voxel ?? default;
             return !_voxel.HasValue || !voxel.IsBreakable && !OverrideBreakable;
         }
 
-        protected bool WithoutServerHit(in ModifyContext context, float distance, out RaycastHit hit)
+        protected bool WithoutHit(in ModifyContext context, float distance, out RaycastHit hit)
         {
-            if (context.player.Without<ServerTag>())
-            {
-                hit = default;
-                return true;
-            }
             Ray ray = context.session.GetRayForPlayerId(context.playerId);
-            return !Physics.Raycast(ray, out hit, distance, m_ChunkMask);
+            bool withoutHit = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask) == 0;
+            hit = RaycastHits[0];
+            return withoutHit;
         }
 
         protected bool WithoutClientHit(in ModifyContext context, float distance, out RaycastHit hit)
@@ -83,23 +75,28 @@ namespace Voxelfield.Item
                 return true;
             }
             Ray ray = context.session.GetRayForPlayerId(context.playerId);
-            return !Physics.Raycast(ray, out hit, distance, m_ChunkMask);
+            bool withoutHit = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask) == 0;
+            hit = RaycastHits[0];
+            return withoutHit;
         }
 
         private Position3Int? m_CachedPosition; // Guaranteed set by can use and tested in actual use 
 
         protected override bool CanSecondaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory)
         {
-            if (!base.CanPrimaryUse(item, inventory) || WithoutServerHit(context, m_EditDistance, out RaycastHit hit)
-                                                     || WithoutOuterVoxel(hit, out Position3Int position, out Voxel _)
-                                                     || NoSolution(context.player, position))
+            if (!base.CanPrimaryUse(item, inventory) || WithoutHit(context, m_EditDistance, out RaycastHit hit))
+            {
+                m_CachedPosition = null;
+                return false;
+            }
+            var position = (Position3Int) (hit.point + hit.normal * 0.1f);
+            if (WithoutBreakableVoxel(position, out Voxel _) || NoSolution(context.player, position))
             {
                 m_CachedPosition = null;
                 return false;
             }
             m_CachedPosition = position;
             return true;
-            // return AdjustPosition(m_CachedPosition.Value, session.GetModifyingPayerFromId(playerId));
         }
 
         protected virtual bool OverrideBreakable => false;
@@ -107,14 +104,17 @@ namespace Voxelfield.Item
         protected override void SecondaryUse(in ModifyContext context)
         {
             // TODO:feature add client side prediction for placing blocks
-            if (!(m_CachedPosition is Position3Int position)) return;
+            if (!(m_CachedPosition is Position3Int position) || !(context.session.Injector is ServerInjector server)) return;
 
-            var server = (ServerInjector) context.session.Injector;
             PlaceBlock(context, server, position);
         }
 
         protected virtual void PlaceBlock(in ModifyContext context, ServerInjector server, in Position3Int position)
-            => server.EvaluateVoxelChange(position, new VoxelChange {hasBlock = true, texture = VoxelTexture.Checkered, color = Voxel.Dirt, form = VoxelVolumeForm.Single});
+            => server.ApplyVoxelChanges(new VoxelChange
+            {
+                position = position, form = VoxelVolumeForm.Single,
+                hasBlock = true, texture = VoxelTexture.Checkered, color = Voxel.Dirt
+            });
 
         private bool NoSolution(Container player, in Position3Int position, float radius = 0.9f)
         {
@@ -160,23 +160,31 @@ namespace Voxelfield.Item
 
         protected override bool CanTernaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory)
         {
-            if (!base.CanPrimaryUse(item, inventory) || WithoutServerHit(context, m_EditDistance, out RaycastHit hit)
-                                                     || NoSolution(context.player, (Position3Int) hit.point, m_AdditiveRadius))
+            if (!base.CanPrimaryUse(item, inventory) || WithoutHit(context, m_EditDistance, out RaycastHit hit))
             {
                 m_CachedPosition = null;
                 return false;
             }
-            m_CachedPosition = (Position3Int) (hit.point + hit.normal);
+            var position = (Position3Int) (hit.point + new Vector3(0.5f, 0.5f, 0.5f));
+            if (NoSolution(context.player, position, m_AdditiveRadius))
+            {
+                m_CachedPosition = null;
+                return false;
+            }
+            m_CachedPosition = position;
             return true;
         }
 
         protected override void TernaryUse(in ModifyContext context, ItemComponent item)
         {
-            if (!(m_CachedPosition is Position3Int position)) return;
+            if (!(m_CachedPosition is Position3Int position) || !(context.session.Injector is ServerInjector server)) return;
 
-            var server = (ServerInjector) context.session.Injector;
-            var change = new VoxelChange {texture = VoxelTexture.Checkered, color = Voxel.Dirt, magnitude = m_AdditiveRadius, form = VoxelVolumeForm.Spherical};
-            server.EvaluateVoxelChange(position, change);
+            var change = new VoxelChange
+            {
+                position = position, form = VoxelVolumeForm.Spherical,
+                texture = VoxelTexture.Checkered, color = Voxel.Dirt, magnitude = m_AdditiveRadius
+            };
+            server.ApplyVoxelChanges(change);
         }
     }
 }

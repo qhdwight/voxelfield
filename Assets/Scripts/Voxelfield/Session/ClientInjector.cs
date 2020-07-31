@@ -5,7 +5,6 @@ using Steamworks;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
 
@@ -58,8 +57,8 @@ namespace Voxelfield.Session
         {
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator - Avoid allocation
             foreach (OrderedVoxelChangesProperty changes in m_OrderedTickChanges.Values)
-            foreach (Position3Int position in changes.OrderedKeys)
-                ChunkManager.Singleton.EvaluateVoxelChange(position, changes[position], existingTouched: m_TouchedChunks);
+            foreach (VoxelChange position in changes.List)
+                ChunkManager.Singleton.ApplyVoxelChanges(position, existingTouched: m_TouchedChunks);
             m_TouchedChunks.UpdateMesh();
             m_OrderedTickChanges.Clear();
             m_ChangesPool.ReturnAll();

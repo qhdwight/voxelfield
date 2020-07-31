@@ -37,7 +37,7 @@ namespace Voxelfield.Item
 
         protected override void SecondaryUse(in ModifyContext context)
         {
-            if (WithoutServerHit(context, m_EditDistance, out RaycastHit hit)) return;
+            if (WithoutHit(context, m_EditDistance, out RaycastHit hit)) return;
 
             var position = (Position3Int) (hit.point + hit.normal * 0.5f);
 
@@ -71,12 +71,12 @@ namespace Voxelfield.Item
 
             if (PlayerModifierBehaviorBase.TryServerCommands(context.player, out IEnumerable<string[]> commands))
             {
-                foreach (string[] args in commands)
+                foreach (string[] arguments in commands)
                 {
-                    switch (args[0])
+                    switch (arguments[0])
                     {
                         case "select_model":
-                            if (args.Length > 1 && ushort.TryParse(args[1], out ushort modelId))
+                            if (arguments.Length > 1 && ushort.TryParse(arguments[1], out ushort modelId))
                                 context.player.Require<DesignerPlayerComponent>().selectedModelId.Value = modelId;
                             break;
                     }

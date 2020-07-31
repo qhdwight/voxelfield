@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
+using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.Profiling;
 using Voxels.Map;
 using Random = UnityEngine.Random;
 
@@ -133,8 +133,8 @@ namespace Voxels
                 yield return null;
             }
             if (actionType == ChunkActionType.Generate)
-                foreach (Position3Int position in map.voxelChanges.OrderedKeys)
-                    EvaluateVoxelChange(position, map.voxelChanges[position], false, TouchedChunks);
+                foreach (VoxelChange position in map.voxelChanges.List)
+                    ApplyVoxelChanges(position, false, TouchedChunks);
         }
 
         /// <summary>
@@ -164,131 +164,134 @@ namespace Voxels
 
         private static readonly TouchedChunks TouchedChunks = new TouchedChunks();
 
+        private static readonly ProfilerMarker ApplyVoxelChangeMarker = new ProfilerMarker("Apply Voxel Change");
+
         /// <summary>
         /// Change the data of a chunk in the array.
         /// </summary>
-        /// <param name="worldPosition">World position of the voxel</param>
         /// <param name="change">Data to change on voxel</param>
         /// <param name="updateSave">Whether or not to update map save component</param>
         /// <param name="existingTouched"></param>
         /// <param name="overrideBreakable"></param>
-        public void EvaluateVoxelChange(in Position3Int worldPosition, in VoxelChange change, bool updateSave = true, TouchedChunks existingTouched = null,
-                                        bool overrideBreakable = false)
+        public void ApplyVoxelChanges(in VoxelChange change, bool updateSave = true, TouchedChunks existingTouched = null, bool overrideBreakable = false)
         {
-            Profiler.BeginSample("Apply Voxel Change");
-            Random.InitState(worldPosition.GetHashCode());
-            TouchedChunks touched = existingTouched ?? TouchedChunks;
-            VoxelVolumeForm form = change.form.Value;
-            switch (form)
+            using (ApplyVoxelChangeMarker.Auto())
             {
-                case VoxelVolumeForm.Single:
+                Position3Int worldPosition = change.position.Value;
+                Random.InitState(worldPosition.GetHashCode());
+                TouchedChunks touched = existingTouched ?? TouchedChunks;
+                VoxelVolumeForm form = change.form.Value;
+                switch (form)
                 {
-                    Chunk chunk = GetChunkFromWorldPosition(worldPosition);
-                    if (!chunk) return;
-                    
-                    Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-                    // ReSharper disable once PossibleNullReferenceException
-                    chunk.SetVoxelDataNoCheck(voxelChunkPosition, change);
-                    if (updateSave) Map.voxelChanges.Set(worldPosition, change);
-                    AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
-                    break;
-                }
-                case VoxelVolumeForm.Prism:
-                {
-                    Position3Int l = worldPosition, u = change.upperBound.Value;
-                    for (int x = Math.Min(l.x, u.x); x <= Math.Max(l.x, u.x); x++)
-                    for (int y = Math.Min(l.y, u.y); y <= Math.Max(l.y, u.y); y++)
-                    for (int z = Math.Min(l.z, u.z); z <= Math.Max(l.z, u.z); z++)
+                    case VoxelVolumeForm.Single:
                     {
-                        var voxelWorldPosition = new Position3Int(x, y, z);
-                        Chunk chunk = GetChunkFromWorldPosition(voxelWorldPosition);
-                        if (!chunk) continue;
+                        Chunk chunk = GetChunkFromWorldPosition(worldPosition);
+                        if (!chunk) return;
 
-                        Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
-                        
-                        VoxelChange evaluatedChange = change;
-                        evaluatedChange.form = VoxelVolumeForm.Single;
-                        chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
-                        if (updateSave) Map.voxelChanges.Set(voxelWorldPosition, evaluatedChange);
+                        Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
+                        // ReSharper disable once PossibleNullReferenceException
+                        chunk.SetVoxelDataNoCheck(voxelChunkPosition, change);
+                        if (updateSave) Map.voxelChanges.Add(change);
                         AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                        break;
                     }
-                    break;
-                }
-                case VoxelVolumeForm.Spherical:
-                case VoxelVolumeForm.Cylindrical:
-                {
-                    float radius = change.magnitude.Value;
-                    bool isAdditive = radius > 0.0f;
-                    float absoluteRadius = Mathf.Abs(radius);
-                    int roundedRadius = Mathf.CeilToInt(absoluteRadius);
-                    for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
-                    for (int iy = -roundedRadius; iy <= roundedRadius; iy++)
-                    for (int iz = -roundedRadius; iz <= roundedRadius; iz++)
+                    case VoxelVolumeForm.Prism:
                     {
-                        Position3Int voxelWorldPosition = worldPosition + new Position3Int(ix, iy, iz);
-                        Chunk chunk = GetChunkFromWorldPosition(voxelWorldPosition);
-                        if (!chunk) continue;
-
-                        Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
-                        ref Voxel voxel = ref chunk.GetVoxelNoCheck(voxelChunkPosition);
-
-                        float GetDistance(VoxelVolumeForm _form, Vector3 _center, Vector3 _voxel) => _form == VoxelVolumeForm.Cylindrical
-                            ? Mathf.Sqrt((_center.x - _voxel.x).Square() + (_center.z - _voxel.z).Square())
-                            : Vector3.Distance(_center, _voxel);
-
-                        float distance = GetDistance(form, worldPosition, voxelWorldPosition),
-                              floatDensity = distance / absoluteRadius * 0.5f;
-                        if (!change.noRandom.GetValueOrDefault()) floatDensity *= Random.Range(0.85f, 1.0f);
-                        byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(floatDensity) * byte.MaxValue)),
-                             currentDensity = voxel.density;
-                        VoxelChange evaluatedChange = default;
-
-                        if (!overrideBreakable && voxel.IsUnbreakable) continue;
-
-                        if (isAdditive)
+                        Position3Int l = worldPosition, u = change.upperBound.Value;
+                        for (int x = Math.Min(l.x, u.x); x <= Math.Max(l.x, u.x); x++)
+                        for (int y = Math.Min(l.y, u.y); y <= Math.Max(l.y, u.y); y++)
+                        for (int z = Math.Min(l.z, u.z); z <= Math.Max(l.z, u.z); z++)
                         {
-                            newDensity = checked((byte) (byte.MaxValue - newDensity));
-                            if (newDensity > currentDensity)
-                            {
-                                evaluatedChange.density = newDensity;
-                                if (voxel.OnlySmooth) evaluatedChange.Merge(change);
-                            }
-                        }
-                        else
-                        {
-                            if (newDensity < currentDensity) evaluatedChange.density = newDensity;
-                        }
-                        if (voxel.HasBlock && !change.modifiesBlocks.GetValueOrDefault()) continue;
+                            var voxelWorldPosition = new Position3Int(x, y, z);
+                            Chunk chunk = GetChunkFromWorldPosition(voxelWorldPosition);
+                            if (!chunk) continue;
 
-                        bool isInside = GetDistance(form, worldPosition, voxelWorldPosition + new Vector3(0.5f, 0.5f, 0.5f)) < absoluteRadius * 1.5f;
+                            Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
 
-                        if (isInside)
-                        {
-                            if (!isAdditive)
-                            {
-                                if (change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
-                                    evaluatedChange.hasBlock = false;
-                            }
-                            if (change.color is Color32 color)
-                                evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
-                            if (change.texture is byte texture)
-                                evaluatedChange.texture = texture;
+                            VoxelChange evaluatedChange = change;
+                            evaluatedChange.form = VoxelVolumeForm.Single;
+                            chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
+                            if (updateSave) Map.voxelChanges.Add(evaluatedChange);
+                            AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
                         }
-                        evaluatedChange.natural = false;
-
-                        evaluatedChange.form = VoxelVolumeForm.Single;
-                        chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
-                        if (updateSave) Map.voxelChanges.Set(voxelWorldPosition, evaluatedChange);
-                        AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                        break;
                     }
-                    break;
+                    case VoxelVolumeForm.Spherical:
+                    case VoxelVolumeForm.Cylindrical:
+                    {
+                        float radius = change.magnitude.Value;
+                        bool isAdditive = radius > 0.0f;
+                        float absoluteRadius = Mathf.Abs(radius);
+                        int roundedRadius = Mathf.CeilToInt(absoluteRadius);
+                        for (int ix = -roundedRadius; ix <= roundedRadius; ix++)
+                        for (int iy = -roundedRadius; iy <= roundedRadius; iy++)
+                        for (int iz = -roundedRadius; iz <= roundedRadius; iz++)
+                        {
+                            Position3Int voxelWorldPosition = worldPosition + new Position3Int(ix, iy, iz);
+                            Chunk chunk = GetChunkFromWorldPosition(voxelWorldPosition);
+                            if (!chunk) continue;
+
+                            Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
+                            ref Voxel voxel = ref chunk.GetVoxelNoCheck(voxelChunkPosition);
+
+                            float GetDistance(VoxelVolumeForm _form, Vector3 _center, Vector3 _voxel) => _form == VoxelVolumeForm.Cylindrical
+                                ? Mathf.Sqrt((_center.x - _voxel.x).Square() + (_center.z - _voxel.z).Square())
+                                : Vector3.Distance(_center, _voxel);
+
+                            float distance = GetDistance(form, worldPosition, voxelWorldPosition),
+                                  floatDensity = distance / absoluteRadius * 0.5f;
+                            if (!change.noRandom.GetValueOrDefault()) floatDensity *= Random.Range(0.85f, 1.0f);
+                            byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(floatDensity) * byte.MaxValue)),
+                                 currentDensity = voxel.density;
+                            VoxelChange evaluatedChange = default;
+
+                            if (!overrideBreakable && voxel.IsUnbreakable) continue;
+
+                            if (isAdditive)
+                            {
+                                newDensity = checked((byte) (byte.MaxValue - newDensity));
+                                if (newDensity > currentDensity)
+                                {
+                                    evaluatedChange.density = newDensity;
+                                    if (voxel.OnlySmooth) evaluatedChange.Merge(change);
+                                }
+                            }
+                            else
+                            {
+                                if (newDensity < currentDensity) evaluatedChange.density = newDensity;
+                            }
+                            if (voxel.HasBlock && !change.modifiesBlocks.GetValueOrDefault()) continue;
+
+                            bool isInside = GetDistance(form, worldPosition, voxelWorldPosition + new Vector3(0.5f, 0.5f, 0.5f)) < absoluteRadius * 1.5f;
+
+                            if (isInside)
+                            {
+                                if (!isAdditive)
+                                {
+                                    if (change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
+                                        evaluatedChange.hasBlock = false;
+                                }
+                                if (change.color is Color32 color)
+                                    evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
+                                if (change.texture is byte texture)
+                                    evaluatedChange.texture = texture;
+                            }
+                            evaluatedChange.natural = false;
+
+                            evaluatedChange.form = VoxelVolumeForm.Single;
+                            chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
+                            if (updateSave) Map.voxelChanges.Add(evaluatedChange);
+                            AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                        }
+                        break;
+                    }
+                    case VoxelVolumeForm.Wall:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(form), form, null);
                 }
-                case VoxelVolumeForm.Wall:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(form), form, null);
+                if (existingTouched is null) TouchedChunks.UpdateMesh();
             }
-            if (existingTouched is null) TouchedChunks.UpdateMesh();
         }
 
         public VoxelChange? GetMapSaveVoxel(in Position3Int worldPosition)
@@ -297,6 +300,7 @@ namespace Voxels
             if (!chunk) return null;
             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
             VoxelChange change = chunk.GetChangeFromMap(voxelChunkPosition, m_LoadedMap);
+            change.position = worldPosition;
             return change;
         }
 

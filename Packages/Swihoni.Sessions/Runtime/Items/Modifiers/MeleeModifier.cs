@@ -8,7 +8,7 @@ namespace Swihoni.Sessions.Items.Modifiers
     [CreateAssetMenu(fileName = "Melee", menuName = "Item/Melee", order = 0)]
     public class MeleeModifier : WeaponModifierBase
     {
-        private static readonly RaycastHit[] RaycastHits = new RaycastHit[1];
+        protected static readonly RaycastHit[] RaycastHits = new RaycastHit[1];
 
         [SerializeField] private float m_Distance = 2.0f;
 

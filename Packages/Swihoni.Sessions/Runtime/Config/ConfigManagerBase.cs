@@ -114,14 +114,14 @@ namespace Swihoni.Sessions.Config
 // #endif
             ReadActive();
 
-            ConsoleCommandExecutor.SetCommand("restore_default_config", args =>
+            ConsoleCommandExecutor.SetCommand("restore_default_config", arguments =>
             {
                 WriteDefaults();
                 SetActiveToDefault();
             });
-            ConsoleCommandExecutor.SetCommand("write_config", args => WriteActive());
-            ConsoleCommandExecutor.SetCommand("read_config", args => ReadActive());
-            ConsoleCommandExecutor.SetCommand("open_config", args => Application.OpenURL($"file://{GetConfigFile()}"));
+            ConsoleCommandExecutor.SetCommand("write_config", arguments => WriteActive());
+            ConsoleCommandExecutor.SetCommand("read_config", arguments => ReadActive());
+            ConsoleCommandExecutor.SetCommand("open_config", arguments => Application.OpenURL($"file://{GetConfigFile()}"));
         }
 
         private ConfigManagerBase Introspect()
@@ -148,13 +148,13 @@ namespace Swihoni.Sessions.Config
                             m_NameToConfig.Add(fullName, (property, config));
                             if (config.Type == ConfigType.Client)
                             {
-                                ConsoleCommandExecutor.SetCommand(fullName, HandleArgs);
+                                ConsoleCommandExecutor.SetCommand(fullName, HandleArguments);
                             }
                             else
                             {
                                 if (config.Type == ConfigType.ServerSession)
                                     m_TypeToConfig.Add(property.GetType(), (property, config));
-                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssueCommand);
+                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssueSessionCommand);
                             }
                             break;
                     }
@@ -170,7 +170,7 @@ namespace Swihoni.Sessions.Config
             return this;
         }
 
-        public static void HandleArgs(IReadOnlyList<string> split)
+        public static void HandleArguments(IReadOnlyList<string> split)
         {
             if (Active.m_NameToConfig.TryGetValue(split[0], out (PropertyBase, ConfigAttribute) tuple))
             {

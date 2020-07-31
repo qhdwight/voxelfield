@@ -60,7 +60,7 @@ namespace Voxels
         public void Decommission()
         {
             SetCommission(false);
-            gameObject.name = "DecommissionedChunk";
+            gameObject.name = "Decommissioned Chunk";
         }
 
         public void Commission(in Position3Int position)
@@ -68,7 +68,7 @@ namespace Voxels
             SetCommission(true);
             m_Position = position;
             transform.position = m_Position * m_ChunkSize;
-            gameObject.name = $"Chunk{position}";
+            gameObject.name = $"Chunk {position}";
         }
 
         private void SetCommission(bool inCommission)
@@ -89,19 +89,20 @@ namespace Voxels
         public bool InsideChunk(in Position3Int pos) => pos.x < m_ChunkSize && pos.y < m_ChunkSize && pos.z < m_ChunkSize
                                                      && pos.x >= 0 && pos.y >= 0 && pos.z >= 0;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetVoxelDataNoCheck(in Position3Int position, in VoxelChange change)
             => m_Voxels?[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)].SetVoxelData(change);
 
-        public Voxel? GetVoxel(in Position3Int internalPosition)
-        {
-            return InsideChunk(internalPosition)
+        public Voxel? GetVoxel(in Position3Int internalPosition) =>
+            InsideChunk(internalPosition)
                 ? GetVoxelNoCheck(internalPosition)
                 : m_ChunkManager.GetVoxel(internalPosition + m_Position * m_ChunkSize);
-        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref Voxel GetVoxelNoCheck(in Position3Int position)
             => ref m_Voxels[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)];
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref Voxel GetVoxelNoCheck(int index) => ref m_Voxels[index];
 
         public VoxelChange GetChangeFromMap(in Position3Int voxelPosition, MapContainer map)
@@ -114,15 +115,15 @@ namespace Voxels
             var density = (byte) (floatDensity * byte.MaxValue / 2.0f);
             // TODO:bug discrepancy between blocks and smooth causes lower edges to have one block less modifiable
             bool breakable = map.breakableEdges || !(m_Position.x == map.dimension.lowerBound.Value.x && voxelPosition.x <= 1
-                                                   || m_Position.x == map.dimension.upperBound.Value.x && voxelPosition.x == m_ChunkSize - 1
-                                                   || m_Position.y == map.dimension.lowerBound.Value.y && voxelPosition.y <= 1
-                                                   || m_Position.y == map.dimension.upperBound.Value.y && voxelPosition.y == m_ChunkSize - 1
-                                                   || m_Position.z == map.dimension.lowerBound.Value.z && voxelPosition.z <= 1
-                                                   || m_Position.z == map.dimension.upperBound.Value.z && voxelPosition.z == m_ChunkSize - 1);
+                                                  || m_Position.x == map.dimension.upperBound.Value.x && voxelPosition.x == m_ChunkSize - 1
+                                                  || m_Position.y == map.dimension.lowerBound.Value.y && voxelPosition.y <= 1
+                                                  || m_Position.y == map.dimension.upperBound.Value.y && voxelPosition.y == m_ChunkSize - 1
+                                                  || m_Position.z == map.dimension.lowerBound.Value.z && voxelPosition.z <= 1
+                                                  || m_Position.z == map.dimension.upperBound.Value.z && voxelPosition.z == m_ChunkSize - 1);
             bool isStone = height > 5.0f;
             VoxelChange baseChange = isStone
-                ? map.terrainGeneration.stoneVoxel.Else(new VoxelChange{texture = VoxelTexture.Checkered, color = Voxel.Stone})
-                : map.terrainGeneration.grassVoxel.Else(new VoxelChange{texture = VoxelTexture.Solid, color = Voxel.Grass});
+                ? map.terrainGeneration.stoneVoxel.Else(new VoxelChange {texture = VoxelTexture.Checkered, color = Voxel.Stone})
+                : map.terrainGeneration.grassVoxel.Else(new VoxelChange {texture = VoxelTexture.Solid, color = Voxel.Grass});
             baseChange.Merge(new VoxelChange
             {
                 hasBlock = false, density = density, isBreakable = breakable, orientation = Orientation.None, natural = true, form = VoxelVolumeForm.Single
@@ -149,6 +150,10 @@ namespace Voxels
             Gizmos.color = m_Generating ? Color.yellow : m_Updating ? Color.red : Color.cyan;
             Gizmos.DrawWireCube(m_Position * m_ChunkSize + Vector3.one * (m_ChunkSize / 2.0f - 0.5f),
                                 Vector3.one * m_ChunkSize);
+            for (var x = 0; x < m_ChunkSize; x++)
+            for (var z = 0; z < m_ChunkSize; z++)
+            for (var y = 0; y < m_ChunkSize; y++)
+                Gizmos.DrawWireSphere(m_Position * m_ChunkSize + new Vector3(x, y, z), 0.02f);
         }
 
         public void UpdateAndApply()

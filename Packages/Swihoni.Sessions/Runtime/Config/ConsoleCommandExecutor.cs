@@ -16,7 +16,7 @@ namespace Swihoni.Sessions.Config
         
         private static readonly Dictionary<string, Action<string[]>> Commands = new Dictionary<string, Action<string[]>>
         {
-            ["clear"] = args => ConsoleInterface.Singleton.ClearConsole(),
+            ["clear"] = arguments => ConsoleInterface.Singleton.ClearConsole(),
             ["quit"] = _ => Application.Quit()
         };
 
@@ -40,33 +40,33 @@ namespace Swihoni.Sessions.Config
 
         public static void SetCommand(string commandName, Action<string[]> command) => Commands[commandName] = command;
 
-        public static void SetAlias(string alias, string realCommand) => Commands[alias] = args => ExecuteCommand(realCommand);
+        public static void SetAlias(string alias, string realCommand) => Commands[alias] = arguments => ExecuteCommand(realCommand);
 
         public static string GetAutocomplete(string stub) => Commands.Keys.FirstOrDefault(command => command.StartsWith(stub));
 
         public static void ExecuteCommand(string fullCommand)
         {
             ConfigManagerBase.OnCommand(fullCommand);
-            foreach (string[] args in GetArgs(fullCommand))
+            foreach (string[] arguments in GetArguments(fullCommand))
             {
-                string commandName = args.First().Replace("?", string.Empty);
+                string commandName = arguments.First().Replace("?", string.Empty);
                 if (Commands.ContainsKey(commandName))
                 {
                     try
                     {
-                        Commands[commandName](args);
+                        Commands[commandName](arguments);
                     }
                     catch (Exception)
                     {
-                        Debug.Log($"Exception running command: {args[0]}");
+                        Debug.Log($"Exception running command: {arguments[0]}");
                         throw;
                     }
                 }
-                else Debug.LogWarning($"Command \"{args[0]}\" not found!");
+                else Debug.LogWarning($"Command \"{arguments[0]}\" not found!");
             }
         }
 
-        public static IEnumerable<string[]> GetArgs(string fullCommand)
+        public static IEnumerable<string[]> GetArguments(string fullCommand)
         {
             string[] commands = fullCommand.Split(CommandSeparator, StringSplitOptions.RemoveEmptyEntries);
             return commands.Select(command => command.Trim().Split()).ToList();

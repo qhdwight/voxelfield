@@ -94,47 +94,52 @@ namespace Voxels
         public static void Serialize(in VoxelChange change, NetDataWriter writer)
         {
             var flags = 0u;
-            int position = writer.Length;
+            int flagPosition = writer.Length;
             writer.Put(flags);
 
-            if (change.texture is byte texture)
+            if (change.position is Position3Int position)
             {
                 FlagUtil.SetFlag(ref flags, 0);
+                Position3Int.Serialize(position, writer);
+            }
+            if (change.texture is byte texture)
+            {
+                FlagUtil.SetFlag(ref flags, 1);
                 writer.Put(texture);
             }
             if (change.density is byte density)
             {
-                FlagUtil.SetFlag(ref flags, 1);
+                FlagUtil.SetFlag(ref flags, 2);
                 writer.Put(density);
             }
             if (change.orientation is byte orientation)
             {
-                FlagUtil.SetFlag(ref flags, 2);
+                FlagUtil.SetFlag(ref flags, 3);
                 writer.Put(orientation);
             }
             if (change.color is Color32 color)
             {
-                FlagUtil.SetFlag(ref flags, 3);
+                FlagUtil.SetFlag(ref flags, 4);
                 writer.PutColor32(color);
             }
             if (change.magnitude is float magnitude)
             {
-                FlagUtil.SetFlag(ref flags, 4);
+                FlagUtil.SetFlag(ref flags, 5);
                 writer.Put(magnitude);
             }
             if (change.yaw is float yaw)
             {
-                FlagUtil.SetFlag(ref flags, 5);
+                FlagUtil.SetFlag(ref flags, 6);
                 writer.Put(yaw);
             }
             if (change.form is VoxelVolumeForm form)
             {
-                FlagUtil.SetFlag(ref flags, 6);
+                FlagUtil.SetFlag(ref flags, 7);
                 writer.Put((byte) form);
             }
             if (change.upperBound is Position3Int upperBound)
             {
-                FlagUtil.SetFlag(ref flags, 7);
+                FlagUtil.SetFlag(ref flags, 8);
                 Position3Int.Serialize(upperBound, writer);
             }
 
@@ -169,8 +174,8 @@ namespace Voxels
                 FlagUtil.SetFlag(ref flags, 30);
                 if (natural) FlagUtil.SetFlag(ref flags, 31);
             }
-            
-            FastBitConverter.GetBytes(writer.Data, position, flags);
+
+            FastBitConverter.GetBytes(writer.Data, flagPosition, flags);
         }
 
         private static VoxelChange DeserializeLatest(NetDataReader reader)
@@ -178,14 +183,15 @@ namespace Voxels
             uint flags = reader.GetUInt();
             VoxelChange change = default;
 
-            if (FlagUtil.HasFlag(flags, 0)) change.texture = reader.GetByte();
-            if (FlagUtil.HasFlag(flags, 1)) change.density = reader.GetByte();
-            if (FlagUtil.HasFlag(flags, 2)) change.orientation = reader.GetByte();
-            if (FlagUtil.HasFlag(flags, 3)) change.color = reader.GetColor32();
-            if (FlagUtil.HasFlag(flags, 4)) change.magnitude = reader.GetFloat();
-            if (FlagUtil.HasFlag(flags, 5)) change.yaw = reader.GetFloat();
-            if (FlagUtil.HasFlag(flags, 6)) change.form = (VoxelVolumeForm) reader.GetByte();
-            if (FlagUtil.HasFlag(flags, 7)) change.upperBound = Position3Int.Deserialize(reader);
+            if (FlagUtil.HasFlag(flags, 0)) change.position = Position3Int.Deserialize(reader);
+            if (FlagUtil.HasFlag(flags, 1)) change.texture = reader.GetByte();
+            if (FlagUtil.HasFlag(flags, 2)) change.density = reader.GetByte();
+            if (FlagUtil.HasFlag(flags, 3)) change.orientation = reader.GetByte();
+            if (FlagUtil.HasFlag(flags, 4)) change.color = reader.GetColor32();
+            if (FlagUtil.HasFlag(flags, 5)) change.magnitude = reader.GetFloat();
+            if (FlagUtil.HasFlag(flags, 6)) change.yaw = reader.GetFloat();
+            if (FlagUtil.HasFlag(flags, 7)) change.form = (VoxelVolumeForm) reader.GetByte();
+            if (FlagUtil.HasFlag(flags, 8)) change.upperBound = Position3Int.Deserialize(reader);
             // switch (change.texture)
             // {
             //     case 1:

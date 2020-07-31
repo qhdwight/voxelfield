@@ -63,13 +63,13 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             if (TryServerCommands(player, out IEnumerable<string[]> commands))
             {
-                foreach (string[] args in commands)
+                foreach (string[] arguments in commands)
                 {
-                    if (args[0] == "give_item" && ConfigManagerBase.Active.allowCheats)
+                    if (arguments[0] == "give_item" && ConfigManagerBase.Active.allowCheats)
                     {
-                        if (args.Length > 1 && byte.TryParse(args[1], out byte itemId))
+                        if (arguments.Length > 1 && byte.TryParse(arguments[1], out byte itemId))
                         {
-                            ushort count = args.Length > 2 && ushort.TryParse(args[2], out ushort parsedCount) ? parsedCount : (ushort) 1;
+                            ushort count = arguments.Length > 2 && ushort.TryParse(arguments[2], out ushort parsedCount) ? parsedCount : (ushort) 1;
                             AddItem(player.Require<InventoryComponent>(), itemId, count);
                         }
                     }

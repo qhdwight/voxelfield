@@ -21,7 +21,7 @@ namespace Swihoni.Sessions.Items.Modifiers
     {
         private const int MaxRaycastDetections = 8;
 
-        private static readonly RaycastHit[] RaycastHits = new RaycastHit[MaxRaycastDetections];
+        protected static readonly RaycastHit[] RaycastHits = new RaycastHit[MaxRaycastDetections];
 
         [SerializeField] protected ushort m_MagSize;
         [SerializeField] private ushort m_StartingAmmoInReserve = default;
@@ -66,13 +66,15 @@ namespace Swihoni.Sessions.Items.Modifiers
         /// <summary>
         /// We want to be able to interrupt reload with firing, and also make sure we can not fire with no ammo
         /// </summary>
-        protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
-            item.ammoInMag > 0 && base.CanPrimaryUse(item, inventory, justFinishedUse);
+        protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false)
+            => item.ammoInMag > 0 && base.CanPrimaryUse(item, inventory, justFinishedUse);
 
         protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
             => Fire(context, inventory, item);
 
-        private readonly HashSet<PlayerHitboxManager> m_HitPlayers = new HashSet<PlayerHitboxManager>();
+        private static readonly HashSet<PlayerHitboxManager> HitPlayers = new HashSet<PlayerHitboxManager>();
+        
+        protected virtual int FireRaycast(Ray ray) => Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_RaycastMask);
 
         protected virtual void Fire(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
         {
@@ -85,25 +87,25 @@ namespace Swihoni.Sessions.Items.Modifiers
             Ray ray = session.GetRayForPlayerId(playerId);
             session.RollbackHitboxesFor(playerId);
 
-            int hitCount = Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_RaycastMask);
+            int hitCount = FireRaycast(ray);
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)
             {
                 RaycastHit hit = RaycastHits[hitIndex];
-                if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId || m_HitPlayers.Contains(hitbox.Manager)) continue;
-                m_HitPlayers.Add(hitbox.Manager);
+                if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId || HitPlayers.Contains(hitbox.Manager)) continue;
+                HitPlayers.Add(hitbox.Manager);
                 if (context.player.With<ServerTag>())
                 {
                     var hitContext = new PlayerHitContext(context, hitbox, this, hit);
                     session.GetModifyingMode().PlayerHit(hitContext);
                 }
             }
-            m_HitPlayers.Clear();
+            HitPlayers.Clear();
 
             inventory.tracerStart.Value = ray.origin;
             inventory.tracerEnd.Value = hitCount > 0 ? RaycastHits[0].point : ray.GetPoint(300.0f);
             inventory.tracerTimeUs.Value = 1_000_000u;
         }
-
+        
         protected internal override void OnUnequip(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
         {
             if (item.status.id == GunStatusId.Reloading)
