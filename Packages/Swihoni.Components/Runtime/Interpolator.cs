@@ -16,7 +16,7 @@ namespace Swihoni.Components
     /// <summary>
     /// Use on any <see cref="ElementBase"/>.
     /// When interpolating, skip descendents of component.
-    /// The assumption is that the component has a proper <see cref="ComponentBase.InterpolateFrom"/> which provides custom interpolation for descendents.
+    /// The assumption is that the component has a proper <see cref="ComponentBase.CustomInterpolateFrom"/> which provides custom interpolation for descendents.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
     public class CustomInterpolationAttribute : Attribute
@@ -94,13 +94,13 @@ namespace Swihoni.Components
                 {
                     case PropertyBase p1 when _e2 is PropertyBase p2 && _ed is PropertyBase pd:
                     {
-                        pd.InterpolateFromIfWith(p1, p2, _interpolation);
+                        pd.InterpolateFrom(p1, p2, _interpolation);
                         break;
                     }
                     case ComponentBase c1 when _e2 is ComponentBase c2 && _ed is ComponentBase cd:
                         if (c1.WithAttribute<CustomInterpolationAttribute>())
                         {
-                            cd.InterpolateFrom(c1, c2, _interpolation);
+                            cd.CustomInterpolateFrom(c1, c2, _interpolation);
                             return Navigation.SkipDescendents;
                         }
                         break;

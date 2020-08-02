@@ -103,7 +103,7 @@ namespace Swihoni.Components
         /// <summary>
         /// Called during interpolation. Use to add custom behavior.
         /// </summary>
-        public virtual void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation) { }
+        public virtual void CustomInterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation) { }
 
         public IEnumerator<ElementBase> GetEnumerator() => Elements.GetEnumerator();
 

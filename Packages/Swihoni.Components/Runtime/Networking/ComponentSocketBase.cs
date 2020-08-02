@@ -41,7 +41,7 @@ namespace Swihoni.Components.Networking
                 EnableStatistics = true,
                 UpdateTime = 1,
                 ChannelsCount = 4,
-                IPv6Enabled = false,
+                IPv6Enabled = IPv6Mode.Disabled,
                 ReuseAddress = true,
 #if UNITY_EDITOR
                 DisconnectTimeout = int.MaxValue,

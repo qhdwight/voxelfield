@@ -182,10 +182,9 @@ namespace Swihoni.Sessions.Player.Components
             return false;
         }
 
-        public override void InterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
+        public override void CustomInterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
         {
-            var i1 = (InventoryComponent) c1;
-            var i2 = (InventoryComponent) c2;
+            InventoryComponent i1 = (InventoryComponent) c1, i2 = (InventoryComponent) c2;
             if (i1.HasNoItemEquipped || i2.HasNoItemEquipped || i1.equippedIndex != i2.equippedIndex)
             {
                 this.SetTo(i1);

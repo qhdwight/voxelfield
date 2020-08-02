@@ -78,7 +78,7 @@ namespace Swihoni.Components
         public abstract bool Equals(PropertyBase other);
         public abstract void Zero();
         public abstract void SetTo(PropertyBase other);
-        public abstract void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation);
+        public abstract void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation);
 
         public virtual StringBuilder AppendValue(StringBuilder builder)
             => throw new NotSupportedException($"Appending this property is not supported. Override {GetType().Name}.{nameof(AppendValue)} if this is not intentional.");
@@ -258,16 +258,16 @@ namespace Swihoni.Components
         }
 
         /// <exception cref="ArgumentException">If types are different.</exception>
-        public sealed override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation)
+        public sealed override void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation)
         {
             if (!(p1 is PropertyBase<T> pt1) || !(p2 is PropertyBase<T> pt2))
                 throw new ArgumentException("Properties are not the proper type!");
-            if (WithAttribute<TakeSecondForInterpolationAttribute>())
+            if (pt1.WithoutValue || pt2.WithoutValue || WithAttribute<TakeSecondForInterpolationAttribute>())
             {
-                SetFromIfWith(p2);
+                SetTo(p2);
                 return;
             }
-            if (pt1.WithValue && pt2.WithValue) ValueInterpolateFrom(pt1, pt2, interpolation);
+            ValueInterpolateFrom(pt1, pt2, interpolation);
         }
 
         /// <summary>Interpolates into this from two properties that are known to have values.</summary>

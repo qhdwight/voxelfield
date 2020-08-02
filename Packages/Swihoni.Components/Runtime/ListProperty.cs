@@ -54,7 +54,7 @@ namespace Swihoni.Components
             }
         }
 
-        public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => throw new NotImplementedException();
+        public override void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation) => throw new NotImplementedException();
     }
 
     [Serializable]

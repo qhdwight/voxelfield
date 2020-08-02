@@ -21,11 +21,23 @@ namespace Swihoni.Sessions.Entities
         public ByteIdProperty id;
     }
 
-    [Serializable]
+    [Serializable, CustomInterpolation]
     public class ThrowableComponent : ComponentBase
     {
         [InterpolateRange(5.0f)] public VectorProperty position;
         public QuaternionProperty rotation;
         public ElapsedUsProperty thrownElapsedUs, contactElapsedUs, popTimeUs;
+
+        public override void CustomInterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
+        {
+            ThrowableComponent t1 = (ThrowableComponent) c1, t2 = (ThrowableComponent) c2;
+            // Note: Only first level properties as of now
+            for (var i = 0; i < Count; i++)
+            {
+                PropertyBase p1 = (PropertyBase) c1[i], p2 = (PropertyBase) c2[i], p = (PropertyBase) this[i];
+                if (t1.thrownElapsedUs.WithoutValue || t2.thrownElapsedUs.WithoutValue || t1.thrownElapsedUs < t2.thrownElapsedUs) p.SetTo(p2);
+                else p.InterpolateFrom(p1, p2, interpolation);
+            }
+        }
     }
 }

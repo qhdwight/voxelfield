@@ -88,8 +88,9 @@ namespace Swihoni.Sessions.Player.Modifiers
                 (ModifierBehaviorBase modifier, Container entity) = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, 100 + item.id);
                 if (modifier is ItemEntityModifierBehavior itemEntityModifier)
                 {
-                    entity.Require<ItemComponent>().ammoInMag.SetTo(item.ammoInMag);
-                    entity.Require<ItemComponent>().ammoInReserve.SetTo(item.ammoInReserve);
+                    var itemOnEntity = entity.Require<ItemComponent>();
+                    itemOnEntity.ammoInMag.SetTo(item.ammoInMag);
+                    itemOnEntity.ammoInReserve.SetTo(item.ammoInReserve);
                     modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.LookRotation(ray.direction));
                     Vector3 force = ray.direction * m_DropItemForce;
                     if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;

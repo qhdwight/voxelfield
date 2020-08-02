@@ -146,7 +146,7 @@ namespace Swihoni.Components
             WithValue = true;
         }
 
-        public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => SetTo(p2);
+        public override void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation) => SetTo(p2);
 
         public override string ToString() => Builder.ToString();
     }
