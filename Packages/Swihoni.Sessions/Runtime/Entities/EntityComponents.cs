@@ -1,9 +1,10 @@
 using System;
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 
 namespace Swihoni.Sessions.Entities
 {
-    [Serializable]
+    [Serializable, ModeElement]
     public class EntityArrayElement : ArrayElement<EntityContainer>
     {
         public const int Count = 10;

@@ -141,8 +141,6 @@ namespace Swihoni.Sessions.Modes
                 }
                 return Navigation.Continue;
             });
-            session.ZeroIfWith<KillFeedElement>();
-            session.ZeroIfWith<EntityArrayElement>();
             context.ForEachActivePlayer((in SessionContext playerModifyContext) => SpawnPlayer(playerModifyContext, true));
         }
 
@@ -194,8 +192,9 @@ namespace Swihoni.Sessions.Modes
         {
             if (context.sessionContainer.Without(out KillFeedElement killFeed)) return;
             foreach (KillFeedComponent kill in killFeed)
-                if (kill.elapsedUs > context.durationUs) kill.elapsedUs.Value -= context.durationUs;
-                else kill.elapsedUs.Value = 0u;
+                if (kill.elapsedUs.WithValue)
+                    if (kill.elapsedUs > context.durationUs) kill.elapsedUs.Value -= context.durationUs;
+                    else kill.elapsedUs.Value = 0u;
         }
 
         public virtual void PlayerHit(in PlayerHitContext playerHitContext)
@@ -280,5 +279,7 @@ namespace Swihoni.Sessions.Modes
             => session.Require<PlayerContainerArrayElement>().Count(player => player.Require<HealthProperty>().WithValue);
 
         public virtual void Initialize() { }
+        
+        public virtual uint ItemEntityLifespanUs => 20_000_000u;
     }
 }

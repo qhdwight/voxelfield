@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
@@ -12,6 +14,11 @@ namespace Swihoni.Sessions.Player.Modifiers
     public class PlayerItemManagerModiferBehavior : PlayerModifierBehaviorBase
     {
         public const byte NoneIndex = 0;
+
+        [SerializeField] private float m_DropItemForce = 1.0f, m_MaxPickupDistance = 1.5f;
+        [SerializeField] private LayerMask m_ItemEntityMask = default;
+        
+        private static readonly RaycastHit[] CachedHits = new RaycastHit[1];
 
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("give_item");
@@ -30,13 +37,8 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             if (input.GetInput(PlayerInput.DropItem) && inventory.equippedIndex != 1 && inventory.equipStatus.id == ItemEquipStatusId.Equipped
              && inventory.WithItemEquipped(out ItemComponent item))
-            {
-                // Could set status to request removal but then one tick passes
-                item.id.Value = ItemId.None;
-                inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
-                inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
-                inventory.equipStatus.elapsedUs.Value = 0u;
-            }
+                ThrowItem(context, item, inventory);
+            HandlePickup(context, inventory);
 
             ModifyEquipStatus(context, inventory, wantedItemIndex);
 
@@ -57,6 +59,43 @@ namespace Swihoni.Sessions.Player.Modifiers
                 inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
                 inventory.equipStatus.elapsedUs.Value = 0u;
             }
+        }
+
+        private void HandlePickup(in SessionContext context, InventoryComponent inventory)
+        {
+            if (context.player.Without<ServerTag>() || !context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)) return;
+            
+            Ray ray = context.player.GetRayForPlayer();
+            int count = Physics.RaycastNonAlloc(ray, CachedHits, m_MaxPickupDistance, m_ItemEntityMask);
+            if (count > 0 && CachedHits[0].collider.TryGetComponent(out ItemEntityModifierBehavior itemEntity))
+            {
+                AddItem(inventory, checked((byte) (itemEntity.id - 100)));
+                var entities = context.sessionContainer.Require<EntityArrayElement>();
+                entities[itemEntity.Index].Clear();
+            }
+        }
+
+        private void ThrowItem(in SessionContext context, ItemComponent item, InventoryComponent inventory)
+        {
+            Container player = context.player;
+            if (player.With<ServerTag>())
+            {
+                Ray ray = player.GetRayForPlayer();
+                var modifier = (EntityModifierBehavior) context.session.EntityManager.ObtainNextModifier(context.sessionContainer, 100 + item.id);
+                if (modifier is ItemEntityModifierBehavior itemEntityModifier)
+                {
+                    modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.LookRotation(ray.direction));
+                    Vector3 force = ray.direction * m_DropItemForce;
+                    if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;
+                    itemEntityModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
+                }   
+            }
+
+            // Could set status to request removal but then one tick passes
+            item.id.Value = ItemId.None;
+            inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
+            inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
+            inventory.equipStatus.elapsedUs.Value = 0u;
         }
 
         private static void TryExecuteCommands(in SessionContext context)

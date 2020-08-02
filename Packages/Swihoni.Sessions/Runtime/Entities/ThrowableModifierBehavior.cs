@@ -58,9 +58,9 @@ namespace Swihoni.Sessions.Entities
             Rigidbody.constraints = canMove ? m_InitialConstraints : RigidbodyConstraints.FreezeAll;
         }
 
-        public override void SetActive(bool isActive)
+        public override void SetActive(bool isActive, int index)
         {
-            base.SetActive(isActive);
+            base.SetActive(isActive, index);
             ResetRigidbody(isActive);
             PopQueued = false;
             m_LastElapsedUs = 0u;
@@ -80,8 +80,6 @@ namespace Swihoni.Sessions.Entities
 
         public override void Modify(in SessionContext context)
         {
-            base.Modify(context);
-
             Container entity = context.entity;
 
             var throwable = entity.Require<ThrowableComponent>();
@@ -141,12 +139,11 @@ namespace Swihoni.Sessions.Entities
             m_LastElapsedUs = throwable.thrownElapsedUs;
             m_LastCollision = (CollisionType.None, null);
             Rigidbody.constraints = m_IsFrozen ? RigidbodyConstraints.FreezeAll : m_InitialConstraints;
-
-            throwable.position.Value = t.position;
-            throwable.rotation.Value = t.rotation;
+            
+            base.Modify(context); // Set position and rotation
 
             if (throwable.popTimeUs != uint.MaxValue && throwable.thrownElapsedUs - throwable.popTimeUs > m_PopDurationUs)
-                entity.Zero();
+                entity.Clear();
         }
 
         private void HurtNearby(in SessionContext context, bool justPopped)

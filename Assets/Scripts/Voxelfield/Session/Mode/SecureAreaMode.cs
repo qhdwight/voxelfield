@@ -69,6 +69,8 @@ namespace Voxelfield.Session.Mode
                                                .Cast<SiteBehavior>().ToArray();
         }
 
+        public override uint ItemEntityLifespanUs => int.MaxValue;
+
         protected override void HandleAutoRespawn(in SessionContext context, HealthProperty health)
         {
             if (context.sessionContainer.Require<SecureAreaComponent>().roundTime.WithoutValue)

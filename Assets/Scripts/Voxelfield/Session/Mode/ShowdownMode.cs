@@ -30,7 +30,7 @@ namespace Voxelfield.Session.Mode
 
         [SerializeField] private LayerMask m_ModelMask = default;
         private CurePackageBehavior[] m_CurePackages;
-        private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
+        private static readonly RaycastHit[] CachedHits = new RaycastHit[1];
 
         public override void Modify(in SessionContext context)
         {
@@ -84,8 +84,8 @@ namespace Voxelfield.Session.Mode
         public bool IsLookingAt<TBehavior>(Container player, out TBehavior behavior)
         {
             Ray ray = player.GetRayForPlayer();
-            int count = Physics.RaycastNonAlloc(ray, m_CachedHits, 2.0f, m_ModelMask);
-            if (count > 0 && m_CachedHits[0].collider.TryGetComponent(out behavior))
+            int count = Physics.RaycastNonAlloc(ray, CachedHits, 2.0f, m_ModelMask);
+            if (count > 0 && CachedHits[0].collider.TryGetComponent(out behavior))
                 return true;
             behavior = default;
             return false;

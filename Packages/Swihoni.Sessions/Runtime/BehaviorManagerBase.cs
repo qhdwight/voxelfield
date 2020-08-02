@@ -39,7 +39,13 @@ namespace Swihoni.Sessions
 
     public abstract class ModifierBehaviorBase : IdBehavior
     {
-        public virtual void SetActive(bool isActive) => gameObject.SetActive(isActive);
+        public int Index { get; protected set; }
+
+        public virtual void SetActive(bool isActive, int index)
+        {
+            Index = index;
+            gameObject.SetActive(isActive);
+        }
     }
 
     public interface IBehaviorManager
@@ -51,10 +57,10 @@ namespace Swihoni.Sessions
     {
         private const byte None = 0;
 
+        protected readonly Dictionary<int, ModifierBehaviorBase> m_ModifierPrefabs;
+        private readonly Dictionary<int, Pool<VisualBehaviorBase>> m_VisualsPool;
+        private readonly Dictionary<int, Pool<ModifierBehaviorBase>> m_ModifiersPool;
         protected readonly VisualBehaviorBase[] m_Visuals;
-        protected readonly ModifierBehaviorBase[] m_ModifierPrefabs;
-        private readonly Pool<VisualBehaviorBase>[] m_VisualsPool;
-        private readonly Pool<ModifierBehaviorBase>[] m_ModifiersPool;
         private readonly ModifierBehaviorBase[] m_Modifiers;
         private SessionBase m_Session;
 
@@ -65,11 +71,11 @@ namespace Swihoni.Sessions
         {
             try
             {
-                return m_ModifierPrefabs[id - 1];
+                return m_ModifierPrefabs[id];
             }
             catch (KeyNotFoundException)
             {
-                Debug.LogWarning($"Behavior modifier prefab not found for ID: {id}. All IDs must be ascending with no skipping.");
+                Debug.LogWarning($"Behavior modifier prefab not found for ID: {id}. Check your resources folder");
                 throw;
             }
         }
@@ -78,34 +84,39 @@ namespace Swihoni.Sessions
         {
             m_ModifierPrefabs = Resources.LoadAll<ModifierBehaviorBase>(resourceFolder)
                                          .Where(modifier => modifier.id >= 0)
-                                         .OrderBy(modifier => modifier.id).ToArray();
-            m_ModifiersPool = m_ModifierPrefabs
-                             .Select(prefabModifier => new Pool<ModifierBehaviorBase>(0, () =>
-                              {
-                                  ModifierBehaviorBase modifierInstance = UnityObject.Instantiate(prefabModifier);
-                                  modifierInstance.Setup(this);
-                                  modifierInstance.name = prefabModifier.name;
-                                  return modifierInstance;
-                              })).ToArray();
+                                         .ToDictionary(modifier => modifier.id, modifier => modifier);
+            m_ModifiersPool = m_ModifierPrefabs.Select(pair => new
+            {
+                id = pair.Key, pool = new Pool<ModifierBehaviorBase>(0, () =>
+                {
+                    ModifierBehaviorBase modifierInstance = UnityObject.Instantiate(pair.Value);
+                    modifierInstance.Setup(this);
+                    modifierInstance.name = pair.Value.name;
+                    return modifierInstance;
+                })
+            }).ToDictionary(pair => pair.id, pair => pair.pool);
             m_VisualsPool = Resources.LoadAll<VisualBehaviorBase>(resourceFolder)
                                      .Where(visual => visual.id >= 0)
-                                     .OrderBy(visuals => visuals.id)
-                                     .Select(prefabVisual => new Pool<VisualBehaviorBase>(0, () =>
+                                     .Select(prefabVisual => new
                                       {
-                                          VisualBehaviorBase visualsInstance = UnityObject.Instantiate(prefabVisual);
-                                          visualsInstance.Setup(this);
-                                          visualsInstance.name = prefabVisual.name;
-                                          return visualsInstance;
-                                      })).ToArray();
+                                          prefabVisual.id, pool = new Pool<VisualBehaviorBase>(0, () =>
+                                          {
+                                              VisualBehaviorBase visualsInstance = UnityObject.Instantiate(prefabVisual);
+                                              visualsInstance.Setup(this);
+                                              visualsInstance.name = prefabVisual.name;
+                                              return visualsInstance;
+                                          })
+                                      }).ToDictionary(pair => pair.id, pair => pair.pool);
             m_Visuals = new VisualBehaviorBase[count];
             m_Modifiers = new ModifierBehaviorBase[count];
+            Debug.Log($"[{GetType().Name}] Registered {m_ModifiersPool.Count} modifiers and {m_VisualsPool.Count} visuals");
         }
 
         public void Setup(SessionBase session) => m_Session = session;
 
         private VisualBehaviorBase ObtainVisualAtIndex(int index, int id)
         {
-            Pool<VisualBehaviorBase> pool = m_VisualsPool[id - 1];
+            Pool<VisualBehaviorBase> pool = m_VisualsPool[id];
             VisualBehaviorBase visual = pool.Obtain();
             visual.SetActive(true);
             m_Visuals[index] = visual;
@@ -116,7 +127,7 @@ namespace Swihoni.Sessions
         {
             VisualBehaviorBase visual = m_Visuals[index];
             if (!visual) return;
-            Pool<VisualBehaviorBase> pool = m_VisualsPool[visual.id - 1];
+            Pool<VisualBehaviorBase> pool = m_VisualsPool[visual.id];
             visual.SetActive(false);
             visual.transform.SetParent(null, false);
             pool.Return(visual);
@@ -137,7 +148,7 @@ namespace Swihoni.Sessions
             {
                 var container = (Container) array.GetValue(index);
                 var idProperty = container.Require<ByteIdProperty>();
-                if (idProperty != None) continue;
+                if (idProperty.WithValue && idProperty != None) continue;
                 /* Found empty slot */
                 Setup(container);
                 idProperty.Value = (byte) id;
@@ -183,9 +194,9 @@ namespace Swihoni.Sessions
 
         public ModifierBehaviorBase ObtainModifierAtIndex(Container container, int index, int id)
         {
-            Pool<ModifierBehaviorBase> pool = m_ModifiersPool[id - 1];
+            Pool<ModifierBehaviorBase> pool = m_ModifiersPool[id];
             ModifierBehaviorBase modifierBehavior = pool.Obtain();
-            modifierBehavior.SetActive(true);
+            modifierBehavior.SetActive(true, index);
             m_Modifiers[index] = modifierBehavior;
             return modifierBehavior;
         }
@@ -194,8 +205,8 @@ namespace Swihoni.Sessions
         {
             ModifierBehaviorBase modifier = m_Modifiers[index];
             if (!modifier) return;
-            Pool<ModifierBehaviorBase> pool = m_ModifiersPool[modifier.id - 1];
-            modifier.SetActive(false);
+            Pool<ModifierBehaviorBase> pool = m_ModifiersPool[modifier.id];
+            modifier.SetActive(false, index);
             pool.Return(modifier);
             m_Modifiers[index] = null;
         }
@@ -213,11 +224,10 @@ namespace Swihoni.Sessions
             {
                 var containerElement = (Container) elements.GetValue(index);
                 var id = containerElement.Require<ByteIdProperty>();
-                if (id == None)
-                    continue;
-                iterate(m_Modifiers[index], index, containerElement);
+                if (id.WithValue && id > None)
+                    iterate(m_Modifiers[index], index, containerElement);
                 // Remove modifier if lifetime has ended
-                if (id == None) ReturnModifierAtIndex(index);
+                if (id.WithoutValue || id == None) ReturnModifierAtIndex(index);
             }
         }
 
@@ -236,8 +246,8 @@ namespace Swihoni.Sessions
             for (var index = 0; index < array.Length; index++)
             {
                 var container = (Container) array.GetValue(index);
-                byte id = container.Require<ByteIdProperty>();
-                if (id == None)
+                var id = container.Require<ByteIdProperty>();
+                if (id.WithoutValue || id == None)
                 {
                     ReturnVisualAtIndex(index);
                     continue;
@@ -249,9 +259,9 @@ namespace Swihoni.Sessions
 
         public void Dispose()
         {
-            foreach (Pool<ModifierBehaviorBase> pool in m_ModifiersPool)
+            foreach (Pool<ModifierBehaviorBase> pool in m_ModifiersPool.Values)
                 pool.Dispose();
-            foreach (Pool<VisualBehaviorBase> pool in m_VisualsPool)
+            foreach (Pool<VisualBehaviorBase> pool in m_VisualsPool.Values)
                 pool.Dispose();
         }
     }
