@@ -82,7 +82,7 @@ namespace Swihoni.Sessions
             Container verifiedPlayer = GetModifyingPayerFromId(localPlayerId, verifiedLatestSession);
             UpdateInputs(verifiedPlayer, localPlayerId);
             var context = new SessionContext(this, commands: m_CommandHistory.Peek(), playerId: localPlayerId, player: m_CommandHistory.Peek(),
-                                            timeUs: timeUs, durationUs: durationUs);
+                                             timeUs: timeUs, durationUs: durationUs);
             GetPlayerModifier(verifiedPlayer, localPlayerId).ModifyTrusted(context, verifiedPlayer);
         }
 
@@ -398,12 +398,12 @@ namespace Swihoni.Sessions
                 commands.Require<ClientStampComponent>().SetTo(predictedStamp);
                 predictedPlayer.MergeFrom(commands);
                 if (IsLoading || predictedStamp.durationUs.WithoutValue) return;
-                
+
                 PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
                 if (!modifier) return;
-                
+
                 var context = new SessionContext(this, GetLatestSession(), commands, localPlayerId, predictedPlayer,
-                                                timeUs: timeUs, durationUs: predictedStamp.durationUs, tickDelta: 1);
+                                                 timeUs: timeUs, durationUs: predictedStamp.durationUs, tickDelta: 1);
                 modifier.ModifyChecked(context);
             }
         }
@@ -431,7 +431,7 @@ namespace Swihoni.Sessions
             UIntProperty targetClientTick = serverPlayer.Require<ClientStampComponent>().tick;
             if (targetClientTick.WithoutValue)
                 return;
-            
+
             var playerHistoryIndex = 0;
             Container basePredictedPlayer = null;
             for (; playerHistoryIndex < m_PlayerPredictionHistory.Size; playerHistoryIndex++)
@@ -445,14 +445,14 @@ namespace Swihoni.Sessions
             }
             if (basePredictedPlayer is null)
                 return;
-            
+
             /* We are checking predicted */
             Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
             _predictionIsAccurate = true; // Set by the following navigation
             ElementExtensions.NavigateZipped(VisitPredictedFunction, basePredictedPlayer, latestPredictedPlayer, serverPlayer);
             if (_predictionIsAccurate)
                 return;
-            
+
             /* We did not predict properly */
             PredictionErrors++;
             // Place base from verified server
@@ -471,7 +471,7 @@ namespace Swihoni.Sessions
                     // TODO:architecture use latest session?
                     Container serverSession = GetLatestSession();
                     var context = new SessionContext(this, serverSession, commands, localPlayerId, pastPredictedPlayer,
-                                                    durationUs: commands.Require<ClientStampComponent>().durationUs, tickDelta: 1);
+                                                     durationUs: commands.Require<ClientStampComponent>().durationUs, tickDelta: 1);
                     localPlayerModifier.ModifyChecked(context);
                 }
                 else

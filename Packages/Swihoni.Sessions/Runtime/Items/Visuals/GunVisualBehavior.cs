@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Swihoni.Sessions.Items.Visuals
 {
     public class GunVisualBehavior : ItemVisualBehavior
-    {    
+    {
         [SerializeField] protected Transform m_AdsTarget;
         [SerializeField] private bool m_IsMagazineShell = default;
 

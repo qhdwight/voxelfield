@@ -15,6 +15,7 @@ using UnityEngine;
 using Voxelfield.Session;
 
 #if VOXELFIELD_RELEASE_CLIENT
+using System.Security.Authentication;
 using System.Linq;
 using Amazon;
 

@@ -22,7 +22,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             session.RollbackHitboxesFor(playerId);
             int count = Physics.RaycastNonAlloc(ray, RaycastHits, m_Distance, m_RaycastMask);
             if (count == 0) return;
-            
+
             RaycastHit hit = RaycastHits[0];
             if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId) return;
 

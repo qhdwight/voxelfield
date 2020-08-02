@@ -133,8 +133,8 @@ namespace Voxels
                 yield return null;
             }
             if (actionType == ChunkActionType.Generate)
-                foreach (VoxelChange position in map.voxelChanges.List)
-                    ApplyVoxelChanges(position, false, TouchedChunks);
+                foreach (VoxelChange change in map.voxelChanges.List)
+                    ApplyVoxelChanges(change, false, TouchedChunks);
         }
 
         /// <summary>
@@ -181,11 +181,10 @@ namespace Voxels
                 Random.InitState(worldPosition.GetHashCode());
                 TouchedChunks touched = existingTouched ?? TouchedChunks;
 
-                void SetVoxel(in VoxelChange originalChange, in VoxelChange evaluatedChange, Chunk chunk, in Position3Int voxelChunkPosition)
+                void SetEvaluatedVoxel(in VoxelChange originalChange, in VoxelChange evaluatedChange, Chunk chunk, in Position3Int voxelChunkPosition)
                 {
                     originalChange.undo?.Add(chunk.GetVoxelNoCheck(voxelChunkPosition));
                     chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
-                    if (updateSave) Map.voxelChanges.Add(evaluatedChange);
                     AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
                 }
 
@@ -198,7 +197,7 @@ namespace Voxels
                         if (!chunk) return;
 
                         Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-                        SetVoxel(change, change, chunk, voxelChunkPosition);
+                        SetEvaluatedVoxel(change, change, chunk, voxelChunkPosition);
                         break;
                     }
                     case VoxelVolumeForm.Prism:
@@ -216,7 +215,7 @@ namespace Voxels
 
                             VoxelChange evaluatedChange = change;
                             evaluatedChange.form = VoxelVolumeForm.Single;
-                            SetVoxel( change, evaluatedChange, chunk, voxelChunkPosition);
+                            SetEvaluatedVoxel( change, evaluatedChange, chunk, voxelChunkPosition);
                         }
                         break;
                     }
@@ -282,7 +281,7 @@ namespace Voxels
                             }
                             evaluatedChange.natural = false;
                             evaluatedChange.form = VoxelVolumeForm.Single;
-                            SetVoxel( change, evaluatedChange, chunk, voxelChunkPosition);
+                            SetEvaluatedVoxel( change, evaluatedChange, chunk, voxelChunkPosition);
                         }
                         break;
                     }
@@ -292,6 +291,7 @@ namespace Voxels
                         throw new ArgumentOutOfRangeException(nameof(form), form, null);
                 }
                 if (existingTouched is null) TouchedChunks.UpdateMesh();
+                if (updateSave) Map.voxelChanges.Add(change);
             }
         }
 

@@ -46,9 +46,11 @@ namespace Swihoni.Sessions.Items.Modifiers
                           ImpactGrenade = 16,
                           SandBomb = 17;
 
-        public static DualDictionary<byte, string> Names { get; } = new DualDictionary<byte, string>(typeof(ItemId)
-                                                                                                    .GetFields(BindingFlags.Static | BindingFlags.Public)
-                                                                                                    .ToDictionary(field => (byte) field.GetValue(null), field => field.Name));
+        public static DualDictionary<byte, string> Names { get; }
+
+        static ItemId() => Names = new DualDictionary<byte, string>(typeof(ItemId)
+                                                                   .GetFields(BindingFlags.Static | BindingFlags.Public)
+                                                                   .ToDictionary(field => (byte) field.GetValue(null), field => field.Name.ToSnakeCase()));
     }
 
     [Serializable]

@@ -124,7 +124,7 @@ namespace Swihoni.Sessions
             _sessions = new List<SessionBase>(1);
             _sessionList = new List<SessionBase>(1);
         }
-        
+
         protected static Container _container;
         protected static SessionBase _session;
 
@@ -475,5 +475,7 @@ namespace Swihoni.Sessions
 
         public static Vector3 GetPlayerEyePosition(this MoveComponent move)
             => move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
+
+        public static string ToSnakeCase(this string @string) => string.Concat(@string.Select((c, i) => i > 0 && char.IsUpper(c) ? $"_{c}" : $"{c}")).ToLower();
     }
 }

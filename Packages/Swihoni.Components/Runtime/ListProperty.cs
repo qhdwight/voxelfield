@@ -25,7 +25,7 @@ namespace Swihoni.Components
             Zero();
             base.Clear();
         }
-        
+
         public override void Zero() => m_List.Clear();
 
         public override void SetTo(PropertyBase other)
@@ -45,7 +45,13 @@ namespace Swihoni.Components
         {
             m_List.Add(element);
             WithValue = true;
-            while (m_List.Count > m_MaxSize) m_List.RemoveAt(0);
+            while (m_List.Count > m_MaxSize)
+            {
+                m_List.RemoveAt(0);
+#if UNITY_EDITOR
+                Debug.LogWarning($"Had to remove since over max size: {m_MaxSize}");
+#endif
+            }
         }
 
         public override void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation) => throw new NotImplementedException();

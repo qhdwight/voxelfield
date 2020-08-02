@@ -13,7 +13,7 @@ namespace Swihoni.Sessions.Config
         private const int MaxPreviousCommands = 48;
 
         public static List<string> PreviousCommands { get; } = new List<string>(MaxPreviousCommands);
-        
+
         private static readonly Dictionary<string, Action<string[]>> Commands = new Dictionary<string, Action<string[]>>
         {
             ["clear"] = arguments => ConsoleInterface.Singleton.ClearConsole(),
@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Config
         //     while (PreviousCommands.Count > MaxPreviousCommands - 1) PreviousCommands.RemoveAt(PreviousCommands.Count - 1);
         //     PreviousCommands.Add(command);
         // }
-        
+
         public static void InsertPreviousCommand(string command)
         {
             PreviousCommands.Insert(0, command);

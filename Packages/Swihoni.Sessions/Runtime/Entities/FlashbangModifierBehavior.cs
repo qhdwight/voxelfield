@@ -6,7 +6,7 @@ namespace Swihoni.Sessions.Entities
     public class FlashbangModifierBehavior : ThrowableModifierBehavior
     {
         [SerializeField] private AnimationCurve m_DistanceCurve = AnimationCurve.Linear(0.0f, 1.0f, 200.0f, 0.0f);
-        
+
         protected override void JustPopped(in SessionContext context)
         {
             Vector3 center = transform.position;

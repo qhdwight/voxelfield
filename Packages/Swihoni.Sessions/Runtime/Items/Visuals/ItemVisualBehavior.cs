@@ -155,9 +155,9 @@ namespace Swihoni.Sessions.Items.Visuals
             // _item = item;
             // _properties = statusVisualProperties;
         }
-        
+
         // public virtual void PostUpdate() { }
-        
+
         public void SetActive(bool isActive)
         {
             if (m_Renders == null) return;

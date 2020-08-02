@@ -18,7 +18,7 @@ namespace Voxels
     {
         public string Version { get; set; }
 
-        public OrderedVoxelChangesProperty() : base(10) { }
+        public OrderedVoxelChangesProperty() : base(int.MaxValue) { }
 
         public override void Serialize(NetDataWriter writer)
         {

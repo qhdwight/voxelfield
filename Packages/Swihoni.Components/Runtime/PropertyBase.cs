@@ -79,7 +79,7 @@ namespace Swihoni.Components
         public abstract void Zero();
         public abstract void SetTo(PropertyBase other);
         public abstract void InterpolateFromIfWith(PropertyBase p1, PropertyBase p2, float interpolation);
-        
+
         public virtual StringBuilder AppendValue(StringBuilder builder)
             => throw new NotSupportedException($"Appending this property is not supported. Override {GetType().Name}.{nameof(AppendValue)} if this is not intentional.");
 
@@ -98,7 +98,7 @@ namespace Swihoni.Components
                 return false;
             }
         }
-        
+
         public virtual void Clear() => WithValue = false;
 
         public virtual void SetFromIfWith(PropertyBase other)
@@ -227,7 +227,7 @@ namespace Swihoni.Components
         public override void Zero() => Value = default;
 
         public T Else(T @default = default) => WithValue ? m_Value : @default;
-        
+
         /// <returns>False if types are different. Equal if both values are the same, or if both do not have values.</returns>
         public sealed override bool Equals(PropertyBase other) => this == (PropertyBase<T>) other;
 

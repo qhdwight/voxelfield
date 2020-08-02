@@ -74,7 +74,7 @@ namespace Swihoni.Sessions.Config
     public class InputBindingProperty : DictProperty<ByteProperty, KeyCodeProperty>
     {
         private const string Separator = ";";
-        
+
         private static ByteProperty _lookupProperty = new ByteProperty();
 
         public KeyCode GetKeyCode(byte @byte)

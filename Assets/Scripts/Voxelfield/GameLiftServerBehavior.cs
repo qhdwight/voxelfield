@@ -1,18 +1,19 @@
 #if UNITY_EDITOR
 // #define VOXELFIELD_RELEASE_SERVER
+// #undef UNITY_EDITOR
 #endif
 
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Voxelfield.Session;
 #if UNITY_EDITOR
 using Amazon;
 using Amazon.Runtime;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
 using Swihoni.Sessions;
-using System.Linq;
-using Voxelfield.Session;
-using System.Collections.Generic;
 
 #endif
 #if VOXELFIELD_RELEASE_SERVER
@@ -53,7 +54,7 @@ namespace Voxelfield
         private static void OnProcessTerminate()
         {
             Debug.Log("Terminated game session");
-            SessionManager.WantsQuit = true;
+            SessionManager.WantsApplicationQuit = true;
         }
 
         private static void OnStartGameSession(GameSession session)

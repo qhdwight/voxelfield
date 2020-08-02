@@ -101,7 +101,7 @@ namespace Swihoni.Sessions
             RenderInterfaces(latestSession);
             ModeManager.GetMode(m_RenderSession).Render(this, m_RenderSession);
         }
-        
+
         protected void RenderInterfaces(Container session)
         {
             _session = this;

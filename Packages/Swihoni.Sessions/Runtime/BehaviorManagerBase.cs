@@ -197,7 +197,7 @@ namespace Swihoni.Sessions
             pool.Return(modifier);
             m_Modifiers[index] = null;
         }
-        
+
         // public void Modify(int index, Container session, Action<ModifierBehaviorBase, Container> action)
         // {
         //     var element = (Container) ExtractArray(session).GetValue(index);

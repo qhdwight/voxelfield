@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
@@ -16,7 +15,7 @@ namespace Swihoni.Sessions
 
         [SerializeField] private string m_AutoCommand = string.Empty;
         [SerializeField] private bool m_RunAutoCommand = default;
-        
+
         private StrictPool<PlayerVisualizerBehavior> m_Pool;
 
         public bool SendDebug;

@@ -16,8 +16,8 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
 using Voxels.Map;
-
 #if VOXELFIELD_RELEASE_SERVER
+using Swihoni.Sessions.Modes;
 using Amazon;
 using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2;
@@ -186,6 +186,7 @@ namespace Voxelfield.Session
                 NetPeer peer = socketRequest.Accept();
                 Container player = Session.GetModifyingPayerFromId(Session.GetPeerPlayerId(peer));
 #if VOXELFIELD_RELEASE_SERVER
+                // TODO:security what if already exists
                 m_GameLiftPlayerSessionIds.Add(peer, request.gameLiftPlayerSessionId.AsNewString());
 #endif
                 if (!SteamServer.IsValid) return;
@@ -195,6 +196,7 @@ namespace Voxelfield.Session
             }
 
 #if VOXELFIELD_RELEASE_SERVER
+            string playerSessionId = request.gameLiftPlayerSessionId.AsNewString();
             GenericOutcome outcome = GameLiftServerAPI.AcceptPlayerSession(playerSessionId);
             if (outcome.Success)
             {

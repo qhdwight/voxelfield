@@ -83,7 +83,7 @@ namespace Swihoni.Sessions
         protected virtual void PostTick(Container tickSession)
         {
             if (IsLoading) return;
-            
+
             RenderVerified(tickSession);
         }
 
@@ -329,7 +329,7 @@ namespace Swihoni.Sessions
                     if (!IsLoading)
                     {
                         var context = new SessionContext(this, serverSession, receivedClientCommands, clientId, serverPlayer,
-                                                        durationUs: clientStamp.durationUs, tickDelta: tickDelta);
+                                                         durationUs: clientStamp.durationUs, tickDelta: tickDelta);
                         GetPlayerModifier(serverPlayer, clientId).ModifyChecked(context);
                         mode.ModifyPlayer(context);
                     }

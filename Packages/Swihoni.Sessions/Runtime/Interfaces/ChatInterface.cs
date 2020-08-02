@@ -14,9 +14,9 @@ namespace Swihoni.Sessions.Interfaces
         [SerializeField] private BufferedTextGui m_Text = default;
         private TMP_InputField m_Input;
         private string m_WantedInput;
-        
+
         private readonly Queue<string> m_Chats = new Queue<string>();
-        
+
         protected override void Awake()
         {
             m_Input = GetComponentInChildren<TMP_InputField>();
@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Interfaces
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
             if (string.IsNullOrEmpty(m_WantedInput)) return;
-            
+
             commands.Require<ChatEntryProperty>().SetTo(m_WantedInput);
             m_WantedInput = null;
         }

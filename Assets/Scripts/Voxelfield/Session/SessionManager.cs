@@ -25,6 +25,7 @@ using UnityEditor.Build.Reporting;
 using LiteNetLib;
 #endif
 #if VOXELFIELD_RELEASE_SERVER
+using Aws.GameLift;
 using Aws.GameLift.Server;
 
 #endif
@@ -39,7 +40,7 @@ namespace Voxelfield.Session
         private static readonly string[] IpSeparator = {":"};
 
         public static bool WantsApplicationQuit { get; set; }
-        
+
 #if VOXELFIELD_RELEASE_SERVER
         public static bool GameLiftReady { get; set; }
         private float m_InactiveServerElapsedSeconds;
@@ -79,7 +80,8 @@ namespace Voxelfield.Session
                 }
             });
 #if ENABLE_MONO
-            ConsoleCommandExecutor.SetCommand("wsl_connect", arguments => ConsoleCommandExecutor.ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
+            ConsoleCommandExecutor.SetCommand("wsl_connect",
+                                              arguments => ConsoleCommandExecutor.ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
 #endif
             ConsoleCommandExecutor.SetCommand("online_quick_play", arguments => GameLiftClientManager.QuickPlay());
             ConsoleCommandExecutor.SetCommand("online_start_new", arguments => GameLiftClientManager.StartNew());
@@ -181,10 +183,14 @@ namespace Voxelfield.Session
         {
             if (WantsApplicationQuit)
             {
+#if UNITY_EDITOR
+                EditorApplication.isPlaying = false;
+#else
                 Application.Quit();
+#endif
                 return;
             }
-            
+
             SessionBase.HandleCursorLockState();
             Application.targetFrameRate = ConfigManagerBase.Active.targetFps;
             AudioListener.volume = ConfigManagerBase.Active.volume;
@@ -234,11 +240,6 @@ namespace Voxelfield.Session
                     Debug.LogError($"Failed to graciously process ending: {outcome.Error}");
                     WantsApplicationQuit = true;
                 }
-#if UNITY_EDITOR
-                EditorApplication.isPlaying = false;
-#else
-                Application.Quit();
-#endif
             }
 #endif
 

@@ -12,9 +12,9 @@ namespace Swihoni.Sessions
         public readonly int tickDelta;
 
         public SessionContext(SessionBase session = null, Container sessionContainer = null, Container commands = null,
-                             int? playerId = null, Container player = null,
-                             Container entity = null,
-                             uint? timeUs = null, uint? durationUs = null, int? tickDelta = null, in SessionContext? existing = null)
+                              int? playerId = null, Container player = null,
+                              Container entity = null,
+                              uint? timeUs = null, uint? durationUs = null, int? tickDelta = null, in SessionContext? existing = null)
         {
             if (existing is SessionContext context)
             {
