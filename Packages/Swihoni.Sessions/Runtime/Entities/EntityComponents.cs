@@ -1,6 +1,7 @@
 using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using UnityEngine;
 
 namespace Swihoni.Sessions.Entities
 {
@@ -35,8 +36,14 @@ namespace Swihoni.Sessions.Entities
             for (var i = 0; i < Count; i++)
             {
                 PropertyBase p1 = (PropertyBase) c1[i], p2 = (PropertyBase) c2[i], p = (PropertyBase) this[i];
-                if (t1.thrownElapsedUs.WithoutValue || t2.thrownElapsedUs.WithoutValue || t1.thrownElapsedUs < t2.thrownElapsedUs) p.SetTo(p2);
-                else p.InterpolateFrom(p1, p2, interpolation);
+                // if (t1.thrownElapsedUs.WithoutValue || t2.thrownElapsedUs.WithoutValue || t2.thrownElapsedUs < t1.thrownElapsedUs)
+                // {
+                //     p.SetTo(p2);
+                //     if (t1.thrownElapsedUs.WithValue && t2.thrownElapsedUs.WithValue)
+                //         Debug.Log("Ok Boomer");
+                // }
+                // else
+                    p.InterpolateFrom(p1, p2, interpolation);
             }
         }
     }

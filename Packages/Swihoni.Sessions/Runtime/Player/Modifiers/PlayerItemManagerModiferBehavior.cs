@@ -76,6 +76,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 item.ammoInMag.SetTo(itemOnEntity.ammoInMag);
                 item.ammoInReserve.SetTo(itemOnEntity.ammoInReserve);
                 entity.Clear();
+                itemEntity.SetActive(false, itemEntity.Index); // Force update of behavior
             }
         }
 

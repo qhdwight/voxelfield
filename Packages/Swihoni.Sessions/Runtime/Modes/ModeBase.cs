@@ -95,13 +95,11 @@ namespace Swihoni.Sessions.Modes
         {
             Container player = context.player;
             player.ZeroIfWith<FrozenProperty>();
-            player.ZeroIfWith<StatsComponent>();
+            if (begin) player.ZeroIfWith<StatsComponent>();
             player.Require<ByteIdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
-            player.ZeroIfWith<HitMarkerComponent>();
-            player.ZeroIfWith<DamageNotifierComponent>();
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();
@@ -131,8 +129,7 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void BeginModify(in SessionContext context)
         {
-            Container session = context.sessionContainer;
-            session.Navigate(_element =>
+            Navigation ClearModeElements(ElementBase _element)
             {
                 if (_element.WithAttribute<ModeElementAttribute>())
                 {
@@ -140,8 +137,14 @@ namespace Swihoni.Sessions.Modes
                     return Navigation.SkipDescendents;
                 }
                 return Navigation.Continue;
+            }
+            Container session = context.sessionContainer;
+            session.Navigate(_element => _element is PlayerContainerArrayElement ? Navigation.SkipDescendents : ClearModeElements(_element));
+            context.ForEachActivePlayer((in SessionContext playerModifyContext) =>
+            {
+                playerModifyContext.player.Navigate(ClearModeElements);
+                SpawnPlayer(playerModifyContext, true);
             });
-            context.ForEachActivePlayer((in SessionContext playerModifyContext) => SpawnPlayer(playerModifyContext, true));
         }
 
         protected virtual void KillPlayer(in DamageContext context)
@@ -149,7 +152,7 @@ namespace Swihoni.Sessions.Modes
             context.sessionContext.session.Injector.OnKillPlayer(context);
             Container player = context.hitPlayer;
             player.ZeroIfWith<HealthProperty>();
-            player.ZeroIfWith<HitMarkerComponent>();
+            player.ClearIfWith<HitMarkerComponent>();
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
         }
 
@@ -161,12 +164,12 @@ namespace Swihoni.Sessions.Modes
 
             if (context.tickDelta >= 1)
             {
-                if (context.player.With(out HitMarkerComponent hitMarker))
+                if (context.player.With(out HitMarkerComponent hitMarker) && hitMarker.elapsedUs.WithValue)
                     if (hitMarker.elapsedUs.Value > context.durationUs) hitMarker.elapsedUs.Value -= context.durationUs;
-                    else hitMarker.elapsedUs.Value = 0u;
-                if (context.player.With(out DamageNotifierComponent damageNotifier))
+                    else hitMarker.Clear();
+                if (context.player.With(out DamageNotifierComponent damageNotifier) && damageNotifier.elapsedUs.WithValue)
                     if (damageNotifier.elapsedUs.Value > context.durationUs) damageNotifier.elapsedUs.Value -= context.durationUs;
-                    else damageNotifier.elapsedUs.Value = 0u;
+                    else damageNotifier.Clear();
                 if (context.player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
                     InflictDamage(new DamageContext(context, context.playerId, context.player, health.Value, "Void"));
             }
@@ -194,7 +197,7 @@ namespace Swihoni.Sessions.Modes
             foreach (KillFeedComponent kill in killFeed)
                 if (kill.elapsedUs.WithValue)
                     if (kill.elapsedUs > context.durationUs) kill.elapsedUs.Value -= context.durationUs;
-                    else kill.elapsedUs.Value = 0u;
+                    else kill.Clear();
         }
 
         public virtual void PlayerHit(in PlayerHitContext playerHitContext)
@@ -237,7 +240,7 @@ namespace Swihoni.Sessions.Modes
                     if (damageContext.sessionContext.sessionContainer.Without(out KillFeedElement killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)
                     {
-                        if (kill.elapsedUs > 0u) continue;
+                        if (kill.elapsedUs.WithValue) continue;
                         // Empty kill found
                         kill.elapsedUs.Value = 2_000_000u;
                         kill.killingPlayerId.Value = (byte) damageContext.InflictingPlayerId;

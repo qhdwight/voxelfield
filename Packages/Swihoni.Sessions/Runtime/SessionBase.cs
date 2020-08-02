@@ -152,10 +152,10 @@ namespace Swihoni.Sessions
         public static void RegisterSessionCommand(params string[] commands)
         {
             foreach (string command in commands)
-                ConsoleCommandExecutor.SetCommand(command, IssuePlayerCommand);
+                ConsoleCommandExecutor.SetCommand(command, IssueSessionCommand);
         }
 
-        public static void IssuePlayerCommand(string[] arguments)
+        public static void IssueSessionCommand(string[] arguments)
         {
             if (SessionCount == 0)
             {
@@ -163,7 +163,7 @@ namespace Swihoni.Sessions
                 return;
             }
             foreach (SessionBase session in SessionEnumerable)
-                session.PlayerCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", arguments));
+                session.SessionCommand(arguments);
         }
 
         public void SetApplicationPauseState(bool isPaused)
@@ -358,7 +358,7 @@ namespace Swihoni.Sessions
 
         public abstract Container GetLatestSession();
 
-        public virtual Container GetLocalCommands() => throw new NotImplementedException();
+        public virtual Container GetLocalCommands() => throw new NotSupportedException();
 
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public virtual ModeBase GetModifyingMode(Container session = null)
@@ -402,11 +402,19 @@ namespace Swihoni.Sessions
             }
         }
 
-        public void PlayerCommand(int playerId, string stringCommand)
+        public virtual void SessionCommand(string[] arguments)
         {
-            var command = GetLocalCommands().Require<StringCommandProperty>();
-            if (command.Builder.Length > 0) command.Add(" && ").Add(stringCommand);
-            else command.SetTo(stringCommand);
+            try
+            {
+                var commandProperty = GetLocalCommands().Require<StringCommandProperty>();
+                string command = string.Join(" ", arguments);
+                if (commandProperty.Builder.Length > 0) commandProperty.Add("&&").Add(command);
+                else commandProperty.SetTo(command);
+            }
+            catch (Exception)
+            {
+                ConfigManagerBase.TryHandleArguments(arguments);
+            }
         }
 
         public static StringBuilder BuildUsername(Container sessionContainer, StringBuilder builder, Container player)

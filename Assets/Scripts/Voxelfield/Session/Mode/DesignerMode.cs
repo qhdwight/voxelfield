@@ -23,13 +23,11 @@ namespace Voxelfield.Session.Mode
                 move.position.Value = new Vector3 {y = 10.0f};
                 move.type.Value = MoveType.Flying;
             }
-            player.ZeroIfWith<StatsComponent>();
+            if (begin) player.ZeroIfWith<StatsComponent>();
             player.Require<ByteIdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
-            player.ZeroIfWith<HitMarkerComponent>();
-            player.ZeroIfWith<DamageNotifierComponent>();
             if (player.With(out InventoryComponent inventory))
             {
                 inventory.Zero();

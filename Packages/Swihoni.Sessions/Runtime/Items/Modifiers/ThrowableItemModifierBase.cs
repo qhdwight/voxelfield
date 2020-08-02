@@ -77,12 +77,18 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (player.Without<ServerTag>()) return false;
 
             Ray ray = player.GetRayForPlayer();
-            (ModifierBehaviorBase modifier, Container _) = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, throwablePrefab.id);
-            if (modifier is ThrowableModifierBehavior throwableModifier)
+            (ModifierBehaviorBase modifier, Container entity) = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, throwablePrefab.id);
+            if (modifier is ThrowableModifierBehavior throwableModifier && entity.With(out ThrowableComponent throwable))
             {
                 throwableModifier.Name = itemName;
-                modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.LookRotation(ray.direction));
                 throwableModifier.ThrowerId = context.playerId;
+
+                Vector3 position = ray.origin + ray.direction * 1.1f;
+                Quaternion rotation = Quaternion.LookRotation(ray.direction);
+                modifier.transform.SetPositionAndRotation(position, rotation);
+                throwable.position.Value = position;
+                throwable.rotation.Value = rotation;
+                
                 Vector3 force = ray.direction * throwForce;
                 if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;
                 throwableModifier.Rigidbody.AddForce(force, ForceMode.Impulse);

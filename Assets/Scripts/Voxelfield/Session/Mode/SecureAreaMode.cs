@@ -283,8 +283,6 @@ namespace Voxelfield.Session.Mode
                 move.position.Value = GetSpawnPosition(context);
                 player.ZeroIfWith<CameraComponent>();
                 health.Value = 100;
-                player.ZeroIfWith<HitMarkerComponent>();
-                player.ZeroIfWith<DamageNotifierComponent>();
                 player.ZeroIfWith<RespawnTimerProperty>();
                 player.Require<ByteIdProperty>().Value = 1;
             }

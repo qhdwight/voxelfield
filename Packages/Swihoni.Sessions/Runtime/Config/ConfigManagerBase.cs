@@ -149,7 +149,7 @@ namespace Swihoni.Sessions.Config
                             {
                                 if (config.Type == ConfigType.ServerSession)
                                     m_TypeToConfig.Add(property.GetType(), (property, config));
-                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssuePlayerCommand);
+                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssueSessionCommand);
                             }
                             break;
                     }
@@ -256,7 +256,7 @@ namespace Swihoni.Sessions.Config
                 else
                 {
                     WriteDefaults();
-                    Debug.LogWarning("Config file was not found so a default one was written");
+                    Debug.LogWarning($"[{Default.GetType().Name}] Config file was not found so a default one was written");
                     SetActiveToDefault();
                 }
 #if UNITY_EDITOR
@@ -266,7 +266,7 @@ namespace Swihoni.Sessions.Config
             catch (Exception exception)
             {
                 SetActiveToDefault();
-                Debug.LogError($"Failed to parse config. Using defaults. Check permissions? {exception.Message}");
+                Debug.LogError($"[{Default.GetType().Name}] Failed to parse config. Using defaults. Check permissions? {exception.Message}");
                 if (Debug.isDebugBuild) Debug.LogError(exception);
             }
         }

@@ -31,8 +31,8 @@ namespace Voxels.Map
                 // ReSharper disable once PossibleNullReferenceException
                 if (ReferenceEquals(element, version)) voxelChanges.Version = version.AsNewString();
             }
-            Debug.Log($"Read map has: {voxelChanges.Count} voxel changes");
-            if (version != Application.version) Debug.Log($"Converting map container to newest version, from {version} to {Application.version}");
+            Debug.Log($"[{GetType().Name}] Read map has: {voxelChanges.Count} voxel changes");
+            if (version != Application.version) Debug.Log($"[{GetType().Name}] Converting map container to newest version, from {version} to {Application.version}");
             return this;
         }
     }

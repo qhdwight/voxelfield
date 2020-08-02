@@ -105,20 +105,28 @@ namespace Swihoni.Sessions.Interfaces
                 // TODO:refactor different durations for hit marker and damage notifier
                 if (localPlayer.With(out HitMarkerComponent hitMarker))
                 {
-                    bool isHitMarkerVisible = hitMarker.elapsedUs > 0.0f;
-                    Color color = hitMarker.isKill ? m_KillHitMarkerColor : m_DefaultHitMarkerColor;
-                    color.a = isHitMarkerVisible ? 1.0f : 0.0f;
-                    m_HitMarker.color = color;
-                    float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsedUs / 1_000_000f);
-                    m_HitMarker.rectTransform.localScale = new Vector2(scale, scale);
+                    bool isHitMarkerVisible = hitMarker.elapsedUs.WithValue;
+                    if (isHitMarkerVisible)
+                    {
+                        Color color = hitMarker.isKill ? m_KillHitMarkerColor : m_DefaultHitMarkerColor;
+                        m_HitMarker.color = color;
+                        float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsedUs / 1_000_000f);
+                        m_HitMarker.rectTransform.localScale = new Vector2(scale, scale);   
+                    }
+                    m_HitMarker.enabled = isHitMarkerVisible;
                 }
                 if (localPlayer.With(out DamageNotifierComponent damageNotifier))
                 {
+                    bool isNotifierVisible = damageNotifier.elapsedUs.WithValue;
                     foreach (Image notifierImage in m_DamageNotifiers)
                     {
-                        Color color = notifierImage.color;
-                        color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 2_000_000f);
-                        notifierImage.color = color;
+                        if (isNotifierVisible)
+                        {
+                            Color color = notifierImage.color;
+                            color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 2_000_000f);
+                            notifierImage.color = color;   
+                        }
+                        notifierImage.enabled = isNotifierVisible;
                     }
                 }
             }

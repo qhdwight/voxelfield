@@ -109,7 +109,7 @@ namespace Voxelfield.Session
                 else Debug.LogWarning("Not connected to steam");
             });
 
-            Debug.Log("Started session manager");
+            Debug.Log($"[{GetType().Name}] Started session manager");
             AnalysisLogger.Reset(string.Empty);
         }
 

@@ -68,7 +68,7 @@ namespace Swihoni.Sessions.Player.Visualization
                     m_Camera.transform.position = move.position + new Vector3 {y = Mathf.Lerp(m_CrouchedCameraHeight, m_UprightCameraHeight, 1.0f - move.normalizedCrouch)};
 
                 Container localPlayer = sessionContainer.GetPlayer(sessionContainer.Require<LocalPlayerId>());
-                bool withNotifier = player.With(out DamageNotifierComponent damageNotifier);
+                bool withNotifier = player.With(out DamageNotifierComponent damageNotifier) && damageNotifier.elapsedUs.WithValue;
                 showUsername = !isLocalPlayer && localPlayer.Require<TeamProperty>() == player.Require<TeamProperty>();
                 showDamageNotifier = m_DamageText && !isLocalPlayer && withNotifier;
 

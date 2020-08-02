@@ -28,13 +28,17 @@ namespace Swihoni.Sessions.Player.Visualization
             foreach (PlayerItemAnimatorBehavior animator in m_ItemAnimators) animator.Render(player, isLocalPlayer);
             if (!m_Tracer) return;
             var inventory = player.Require<InventoryComponent>();
-            m_Tracer.SetPosition(0, inventory.tracerStart);
-            m_Tracer.SetPosition(1, inventory.tracerEnd);
-            m_Tracer.enabled = inventory.tracerTimeUs > 0;
-            m_AlphaKeys[1].alpha = inventory.tracerTimeUs / 1_000_000.0f;
-            m_AlphaKeys[2].alpha = inventory.tracerTimeUs / 1_000_000.0f;
-            m_Gradient.SetKeys(m_ColorKeys, m_AlphaKeys);
-            m_Tracer.colorGradient = m_Gradient;
+            bool isTracerEnabled = inventory.tracerTimeUs.WithValue;
+            if (isTracerEnabled)
+            {
+                m_Tracer.SetPosition(0, inventory.tracerStart);
+                m_Tracer.SetPosition(1, inventory.tracerEnd);
+                m_AlphaKeys[1].alpha = inventory.tracerTimeUs / 1_000_000.0f;
+                m_AlphaKeys[2].alpha = inventory.tracerTimeUs / 1_000_000.0f;
+                m_Gradient.SetKeys(m_ColorKeys, m_AlphaKeys);
+                m_Tracer.colorGradient = m_Gradient;   
+            }
+            m_Tracer.enabled = isTracerEnabled;
         }
 
         public override void Dispose() => ForEachItemAnimator(animator => animator.Dispose());

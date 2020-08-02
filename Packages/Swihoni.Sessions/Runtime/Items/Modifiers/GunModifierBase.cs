@@ -41,8 +41,14 @@ namespace Swihoni.Sessions.Items.Modifiers
             else if (inputs.GetInput(PlayerInput.UseOne) && item.NoAmmoLeft && item.status.id == ItemStatusId.Idle)
                 StartStatus(context, inventory, item, GunStatusId.DryFiring);
 
-            if (inventory.tracerTimeUs > context.durationUs) inventory.tracerTimeUs.Value -= context.durationUs;
-            else inventory.tracerTimeUs.Value = 0u;
+            if (inventory.tracerTimeUs.WithValue)
+                if (inventory.tracerTimeUs > context.durationUs) inventory.tracerTimeUs.Value -= context.durationUs;
+                else
+                {
+                    inventory.tracerTimeUs.Clear();
+                    inventory.tracerStart.Clear();
+                    inventory.tracerEnd.Clear();
+                }
 
             base.ModifyChecked(context, item, inventory, inputs);
         }
