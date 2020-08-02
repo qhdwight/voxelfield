@@ -32,21 +32,22 @@ namespace Swihoni.Sessions.Items.Visuals
     public class ItemVisualBehavior : MonoBehaviour
     {
         [SerializeField] private byte m_Id = default;
-        [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default,
-                                                              m_EquipStatusVisualProperties = default;
+        [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default, m_EquipStatusVisualProperties = default;
         [SerializeField] private Transform m_IkL = default, m_IkR = default;
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;
         [SerializeField] private ChildBehavior[] m_ChildBehaviors = default;
         [SerializeField] private Sprite m_Crosshair = default;
         [SerializeField] private float m_FovMultiplier = 1.0f;
 
-        private AudioSource m_AudioSource;
         private AnimationClipPlayable[] m_Animations;
         private PlayableGraph m_PlayerGraph;
         private AnimationMixerPlayable m_Mixer;
         private PlayerItemAnimatorBehavior m_PlayerItemAnimator;
         private Renderer[] m_Renders;
         private ArmIk m_ArmIk;
+
+        // protected ItemComponent _item;
+        // private ItemStatusVisualProperties _properties;
 
         public byte Id => m_Id;
         public Vector3 FpvOffset => m_FpvOffset;
@@ -61,7 +62,6 @@ namespace Swihoni.Sessions.Items.Visuals
             m_PlayerItemAnimator = playerItemAnimator;
             m_PlayerGraph = playerGraph;
             m_Renders = GetComponentsInChildren<Renderer>();
-            m_AudioSource = GetComponentInChildren<AudioSource>();
             ModiferProperties = ItemAssetLink.GetModifier(m_Id);
             m_ArmIk = playerItemAnimator.ArmIk;
             m_ArmIk.SetTargets(m_IkL, m_IkR);
@@ -78,6 +78,7 @@ namespace Swihoni.Sessions.Items.Visuals
                 m_Animations[i] = playable;
             }
             m_PlayerGraph.GetOutput(PlayerItemAnimatorBehavior.OutputIndex).SetSourcePlayable(m_Mixer);
+            SetActive(true);
         }
 
         internal void Cleanup()
@@ -85,7 +86,7 @@ namespace Swihoni.Sessions.Items.Visuals
             if (m_PlayerGraph.IsValid()) m_PlayerGraph.DestroySubgraph(m_Mixer);
         }
 
-        private (ItemStatusVisualProperties, int) GetVisualProperties(ItemComponent item, ByteStatusComponent equipStatus)
+        private (ItemStatusVisualProperties, int) GetRealizedVisualProperties(ItemComponent item, ByteStatusComponent equipStatus)
         {
             bool useStatus = equipStatus.id == ItemEquipStatusId.Equipped;
             ItemStatusVisualProperties statusVisualProperties = useStatus
@@ -110,7 +111,7 @@ namespace Swihoni.Sessions.Items.Visuals
                 if (isSameAnimation && isAfter)
                     lastStatusElapsedUs = lastExpressedStatus.elapsedUs;
             }
-            (ItemStatusVisualProperties statusVisualProperties, int _) = GetVisualProperties(item, inventory.equipStatus);
+            (ItemStatusVisualProperties statusVisualProperties, int _) = GetRealizedVisualProperties(item, inventory.equipStatus);
             ItemStatusVisualProperties.AnimationEvent[] animationEvents = statusVisualProperties.animationEvents;
             foreach (ItemStatusVisualProperties.AnimationEvent animationEvent in animationEvents)
             {
@@ -129,9 +130,9 @@ namespace Swihoni.Sessions.Items.Visuals
             if (animationEvent.particleSystem) animationEvent.particleSystem.Play();
         }
 
-        public void SampleAnimation(ItemComponent item, ByteStatusComponent equipStatus, float interpolation)
+        public void SampleAnimation(ItemComponent item, ByteStatusComponent equipStatus, float interpolation, bool isVisible, ShadowCastingMode shadowCastingMode)
         {
-            (ItemStatusVisualProperties statusVisualProperties, int animationIndex) = GetVisualProperties(item, equipStatus);
+            (ItemStatusVisualProperties statusVisualProperties, int animationIndex) = GetRealizedVisualProperties(item, equipStatus);
             AnimationClip animationClip = statusVisualProperties.animationClip;
             if (!animationClip) return;
 
@@ -145,17 +146,28 @@ namespace Swihoni.Sessions.Items.Visuals
             foreach (ChildBehavior child in m_ChildBehaviors)
                 child.Evaluate();
             m_ArmIk.Evaluate();
-        }
-
-        public void SetRenderingMode(bool isEnabled, ShadowCastingMode? shadowCastingMode = null)
-        {
             if (m_Renders == null) return;
             foreach (Renderer meshRenderer in m_Renders)
             {
-                meshRenderer.enabled = isEnabled;
-                if (shadowCastingMode.HasValue)
-                    meshRenderer.shadowCastingMode = shadowCastingMode.Value;
+                meshRenderer.enabled = IsMeshVisible(meshRenderer, isVisible, item, equipStatus);
+                meshRenderer.shadowCastingMode = shadowCastingMode;
             }
+            // _item = item;
+            // _properties = statusVisualProperties;
+        }
+        
+        // public virtual void PostUpdate() { }
+        
+        public void SetActive(bool isActive)
+        {
+            if (m_Renders == null) return;
+            foreach (Renderer meshRenderer in m_Renders) meshRenderer.enabled = isActive;
+        }
+
+        protected virtual bool IsMeshVisible(Renderer meshRenderer, bool isItemVisible, ItemComponent item, ByteStatusComponent equipStatus)
+        {
+            if (isItemVisible && !meshRenderer.enabled) return false; // Override from animator
+            return isItemVisible;
         }
     }
 }

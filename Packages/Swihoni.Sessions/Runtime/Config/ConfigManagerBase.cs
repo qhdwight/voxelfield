@@ -14,9 +14,7 @@ namespace Swihoni.Sessions.Config
     public enum ConfigType
     {
         Client,
-        ServerSession,
-        Server,
-        ServerSingleTick
+        ServerSession
     }
 
     public abstract class ConfigAttributeBase : Attribute
@@ -82,10 +80,8 @@ namespace Swihoni.Sessions.Config
         [Config("allow_cheats", ConfigType.ServerSession)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
         [Config("mode_id", ConfigType.ServerSession)] public ModeIdProperty modeId = new ModeIdProperty();
 
-        [Config("respawn_duration", ConfigType.Server)] public TimeUsProperty respawnDuration = new TimeUsProperty();
-        [Config("respawn_health", ConfigType.Server)] public ByteProperty respawnHealth = new ByteProperty(100);
-
-        [Config("restart_mode", ConfigType.ServerSingleTick)] public BoolProperty restartMode = new BoolProperty();
+        [Config("respawn_duration", ConfigType.ServerSession)] public TimeUsProperty respawnDuration = new TimeUsProperty();
+        [Config("respawn_health", ConfigType.ServerSession)] public ByteProperty respawnHealth = new ByteProperty(100);
 
         [Config("fov")] public ByteProperty fov = new ByteProperty(60);
         [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
@@ -148,13 +144,13 @@ namespace Swihoni.Sessions.Config
                             m_NameToConfig.Add(fullName, (property, config));
                             if (config.Type == ConfigType.Client)
                             {
-                                ConsoleCommandExecutor.SetCommand(fullName, HandleArguments);
+                                ConsoleCommandExecutor.SetCommand(fullName, TryHandleArguments);
                             }
                             else
                             {
                                 if (config.Type == ConfigType.ServerSession)
                                     m_TypeToConfig.Add(property.GetType(), (property, config));
-                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssueSessionCommand);
+                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssuePlayerCommand);
                             }
                             break;
                     }
@@ -170,7 +166,7 @@ namespace Swihoni.Sessions.Config
             return this;
         }
 
-        public static void HandleArguments(IReadOnlyList<string> split)
+        public static void TryHandleArguments(IReadOnlyList<string> split)
         {
             if (Active.m_NameToConfig.TryGetValue(split[0], out (PropertyBase, ConfigAttribute) tuple))
             {
@@ -279,7 +275,7 @@ namespace Swihoni.Sessions.Config
         private static void OnActiveLoaded()
         {
             foreach (StringProperty command in Active.consoleHistory.List)
-                ConsoleCommandExecutor.BackLoadPreviousCommand(command.AsNewString());
+                ConsoleCommandExecutor.InsertPreviousCommand(command.AsNewString());
         }
 
         private static void SetActiveToDefault()

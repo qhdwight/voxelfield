@@ -8,7 +8,7 @@ namespace Voxels
     public class VoxelChangeProperty : PropertyBase<VoxelChange>
     {
         public VoxelChangeProperty() { }
-        public VoxelChangeProperty(VoxelChange value) : base(value) { }
+        public VoxelChangeProperty(in VoxelChange value) : base(value) { }
         public override void SerializeValue(NetDataWriter writer) => VoxelChangeSerializer.Serialize(Value, writer);
         public override void DeserializeValue(NetDataReader reader) => Value = VoxelChangeSerializer.Deserialize(reader);
     }

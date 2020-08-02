@@ -77,4 +77,5 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 100000
     isPersistent: 0
+  m_RaycastThickness: 0.1
   isPrimary: 1

@@ -10,10 +10,10 @@ namespace Swihoni.Sessions.Items.Modifiers
         [SerializeField] protected ThrowableModifierBehavior m_ThrowablePrefab = default;
         [SerializeField] protected float m_LaunchForce = 10.0f;
 
-        protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item) =>
+        protected override void PrimaryUse(in SessionContext context, InventoryComponent inventory, ItemComponent item) =>
             Release(context, item);
 
-        protected virtual void Release(in ModifyContext context, ItemComponent item)
+        protected virtual void Release(in SessionContext context, ItemComponent item)
         {
             checked
             {

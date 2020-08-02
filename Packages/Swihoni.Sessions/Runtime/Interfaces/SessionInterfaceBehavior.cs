@@ -18,6 +18,8 @@ namespace Swihoni.Sessions.Interfaces
 
         public abstract void Render(SessionBase session, Container sessionContainer);
 
+        public virtual void OnMostRecent(SessionBase session, Container sessionContainer) { }
+
         public virtual void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands) { }
 
         public virtual void SessionStateChange(bool isActive)

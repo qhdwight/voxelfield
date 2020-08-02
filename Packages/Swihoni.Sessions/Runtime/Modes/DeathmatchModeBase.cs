@@ -11,10 +11,10 @@ namespace Swihoni.Sessions.Modes
         {
             base.KillPlayer(damageContext);
 
-            if (damageContext.modifyContext.player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Active.respawnDuration;
+            if (damageContext.sessionContext.player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Active.respawnDuration;
         }
 
-        public override void ModifyPlayer(in ModifyContext context)
+        public override void ModifyPlayer(in SessionContext context)
         {
             base.ModifyPlayer(context);
 
@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Modes
             if (context.tickDelta >= 1) HandleAutoRespawn(context, health);
         }
 
-        protected virtual void HandleAutoRespawn(in ModifyContext context, HealthProperty health)
+        protected virtual void HandleAutoRespawn(in SessionContext context, HealthProperty health)
         {
             if (health.IsAlive || context.player.Without(out RespawnTimerProperty respawn)) return;
 

@@ -18,7 +18,7 @@ namespace Voxelfield.Session
         public VoxelMapNameProperty() : base(16) { }
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class ShowdownSessionComponent : ComponentBase
     {
         public ByteProperty number;
@@ -26,7 +26,7 @@ namespace Voxelfield.Session
         public ArrayElement<CurePackageComponent> curePackages = new ArrayElement<CurePackageComponent>(9);
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class DualScoresComponent : ArrayElement<ByteProperty>
     {
         public DualScoresComponent() : base(2) { }
@@ -34,20 +34,20 @@ namespace Voxelfield.Session
 
     /* Capture the flag */
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class FlagComponent : ComponentBase
     {
         public ByteProperty capturingPlayerId;
         public ElapsedUsProperty captureElapsedTimeUs;
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class FlagArrayElement : ArrayElement<FlagComponent>
     {
         public FlagArrayElement() : base(2) { }
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class CtfComponent : ComponentBase
     {
         public ArrayElement<FlagArrayElement> teamFlags = new ArrayElement<FlagArrayElement>(2);
@@ -55,20 +55,20 @@ namespace Voxelfield.Session
 
     /* Secure area */
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class SiteComponent : ComponentBase
     {
         public TimeUsProperty timeUs;
         public BoolProperty isRedInside, isBlueInside;
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class SiteElement : ArrayElement<SiteComponent>
     {
         public SiteElement() : base(2) { }
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class SecureAreaComponent : ComponentBase
     {
         public SiteElement sites = new SiteElement();
@@ -90,7 +90,7 @@ namespace Voxelfield.Session
         }
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class CurePackageComponent : ComponentBase
     {
         public BoolProperty isActive;
@@ -98,7 +98,7 @@ namespace Voxelfield.Session
 
     /* Player */
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, OnlyServerTrusted, ModeElement]
     public class ShowdownPlayerComponent : ComponentBase
     {
         public ByteProperty stagesCuredFlags;
@@ -107,7 +107,7 @@ namespace Voxelfield.Session
         public bool IsCured(ShowdownSessionComponent showdown) => (stagesCuredFlags & (byte) (1 << showdown.number)) != 0;
     }
 
-    [Serializable, ClientTrusted]
+    [Serializable, ClientTrusted, ModeElement]
     public class DesignerPlayerComponent : ComponentBase
     {
         public Position3IntProperty positionOne, positionTwo;
@@ -116,7 +116,7 @@ namespace Voxelfield.Session
         public FloatProperty editRadius;
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class MoneyComponent : ComponentBase
     {
         [OnlyServerTrusted] public UShortProperty count;
@@ -128,7 +128,7 @@ namespace Voxelfield.Session
         public ByteProperty id, index;
     }
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, OnlyServerTrusted, ModeElement]
     public class BrokeVoxelTickProperty : ByteProperty
     {
     }

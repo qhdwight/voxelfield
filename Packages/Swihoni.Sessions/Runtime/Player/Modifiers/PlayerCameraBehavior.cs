@@ -11,7 +11,7 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         [SerializeField] private Transform m_MoveTransform = default;
 
-        public override void ModifyTrusted(in ModifyContext context, Container verifiedPlayer)
+        public override void ModifyTrusted(in SessionContext context, Container verifiedPlayer)
         {
             if (context.player.Without(out CameraComponent playerCamera)
              || context.commands.Without(out MouseComponent mouse)) return;
@@ -32,7 +32,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             mouse.mouseDeltaY.Value = InputProvider.GetMouseInput(MouseMovement.Y);
         }
 
-        protected internal override void SynchronizeBehavior(in ModifyContext context)
+        protected internal override void SynchronizeBehavior(in SessionContext context)
         {
             if (context.player.Without(out CameraComponent playerCamera)) return;
             if (playerCamera.yaw.WithValue) m_MoveTransform.rotation = Quaternion.AngleAxis(playerCamera.yaw, Vector3.up);

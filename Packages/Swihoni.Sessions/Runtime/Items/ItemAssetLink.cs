@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Collections;
@@ -7,7 +6,6 @@ using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
 using UnityEngine.Playables;
-using Object = UnityEngine.Object;
 
 namespace Swihoni.Sessions.Items
 {
@@ -47,7 +45,7 @@ namespace Swihoni.Sessions.Items
         {
             Pool<ItemVisualBehavior> pool = _itemVisualPools[visual.Id - 1];
             visual.Cleanup();
-            visual.SetRenderingMode(false);
+            visual.SetActive(false);
             visual.transform.SetParent(null, true);
             pool.Return(visual);
         }

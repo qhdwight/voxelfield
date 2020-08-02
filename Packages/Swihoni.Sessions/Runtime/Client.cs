@@ -32,7 +32,6 @@ namespace Swihoni.Sessions
         {
             /* Prediction */
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(HistoryCount, () => m_EmptyClientCommands.Clone());
-            // TODO:refactor zeroing
             SetFirstCommand(m_CommandHistory.Peek());
             m_PlayerPredictionHistory = new CyclicArray<Container>(HistoryCount, () => new Container(elements.playerElements.Append(typeof(ClientStampComponent))));
             Container firstPrediction = m_PlayerPredictionHistory.Peek();
@@ -82,7 +81,7 @@ namespace Swihoni.Sessions
                 return;
             Container verifiedPlayer = GetModifyingPayerFromId(localPlayerId, verifiedLatestSession);
             UpdateInputs(verifiedPlayer, localPlayerId);
-            var context = new ModifyContext(this, commands: m_CommandHistory.Peek(), playerId: localPlayerId, player: m_CommandHistory.Peek(),
+            var context = new SessionContext(this, commands: m_CommandHistory.Peek(), playerId: localPlayerId, player: m_CommandHistory.Peek(),
                                             timeUs: timeUs, durationUs: durationUs);
             GetPlayerModifier(verifiedPlayer, localPlayerId).ModifyTrusted(context, verifiedPlayer);
         }
@@ -265,7 +264,8 @@ namespace Swihoni.Sessions
                     UpdateCurrentSessionFromReceived(previousServerSession, serverSession, receivedServerSession);
                     Profiler.EndSample();
 
-                    m_Injector.OnReceive(serverSession);
+                    m_Injector.OnClientReceive(serverSession);
+                    RenderVerified(serverSession);
 
                     if (!isMostRecent)
                     {
@@ -321,7 +321,7 @@ namespace Swihoni.Sessions
                         }
                         else localizedServerTimeUs.Value = _timeUs;
 
-                        if (playerId != localPlayerId) GetPlayerModifier(serverPlayer, playerId).Synchronize(new ModifyContext(player: serverPlayer));
+                        if (playerId != localPlayerId) GetPlayerModifier(serverPlayer, playerId).Synchronize(new SessionContext(player: serverPlayer));
 
                         long delta = localizedServerTimeUs.Value - (long) _timeUs;
                         if (Math.Abs(delta) > serverSession.Require<TickRateProperty>().TickIntervalUs * 3u)
@@ -359,7 +359,7 @@ namespace Swihoni.Sessions
         public static void ClearSingleTicks(ElementBase commands) =>
             commands.Navigate(_element =>
             {
-                if (_element.WithAttribute<SingleTick>())
+                if (_element.WithAttribute<SingleTickAttribute>())
                 {
                     _element.Clear();
                     return Navigation.SkipDescendents;
@@ -402,7 +402,7 @@ namespace Swihoni.Sessions
                 PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
                 if (!modifier) return;
                 
-                var context = new ModifyContext(this, GetLatestSession(), commands, localPlayerId, predictedPlayer,
+                var context = new SessionContext(this, GetLatestSession(), commands, localPlayerId, predictedPlayer,
                                                 timeUs: timeUs, durationUs: predictedStamp.durationUs, tickDelta: 1);
                 modifier.ModifyChecked(context);
             }
@@ -470,7 +470,7 @@ namespace Swihoni.Sessions
                 {
                     // TODO:architecture use latest session?
                     Container serverSession = GetLatestSession();
-                    var context = new ModifyContext(this, serverSession, commands, localPlayerId, pastPredictedPlayer,
+                    var context = new SessionContext(this, serverSession, commands, localPlayerId, pastPredictedPlayer,
                                                     durationUs: commands.Require<ClientStampComponent>().durationUs, tickDelta: 1);
                     localPlayerModifier.ModifyChecked(context);
                 }
@@ -517,7 +517,7 @@ namespace Swihoni.Sessions
                 if (_current is PropertyBase _currentProperty)
                 {
                     var _receivedProperty = (PropertyBase) _received;
-                    if (_current.WithAttribute<SingleTick>() || !_receivedProperty.WasSame)
+                    if (_current.WithAttribute<SingleTickAttribute>() || !_receivedProperty.WasSame)
                     {
                         _currentProperty.SetTo(_receivedProperty);
                         _currentProperty.IsOverride = _receivedProperty.IsOverride;
@@ -570,13 +570,6 @@ namespace Swihoni.Sessions
 
                 if (i == 0 && recentPlayer != null) SendDebug(recentPlayer);
             }
-        }
-
-        public override void StringCommand(int playerId, string stringCommand)
-        {
-            var command = GetLocalCommands().Require<StringCommandProperty>();
-            if (command.Builder.Length > 0) command.Add(" && ").Add(stringCommand);
-            else command.SetTo(stringCommand);
         }
 
         private void SendDebug(Container player)

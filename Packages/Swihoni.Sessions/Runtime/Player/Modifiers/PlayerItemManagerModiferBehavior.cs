@@ -16,14 +16,14 @@ namespace Swihoni.Sessions.Player.Modifiers
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("give_item");
 
-        public override void ModifyChecked(in ModifyContext context)
+        public override void ModifyChecked(in SessionContext context)
         {
-            if (context.tickDelta < 1) return;
-
             Container player = context.player;
-            if (!player.With(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
+            if (player.Without(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
-            HandleCommands(player);
+            TryExecuteCommands(context);
+
+            if (context.tickDelta < 1) return;
 
             var input = context.commands.Require<InputFlagProperty>();
             var wantedItemIndex = context.commands.Require<WantedItemIndexProperty>();
@@ -59,22 +59,18 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        private static void HandleCommands(Container player)
+        private static void TryExecuteCommands(in SessionContext context)
         {
-            if (TryServerCommands(player, out IEnumerable<string[]> commands))
-            {
-                foreach (string[] arguments in commands)
+            if (!WithStringCommands(context, out IEnumerable<string[]> commands)) return;
+            foreach (string[] arguments in commands)
+                if (arguments[0] == "give_item" && ConfigManagerBase.Active.allowCheats)
                 {
-                    if (arguments[0] == "give_item" && ConfigManagerBase.Active.allowCheats)
+                    if (arguments.Length > 1 && (byte.TryParse(arguments[1], out byte itemId) || ItemId.Names.TryGetReverse(arguments[1], out itemId)))
                     {
-                        if (arguments.Length > 1 && byte.TryParse(arguments[1], out byte itemId))
-                        {
-                            ushort count = arguments.Length > 2 && ushort.TryParse(arguments[2], out ushort parsedCount) ? parsedCount : (ushort) 1;
-                            AddItem(player.Require<InventoryComponent>(), itemId, count);
-                        }
+                        ushort count = arguments.Length > 2 && ushort.TryParse(arguments[2], out ushort parsedCount) ? parsedCount : (ushort) 1;
+                        AddItem(context.player.Require<InventoryComponent>(), itemId, count);
                     }
                 }
-            }
         }
 
         // public override void ModifyTrusted(SessionBase session, int playerId, Container trustedPlayer, Container commands, Container container, uint durationUs)
@@ -83,7 +79,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         //         ItemAssetLink.GetModifier(item.id).ModifyTrusted(session, playerId, trustedPlayer, commands, container, durationUs);
         // }
 
-        private static void ModifyEquipStatus(in ModifyContext context, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex)
+        private static void ModifyEquipStatus(in SessionContext context, InventoryComponent inventory, WantedItemIndexProperty wantedItemIndex)
         {
             byte wantedIndex = wantedItemIndex;
             ByteStatusComponent equipStatus = inventory.equipStatus;
@@ -134,7 +130,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             equipStatus.id.Value = ItemEquipStatusId.Equipping;
         }
 
-        private static void ModifyAdsStatus(in ModifyContext context, InventoryComponent inventory, InputFlagProperty inputs)
+        private static void ModifyAdsStatus(in SessionContext context, InventoryComponent inventory, InputFlagProperty inputs)
         {
             ItemModifierBase modifier = ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
             if (!(modifier is GunModifierBase gunModifier)) return;

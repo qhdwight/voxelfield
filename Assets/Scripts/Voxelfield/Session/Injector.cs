@@ -49,7 +49,7 @@ namespace Voxelfield.Session
                     modelBehavior.RenderContainer();
         }
 
-        protected override void Dispose() => MapManager.Singleton.UnloadMap();
+        protected override void OnDispose() => MapManager.Singleton.UnloadMap();
 
         public override void OnStop()
         {

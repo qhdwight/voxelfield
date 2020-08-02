@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -13,54 +15,58 @@ namespace Swihoni.Sessions.Player.Modifiers
         private PlayerModifierBehaviorBase[] m_Modifiers;
         private PlayerHitboxManager m_HitboxManager;
         private PlayerTrigger m_Trigger;
-        private SessionBase m_Session;
 
         private PlayerMovement m_Movement;
         public PlayerMovement Movement
         {
             get
             {
-                if (m_Movement == null)
-                    m_Movement = GetComponentInChildren<PlayerMovement>();
+                if (m_Movement == null) m_Movement = GetComponentInChildren<PlayerMovement>();
                 return m_Movement;
             }
         }
 
         internal void Setup(SessionBase session, int playerId)
         {
-            m_Session = session;
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
             m_HitboxManager = GetComponent<PlayerHitboxManager>();
-            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers)
-                modifier.Setup(session);
+            foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
             if (m_HitboxManager) m_HitboxManager.Setup(session);
             m_Trigger = GetComponentInChildren<PlayerTrigger>(true);
             if (m_Trigger) m_Trigger.Setup(playerId);
         }
 
-        public void ModifyChecked(in ModifyContext context)
+        public void ModifyChecked(in SessionContext context)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyChecked(context);
 
             bool isOnServer = context.player.With<ServerTag>();
-            
+
             if (isOnServer && context.player.With(out MoveComponent move))
-                context.session.Injector.OnServerModify(context, move);
+                context.session.Injector.OnServerMove(context, move);
 
             if (isOnServer && context.player.WithPropertyWithValue(out FlashProperty flash))
                 flash.Value -= context.durationUs / 2_000_000f;
 
-            if (PlayerModifierBehaviorBase.TryServerCommands(context.player, out IEnumerable<string[]> stringCommands))
+            if (PlayerModifierBehaviorBase.WithStringCommands(context, out IEnumerable<string[]> stringCommands))
                 foreach (string[] stringCommand in stringCommands)
-                    ConfigManagerBase.HandleArguments(stringCommand);
+                    ConfigManagerBase.TryHandleArguments(stringCommand);
+
+            if (isOnServer && context.sessionContainer.With(out ChatListElement chats)
+                           && context.commands.WithPropertyWithValue(out ChatEntryProperty chat))
+            {
+                var namedChat = new ChatEntryProperty();
+                ModeManager.GetMode(context.sessionContainer).BuildUsername(namedChat.Builder, context.player).Append("> ").AppendPropertyValue(chat);
+                chats.Add(namedChat);
+            }
         }
 
-        public void ModifyTrusted(in ModifyContext context, Container verifiedPlayer)
+        public void ModifyTrusted(in SessionContext context, Container verifiedPlayer)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyTrusted(context, verifiedPlayer);
         }
 
-        public void Synchronize(in ModifyContext context)
+        public void Synchronize(in SessionContext context)
         {
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.SynchronizeBehavior(context);
         }
@@ -87,33 +93,31 @@ namespace Swihoni.Sessions.Player.Modifiers
 
     public abstract class PlayerModifierBehaviorBase : MonoBehaviour
     {
-        protected SessionBase m_Session;
-
-        internal virtual void Setup(SessionBase session) => m_Session = session;
+        internal virtual void Setup() { }
 
         /// <summary>
         ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
-        public virtual void ModifyChecked(in ModifyContext context) => SynchronizeBehavior(context);
+        public virtual void ModifyChecked(in SessionContext context) => SynchronizeBehavior(context);
 
-        public static bool TryServerCommands(Container player, out IEnumerable<string[]> commands)
+        public static bool WithStringCommands(in SessionContext context, out IEnumerable<string[]> commands)
         {
-            if (player.Without<ServerTag>() || player.WithoutPropertyOrWithoutValue(out StringCommandProperty command) || command.Builder.Length == 0)
+            if (context.player.Without<ServerTag>() || context.commands.Without(out StringCommandProperty command) || !command.AsNewString(out string stringCommand))
             {
                 commands = default;
                 return false;
             }
-            commands = ConsoleCommandExecutor.GetArguments(command.Builder.ToString());
+            commands = stringCommand.GetArguments();
             return true;
         }
 
         /// <summary>
         ///     Called in Update() right after inputs are sampled
         /// </summary>
-        public virtual void ModifyTrusted(in ModifyContext context, Container verifiedPlayer) => SynchronizeBehavior(context);
+        public virtual void ModifyTrusted(in SessionContext context, Container verifiedPlayer) => SynchronizeBehavior(context);
 
         public virtual void ModifyCommands(SessionBase session, Container commands, int playerId) { }
 
-        protected internal virtual void SynchronizeBehavior(in ModifyContext context) { }
+        protected internal virtual void SynchronizeBehavior(in SessionContext context) { }
     }
 }

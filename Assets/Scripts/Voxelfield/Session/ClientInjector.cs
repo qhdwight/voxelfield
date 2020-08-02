@@ -32,7 +32,7 @@ namespace Voxelfield.Session
             return writer;
         }
 
-        protected override void OnReceive(ServerSessionContainer serverSession)
+        protected override void OnClientReceive(ServerSessionContainer serverSession)
         {
             var serverChanges = serverSession.Require<OrderedVoxelChangesProperty>();
             UIntProperty serverTick = serverSession.Require<ServerStampComponent>().tick;
@@ -57,8 +57,8 @@ namespace Voxelfield.Session
         {
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator - Avoid allocation
             foreach (OrderedVoxelChangesProperty changes in m_OrderedTickChanges.Values)
-            foreach (VoxelChange position in changes.List)
-                ChunkManager.Singleton.ApplyVoxelChanges(position, existingTouched: m_TouchedChunks);
+            foreach (VoxelChange change in changes.List)
+                ChunkManager.Singleton.ApplyVoxelChanges(change, existingTouched: m_TouchedChunks);
             m_TouchedChunks.UpdateMesh();
             m_OrderedTickChanges.Clear();
             m_ChangesPool.ReturnAll();

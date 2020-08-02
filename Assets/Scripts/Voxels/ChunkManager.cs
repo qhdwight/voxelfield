@@ -180,6 +180,15 @@ namespace Voxels
                 Position3Int worldPosition = change.position.Value;
                 Random.InitState(worldPosition.GetHashCode());
                 TouchedChunks touched = existingTouched ?? TouchedChunks;
+
+                void SetVoxel(in VoxelChange originalChange, in VoxelChange evaluatedChange, Chunk chunk, in Position3Int voxelChunkPosition)
+                {
+                    originalChange.undo?.Add(chunk.GetVoxelNoCheck(voxelChunkPosition));
+                    chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
+                    if (updateSave) Map.voxelChanges.Add(evaluatedChange);
+                    AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                }
+
                 VoxelVolumeForm form = change.form.Value;
                 switch (form)
                 {
@@ -189,10 +198,7 @@ namespace Voxels
                         if (!chunk) return;
 
                         Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-                        // ReSharper disable once PossibleNullReferenceException
-                        chunk.SetVoxelDataNoCheck(voxelChunkPosition, change);
-                        if (updateSave) Map.voxelChanges.Add(change);
-                        AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                        SetVoxel(change, change, chunk, voxelChunkPosition);
                         break;
                     }
                     case VoxelVolumeForm.Prism:
@@ -210,9 +216,7 @@ namespace Voxels
 
                             VoxelChange evaluatedChange = change;
                             evaluatedChange.form = VoxelVolumeForm.Single;
-                            chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
-                            if (updateSave) Map.voxelChanges.Add(evaluatedChange);
-                            AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                            SetVoxel( change, evaluatedChange, chunk, voxelChunkPosition);
                         }
                         break;
                     }
@@ -234,7 +238,7 @@ namespace Voxels
                             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
                             ref Voxel voxel = ref chunk.GetVoxelNoCheck(voxelChunkPosition);
 
-                            float GetDistance(VoxelVolumeForm _form, Vector3 _center, Vector3 _voxel) => _form == VoxelVolumeForm.Cylindrical
+                            float GetDistance(VoxelVolumeForm _form, in Vector3 _center, in Vector3 _voxel) => _form == VoxelVolumeForm.Cylindrical
                                 ? Mathf.Sqrt((_center.x - _voxel.x).Square() + (_center.z - _voxel.z).Square())
                                 : Vector3.Distance(_center, _voxel);
 
@@ -243,10 +247,10 @@ namespace Voxels
                             if (!change.noRandom.GetValueOrDefault()) floatDensity *= Random.Range(0.85f, 1.0f);
                             byte newDensity = checked((byte) Mathf.RoundToInt(Mathf.Clamp01(floatDensity) * byte.MaxValue)),
                                  currentDensity = voxel.density;
-                            VoxelChange evaluatedChange = default;
-
+                            
                             if (!overrideBreakable && voxel.IsUnbreakable) continue;
 
+                            VoxelChange evaluatedChange = default;
                             if (isAdditive)
                             {
                                 newDensity = checked((byte) (byte.MaxValue - newDensity));
@@ -277,11 +281,8 @@ namespace Voxels
                                     evaluatedChange.texture = texture;
                             }
                             evaluatedChange.natural = false;
-
                             evaluatedChange.form = VoxelVolumeForm.Single;
-                            chunk.SetVoxelDataNoCheck(voxelChunkPosition, evaluatedChange);
-                            if (updateSave) Map.voxelChanges.Add(evaluatedChange);
-                            AddChunksToUpdateFromVoxel(voxelChunkPosition, chunk, touched);
+                            SetVoxel( change, evaluatedChange, chunk, voxelChunkPosition);
                         }
                         break;
                     }

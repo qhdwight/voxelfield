@@ -3,6 +3,7 @@
 #endif
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using LiteNetLib;
 using Steamworks;
@@ -60,11 +61,13 @@ namespace Voxelfield.Session
         private readonly OrderedVoxelChangesProperty m_MasterChanges = new OrderedVoxelChangesProperty();
         private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new DualDictionary<NetPeer, SteamId>();
 
-        public void ApplyVoxelChanges(in VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
+        public void ApplyVoxelChanges(VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
         {
+            // ReSharper disable once PossibleInvalidOperationException
             if (MapManager.Singleton.Models.ContainsKey(change.position.Value)) return;
 
             var changed = Session.GetLatestSession().Require<OrderedVoxelChangesProperty>();
+            change.undo = new List<Voxel>((int) change.magnitude.GetValueOrDefault(1).Square());
             ChunkManager.Singleton.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
             changed.Add(change);
             m_MasterChanges.Add(change);
@@ -185,7 +188,8 @@ namespace Voxelfield.Session
 #if VOXELFIELD_RELEASE_SERVER
                 m_GameLiftPlayerSessionIds.Add(peer, request.gameLiftPlayerSessionId.AsNewString());
 #endif
-                if (!SteamClient.IsValid) return;
+                if (!SteamServer.IsValid) return;
+                // TODO:security handle case where steam player with ID already connected
                 player.Require<SteamIdProperty>().SetTo(request.steamPlayerId);
                 m_SteamPlayerIds.Add(peer, request.steamPlayerId.Value);
             }
@@ -268,7 +272,7 @@ namespace Voxelfield.Session
             }
         }
 
-        public override void OnSetupHost(in ModifyContext context)
+        public override void OnSetupHost(in SessionContext context)
         {
             if (SteamClient.IsValid) context.player.Require<SteamIdProperty>().Value = SteamClient.SteamId;
         }
@@ -282,7 +286,7 @@ namespace Voxelfield.Session
         public override bool ShouldSetupPlayer(Container serverPlayer) => base.ShouldSetupPlayer(serverPlayer)
                                                                        && (!SteamServer.IsValid || serverPlayer.Require<SteamIdProperty>().WithValue);
 
-        public override string GetUsername(in ModifyContext context)
+        public override string GetUsername(in SessionContext context)
         {
             try
             {
@@ -298,11 +302,10 @@ namespace Voxelfield.Session
 
         private static readonly RaycastHit[] CachedHits = new RaycastHit[2];
 
-        public override void OnServerModify(in ModifyContext context, MoveComponent component)
+        public override void OnServerMove(in SessionContext context, MoveComponent move)
         {
             if (context.player.Require<HealthProperty>().IsDead) return;
 
-            var move = context.player.Require<MoveComponent>();
             if (move.position.WithoutValue || move.type == MoveType.Flying) return;
 
             /* If the normal of the contact (of the upwards raycast) is aligned with the upward vector, it is a backface and we are in the terrain */

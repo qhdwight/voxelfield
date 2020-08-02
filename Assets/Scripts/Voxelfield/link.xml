@@ -1,6 +1,4 @@
 <linker>
-    <assembly fullname="System.Reflection" preserve="all" />
-    <assembly fullname="System.Configuration" preserve="all" />
     <assembly fullname="System.Collections.Immutable" preserve="all" />
     <assembly fullname="System.Memory" preserve="all" />
     <assembly fullname="System.Buffers" preserve="all" />

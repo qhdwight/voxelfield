@@ -21,7 +21,7 @@ namespace Voxelfield.Item
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("select_model");
 
-        protected override void Swing(in ModifyContext context, ItemComponent item)
+        protected override void Swing(in SessionContext context, ItemComponent item)
         {
             if (context.player.Without<ServerTag>()) return;
 
@@ -35,7 +35,7 @@ namespace Voxelfield.Item
             }
         }
 
-        protected override void SecondaryUse(in ModifyContext context)
+        protected override void SecondaryUse(in SessionContext context)
         {
             if (WithoutHit(context, m_EditDistance, out RaycastHit hit)) return;
 
@@ -65,21 +65,19 @@ namespace Voxelfield.Item
             MapManager.Singleton.AddModel(position, model);
         }
 
-        public override void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        public override void ModifyChecked(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             base.ModifyChecked(context, item, inventory, inputs);
 
-            if (PlayerModifierBehaviorBase.TryServerCommands(context.player, out IEnumerable<string[]> commands))
+            if (!PlayerModifierBehaviorBase.WithStringCommands(context, out IEnumerable<string[]> commands)) return;
+            foreach (string[] arguments in commands)
             {
-                foreach (string[] arguments in commands)
+                switch (arguments[0])
                 {
-                    switch (arguments[0])
-                    {
-                        case "select_model":
-                            if (arguments.Length > 1 && ushort.TryParse(arguments[1], out ushort modelId))
-                                context.player.Require<DesignerPlayerComponent>().selectedModelId.Value = modelId;
-                            break;
-                    }
+                    case "select_model":
+                        if (arguments.Length > 1 && ushort.TryParse(arguments[1], out ushort modelId))
+                            context.player.Require<DesignerPlayerComponent>().selectedModelId.Value = modelId;
+                        break;
                 }
             }
         }

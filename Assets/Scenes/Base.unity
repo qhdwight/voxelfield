@@ -2108,7 +2108,7 @@ MonoBehaviour:
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 6
-  m_RegexValue: ^[\w \.:&]+$
+  m_RegexValue: ^[\w \.&:'"\(\)\[\]]+$
   m_GlobalPointSize: 14
   m_CharacterLimit: 0
   m_OnEndEdit:
@@ -13165,6 +13165,7 @@ MonoBehaviour:
   m_NeedsCursor: 1
   m_InterruptsCommands: 1
   m_IsDuringGame: 1
+  m_Text: {fileID: 1730734376}
 --- !u!225 &1459867099
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -13173,9 +13174,9 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1459867096}
   m_Enabled: 1
-  m_Alpha: 0
-  m_Interactable: 0
-  m_BlocksRaycasts: 0
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
 --- !u!1 &1508616498
 GameObject:
@@ -15675,7 +15676,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1730734374}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Script: {fileID: 11500000, guid: ee6bec22c60a450fbbb0037a71dbcb3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}

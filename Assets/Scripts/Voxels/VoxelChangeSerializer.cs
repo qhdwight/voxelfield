@@ -144,6 +144,11 @@ namespace Voxels
             }
 
             /* Flags */
+            if (change.revert is bool revert)
+            {
+                FlagUtil.SetFlag(ref flags, 18);
+                if (revert) FlagUtil.SetFlag(ref flags, 19);
+            }
             if (change.noRandom is bool noRandom)
             {
                 FlagUtil.SetFlag(ref flags, 20);
@@ -218,6 +223,7 @@ namespace Voxels
             // if (FlagUtil.HasFlag(flags, 10)) change.hasBlock = FlagUtil.HasFlag(flags, 11);
             // if (FlagUtil.HasFlag(flags, 12)) change.isBreakable = FlagUtil.HasFlag(flags, 13);
             // if (FlagUtil.HasFlag(flags, 14)) change.natural = FlagUtil.HasFlag(flags, 15);
+            if (FlagUtil.HasFlag(flags, 18)) change.revert = FlagUtil.HasFlag(flags, 19);
             if (FlagUtil.HasFlag(flags, 20)) change.noRandom = FlagUtil.HasFlag(flags, 21);
             if (FlagUtil.HasFlag(flags, 22)) change.modifiesBlocks = FlagUtil.HasFlag(flags, 23);
             if (FlagUtil.HasFlag(flags, 24)) change.replace = FlagUtil.HasFlag(flags, 25);

@@ -150,10 +150,10 @@ namespace Voxels
             Gizmos.color = m_Generating ? Color.yellow : m_Updating ? Color.red : Color.cyan;
             Gizmos.DrawWireCube(m_Position * m_ChunkSize + Vector3.one * (m_ChunkSize / 2.0f - 0.5f),
                                 Vector3.one * m_ChunkSize);
-            for (var x = 0; x < m_ChunkSize; x++)
-            for (var z = 0; z < m_ChunkSize; z++)
-            for (var y = 0; y < m_ChunkSize; y++)
-                Gizmos.DrawWireSphere(m_Position * m_ChunkSize + new Vector3(x, y, z), 0.02f);
+            // for (var x = 0; x < m_ChunkSize; x++)
+            // for (var z = 0; z < m_ChunkSize; z++)
+            // for (var y = 0; y < m_ChunkSize; y++)
+            //     Gizmos.DrawWireSphere(m_Position * m_ChunkSize + new Vector3(x, y, z), 0.02f);
         }
 
         public void UpdateAndApply()

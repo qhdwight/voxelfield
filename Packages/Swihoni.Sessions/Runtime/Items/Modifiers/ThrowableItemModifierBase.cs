@@ -16,13 +16,13 @@ namespace Swihoni.Sessions.Items.Modifiers
         [Header("Throwable"), SerializeField] private float m_ThrowForce = default;
         [SerializeField] protected ThrowableModifierBehavior m_ThrowablePrefab = default;
 
-        protected override void StatusTick(in ModifyContext context, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs)
+        protected override void StatusTick(in SessionContext context, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs)
         {
             if (item.status.id == ThrowableStatusId.Cooking && !inputs.GetInput(PlayerInput.UseOne))
                 StartStatus(context, inventory, item, ItemStatusId.PrimaryUsing);
         }
 
-        protected override byte? FinishStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected override byte? FinishStatus(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             // TODO:refactor make base class for C4 type objects
             if (item.status.id == ItemStatusId.PrimaryUsing)
@@ -40,12 +40,12 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false)
             => base.CanPrimaryUse(item, inventory, justFinishedUse) && item.status.id != ThrowableStatusId.Cooking && item.ammoInReserve > 0;
 
-        protected override bool CanSecondaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory)
+        protected override bool CanSecondaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory)
             => base.CanPrimaryUse(item, inventory) && item.status.id != ThrowableStatusId.Cooking;
 
-        protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item) { }
+        protected override void PrimaryUse(in SessionContext context, InventoryComponent inventory, ItemComponent item) { }
 
-        protected override void SecondaryUse(in ModifyContext context)
+        protected override void SecondaryUse(in SessionContext context)
         {
             var entities = context.sessionContainer.Require<EntityArrayElement>();
             for (var index = 0; index < entities.Length; index++)
@@ -62,7 +62,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             }
         }
 
-        protected virtual void Release(in ModifyContext context, ItemComponent item)
+        protected virtual void Release(in SessionContext context, ItemComponent item)
         {
             checked
             {
@@ -71,7 +71,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             }
         }
 
-        public static bool Throw(in ModifyContext context, string itemName, IdBehavior throwablePrefab, float throwForce)
+        public static bool Throw(in SessionContext context, string itemName, IdBehavior throwablePrefab, float throwForce)
         {
             Container player = context.player;
             if (player.Without<ServerTag>()) return false;
@@ -90,7 +90,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             return true;
         }
 
-        protected internal override void OnUnequip(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
+        protected internal override void OnUnequip(in SessionContext context, InventoryComponent inventory, ItemComponent item)
         {
             if (item.status.id == ThrowableStatusId.Cooking)
                 StartStatus(context, inventory, item, ItemStatusId.Idle);

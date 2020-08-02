@@ -11,10 +11,10 @@ namespace Voxelfield
     {
         [Config("map_name", ConfigType.ServerSession)] public VoxelMapNameProperty mapName = new VoxelMapNameProperty("Castle");
 
-        [Config("force_start", ConfigType.ServerSingleTick)] public BoolProperty forceStart = new BoolProperty();
-
         [Config("enable_mini_map")] public BoolProperty enableMiniMap = new BoolProperty();
 
         public SecureAreaConfig secureAreaConfig = new SecureAreaConfig();
+        
+        public new static ConfigManager Active => (ConfigManager) ConfigManagerBase.Active;
     }
 }

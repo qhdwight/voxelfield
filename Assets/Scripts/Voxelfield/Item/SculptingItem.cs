@@ -22,7 +22,7 @@ namespace Voxelfield.Item
         public float EditDistance => m_EditDistance;
         public LayerMask ChunkMask => m_ChunkMask;
 
-        protected override void Swing(in ModifyContext context, ItemComponent item)
+        protected override void Swing(in SessionContext context, ItemComponent item)
         {
             base.Swing(context, item); // Melee damage
             if (!(context.session.Injector is ServerInjector server)|| WithoutHit(context, m_EditDistance, out RaycastHit hit)) return;
@@ -38,10 +38,10 @@ namespace Voxelfield.Item
             else brokeVoxelTickProperty.Value = 0;
         }
 
-        protected virtual void RemoveBlock(in ModifyContext context, ServerInjector server, in Position3Int position)
+        protected virtual void RemoveBlock(in SessionContext context, ServerInjector server, in Position3Int position)
             => server.ApplyVoxelChanges(new VoxelChange {position = position, form = VoxelVolumeForm.Single, hasBlock = false, natural = false});
 
-        protected virtual void RemoveVoxelRadius(in ModifyContext context, ServerInjector server, in Position3Int position)
+        protected virtual void RemoveVoxelRadius(in SessionContext context, ServerInjector server, in Position3Int position)
         {
             var change = new VoxelChange
             {
@@ -58,7 +58,7 @@ namespace Voxelfield.Item
             return !_voxel.HasValue || !voxel.IsBreakable && !OverrideBreakable;
         }
 
-        protected bool WithoutHit(in ModifyContext context, float distance, out RaycastHit hit)
+        protected bool WithoutHit(in SessionContext context, float distance, out RaycastHit hit)
         {
             Ray ray = context.session.GetRayForPlayerId(context.playerId);
             bool withoutHit = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask) == 0;
@@ -66,7 +66,7 @@ namespace Voxelfield.Item
             return withoutHit;
         }
 
-        protected bool WithoutClientHit(in ModifyContext context, float distance, out RaycastHit hit)
+        protected bool WithoutClientHit(in SessionContext context, float distance, out RaycastHit hit)
         {
             Container player = context.player;
             if (player.With<ServerTag>() && player.Without<HostTag>())
@@ -82,7 +82,7 @@ namespace Voxelfield.Item
 
         private Position3Int? m_CachedPosition; // Guaranteed set by can use and tested in actual use 
 
-        protected override bool CanSecondaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory)
+        protected override bool CanSecondaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory)
         {
             if (!base.CanPrimaryUse(item, inventory) || WithoutHit(context, m_EditDistance, out RaycastHit hit))
             {
@@ -101,7 +101,7 @@ namespace Voxelfield.Item
 
         protected virtual bool OverrideBreakable => false;
 
-        protected override void SecondaryUse(in ModifyContext context)
+        protected override void SecondaryUse(in SessionContext context)
         {
             // TODO:feature add client side prediction for placing blocks
             if (!(m_CachedPosition is Position3Int position) || !(context.session.Injector is ServerInjector server)) return;
@@ -109,7 +109,7 @@ namespace Voxelfield.Item
             PlaceBlock(context, server, position);
         }
 
-        protected virtual void PlaceBlock(in ModifyContext context, ServerInjector server, in Position3Int position)
+        protected virtual void PlaceBlock(in SessionContext context, ServerInjector server, in Position3Int position)
             => server.ApplyVoxelChanges(new VoxelChange
             {
                 position = position, form = VoxelVolumeForm.Single,
@@ -158,7 +158,7 @@ namespace Voxelfield.Item
             //     move.position.Value += new Vector3 {y = height - hit.distance};
         }
 
-        protected override bool CanTernaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory)
+        protected override bool CanTernaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory)
         {
             if (!base.CanPrimaryUse(item, inventory) || WithoutHit(context, m_EditDistance, out RaycastHit hit))
             {
@@ -175,7 +175,7 @@ namespace Voxelfield.Item
             return true;
         }
 
-        protected override void TernaryUse(in ModifyContext context, ItemComponent item)
+        protected override void TernaryUse(in SessionContext context, ItemComponent item)
         {
             if (!(m_CachedPosition is Position3Int position) || !(context.session.Injector is ServerInjector server)) return;
 

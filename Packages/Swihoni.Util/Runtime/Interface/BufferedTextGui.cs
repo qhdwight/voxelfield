@@ -5,20 +5,21 @@ namespace Swihoni.Util.Interface
 {
     public class BufferedTextGui : TextMeshProUGUI
     {
-        private readonly StringBuilder m_Builder = new StringBuilder(1 << 5);
+        public StringBuilder Builder { get; } = new StringBuilder(1 << 5);
 
         public StringBuilder StartBuild()
         {
-            m_Builder.Clear();
-            return m_Builder;
+            Builder.Clear();
+            return Builder;
         }
 
-        // public void BuildText(Action<StringBuilder> build)
-        // {
-        //     m_Builder.Clear();
-        //     build(m_Builder);
-        //     SetText(m_Builder);
-        // }
+        public void Clear()
+        {
+            Builder.Clear();
+            Commit();
+        }
+
+        public void Commit() => SetText(Builder);
     }
 
     public static class BuilderExtension

@@ -32,18 +32,18 @@ namespace Swihoni.Sessions
             {
                 typeof(TickRateProperty), typeof(ModeIdProperty), typeof(AllowCheatsProperty),
                 typeof(PlayerContainerArrayElement), typeof(LocalPlayerId), typeof(EntityArrayElement),
-                typeof(StampComponent), typeof(KillFeedElement)
+                typeof(StampComponent), typeof(KillFeedElement), typeof(ChatListElement)
             },
             playerElements = new List<Type>
             {
                 typeof(HealthProperty), typeof(IdProperty), typeof(MoveComponent), typeof(FrozenProperty), typeof(InventoryComponent),
                 typeof(CameraComponent), typeof(RespawnTimerProperty),
-                typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameProperty),
-                typeof(StringCommandProperty), typeof(ChatEntryProperty)
+                typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameProperty)
             },
             commandElements = new List<Type>
             {
-                typeof(InputFlagProperty), typeof(WantedItemIndexProperty), typeof(MouseComponent), typeof(WantedTeamProperty)
+                typeof(InputFlagProperty), typeof(WantedItemIndexProperty), typeof(MouseComponent), typeof(WantedTeamProperty),
+                typeof(ChatEntryProperty), typeof(StringCommandProperty)
             }
         };
     }
@@ -54,7 +54,7 @@ namespace Swihoni.Sessions
 
         protected internal virtual void OnSettingsTick(Container session) { }
 
-        protected internal virtual void OnReceive(ServerSessionContainer serverSession) { }
+        protected internal virtual void OnClientReceive(ServerSessionContainer serverSession) { }
 
         protected internal virtual void OnRenderMode(Container session) { }
 
@@ -62,7 +62,7 @@ namespace Swihoni.Sessions
 
         protected internal virtual void OnServerNewConnection(ConnectionRequest socketRequest) => socketRequest.AcceptIfKey(Application.version);
 
-        protected internal virtual void Dispose() { }
+        protected internal virtual void OnDispose() { }
 
         public virtual bool IsLoading(Container session) => false;
 
@@ -85,15 +85,15 @@ namespace Swihoni.Sessions
 
         public virtual void OnPlayerRegisterAppend(Container player) { }
 
-        public virtual string GetUsername(in ModifyContext context) => $"Player #{context.playerId}";
+        public virtual string GetUsername(in SessionContext context) => $"Player #{context.playerId}";
 
-        public virtual void OnSetupHost(in ModifyContext context) { }
+        public virtual void OnSetupHost(in SessionContext context) { }
 
         public virtual void OnStop() { }
 
         public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.Require<HealthProperty>().WithoutValue;
 
-        public virtual void OnServerModify(in ModifyContext context, MoveComponent component) { }
+        public virtual void OnServerMove(in SessionContext context, MoveComponent move) { }
     }
 
     public abstract class SessionBase : IDisposable
@@ -124,6 +124,9 @@ namespace Swihoni.Sessions
             _sessions = new List<SessionBase>(1);
             _sessionList = new List<SessionBase>(1);
         }
+        
+        protected static Container _container;
+        protected static SessionBase _session;
 
         protected readonly SessionInjectorBase m_Injector;
         private long m_FixedUpdateTicks, m_RenderTicks;
@@ -149,18 +152,18 @@ namespace Swihoni.Sessions
         public static void RegisterSessionCommand(params string[] commands)
         {
             foreach (string command in commands)
-                ConsoleCommandExecutor.SetCommand(command, IssueSessionCommand);
+                ConsoleCommandExecutor.SetCommand(command, IssuePlayerCommand);
         }
 
-        public static void IssueSessionCommand(string[] arguments)
+        public static void IssuePlayerCommand(string[] arguments)
         {
             if (SessionCount == 0)
             {
-                ConfigManagerBase.HandleArguments(arguments);
+                ConfigManagerBase.TryHandleArguments(arguments);
                 return;
             }
             foreach (SessionBase session in SessionEnumerable)
-                session.StringCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", arguments));
+                session.PlayerCommand(session.GetLatestSession().Require<LocalPlayerId>(), string.Join(" ", arguments));
         }
 
         public void SetApplicationPauseState(bool isPaused)
@@ -364,7 +367,7 @@ namespace Swihoni.Sessions
             ModeBase mode = ModeManager.GetMode(session);
             if (!m_Mode || m_Mode != mode)
             {
-                var modify = new ModifyContext(this, session);
+                var modify = new SessionContext(this, session);
                 if (m_Mode) m_Mode.EndModify(modify);
                 mode.BeginModify(modify);
             }
@@ -390,7 +393,7 @@ namespace Swihoni.Sessions
                 PlayerManager.pool.Return(PlayerManager);
                 ForEachSessionInterface(sessionInterface => sessionInterface.SessionStateChange(false));
                 EntityManager.pool.Return(EntityManager);
-                m_Injector.Dispose();
+                m_Injector.OnDispose();
                 m_Stopwatch.Stop();
             }
             finally
@@ -399,10 +402,22 @@ namespace Swihoni.Sessions
             }
         }
 
-        public abstract void StringCommand(int playerId, string stringCommand);
+        public void PlayerCommand(int playerId, string stringCommand)
+        {
+            var command = GetLocalCommands().Require<StringCommandProperty>();
+            if (command.Builder.Length > 0) command.Add(" && ").Add(stringCommand);
+            else command.SetTo(stringCommand);
+        }
 
         public static StringBuilder BuildUsername(Container sessionContainer, StringBuilder builder, Container player)
             => ModeManager.GetMode(sessionContainer).BuildUsername(builder, player);
+
+        protected void RenderVerified(Container session)
+        {
+            _session = this;
+            _container = session;
+            ForEachSessionInterface(@interface => @interface.OnMostRecent(_session, _container));
+        }
     }
 
     public static class SessionExtensions
@@ -430,16 +445,16 @@ namespace Swihoni.Sessions
             return string.Empty;
         }
 
-        public delegate void ModifyPlayerAction(in ModifyContext playerModifyContext);
+        public delegate void ModifyPlayerAction(in SessionContext playerSessionContext);
 
-        public static void ForEachActivePlayer(this in ModifyContext context, ModifyPlayerAction action)
+        public static void ForEachActivePlayer(this in SessionContext context, ModifyPlayerAction action)
         {
             for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
             {
                 Container player = context.GetModifyingPlayer(playerId);
                 if (player.Require<HealthProperty>().WithValue)
                 {
-                    var playerModifyContext = new ModifyContext(existing: context, player: player, playerId: playerId);
+                    var playerModifyContext = new SessionContext(existing: context, player: player, playerId: playerId);
                     action(playerModifyContext);
                 }
             }

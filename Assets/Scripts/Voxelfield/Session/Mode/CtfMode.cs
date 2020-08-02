@@ -48,18 +48,10 @@ namespace Voxelfield.Session.Mode
                                                .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray();
         }
 
-        public override void BeginModify(in ModifyContext context)
+        public override void BeginModify(in SessionContext context)
         {
             base.BeginModify(in context);
-            var ctf = context.sessionContainer.Require<CtfComponent>();
             context.sessionContainer.Require<DualScoresComponent>().Zero();
-            ctf.teamFlags.Clear();
-            context.ForEachActivePlayer((in ModifyContext playerContext) =>
-            {
-                playerContext.player.Require<HealthProperty>().Value = 0;
-                playerContext.player.Require<MoveComponent>().Clear();
-                playerContext.player.Require<InventoryComponent>().Zero();
-            });
         }
 
         public override void Render(SessionBase session, Container sessionContainer)
@@ -73,7 +65,7 @@ namespace Voxelfield.Session.Mode
                 flagBehaviors[flagTeam][flagId].Render(session, sessionContainer, flags[flagTeam][flagId]);
         }
 
-        public override void Modify(in ModifyContext context)
+        public override void Modify(in SessionContext context)
         {
             base.Modify(context);
 
@@ -88,7 +80,7 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override void ModifyPlayer(in ModifyContext context)
+        public override void ModifyPlayer(in SessionContext context)
         {
             base.ModifyPlayer(in context);
 
@@ -101,7 +93,7 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        protected override void HandleAutoRespawn(in ModifyContext context, HealthProperty health)
+        protected override void HandleAutoRespawn(in SessionContext context, HealthProperty health)
         {
             if (health.IsAlive || context.player.Without(out RespawnTimerProperty respawn)) return;
 
@@ -114,7 +106,7 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        protected override Vector3 GetSpawnPosition(in ModifyContext context)
+        protected override Vector3 GetSpawnPosition(in SessionContext context)
         {
             try
             {
@@ -143,11 +135,11 @@ namespace Voxelfield.Session.Mode
         }
 
         protected override float CalculateWeaponDamage(in PlayerHitContext context)
-            => context.hitPlayer.Require<TeamProperty>() == context.modifyContext.player.Require<TeamProperty>()
+            => context.hitPlayer.Require<TeamProperty>() == context.sessionContext.player.Require<TeamProperty>()
                 ? 0.0f
                 : ShowdownMode.CalculateDamageWithMovement(context, base.CalculateWeaponDamage(context));
 
-        private void HandlePlayersNearFlag(in ModifyContext context, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresComponent scores)
+        private void HandlePlayersNearFlag(in SessionContext context, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresComponent scores)
         {
             int count = Physics.OverlapSphereNonAlloc(m_FlagBehaviors[flagTeam][flagId].transform.position, m_CaptureRadius, m_CachedColliders, m_PlayerMask);
             Container enemyTakingIn = null;
@@ -214,48 +206,33 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        protected override void SpawnPlayer(in ModifyContext context)
+        protected override void SpawnPlayer(in SessionContext context, bool begin = false)
         {
-            // TODO:refactor zeroing
             Container player = context.player;
+            if (begin) player.Require<TeamProperty>().Value = (byte) (context.playerId% 2);
             player.ZeroIfWith<FrozenProperty>();
+            player.ZeroIfWith<StatsComponent>();
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
+            if (player.With(out HealthProperty health)) health.Value = begin ? (byte) 0 : ConfigManagerBase.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
             player.ZeroIfWith<DamageNotifierComponent>();
             if (player.With(out InventoryComponent inventory))
             {
+                if (begin) inventory.Zero();
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
                 PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);
             }
             if (player.With(out MoveComponent move))
             {
-                move.Zero();
-                move.position.Value = GetSpawnPosition(context);
+                if (begin) move.Clear();
+                else
+                {
+                    move.Zero();
+                    move.position.Value = GetSpawnPosition(context);
+                }
             }
-        }
-
-        public override void EndModify(in ModifyContext context)
-        {
-            context.sessionContainer.Require<CtfComponent>().Clear();
-            context.sessionContainer.Require<DualScoresComponent>().Clear();
-        }
-
-        public override void SetupNewPlayer(in ModifyContext context)
-        {
-            Container player = context.player;
-            player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
-            InventoryComponent inventory = player.Require<InventoryComponent>().Zero();
-            PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
-            player.ZeroIfWith<FrozenProperty>();
-            player.Require<IdProperty>().Value = 1;
-            player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health)) health.Value = 0;
-            player.ZeroIfWith<RespawnTimerProperty>();
-            player.ZeroIfWith<HitMarkerComponent>();
-            player.ZeroIfWith<DamageNotifierComponent>();
         }
 
         public Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());

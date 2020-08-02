@@ -4,6 +4,7 @@ using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
@@ -14,26 +15,26 @@ namespace Swihoni.Sessions.Modes
 {
     public readonly struct DamageContext
     {
-        public readonly ModifyContext modifyContext;
+        public readonly SessionContext sessionContext;
         public readonly bool isHeadShot;
         public readonly string weaponName;
         public readonly byte damage;
         public readonly int hitPlayerId;
         public readonly Container hitPlayer;
 
-        public int InflictingPlayerId => modifyContext.playerId;
-        public Container InflictingPlayer => modifyContext.player;
+        public int InflictingPlayerId => sessionContext.playerId;
+        public Container InflictingPlayer => sessionContext.player;
 
         public bool IsSelfInflicting => hitPlayerId == InflictingPlayerId;
 
-        public DamageContext(in ModifyContext? modifyContext = null,
+        public DamageContext(in SessionContext? modifyContext = null,
                              int? hitPlayerId = null,
                              Container hitPlayer = null,
                              byte? damage = null, string weaponName = null, bool? isHeadShot = null, PlayerHitContext? playerHitContext = null)
         {
             if (playerHitContext is PlayerHitContext context)
             {
-                this.modifyContext = context.modifyContext;
+                this.sessionContext = context.sessionContext;
                 this.hitPlayerId = context.hitPlayerId;
                 this.hitPlayer = context.hitPlayer;
                 this.damage = damage.GetValueOrDefault();
@@ -42,7 +43,7 @@ namespace Swihoni.Sessions.Modes
             }
             else
             {
-                this.modifyContext = modifyContext.GetValueOrDefault();
+                this.sessionContext = modifyContext.GetValueOrDefault();
                 this.hitPlayerId = hitPlayerId.GetValueOrDefault();
                 this.hitPlayer = hitPlayer;
                 this.damage = damage.GetValueOrDefault();
@@ -54,27 +55,30 @@ namespace Swihoni.Sessions.Modes
 
     public readonly struct PlayerHitContext
     {
-        public readonly ModifyContext modifyContext;
+        public readonly SessionContext sessionContext;
         public readonly int hitPlayerId;
         public readonly Container hitPlayer;
         public readonly PlayerHitbox hitbox;
         public readonly WeaponModifierBase weapon;
         public readonly RaycastHit hit;
 
-        public PlayerHitContext(in ModifyContext modifyContext, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
+        public PlayerHitContext(in SessionContext sessionContext, PlayerHitbox hitbox, WeaponModifierBase weapon, in RaycastHit hit)
         {
-            this.modifyContext = modifyContext;
+            this.sessionContext = sessionContext;
             this.hitbox = hitbox;
             this.weapon = weapon;
             this.hit = hit;
             hitPlayerId = hitbox.Manager.PlayerId;
-            hitPlayer = modifyContext.GetModifyingPlayer(hitPlayerId);
+            hitPlayer = sessionContext.GetModifyingPlayer(hitPlayerId);
         }
     }
 
     public abstract class ModeBase : ScriptableObject
     {
         private static readonly Dictionary<Color, string> CachedHex = new Dictionary<Color, string>();
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void InitializeCommands() => SessionBase.RegisterSessionCommand("restart_mode", "force_start");
 
         public byte id;
 
@@ -87,11 +91,11 @@ namespace Swihoni.Sessions.Modes
             return hex;
         }
 
-        protected virtual void SpawnPlayer(in ModifyContext context)
+        protected virtual void SpawnPlayer(in SessionContext context, bool begin = false)
         {
-            // TODO:refactor zeroing
             Container player = context.player;
             player.ZeroIfWith<FrozenProperty>();
+            player.ZeroIfWith<StatsComponent>();
             player.Require<IdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
@@ -123,14 +127,28 @@ namespace Swihoni.Sessions.Modes
 
         public virtual Color GetTeamColor(int teamId) => Color.white;
 
-        protected virtual Vector3 GetSpawnPosition(in ModifyContext context) => new Vector3 {y = 8.0f};
+        protected virtual Vector3 GetSpawnPosition(in SessionContext context) => new Vector3 {y = 8.0f};
 
-        public virtual void BeginModify(in ModifyContext context)
-            => context.ForEachActivePlayer((in ModifyContext playerModifyContext) => SpawnPlayer(playerModifyContext));
+        public virtual void BeginModify(in SessionContext context)
+        {
+            Container session = context.sessionContainer;
+            session.Navigate(_element =>
+            {
+                if (_element.WithAttribute<ModeElementAttribute>())
+                {
+                    _element.Clear();
+                    return Navigation.SkipDescendents;
+                }
+                return Navigation.Continue;
+            });
+            session.ZeroIfWith<KillFeedElement>();
+            session.ZeroIfWith<EntityArrayElement>();
+            context.ForEachActivePlayer((in SessionContext playerModifyContext) => SpawnPlayer(playerModifyContext, true));
+        }
 
         protected virtual void KillPlayer(in DamageContext context)
         {
-            context.modifyContext.session.Injector.OnKillPlayer(context);
+            context.sessionContext.session.Injector.OnKillPlayer(context);
             Container player = context.hitPlayer;
             player.ZeroIfWith<HealthProperty>();
             player.ZeroIfWith<HitMarkerComponent>();
@@ -139,7 +157,7 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void Render(SessionBase session, Container sessionContainer) => session.Injector.OnRenderMode(sessionContainer);
 
-        public virtual void ModifyPlayer(in ModifyContext context)
+        public virtual void ModifyPlayer(in SessionContext context)
         {
             if (context.player.Without(out HealthProperty health) || health.WithoutValue) return;
 
@@ -160,26 +178,24 @@ namespace Swihoni.Sessions.Modes
                 context.player.Require<TeamProperty>().Value = wantedTeam;
                 SpawnPlayer(context);
             }
+
+            if (!PlayerModifierBehaviorBase.WithStringCommands(context, out IEnumerable<string[]> commands)) return;
+            foreach (string[] arguments in commands)
+                if (arguments[0] == "restart_mode")
+                {
+                    EndModify(context);
+                    BeginModify(context);
+                }
         }
 
-        public virtual bool AllowTeamSwap(in ModifyContext context) => true;
+        public virtual bool AllowTeamSwap(in SessionContext context) => true;
 
-        public virtual void Modify(in ModifyContext context)
+        public virtual void Modify(in SessionContext context)
         {
-            BoolProperty restartMode = ConfigManagerBase.Active.restartMode;
-            if (restartMode)
-            {
-                EndModify(context);
-                BeginModify(context);
-                restartMode.Value = false;
-            }
-
-            if (context.sessionContainer.With(out KillFeedElement killFeed))
-            {
-                foreach (KillFeedComponent kill in killFeed)
-                    if (kill.elapsedUs > context.durationUs) kill.elapsedUs.Value -= context.durationUs;
-                    else kill.elapsedUs.Value = 0u;
-            }
+            if (context.sessionContainer.Without(out KillFeedElement killFeed)) return;
+            foreach (KillFeedComponent kill in killFeed)
+                if (kill.elapsedUs > context.durationUs) kill.elapsedUs.Value -= context.durationUs;
+                else kill.elapsedUs.Value = 0u;
         }
 
         public virtual void PlayerHit(in PlayerHitContext playerHitContext)
@@ -219,7 +235,7 @@ namespace Swihoni.Sessions.Modes
 
                     if (usesHitMarker) hitMarker.isKill.Value = true;
 
-                    if (damageContext.modifyContext.sessionContainer.Without(out KillFeedElement killFeed)) return;
+                    if (damageContext.sessionContext.sessionContainer.Without(out KillFeedElement killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)
                     {
                         if (kill.elapsedUs > 0u) continue;
@@ -251,9 +267,9 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void SetupNewPlayer(in ModifyContext context) => SpawnPlayer(context);
+        public virtual void SetupNewPlayer(in SessionContext context) => SpawnPlayer(context, true);
 
-        public virtual void EndModify(in ModifyContext context) { }
+        public virtual void EndModify(in SessionContext context) { }
 
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
 

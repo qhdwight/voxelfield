@@ -1,4 +1,7 @@
 using System;
+using System.Linq;
+using System.Reflection;
+using Swihoni.Collections;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -42,6 +45,10 @@ namespace Swihoni.Sessions.Items.Modifiers
                           SuperPickaxe = 15,
                           ImpactGrenade = 16,
                           SandBomb = 17;
+
+        public static DualDictionary<byte, string> Names { get; } = new DualDictionary<byte, string>(typeof(ItemId)
+                                                                                                    .GetFields(BindingFlags.Static | BindingFlags.Public)
+                                                                                                    .ToDictionary(field => (byte) field.GetValue(null), field => field.Name));
     }
 
     [Serializable]
@@ -62,7 +69,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         public ItemStatusModiferProperties GetEquipStatusModifierProperties(byte equipStatusId) => m_EquipStatusModiferProperties[equipStatusId];
 
-        public virtual void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        public virtual void ModifyChecked(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             // TODO:refactor move frozen into CanUse
             bool notFrozen = context.player.Without(out FrozenProperty frozen) || frozen.WithoutValue || !frozen;
@@ -78,14 +85,14 @@ namespace Swihoni.Sessions.Items.Modifiers
             ModifyStatus(context, item, inventory, inputs);
         }
 
-        private void ModifyStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        private void ModifyStatus(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             item.status.elapsedUs.Value += context.durationUs;
             StatusTick(context, inventory, item, inputs);
             EndStatus(context, item, inventory, inputs);
         }
 
-        protected virtual void EndStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected virtual void EndStatus(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             ByteStatusComponent status = item.status;
             try
@@ -108,9 +115,9 @@ namespace Swihoni.Sessions.Items.Modifiers
             }
         }
 
-        protected virtual void StatusTick(in ModifyContext context, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs) { }
+        protected virtual void StatusTick(in SessionContext context, InventoryComponent inventory, ItemComponent item, InputFlagProperty inputs) { }
 
-        protected void StartStatus(in ModifyContext context, InventoryComponent inventory, ItemComponent item, byte statusId, uint elapsedUs = 0u)
+        protected void StartStatus(in SessionContext context, InventoryComponent inventory, ItemComponent item, byte statusId, uint elapsedUs = 0u)
         {
             item.status.id.Value = statusId;
             item.status.elapsedUs.Value = elapsedUs;
@@ -129,7 +136,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         }
 
         /// <returns>State to switch to</returns>
-        protected virtual byte? FinishStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected virtual byte? FinishStatus(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             switch (item.status.id)
             {
@@ -151,20 +158,20 @@ namespace Swihoni.Sessions.Items.Modifiers
          && item.status.id != ItemStatusId.TernaryUsing
          && inventory.equipStatus.id == ItemEquipStatusId.Equipped;
 
-        protected virtual bool CanSecondaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory) => false;
+        protected virtual bool CanSecondaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory) => false;
 
-        protected virtual bool CanTernaryUse(in ModifyContext context, ItemComponent item, InventoryComponent inventory) => false;
+        protected virtual bool CanTernaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory) => false;
 
-        protected virtual void SecondaryUse(in ModifyContext context) { }
+        protected virtual void SecondaryUse(in SessionContext context) { }
 
-        protected virtual void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item) { }
+        protected virtual void PrimaryUse(in SessionContext context, InventoryComponent inventory, ItemComponent item) { }
 
-        protected virtual void TernaryUse(in ModifyContext context, ItemComponent item) { }
+        protected virtual void TernaryUse(in SessionContext context, ItemComponent item) { }
 
         public void ModifyCommands(SessionBase session, InputFlagProperty commandsToModify) { }
 
-        protected internal virtual void OnEquip(in ModifyContext context, ItemComponent item) { }
+        protected internal virtual void OnEquip(in SessionContext context, ItemComponent item) { }
 
-        protected internal virtual void OnUnequip(in ModifyContext context, InventoryComponent inventory, ItemComponent item) { }
+        protected internal virtual void OnUnequip(in SessionContext context, InventoryComponent inventory, ItemComponent item) { }
     }
 }

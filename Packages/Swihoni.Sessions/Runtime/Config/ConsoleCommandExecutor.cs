@@ -26,11 +26,11 @@ namespace Swihoni.Sessions.Config
             Debug.Log($"Available commands:\n{allCommands}");
         };
 
-        public static void BackLoadPreviousCommand(string command)
-        {
-            while (PreviousCommands.Count > MaxPreviousCommands - 1) PreviousCommands.RemoveAt(PreviousCommands.Count - 1);
-            PreviousCommands.Add(command);
-        }
+        // public static void BackLoadPreviousCommand(string command)
+        // {
+        //     while (PreviousCommands.Count > MaxPreviousCommands - 1) PreviousCommands.RemoveAt(PreviousCommands.Count - 1);
+        //     PreviousCommands.Add(command);
+        // }
         
         public static void InsertPreviousCommand(string command)
         {
@@ -47,7 +47,7 @@ namespace Swihoni.Sessions.Config
         public static void ExecuteCommand(string fullCommand)
         {
             ConfigManagerBase.OnCommand(fullCommand);
-            foreach (string[] arguments in GetArguments(fullCommand))
+            foreach (string[] arguments in fullCommand.GetArguments())
             {
                 string commandName = arguments.First().Replace("?", string.Empty);
                 if (Commands.ContainsKey(commandName))
@@ -66,7 +66,7 @@ namespace Swihoni.Sessions.Config
             }
         }
 
-        public static IEnumerable<string[]> GetArguments(string fullCommand)
+        public static IEnumerable<string[]> GetArguments(this string fullCommand)
         {
             string[] commands = fullCommand.Split(CommandSeparator, StringSplitOptions.RemoveEmptyEntries);
             return commands.Select(command => command.Trim().Split()).ToList();

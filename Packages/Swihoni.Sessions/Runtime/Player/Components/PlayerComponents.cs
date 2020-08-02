@@ -31,17 +31,17 @@ namespace Swihoni.Sessions.Player.Components
         public const byte Grounded = 0, Flying = 1;
     }
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, ModeElement, OnlyServerTrusted]
     public class FrozenProperty : BoolProperty
     {
     }
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, ModeElement, OnlyServerTrusted]
     public class SuffocatingProperty : BoolProperty
     {
     }
 
-    [Serializable, ClientChecked]
+    [Serializable, ModeElement, ClientChecked]
     public class MoveComponent : ComponentBase
     {
         public MoveType type;
@@ -65,20 +65,20 @@ namespace Swihoni.Sessions.Player.Components
         public bool IsActiveAndAlive => WithValue && IsAlive;
     }
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, ModeElement, OnlyServerTrusted]
     public class StatsComponent : ComponentBase
     {
         public ByteProperty kills, deaths, damage;
         public UShortProperty ping;
     }
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, ModeElement, OnlyServerTrusted]
     public class RespawnTimerProperty : UIntProperty
     {
         public override string ToString() => $"Respawn timer: {base.ToString()}";
     }
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, ModeElement, OnlyServerTrusted]
     public class TeamProperty : ByteProperty
     {
         public TeamProperty(byte value) : base(value) { }
@@ -120,8 +120,7 @@ namespace Swihoni.Sessions.Player.Components
                     interpolatedElapsedUs -= d1;
                     interpolatedId = s2.id;
                 }
-                else
-                    interpolatedId = s1.id;
+                else interpolatedId = s1.id;
                 id.Value = interpolatedId;
                 elapsedUs.Value = interpolatedElapsedUs;
             }
@@ -138,6 +137,8 @@ namespace Swihoni.Sessions.Player.Components
         public UShortProperty ammoInMag, ammoInReserve;
 
         private static ItemModifierBase _modifier;
+
+        public bool NoAmmoLeft => ammoInMag == 0 && ammoInReserve == 0;
 
         // Embedded item components are only explicitly interpolated, since usually it only needs to be done on equipped item
         public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
@@ -156,7 +157,7 @@ namespace Swihoni.Sessions.Player.Components
         }
     }
 
-    [Serializable, ClientChecked, CustomInterpolation]
+    [Serializable, ModeElement, ClientChecked, CustomInterpolation]
     public class InventoryComponent : ComponentBase
     {
         public ByteProperty equippedIndex, previousEquippedIndex;

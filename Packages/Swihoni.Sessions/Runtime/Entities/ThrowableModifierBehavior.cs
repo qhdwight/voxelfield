@@ -78,7 +78,7 @@ namespace Swihoni.Sessions.Entities
                 : Vector3.up;
         }
 
-        public override void Modify(in ModifyContext context)
+        public override void Modify(in SessionContext context)
         {
             base.Modify(context);
 
@@ -149,7 +149,7 @@ namespace Swihoni.Sessions.Entities
                 entity.Zero();
         }
 
-        private void HurtNearby(in ModifyContext context, bool justPopped)
+        private void HurtNearby(in SessionContext context, bool justPopped)
         {
             int count = Physics.OverlapSphereNonAlloc(transform.position, m_Radius, m_OverlappingColliders, m_Mask);
             for (var i = 0; i < count; i++)
@@ -160,10 +160,10 @@ namespace Swihoni.Sessions.Entities
                 Container hitPlayer = context.GetModifyingPlayer(hitPlayerId);
                 if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive)
                 {
-                    byte damage = CalculateDamage(new ModifyContext(player: hitPlayer, durationUs: context.durationUs));
+                    byte damage = CalculateDamage(new SessionContext(player: hitPlayer, durationUs: context.durationUs));
                     int inflictingPlayerId = ThrowerId;
                     Container inflictingPlayer = context.GetModifyingPlayer(inflictingPlayerId);
-                    var playerContext = new ModifyContext(existing: context, playerId: inflictingPlayerId, player: inflictingPlayer);
+                    var playerContext = new SessionContext(existing: context, playerId: inflictingPlayerId, player: inflictingPlayer);
                     var damageContext = new DamageContext(playerContext, hitPlayerId, hitPlayer, damage, Name);
                     context.session.GetModifyingMode().InflictDamage(damageContext);
                 }
@@ -171,9 +171,9 @@ namespace Swihoni.Sessions.Entities
             if (justPopped) JustPopped(context);
         }
 
-        protected virtual void JustPopped(in ModifyContext context) => context.session.Injector.OnThrowablePopped(this);
+        protected virtual void JustPopped(in SessionContext context) => context.session.Injector.OnThrowablePopped(this);
 
-        private byte CalculateDamage(in ModifyContext context)
+        private byte CalculateDamage(in SessionContext context)
         {
             float distance = Vector3.Distance(context.player.Require<MoveComponent>(), transform.position);
             float ratio = (m_MinimumDamageRatio - 1.0f) * Mathf.Clamp01(distance / m_Radius) + 1.0f;

@@ -17,7 +17,7 @@ namespace Voxelfield.Item
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("set", "revert", "breakable");
 
-        protected override void Swing(in ModifyContext context, ItemComponent item)
+        protected override void Swing(in SessionContext context, ItemComponent item)
         {
             if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)) return;
 
@@ -38,7 +38,7 @@ namespace Voxelfield.Item
             }
         }
 
-        protected override void SecondaryUse(in ModifyContext context)
+        protected override void SecondaryUse(in SessionContext context)
         {
             Container player = context.player;
             if (!(context.session.Injector is ServerInjector server)) return;
@@ -52,49 +52,47 @@ namespace Voxelfield.Item
             server.ApplyVoxelChanges(change, overrideBreakable: true);
         }
 
-        public override void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        public override void ModifyChecked(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             base.ModifyChecked(context, item, inventory, inputs);
-
-            Container player = context.player;
+            
+            if (!PlayerModifierBehaviorBase.WithStringCommands(context, out IEnumerable<string[]> commands)) return;
+            
             SessionBase session = context.session;
-            if (PlayerModifierBehaviorBase.TryServerCommands(player, out IEnumerable<string[]> commands))
+            foreach (string[] arguments in commands)
             {
-                foreach (string[] arguments in commands)
+                var designer = context.player.Require<DesignerPlayerComponent>();
+                switch (arguments[0])
                 {
-                    var designer = player.Require<DesignerPlayerComponent>();
-                    switch (arguments[0])
+                    case "set":
                     {
-                        case "set":
-                        {
-                            VoxelChange change = designer.selectedVoxel;
-                            change.Merge(new VoxelChange {position = designer.positionOne, upperBound = designer.positionTwo, hasBlock = true, form = VoxelVolumeForm.Prism});
+                        VoxelChange change = designer.selectedVoxel;
+                        change.Merge(new VoxelChange {position = designer.positionOne, upperBound = designer.positionTwo, hasBlock = true, form = VoxelVolumeForm.Prism});
 
-                            var server = (ServerInjector) session.Injector;
-                            server.ApplyVoxelChanges(change, overrideBreakable: true);
-                            break;
-                        }
-                        case "revert":
-                        {
-                            // ReSharper disable once PossibleInvalidOperationException
-                            DimensionFunction(session, designer, position => ChunkManager.Singleton.GetMapSaveVoxel(position).Value);
-                            break;
-                        }
-                        case "breakable":
-                        {
-                            var breakable = true;
-                            if (arguments.Length > 1 && bool.TryParse(arguments[1], out bool parsedBreakable)) breakable = parsedBreakable;
+                        var server = (ServerInjector) session.Injector;
+                        server.ApplyVoxelChanges(change, overrideBreakable: true);
+                        break;
+                    }
+                    case "revert":
+                    {
+                        // ReSharper disable once PossibleInvalidOperationException
+                        DimensionFunction(session, designer, position => ChunkManager.Singleton.GetMapSaveVoxel(position).Value);
+                        break;
+                    }
+                    case "breakable":
+                    {
+                        var breakable = true;
+                        if (arguments.Length > 1 && bool.TryParse(arguments[1], out bool parsedBreakable)) breakable = parsedBreakable;
 
-                            var change = new VoxelChange
-                            {
-                                position = designer.positionOne, form = VoxelVolumeForm.Prism,
-                                upperBound = designer.positionTwo, isBreakable = breakable
-                            };
+                        var change = new VoxelChange
+                        {
+                            position = designer.positionOne, form = VoxelVolumeForm.Prism,
+                            upperBound = designer.positionTwo, isBreakable = breakable
+                        };
 
-                            var server = (ServerInjector) session.Injector;
-                            server.ApplyVoxelChanges(change, overrideBreakable: true);
-                            break;
-                        }
+                        var server = (ServerInjector) session.Injector;
+                        server.ApplyVoxelChanges(change, overrideBreakable: true);
+                        break;
                     }
                 }
             }

@@ -53,9 +53,8 @@ namespace Swihoni.Sessions.Player.Modifiers
         public float MaxSpeed => m_RunSpeed * m_SprintMultiplier;
         public Collider Collider => m_Controller;
 
-        internal override void Setup(SessionBase session)
+        internal override void Setup()
         {
-            base.Setup(session);
             m_Controller = m_MoveTransform.GetComponent<CharacterController>();
             m_ControllerListener = m_MoveTransform.GetComponent<CharacterControllerListener>();
             m_Controller.gameObject.SetActive(false);
@@ -63,7 +62,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_ControllerCenter = m_Controller.center;
         }
 
-        protected internal override void SynchronizeBehavior(in ModifyContext context)
+        protected internal override void SynchronizeBehavior(in SessionContext context)
         {
             Container player = context.player;
             var move = player.Require<MoveComponent>();
@@ -85,7 +84,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         // TODO:refactor bad
         private bool m_LastFlyInput;
 
-        public override void ModifyChecked(in ModifyContext context)
+        public override void ModifyChecked(in SessionContext context)
         {
             if (context.tickDelta < 1) return;
 
@@ -136,7 +135,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             move.groundTick.Value = byte.MaxValue;
         }
 
-        public override void ModifyTrusted(in ModifyContext context, Container verifiedPlayer) { }
+        public override void ModifyTrusted(in SessionContext context, Container verifiedPlayer) { }
 
         public override void ModifyCommands(SessionBase session, Container commands, int playerId)
         {

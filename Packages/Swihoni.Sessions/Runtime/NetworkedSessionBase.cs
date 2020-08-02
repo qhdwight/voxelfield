@@ -32,6 +32,10 @@ namespace Swihoni.Sessions
         public IPEndPoint IpEndPoint { get; }
         public abstract ComponentSocketBase Socket { get; }
 
+        private static bool _isInGame;
+        protected static int _indexer;
+        protected static CyclicArray<ServerSessionContainer> _serverHistory;
+
         protected NetworkedSessionBase(SessionElements elements, IPEndPoint ipEndPoint, SessionInjectorBase injector) : base(elements, injector)
         {
             IpEndPoint = ipEndPoint;
@@ -97,9 +101,7 @@ namespace Swihoni.Sessions
             RenderInterfaces(latestSession);
             ModeManager.GetMode(m_RenderSession).Render(this, m_RenderSession);
         }
-
-        private static bool _isInGame;
-
+        
         protected void RenderInterfaces(Container session)
         {
             _session = this;
@@ -111,11 +113,6 @@ namespace Swihoni.Sessions
                     sessionInterface.Render(_session, _container);
             });
         }
-
-        protected static int _indexer;
-        protected static Container _container;
-        protected static SessionBase _session;
-        protected static CyclicArray<ServerSessionContainer> _serverHistory;
 
         protected void RenderEntities<TStampComponent>(uint currentRenderTimeUs, uint rollbackUs) where TStampComponent : StampComponent
         {

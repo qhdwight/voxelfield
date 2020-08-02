@@ -16,7 +16,7 @@ namespace Voxelfield.Session.Mode
             return ShowdownMode.CalculateDamageWithMovement(context, baseDamage);
         }
 
-        protected override Vector3 GetSpawnPosition(in ModifyContext context) => GetRandomSpawn();
+        protected override Vector3 GetSpawnPosition(in SessionContext context) => GetRandomSpawn();
 
         public static Vector3 GetRandomSpawn()
         {

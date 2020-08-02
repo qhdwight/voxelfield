@@ -7,10 +7,10 @@ namespace Swihoni.Sessions.Entities
     {
         [SerializeField] private AnimationCurve m_DistanceCurve = AnimationCurve.Linear(0.0f, 1.0f, 200.0f, 0.0f);
         
-        protected override void JustPopped(in ModifyContext context)
+        protected override void JustPopped(in SessionContext context)
         {
             Vector3 center = transform.position;
-            context.ForEachActivePlayer((in ModifyContext playerContext) =>
+            context.ForEachActivePlayer((in SessionContext playerContext) =>
             {
                 Ray playerEye = playerContext.player.GetRayForPlayer();
                 Vector3 direction = center - playerEye.origin;

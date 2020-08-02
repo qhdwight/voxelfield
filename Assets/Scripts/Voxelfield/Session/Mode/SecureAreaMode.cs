@@ -35,7 +35,8 @@ namespace Voxelfield.Session.Mode
     [CreateAssetMenu(fileName = "Secure Area", menuName = "Session/Mode/Secure Area", order = 0)]
     public class SecureAreaMode : DeathmatchMode, IModeWithBuying
     {
-        public const byte BlueTeam = 0, RedTeam = 1;
+        private const byte BlueTeam = 0, RedTeam = 1;
+        private const int MaxMoney = 7000;
 
         private SiteBehavior[] m_SiteBehaviors;
         private VoxelMapNameProperty m_LastMapName;
@@ -55,7 +56,7 @@ namespace Voxelfield.Session.Mode
         public override void Initialize()
         {
             m_LastMapName = new VoxelMapNameProperty();
-            m_Config = Extensions.GetConfig().secureAreaConfig;
+            m_Config = ConfigManager.Active.secureAreaConfig;
             SessionBase.RegisterSessionCommand("give_money");
         }
 
@@ -68,29 +69,7 @@ namespace Voxelfield.Session.Mode
                                                .Cast<SiteBehavior>().ToArray();
         }
 
-        public override void BeginModify(in ModifyContext context)
-        {
-            base.BeginModify(in context);
-            var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
-            secureArea.roundTime.Clear();
-            secureArea.lastWinningTeam.Clear();
-            context.sessionContainer.Require<DualScoresComponent>().Clear();
-            secureArea.sites.Clear();
-        }
-
-        public override void EndModify(in ModifyContext context)
-        {
-            context.ForEachActivePlayer((in ModifyContext playerModifyContext) =>
-            {
-                Container player = playerModifyContext.player;
-                player.ZeroIfWith<FrozenProperty>();
-                player.Require<MoneyComponent>().Clear();
-            });
-            context.sessionContainer.Require<SecureAreaComponent>().Clear();
-            context.sessionContainer.Require<DualScoresComponent>().Clear();
-        }
-
-        protected override void HandleAutoRespawn(in ModifyContext context, HealthProperty health)
+        protected override void HandleAutoRespawn(in SessionContext context, HealthProperty health)
         {
             if (context.sessionContainer.Require<SecureAreaComponent>().roundTime.WithoutValue)
             {
@@ -110,15 +89,15 @@ namespace Voxelfield.Session.Mode
             base.KillPlayer(damageContext);
 
             Container killer = damageContext.InflictingPlayer;
-            if (damageContext.modifyContext.player.Require<TeamProperty>() != killer.Require<TeamProperty>())
+            if (damageContext.sessionContext.player.Require<TeamProperty>() != killer.Require<TeamProperty>())
             {
                 UShortProperty money = killer.Require<MoneyComponent>().count;
                 money.Value += m_Config.killMoney;
-                if (money.Value > 7000) money.Value = 7000;
+                if (money.Value > MaxMoney) money.Value = MaxMoney;
             }
         }
 
-        public override void Modify(in ModifyContext context)
+        public override void Modify(in SessionContext context)
         {
             base.Modify(context);
 
@@ -172,7 +151,7 @@ namespace Voxelfield.Session.Mode
 
                     if (!endedWithKills)
                     {
-                        for (var siteIndex = 0; siteIndex < secureArea.sites.Length; siteIndex++)
+                        for (var siteIndex = 0; siteIndex < siteBehaviors.Length; siteIndex++)
                         {
                             SiteBehavior siteBehavior = siteBehaviors[siteIndex];
                             Transform siteTransform = siteBehavior.transform;
@@ -237,27 +216,18 @@ namespace Voxelfield.Session.Mode
             }
             else
             {
-                // Waiting for players
-                bool ForceStart()
-                {
-                    BoolProperty forceStart = Extensions.GetConfig().forceStart;
-                    if (forceStart)
-                    {
-                        forceStart.Value = false;
-                        return true;
-                    }
-                    return false;
-                }
-                bool start = activePlayerCount == m_Config.playerCount || ForceStart();
-                if (start)
-                {
-                    NextRound(context, secureArea);
-                    sessionContainer.Require<DualScoresComponent>().Zero();
-                }
+                bool start = activePlayerCount == m_Config.playerCount;
+                if (start) FirstRound(context, secureArea);
             }
         }
 
-        public override void ModifyPlayer(in ModifyContext context)
+        private void FirstRound(in SessionContext context, SecureAreaComponent secureArea)
+        {
+            NextRound(context, secureArea);
+            context.sessionContainer.Require<DualScoresComponent>().Zero();
+        }
+
+        public override void ModifyPlayer(in SessionContext context)
         {
             TimeUsProperty roundTime = context.sessionContainer.Require<SecureAreaComponent>().roundTime;
             bool isBuyTime = roundTime.WithValue && roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
@@ -265,7 +235,7 @@ namespace Voxelfield.Session.Mode
             if (isBuyTime) BuyingMode.HandleBuying(this, player, context.commands);
             player.Require<FrozenProperty>().Value = isBuyTime;
 
-            if (PlayerModifierBehaviorBase.TryServerCommands(player, out IEnumerable<string[]> stringCommands))
+            if (PlayerModifierBehaviorBase.WithStringCommands(context, out IEnumerable<string[]> stringCommands))
             {
                 foreach (string[] arguments in stringCommands)
                     switch (arguments[0])
@@ -275,24 +245,25 @@ namespace Voxelfield.Session.Mode
                             player.Require<MoneyComponent>().count.Value += bonus;
                             break;
                         }
+                        case "force_start":
+                        {
+                            FirstRound(context, context.sessionContainer.Require<SecureAreaComponent>());
+                            break;
+                        }
                     }
             }
 
             base.ModifyPlayer(in context);
         }
 
-        public override void SetupNewPlayer(in ModifyContext context)
-        {
-            context.player.Require<TeamProperty>().Value = (byte) ((context.playerId + 1) % 2);
-            base.SetupNewPlayer(in context);
-        }
-
-        protected override void SpawnPlayer(in ModifyContext context)
+        protected override void SpawnPlayer(in SessionContext context, bool begin = false)
         {
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             Container player = context.player;
+            if (begin) player.Require<TeamProperty>().Value = (byte) ((context.playerId + 1) % 2);
             if (secureArea.roundTime.WithValue)
             {
+                player.ZeroIfWith<StatsComponent>();
                 var health = player.Require<HealthProperty>();
                 var money = player.Require<MoneyComponent>();
                 var inventory = player.Require<InventoryComponent>();
@@ -315,46 +286,50 @@ namespace Voxelfield.Session.Mode
                 player.ZeroIfWith<RespawnTimerProperty>();
                 player.Require<IdProperty>().Value = 1;
             }
-            else
-            {
-                base.SpawnPlayer(in context);
-            }
+            else base.SpawnPlayer(in context, begin);
         }
 
         private static readonly List<int> RandomIndices = new List<int>();
 
-        protected override Vector3 GetSpawnPosition(in ModifyContext context)
+        protected override Vector3 GetSpawnPosition(in SessionContext context)
         {
-            KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
-                                                                                                              && modelId == ModelsProperty.Spawn
-                                                                                                              && pair.Value.With<TeamProperty>())
-                                                                         .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
-                                                                         .OrderBy(spawnGroup => spawnGroup.Key)
-                                                                         .Select(spawnGroup => spawnGroup.ToArray())
-                                                                         .ToArray();
-            byte team = context.player.Require<TeamProperty>();
-            KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
-
-            if (RandomIndices.Count == 0)
+            try
             {
-                RandomIndices.Capacity = teamSpawns.Length;
-                for (var i = 0; i < teamSpawns.Length; i++)
-                    RandomIndices.Add(i);
-            }
-            int index = Random.Range(0, RandomIndices.Count);
-            int spawnIndex = RandomIndices[index];
-            RandomIndices.RemoveAt(index);
+                KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
+                                                                                                                  && modelId == ModelsProperty.Spawn
+                                                                                                                  && pair.Value.With<TeamProperty>())
+                                                                             .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
+                                                                             .OrderBy(spawnGroup => spawnGroup.Key)
+                                                                             .Select(spawnGroup => spawnGroup.ToArray())
+                                                                             .ToArray();
+                byte team = context.player.Require<TeamProperty>();
+                KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
 
-            return teamSpawns[spawnIndex].Key;
+                if (RandomIndices.Count == 0)
+                {
+                    RandomIndices.Capacity = teamSpawns.Length;
+                    for (var i = 0; i < teamSpawns.Length; i++)
+                        RandomIndices.Add(i);
+                }
+                int index = Random.Range(0, RandomIndices.Count);
+                int spawnIndex = RandomIndices[index];
+                RandomIndices.RemoveAt(index);
+
+                return teamSpawns[spawnIndex].Key;
+            }
+            catch (Exception)
+            {
+                return GetRandomSpawn();
+            }
         }
 
-        private void NextRound(in ModifyContext context, SecureAreaComponent secureArea)
+        private void NextRound(in SessionContext context, SecureAreaComponent secureArea)
         {
             var scores = context.sessionContainer.Require<DualScoresComponent>();
             bool isLastRound = secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_Config.maxRounds;
             if (isLastRound)
             {
-                context.ForEachActivePlayer((in ModifyContext playerModifyContext) => playerModifyContext.player.Require<FrozenProperty>().Value = true);
+                context.ForEachActivePlayer((in SessionContext playerModifyContext) => playerModifyContext.player.Require<FrozenProperty>().Value = true);
             }
             else
             {
@@ -364,7 +339,7 @@ namespace Voxelfield.Session.Mode
                     site.Zero();
                     site.timeUs.Value = m_Config.secureDurationUs;
                 }
-                context.ForEachActivePlayer((in ModifyContext playerModifyContext) =>
+                context.ForEachActivePlayer((in SessionContext playerModifyContext) =>
                 {
                     SpawnPlayer(playerModifyContext);
                     if (secureArea.lastWinningTeam.WithValue)
@@ -372,18 +347,11 @@ namespace Voxelfield.Session.Mode
                         Container player = playerModifyContext.player;
                         UShortProperty money = player.Require<MoneyComponent>().count;
                         money.Value += player.Require<TeamProperty>() == secureArea.lastWinningTeam ? m_Config.roundWinMoney : m_Config.roundLoseMoney;
-                        if (money.Value > 7000) money.Value = 7000;
+                        if (money.Value > MaxMoney) money.Value = MaxMoney;
                     }
                 });
             }
         }
-
-        private static Queue<KeyValuePair<Position3Int, Container>>[] FindSpawns(ModelsProperty models)
-            => models.Map.Where(modelPair => modelPair.Value.With<TeamProperty>())
-                     .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
-                     .OrderBy(group => group.Key)
-                     .Select(teamGroup => new Queue<KeyValuePair<Position3Int, Container>>(teamGroup))
-                     .ToArray();
 
         public override void Render(SessionBase session, Container sessionContainer)
         {
@@ -393,7 +361,7 @@ namespace Voxelfield.Session.Mode
 
             SiteBehavior[] siteBehaviors = GetSiteBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
-            for (var siteIndex = 0; siteIndex < secureArea.sites.Length; siteIndex++)
+            for (var siteIndex = 0; siteIndex < siteBehaviors.Length; siteIndex++)
                 siteBehaviors[siteIndex].Render(secureArea.sites[siteIndex]);
         }
 
@@ -403,9 +371,9 @@ namespace Voxelfield.Session.Mode
             return player.Require<HealthProperty>().IsDead && player.Require<RespawnTimerProperty>().Value < ConfigManagerBase.Active.respawnDuration / 2;
         }
 
-        protected override float CalculateWeaponDamage(in PlayerHitContext context) =>
-            context.modifyContext.sessionContainer.Require<SecureAreaComponent>().roundTime.WithValue
-         && context.hitPlayer.Require<TeamProperty>() == context.modifyContext.player.Require<TeamProperty>()
+        protected override float CalculateWeaponDamage(in PlayerHitContext context)
+            => context.sessionContext.sessionContainer.Require<SecureAreaComponent>().roundTime.WithValue
+            && context.hitPlayer.Require<TeamProperty>() == context.sessionContext.player.Require<TeamProperty>()
                 ? 0.0f
                 : base.CalculateWeaponDamage(context);
 
@@ -420,8 +388,12 @@ namespace Voxelfield.Session.Mode
 
         public override StringBuilder BuildUsername(StringBuilder builder, Container player)
         {
-            string hex = GetHexColor(GetTeamColor(player.Require<TeamProperty>()));
-            return builder.Append("<color=#").Append(hex).Append(">").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</color>");
+            if (player.Require<TeamProperty>().TryWithValue(out byte team))
+            {
+                string hex = GetHexColor(GetTeamColor(team));
+                return builder.Append("<color=#").Append(hex).Append(">").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</color>");
+            }
+            return base.BuildUsername(builder, player);
         }
 
         public override Color GetTeamColor(int teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;

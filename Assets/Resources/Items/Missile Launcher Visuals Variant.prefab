@@ -7,6 +7,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2409703886653496937, guid: 2181dda42291c44b0853559b8d164618,
+        type: 3}
+      propertyPath: m_ParentTwo.positionOffset.y
+      value: 0.175
+      objectReference: {fileID: 0}
     - target: {fileID: 3664867794367689496, guid: 2181dda42291c44b0853559b8d164618,
         type: 3}
       propertyPath: m_Mesh
@@ -73,6 +78,16 @@ PrefabInstance:
       propertyPath: m_Id
       value: 13
       objectReference: {fileID: 0}
+    - target: {fileID: 4012204722728796741, guid: 2181dda42291c44b0853559b8d164618,
+        type: 3}
+      propertyPath: m_IsMagazineShell
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4012204722728796741, guid: 2181dda42291c44b0853559b8d164618,
+        type: 3}
+      propertyPath: m_StatusVisualProperties.Array.data[4].animationClip
+      value: 
+      objectReference: {fileID: 7400000, guid: 8b4eb825ff60fb8428693196b010c542, type: 2}
     - target: {fileID: 4012204722728796763, guid: 2181dda42291c44b0853559b8d164618,
         type: 3}
       propertyPath: m_Name

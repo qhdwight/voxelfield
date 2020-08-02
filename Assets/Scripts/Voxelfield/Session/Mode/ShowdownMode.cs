@@ -32,7 +32,7 @@ namespace Voxelfield.Session.Mode
         private CurePackageBehavior[] m_CurePackages;
         private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
 
-        public override void Modify(in ModifyContext context)
+        public override void Modify(in SessionContext context)
         {
             base.Modify(context);
             var stage = context.sessionContainer.Require<ShowdownSessionComponent>();
@@ -58,7 +58,7 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override void ModifyPlayer(in ModifyContext context)
+        public override void ModifyPlayer(in SessionContext context)
         {
             base.ModifyPlayer(in context);
 
@@ -91,12 +91,12 @@ namespace Voxelfield.Session.Mode
             return false;
         }
 
-        private void PlayerSecuring(in ModifyContext modifyContext, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage)
+        private void PlayerSecuring(in SessionContext sessionContext, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage)
         {
             var isInteracting = false;
             CurePackageComponent cure = default;
-            if (modifyContext.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)
-             && IsLookingAt(modifyContext.player, out CurePackageBehavior curePackage))
+            if (sessionContext.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)
+             && IsLookingAt(sessionContext.player, out CurePackageBehavior curePackage))
             {
                 cure = stage.curePackages[curePackage.Container.Require<IdProperty>()];
                 if (cure.isActive.WithValueEqualTo(true)) isInteracting = true;
@@ -105,7 +105,7 @@ namespace Voxelfield.Session.Mode
             {
                 checked
                 {
-                    showdownPlayer.elapsedSecuringUs.Value += modifyContext.durationUs;
+                    showdownPlayer.elapsedSecuringUs.Value += sessionContext.durationUs;
                     if (showdownPlayer.elapsedSecuringUs > SecureTimeUs)
                     {
                         Secure(showdownPlayer, stage, cure);
@@ -124,15 +124,15 @@ namespace Voxelfield.Session.Mode
             cure.isActive.Value = false;
         }
 
-        protected override void HandleAutoRespawn(in ModifyContext context, HealthProperty health)
+        protected override void HandleAutoRespawn(in SessionContext context, HealthProperty health)
         {
             if (InWarmup(context.sessionContainer)) base.HandleAutoRespawn(in context, health); // Random respawn
         }
 
-        private static void FirstStageSpawn(in ModifyContext modifyContext, QueuedTeamSpawns spawns)
+        private static void FirstStageSpawn(in SessionContext sessionContext, QueuedTeamSpawns spawns)
         {
-            Container player = modifyContext.player;
-            player.Require<TeamProperty>().Value = (byte) (modifyContext.playerId % PlayersPerTeam);
+            Container player = sessionContext.player;
+            player.Require<TeamProperty>().Value = (byte) (sessionContext.playerId % PlayersPerTeam);
 
             var move = player.Require<MoveComponent>();
             move.Zero();
@@ -152,14 +152,14 @@ namespace Voxelfield.Session.Mode
             player.Require<ShowdownPlayerComponent>().Zero();
         }
 
-        private static void StartFirstStage(in ModifyContext context, ShowdownSessionComponent stage)
+        private static void StartFirstStage(in SessionContext context, ShowdownSessionComponent stage)
         {
             ModelsProperty models = MapManager.Singleton.Map.models;
             QueuedTeamSpawns spawns = FindSpawns(models);
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
             SetActiveCures(stage);
-            context.ForEachActivePlayer((in ModifyContext playerModifyContext) => FirstStageSpawn(playerModifyContext, spawns));
+            context.ForEachActivePlayer((in SessionContext playerModifyContext) => FirstStageSpawn(playerModifyContext, spawns));
             Debug.Log("Started first stage");
         }
 
@@ -200,7 +200,7 @@ namespace Voxelfield.Session.Mode
 
         protected override float CalculateWeaponDamage(in PlayerHitContext context)
         {
-            if (!InWarmup(context.modifyContext.sessionContainer) && context.hitPlayer.Require<TeamProperty>() == context.modifyContext.player.Require<TeamProperty>()) return 0.0f;
+            if (!InWarmup(context.sessionContext.sessionContainer) && context.hitPlayer.Require<TeamProperty>() == context.sessionContext.player.Require<TeamProperty>()) return 0.0f;
 
             float baseDamage = base.CalculateWeaponDamage(context);
             return CalculateDamageWithMovement(context, baseDamage);
@@ -210,16 +210,16 @@ namespace Voxelfield.Session.Mode
         {
             if (context.weapon is MeleeModifier) return baseDamage;
             // Nerf damage while on the run
-            Container inflictingPlayer = context.modifyContext.player;
+            Container inflictingPlayer = context.sessionContext.player;
             Vector3 velocity = inflictingPlayer.Require<MoveComponent>().velocity;
-            var modifierPrefab = (PlayerModifierDispatcherBehavior) context.modifyContext.session.PlayerManager.GetModifierPrefab(inflictingPlayer.Require<IdProperty>());
+            var modifierPrefab = (PlayerModifierDispatcherBehavior) context.sessionContext.session.PlayerManager.GetModifierPrefab(inflictingPlayer.Require<IdProperty>());
             float ratio = 1.0f - Mathf.Clamp01(velocity.LateralMagnitude() / modifierPrefab.Movement.MaxSpeed);
             const float minimumRatio = 0.3f;
             ratio = minimumRatio + ratio * (1.0f - minimumRatio);
             return baseDamage * ratio;
         }
 
-        public override bool AllowTeamSwap(in ModifyContext context) => InWarmup(context.sessionContainer);
+        public override bool AllowTeamSwap(in SessionContext context) => InWarmup(context.sessionContainer);
 
         public override void Render(SessionBase session, Container sessionContainer)
         {

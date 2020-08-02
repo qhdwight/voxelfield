@@ -38,9 +38,10 @@ namespace Swihoni.Sessions.Player.Visualization
 
             ArmIk = GetComponent<ArmIk>();
             m_Animator = GetComponent<Animator>();
-            m_Graph = PlayableGraph.Create($"{transform.root.name} {m_GraphName} Item Animator");
+            string rootName = transform.root.name;
+            m_Graph = PlayableGraph.Create($"{rootName} {m_GraphName} Item Animator");
             m_Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
-            AnimationPlayableOutput.Create(m_Graph, $"{transform.root.name} {m_GraphName} Output", m_Animator);
+            AnimationPlayableOutput.Create(m_Graph, $"{rootName} {m_GraphName} Output", m_Animator);
         }
 
         public void Render(Container player, bool isLocalPlayer)
@@ -62,12 +63,7 @@ namespace Swihoni.Sessions.Player.Visualization
                         m_FpvArmsRenderer.enabled = isLocalPlayer;
                         m_FpvArmsRenderer.shadowCastingMode = ShadowCastingMode.Off;
                     }
-                    if (m_RenderItems)
-                    {
-                        if (m_IsFpv) m_ItemVisual.SetRenderingMode(isLocalPlayer, ShadowCastingMode.Off);
-                        else m_ItemVisual.SetRenderingMode(true, isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On);
-                    }
-                    else m_ItemVisual.SetRenderingMode(false);
+                    (bool isItemVisible, ShadowCastingMode itemShadowCastingMode) = DetermineItemVisibility(isLocalPlayer);
 
                     ItemComponent equippedItem = inventory.EquippedItemComponent;
                     ByteStatusComponent equipStatus = inventory.equipStatus;
@@ -80,7 +76,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
                     if (m_RenderItems && m_IsFpv == isLocalPlayer)
                         m_ItemVisual.SampleEvents(equippedItem, inventory);
-                    m_ItemVisual.SampleAnimation(equippedItem, equipStatus, interpolation);
+                    m_ItemVisual.SampleAnimation(equippedItem, equipStatus, interpolation, isItemVisible, itemShadowCastingMode);
 
                     if (m_IsFpv) AnimateAim(inventory);
 
@@ -104,6 +100,31 @@ namespace Swihoni.Sessions.Player.Visualization
             ArmIk.enabled = isVisible;
         }
 
+        private (bool, ShadowCastingMode) DetermineItemVisibility(bool isLocalPlayer)
+        {
+            bool isItemVisible;
+            ShadowCastingMode itemShadowCastingMode;
+            if (m_RenderItems)
+            {
+                if (m_IsFpv)
+                {
+                    isItemVisible = isLocalPlayer;
+                    itemShadowCastingMode = ShadowCastingMode.Off;
+                }
+                else
+                {
+                    isItemVisible = true;
+                    itemShadowCastingMode = isLocalPlayer ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
+                }
+            }
+            else
+            {
+                isItemVisible = false;
+                itemShadowCastingMode = ShadowCastingMode.Off;
+            }
+            return (isItemVisible, itemShadowCastingMode);
+        }
+
         /// <summary>
         /// For some reason Animator.Rebind() does not work in normal Update()
         /// </summary>
@@ -111,8 +132,9 @@ namespace Swihoni.Sessions.Player.Visualization
         {
             if (m_ItemVisual && m_WasNewItemVisualThisRenderFrame)
             {
-                m_Animator.Rebind();
+                // m_Animator.Rebind();
                 m_WasNewItemVisualThisRenderFrame = false;
+                // m_ItemVisual.PostUpdate();
             }
         }
 
@@ -137,6 +159,7 @@ namespace Swihoni.Sessions.Player.Visualization
             itemTransform.localRotation = Quaternion.identity;
             m_ItemVisual = newVisuals;
             m_WasNewItemVisualThisRenderFrame = true;
+            m_Animator.Rebind();
             return newVisuals;
         }
 
@@ -191,7 +214,11 @@ namespace Swihoni.Sessions.Player.Visualization
             if (!isActive)
             {
                 if (m_FpvArmsRenderer) m_FpvArmsRenderer.enabled = false;
-                if (m_ItemVisual) m_ItemVisual.SetRenderingMode(false);
+                if (m_ItemVisual)
+                {
+                    if (m_ItemVisual) ItemAssetLink.ReturnVisuals(m_ItemVisual);
+                    m_ItemVisual = null;
+                }
             }
         }
     }

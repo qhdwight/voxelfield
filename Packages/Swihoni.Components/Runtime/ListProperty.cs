@@ -20,6 +20,12 @@ namespace Swihoni.Components
 
         public override bool Equals(PropertyBase other) => throw new NotImplementedException();
 
+        public override void Clear()
+        {
+            Zero();
+            base.Clear();
+        }
+        
         public override void Zero() => m_List.Clear();
 
         public override void SetTo(PropertyBase other)

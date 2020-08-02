@@ -21,7 +21,6 @@ namespace Swihoni.Sessions
         public Host(SessionElements elements, IPEndPoint ipEndPoint, SessionInjectorBase injector)
             : base(elements, ipEndPoint, injector)
         {
-            // TODO:refactor zeroing
             m_HostCommands = new Container(elements.playerElements
                                                    .Append(typeof(ClientStampComponent))
                                                    .Append(typeof(AcknowledgedServerTickProperty))
@@ -47,7 +46,7 @@ namespace Swihoni.Sessions
                 if (hostPlayer.Require<HealthProperty>().WithValue)
                 {
                     PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(hostPlayer, HostPlayerId);
-                    var hostContext = new ModifyContext(this, session, m_HostCommands, HostPlayerId, m_HostCommands, durationUs: durationUs, tickDelta: 1);
+                    var hostContext = new SessionContext(this, session, m_HostCommands, HostPlayerId, m_HostCommands, durationUs: durationUs, tickDelta: 1);
                     if (hostModifier)
                     {
                         hostModifier.ModifyCommands(this, m_HostCommands, HostPlayerId);
@@ -142,13 +141,15 @@ namespace Swihoni.Sessions
         {
             if (IsLoading) return;
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
-            if (hostPlayer.Require<HealthProperty>().WithValue) return;
-            // Set up new player component data
-            var context = new ModifyContext(this, tickSession, playerId: HostPlayerId, player: hostPlayer);
-            m_Injector.OnSetupHost(context);
-            SetupNewPlayer(context);
-            tickSession.Require<LocalPlayerId>().Value = HostPlayerId;
-            m_HostCommands.SetTo(hostPlayer);
+            if (hostPlayer.Require<HealthProperty>().WithoutValue)
+            {
+                var context = new SessionContext(this, tickSession, playerId: HostPlayerId, player: hostPlayer);
+                m_Injector.OnSetupHost(context);
+                SetupNewPlayer(context);
+                tickSession.Require<LocalPlayerId>().Value = HostPlayerId;
+                m_HostCommands.SetTo(hostPlayer);
+            }
+            base.PostTick(tickSession);
         }
 
         protected override void RollbackHitboxes(int playerId)

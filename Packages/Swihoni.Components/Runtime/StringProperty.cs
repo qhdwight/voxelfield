@@ -66,7 +66,7 @@ namespace Swihoni.Components
             ThrowIfOverMaxSize(size);
             Zero();
             for (var _ = 0; _ < size; _++) Builder.Append(reader.GetChar());
-            WithValue = true;
+            WithValue = size > 0;
         }
 
         public override int GetHashCode()

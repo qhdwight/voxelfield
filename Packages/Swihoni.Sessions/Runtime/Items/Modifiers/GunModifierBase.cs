@@ -26,18 +26,19 @@ namespace Swihoni.Sessions.Items.Modifiers
         [SerializeField] protected ushort m_MagSize;
         [SerializeField] private ushort m_StartingAmmoInReserve = default;
         [SerializeField] private ItemStatusModiferProperties[] m_AdsModifierProperties = default;
+        [SerializeField] private float m_RaycastThickness = default;
         public bool isPrimary = true;
 
         public ushort MagSize => m_MagSize;
         public ushort StartingAmmoInReserve => m_StartingAmmoInReserve;
         public ItemStatusModiferProperties GetAdsStatusModifierProperties(byte statusId) => m_AdsModifierProperties[statusId];
 
-        public override void ModifyChecked(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        public override void ModifyChecked(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             bool reloadInput = inputs.GetInput(PlayerInput.Reload);
             if ((reloadInput || item.ammoInMag == 0) && CanReload(item, inventory) && item.status.id == ItemStatusId.Idle)
                 StartStatus(context, inventory, item, GunStatusId.Reloading);
-            else if (inputs.GetInput(PlayerInput.UseOne) && item.ammoInMag == 0 && item.ammoInReserve == 0 && item.status.id == ItemStatusId.Idle)
+            else if (inputs.GetInput(PlayerInput.UseOne) && item.NoAmmoLeft && item.status.id == ItemStatusId.Idle)
                 StartStatus(context, inventory, item, GunStatusId.DryFiring);
 
             if (inventory.tracerTimeUs > context.durationUs) inventory.tracerTimeUs.Value -= context.durationUs;
@@ -46,7 +47,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             base.ModifyChecked(context, item, inventory, inputs);
         }
 
-        protected override byte? FinishStatus(in ModifyContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
+        protected override byte? FinishStatus(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
             switch (item.status.id)
             {
@@ -69,14 +70,23 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected override bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false)
             => item.ammoInMag > 0 && base.CanPrimaryUse(item, inventory, justFinishedUse);
 
-        protected override void PrimaryUse(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
+        protected override void PrimaryUse(in SessionContext context, InventoryComponent inventory, ItemComponent item)
             => Fire(context, inventory, item);
 
         private static readonly HashSet<PlayerHitboxManager> HitPlayers = new HashSet<PlayerHitboxManager>();
-        
-        protected virtual int FireRaycast(Ray ray) => Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_RaycastMask);
 
-        protected virtual void Fire(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
+        protected virtual int FireRaycast(Ray ray)
+        {
+            if (m_RaycastThickness > Mathf.Epsilon)
+            {
+                return Physics.BoxCastNonAlloc(ray.GetPoint(m_RaycastThickness),
+                                               new Vector3(m_RaycastThickness, m_RaycastThickness, m_RaycastThickness),
+                                               ray.direction, RaycastHits, Quaternion.identity, float.PositiveInfinity, m_RaycastMask);
+            }
+            return Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_RaycastMask);
+        }
+
+        protected virtual void Fire(in SessionContext context, InventoryComponent inventory, ItemComponent item)
         {
             if (item.ammoInMag == 0) return;
 
@@ -105,8 +115,8 @@ namespace Swihoni.Sessions.Items.Modifiers
             inventory.tracerEnd.Value = hitCount > 0 ? RaycastHits[0].point : ray.GetPoint(300.0f);
             inventory.tracerTimeUs.Value = 1_000_000u;
         }
-        
-        protected internal override void OnUnequip(in ModifyContext context, InventoryComponent inventory, ItemComponent item)
+
+        protected internal override void OnUnequip(in SessionContext context, InventoryComponent inventory, ItemComponent item)
         {
             if (item.status.id == GunStatusId.Reloading)
                 StartStatus(context, inventory, item, ItemStatusId.Idle);

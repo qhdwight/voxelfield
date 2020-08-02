@@ -21,7 +21,11 @@ namespace Swihoni.Sessions.Components
     {
     }
 
-    /* Server */
+    public class ModeElementAttribute : Attribute
+    {
+    }
+
+/* Server */
 
     [Serializable]
     public class ServerSessionContainer : Container
@@ -85,14 +89,14 @@ namespace Swihoni.Sessions.Components
 
     /* Shared */
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, OnlyServerTrusted, ModeElement]
     public class HitMarkerComponent : ComponentBase
     {
         public ElapsedUsProperty elapsedUs;
         public BoolProperty isKill;
     }
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, OnlyServerTrusted, ModeElement]
     public class DamageNotifierComponent : ComponentBase
     {
         public ElapsedUsProperty elapsedUs;
@@ -105,7 +109,7 @@ namespace Swihoni.Sessions.Components
         public PlayerContainerArrayElement() : base(SessionBase.MaxPlayers) { }
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class KillFeedComponent : ComponentBase
     {
         public ElapsedUsProperty elapsedUs;
@@ -114,10 +118,16 @@ namespace Swihoni.Sessions.Components
         public StringProperty weaponName = new StringProperty(32);
     }
 
-    [Serializable]
+    [Serializable, ModeElement]
     public class KillFeedElement : ArrayElement<KillFeedComponent>
     {
         public KillFeedElement() : base(5) { }
+    }
+
+    [Serializable, SingleTick]
+    public class ChatListElement : ListProperty<ChatEntryProperty>
+    {
+        public ChatListElement() : base(5) { }
     }
 
     [Serializable]
@@ -193,9 +203,11 @@ namespace Swihoni.Sessions.Components
     [Serializable, ClientTrusted, SingleTick]
     public class ChatEntryProperty : StringProperty
     {
+        public ChatEntryProperty() : base(64) { }
+        public ChatEntryProperty(string @string) : base(@string, 64) { }
     }
 
-    [Serializable, OnlyServerTrusted]
+    [Serializable, OnlyServerTrusted, ModeElement]
     public class FlashProperty : FloatProperty
     {
     }

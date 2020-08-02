@@ -11,7 +11,7 @@ namespace Voxelfield.Item
     {
         private static readonly Color32 Sand = new Color32(253, 255, 224, 255);
 
-        protected override void JustPopped(in ModifyContext context)
+        protected override void JustPopped(in SessionContext context)
         {
             var server = (ServerInjector) context.session.Injector;
 

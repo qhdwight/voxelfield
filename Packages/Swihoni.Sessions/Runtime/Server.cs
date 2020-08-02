@@ -80,7 +80,12 @@ namespace Swihoni.Sessions
 
         protected virtual void PreTick(Container tickSession) { }
 
-        protected virtual void PostTick(Container tickSession) { }
+        protected virtual void PostTick(Container tickSession)
+        {
+            if (IsLoading) return;
+            
+            RenderVerified(tickSession);
+        }
 
         protected override void Render(uint renderTimeUs) { }
 
@@ -111,7 +116,7 @@ namespace Swihoni.Sessions
 
             ElementExtensions.NavigateZipped((_previous, _current) =>
             {
-                if (_current.WithAttribute<SingleTick>())
+                if (_current.WithAttribute<SingleTickAttribute>())
                     _current.Clear();
                 if (_current is PropertyBase _currentProperty)
                     _currentProperty.IsOverride = false;
@@ -147,7 +152,7 @@ namespace Swihoni.Sessions
                     if (CanSetupNewPlayer(serverPlayer))
                     {
                         Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {clientId}");
-                        var modifyContext = new ModifyContext(this, serverSession, playerId: clientId, player: serverPlayer);
+                        var modifyContext = new SessionContext(this, serverSession, playerId: clientId, player: serverPlayer);
                         SetupNewPlayer(modifyContext);
                     }
                     HandleClientCommand(clientId, m_EmptyClientCommands, serverSession, serverPlayer);
@@ -189,10 +194,10 @@ namespace Swihoni.Sessions
                 EntityManager.ModifyAll(serverSession, (modifer, _, entity) =>
                 {
                     var entityModifier = (EntityModifierBehavior) modifer;
-                    var modifyContext = new ModifyContext(_session, _container, entity: entity, timeUs: _timeUs, durationUs: _durationUs);
+                    var modifyContext = new SessionContext(_session, _container, entity: entity, timeUs: _timeUs, durationUs: _durationUs);
                     entityModifier.Modify(modifyContext);
                 });
-                GetModifyingMode(serverSession).Modify(new ModifyContext(_session, _container, timeUs: _timeUs, durationUs: _durationUs));
+                GetModifyingMode(serverSession).Modify(new SessionContext(_session, _container, timeUs: _timeUs, durationUs: _durationUs));
             }
 
             SendServerSession(tick, serverSession);
@@ -262,7 +267,7 @@ namespace Swihoni.Sessions
             {
                 if (_mostRecent is PropertyBase _mostRecentProperty && _lastAcknowledged is PropertyBase _lastAcknowledgedProperty && _send is PropertyBase _sendProperty)
                 {
-                    if (_mostRecent.WithoutAttribute<SingleTick>()
+                    if (_mostRecent.WithoutAttribute<SingleTickAttribute>()
                      && _mostRecent.WithoutAttribute<NeverCompress>()
                      && !(_mostRecentProperty is VectorProperty)
                      && !(_mostRecentProperty is StringProperty)
@@ -323,7 +328,7 @@ namespace Swihoni.Sessions
 
                     if (!IsLoading)
                     {
-                        var context = new ModifyContext(this, serverSession, receivedClientCommands, clientId, serverPlayer,
+                        var context = new SessionContext(this, serverSession, receivedClientCommands, clientId, serverPlayer,
                                                         durationUs: clientStamp.durationUs, tickDelta: tickDelta);
                         GetPlayerModifier(serverPlayer, clientId).ModifyChecked(context);
                         mode.ModifyPlayer(context);
@@ -349,17 +354,13 @@ namespace Swihoni.Sessions
             }, serverPlayer, receivedClientCommands);
         }
 
-        protected void SetupNewPlayer(in ModifyContext context)
+        protected void SetupNewPlayer(in SessionContext context)
         {
             GetModifyingMode(context.sessionContainer).SetupNewPlayer(context);
-            // TODO:refactor zeroing
 
             Container player = context.player;
-            player.ZeroIfWith<StatsComponent>();
             player.Require<HasSentInitialData>().Zero();
             player.Require<ServerPingComponent>().Zero();
-            player.Require<ClientStampComponent>().Clear();
-            player.Require<ServerStampComponent>().Clear();
             player.Require<UsernameProperty>().SetTo(m_Injector.GetUsername(context));
         }
 
@@ -391,13 +392,6 @@ namespace Swihoni.Sessions
 
                 if (modifierId == 0) DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
-        }
-
-        public override void StringCommand(int playerId, string stringCommand)
-        {
-            var command = GetModifyingPayerFromId(playerId).Require<StringCommandProperty>();
-            if (command.Builder.Length > 0) command.Add(" && ").Add(stringCommand);
-            else command.SetTo(stringCommand);
         }
 
         public override void Dispose()
