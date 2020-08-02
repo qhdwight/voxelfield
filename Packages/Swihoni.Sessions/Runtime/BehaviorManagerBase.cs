@@ -136,7 +136,7 @@ namespace Swihoni.Sessions
 
         public abstract ArrayElementBase ExtractArray(Container session);
 
-        public ModifierBehaviorBase ObtainNextModifier(Container session, int id)
+        public (ModifierBehaviorBase, Container) ObtainNextModifier(Container session, int id)
         {
             void Setup(Container container)
             {
@@ -152,7 +152,7 @@ namespace Swihoni.Sessions
                 /* Found empty slot */
                 Setup(container);
                 idProperty.Value = (byte) id;
-                return ObtainModifierAtIndex(container, index, id);
+                return (ObtainModifierAtIndex(container, index, id), container);
             }
             /* Circle back to first. We ran out of spots */
             // TODO:refactor better way?
@@ -161,7 +161,7 @@ namespace Swihoni.Sessions
                 var container = (Container) array.GetValue(0);
                 Setup(container);
                 container.Require<ByteIdProperty>().Value = (byte) id;
-                return ObtainModifierAtIndex(container, 0, id);
+                return (ObtainModifierAtIndex(container, 0, id), container);
             }
         }
 

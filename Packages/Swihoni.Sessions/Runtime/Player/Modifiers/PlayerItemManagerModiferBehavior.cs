@@ -17,7 +17,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         [SerializeField] private float m_DropItemForce = 1.0f, m_MaxPickupDistance = 1.5f;
         [SerializeField] private LayerMask m_ItemEntityMask = default;
-        
+
         private static readonly RaycastHit[] CachedHits = new RaycastHit[1];
 
         [RuntimeInitializeOnLoadMethod]
@@ -37,8 +37,8 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             if (input.GetInput(PlayerInput.DropItem) && inventory.equippedIndex != 1 && inventory.equipStatus.id == ItemEquipStatusId.Equipped
              && inventory.WithItemEquipped(out ItemComponent item))
-                ThrowItem(context, item, inventory);
-            HandlePickup(context, inventory);
+                DropActiveItem(context, item, inventory);
+            TryPickupItemEntity(context, inventory);
 
             ModifyEquipStatus(context, inventory, wantedItemIndex);
 
@@ -61,37 +61,44 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        private void HandlePickup(in SessionContext context, InventoryComponent inventory)
+        private void TryPickupItemEntity(in SessionContext context, InventoryComponent inventory)
         {
             if (context.player.Without<ServerTag>() || !context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)) return;
-            
+
             Ray ray = context.player.GetRayForPlayer();
             int count = Physics.RaycastNonAlloc(ray, CachedHits, m_MaxPickupDistance, m_ItemEntityMask);
-            if (count > 0 && CachedHits[0].collider.TryGetComponent(out ItemEntityModifierBehavior itemEntity))
+            if (count > 0 && CachedHits[0].collider.TryGetComponent(out ItemEntityModifierBehavior itemEntity)
+                          && AddItem(inventory, checked((byte) (itemEntity.id - 100)), out byte index))
             {
-                AddItem(inventory, checked((byte) (itemEntity.id - 100)));
-                var entities = context.sessionContainer.Require<EntityArrayElement>();
-                entities[itemEntity.Index].Clear();
+                ItemComponent item = inventory[index];
+                EntityContainer entity =  context.sessionContainer.Require<EntityArrayElement>()[itemEntity.Index];
+                var itemOnEntity = entity.Require<ItemComponent>();
+                item.ammoInMag.SetTo(itemOnEntity.ammoInMag);
+                item.ammoInReserve.SetTo(itemOnEntity.ammoInReserve);
+                entity.Clear();
             }
         }
 
-        private void ThrowItem(in SessionContext context, ItemComponent item, InventoryComponent inventory)
+        private void DropActiveItem(in SessionContext context, ItemComponent item, InventoryComponent inventory)
         {
             Container player = context.player;
             if (player.With<ServerTag>())
             {
                 Ray ray = player.GetRayForPlayer();
-                var modifier = (EntityModifierBehavior) context.session.EntityManager.ObtainNextModifier(context.sessionContainer, 100 + item.id);
+                (ModifierBehaviorBase modifier, Container entity) = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, 100 + item.id);
                 if (modifier is ItemEntityModifierBehavior itemEntityModifier)
                 {
+                    entity.Require<ItemComponent>().ammoInMag.SetTo(item.ammoInMag);
+                    entity.Require<ItemComponent>().ammoInReserve.SetTo(item.ammoInReserve);
                     modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.LookRotation(ray.direction));
                     Vector3 force = ray.direction * m_DropItemForce;
                     if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;
                     itemEntityModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
-                }   
+                }
             }
 
             // Could set status to request removal but then one tick passes
+            item.Clear();
             item.id.Value = ItemId.None;
             inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
             inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
@@ -107,7 +114,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                     if (arguments.Length > 1 && (byte.TryParse(arguments[1], out byte itemId) || ItemId.Names.TryGetReverse(arguments[1], out itemId)))
                     {
                         ushort count = arguments.Length > 2 && ushort.TryParse(arguments[2], out ushort parsedCount) ? parsedCount : (ushort) 1;
-                        AddItem(context.player.Require<InventoryComponent>(), itemId, count);
+                        AddItem(context.player.Require<InventoryComponent>(), itemId, out byte _, count);
                     }
                 }
         }
@@ -257,14 +264,14 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public static void AddItems(InventoryComponent inventory, params byte[] itemIds)
         {
-            foreach (byte itemId in itemIds) AddItem(inventory, itemId);
+            foreach (byte itemId in itemIds) AddItem(inventory, itemId, out byte _);
         }
 
-        public static bool AddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
+        public static bool AddItem(InventoryComponent inventory, byte itemId, out byte index, ushort count = 1)
         {
             bool isAnOpenSlot;
             if (ItemAssetLink.GetModifier(itemId) is ThrowableItemModifierBase &&
-                (isAnOpenSlot = FindItem(inventory, item => item.id == ItemId.None || item.id == itemId, out byte index))) // Try to stack throwables if possible
+                (isAnOpenSlot = FindItem(inventory, item => item.id == ItemId.None || item.id == itemId, out index))) // Try to stack throwables if possible
             {
                 ItemComponent itemInIndex = inventory[index];
                 bool addingToExisting = itemInIndex.id == itemId;
