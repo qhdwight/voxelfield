@@ -66,7 +66,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public override void Render(SessionBase session, Container player, bool isLocalPlayer)
         {
-            var modifierPrefab = (PlayerModifierDispatcherBehavior) session.PlayerManager.GetModifierPrefab(player.Require<IdProperty>());
+            var modifierPrefab = (PlayerModifierDispatcherBehavior) session.PlayerManager.GetModifierPrefab(player.Require<ByteIdProperty>());
             m_PrefabPlayerMovement = modifierPrefab.Movement;
 
             bool withHealth = player.With(out HealthProperty health),

@@ -284,7 +284,7 @@ namespace Voxelfield.Session.Mode
                 player.ZeroIfWith<HitMarkerComponent>();
                 player.ZeroIfWith<DamageNotifierComponent>();
                 player.ZeroIfWith<RespawnTimerProperty>();
-                player.Require<IdProperty>().Value = 1;
+                player.Require<ByteIdProperty>().Value = 1;
             }
             else base.SpawnPlayer(in context, begin);
         }

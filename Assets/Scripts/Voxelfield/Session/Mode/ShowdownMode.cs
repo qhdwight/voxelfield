@@ -98,7 +98,7 @@ namespace Voxelfield.Session.Mode
             if (sessionContext.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)
              && IsLookingAt(sessionContext.player, out CurePackageBehavior curePackage))
             {
-                cure = stage.curePackages[curePackage.Container.Require<IdProperty>()];
+                cure = stage.curePackages[curePackage.Container.Require<ByteIdProperty>()];
                 if (cure.isActive.WithValueEqualTo(true)) isInteracting = true;
             }
             if (isInteracting)
@@ -212,7 +212,7 @@ namespace Voxelfield.Session.Mode
             // Nerf damage while on the run
             Container inflictingPlayer = context.sessionContext.player;
             Vector3 velocity = inflictingPlayer.Require<MoveComponent>().velocity;
-            var modifierPrefab = (PlayerModifierDispatcherBehavior) context.sessionContext.session.PlayerManager.GetModifierPrefab(inflictingPlayer.Require<IdProperty>());
+            var modifierPrefab = (PlayerModifierDispatcherBehavior) context.sessionContext.session.PlayerManager.GetModifierPrefab(inflictingPlayer.Require<ByteIdProperty>());
             float ratio = 1.0f - Mathf.Clamp01(velocity.LateralMagnitude() / modifierPrefab.Movement.MaxSpeed);
             const float minimumRatio = 0.3f;
             ratio = minimumRatio + ratio * (1.0f - minimumRatio);

@@ -77,6 +77,7 @@ namespace Swihoni.Sessions
         protected BehaviorManagerBase(int count, string resourceFolder)
         {
             m_ModifierPrefabs = Resources.LoadAll<ModifierBehaviorBase>(resourceFolder)
+                                         .Where(modifier => modifier.id >= 0)
                                          .OrderBy(modifier => modifier.id).ToArray();
             m_ModifiersPool = m_ModifierPrefabs
                              .Select(prefabModifier => new Pool<ModifierBehaviorBase>(0, () =>
@@ -87,6 +88,7 @@ namespace Swihoni.Sessions
                                   return modifierInstance;
                               })).ToArray();
             m_VisualsPool = Resources.LoadAll<VisualBehaviorBase>(resourceFolder)
+                                     .Where(visual => visual.id >= 0)
                                      .OrderBy(visuals => visuals.id)
                                      .Select(prefabVisual => new Pool<VisualBehaviorBase>(0, () =>
                                       {
@@ -134,7 +136,7 @@ namespace Swihoni.Sessions
             for (var index = 0; index < array.Length; index++)
             {
                 var container = (Container) array.GetValue(index);
-                var idProperty = container.Require<IdProperty>();
+                var idProperty = container.Require<ByteIdProperty>();
                 if (idProperty != None) continue;
                 /* Found empty slot */
                 Setup(container);
@@ -147,14 +149,14 @@ namespace Swihoni.Sessions
                 ReturnModifierAtIndex(0);
                 var container = (Container) array.GetValue(0);
                 Setup(container);
-                container.Require<IdProperty>().Value = (byte) id;
+                container.Require<ByteIdProperty>().Value = (byte) id;
                 return ObtainModifierAtIndex(container, 0, id);
             }
         }
 
         public ModifierBehaviorBase GetModifierAtIndex(Container container, int index, out bool isNewlyObtained)
         {
-            var id = container.Require<IdProperty>();
+            var id = container.Require<ByteIdProperty>();
             if (id.WithoutValue || id == None)
             {
                 ReturnModifierAtIndex(index);
@@ -168,7 +170,7 @@ namespace Swihoni.Sessions
 
         public VisualBehaviorBase GetVisualAtIndex(Container container, int index)
         {
-            var id = container.Require<IdProperty>();
+            var id = container.Require<ByteIdProperty>();
             if (id.WithoutValue || id == None)
             {
                 ReturnVisualAtIndex(index);
@@ -210,7 +212,7 @@ namespace Swihoni.Sessions
             for (var index = 0; index < elements.Length; index++)
             {
                 var containerElement = (Container) elements.GetValue(index);
-                var id = containerElement.Require<IdProperty>();
+                var id = containerElement.Require<ByteIdProperty>();
                 if (id == None)
                     continue;
                 iterate(m_Modifiers[index], index, containerElement);
@@ -234,7 +236,7 @@ namespace Swihoni.Sessions
             for (var index = 0; index < array.Length; index++)
             {
                 var container = (Container) array.GetValue(index);
-                byte id = container.Require<IdProperty>();
+                byte id = container.Require<ByteIdProperty>();
                 if (id == None)
                 {
                     ReturnVisualAtIndex(index);

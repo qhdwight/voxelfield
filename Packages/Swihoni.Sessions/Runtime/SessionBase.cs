@@ -36,7 +36,7 @@ namespace Swihoni.Sessions
             },
             playerElements = new List<Type>
             {
-                typeof(HealthProperty), typeof(IdProperty), typeof(MoveComponent), typeof(FrozenProperty), typeof(InventoryComponent),
+                typeof(HealthProperty), typeof(ByteIdProperty), typeof(MoveComponent), typeof(FrozenProperty), typeof(InventoryComponent),
                 typeof(CameraComponent), typeof(RespawnTimerProperty),
                 typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameProperty)
             },

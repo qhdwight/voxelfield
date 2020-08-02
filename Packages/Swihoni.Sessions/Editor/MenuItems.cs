@@ -5,7 +5,7 @@ namespace Swihoni.Sessions.Editor
 {
     public static class MenuItems
     {
-        [MenuItem("Voxelfield/Save Default Config")]
+        [MenuItem("Session/Save Default Config")]
         public static void SaveDefault() => ConfigManagerBase.WriteDefaults();
     }
 }

@@ -14,6 +14,8 @@ namespace Swihoni.Sessions.Items
         private static ItemModifierBase[] _itemModifiers;
         private static Pool<ItemVisualBehavior>[] _itemVisualPools;
         private static ItemVisualBehavior[] _itemVisualPrefabs;
+        
+        public static IReadOnlyList<ItemModifierBase> ItemVisualPrefabs => _itemModifiers;
 
         [RuntimeInitializeOnLoadMethod]
         public static void Initialize()
@@ -22,7 +24,7 @@ namespace Swihoni.Sessions.Items
                                       .OrderBy(modifier => modifier.id).ToArray();
             _itemVisualPrefabs = Resources.LoadAll<GameObject>("Items")
                                           .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
-                                          .Where(visuals => visuals != null && visuals.Id != ItemId.None)
+                                          .Where(visuals => visuals != null && visuals.Id > 0)
                                           .OrderBy(visuals => visuals.Id).ToArray();
             _itemVisualPools = _itemVisualPrefabs
                               .Select(visualPrefab => new Pool<ItemVisualBehavior>(0, () =>

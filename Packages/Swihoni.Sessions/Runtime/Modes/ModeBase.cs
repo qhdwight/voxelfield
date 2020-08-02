@@ -96,7 +96,7 @@ namespace Swihoni.Sessions.Modes
             Container player = context.player;
             player.ZeroIfWith<FrozenProperty>();
             player.ZeroIfWith<StatsComponent>();
-            player.Require<IdProperty>().Value = 1;
+            player.Require<ByteIdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
