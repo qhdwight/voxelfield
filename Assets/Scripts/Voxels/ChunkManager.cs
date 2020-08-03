@@ -181,6 +181,13 @@ namespace Voxels
                 Random.InitState(worldPosition.GetHashCode());
                 TouchedChunks touched = existingTouched ?? TouchedChunks;
 
+                VoxelChange GetEvaluated(in VoxelChange originalChange, Chunk chunk, in Position3Int voxelChunkPosition, bool mergeOriginal = true)
+                {
+                    VoxelChange evaluatedChange = originalChange.revert.GetValueOrDefault() ? chunk.GetChangeFromMap(voxelChunkPosition, Map) : default;
+                    if (mergeOriginal) evaluatedChange.Merge(originalChange);
+                    return evaluatedChange;
+                }
+                
                 void SetEvaluatedVoxel(in VoxelChange originalChange, in VoxelChange evaluatedChange, Chunk chunk, in Position3Int voxelChunkPosition)
                 {
                     originalChange.undo?.Add(chunk.GetVoxelNoCheck(voxelChunkPosition));
@@ -197,7 +204,8 @@ namespace Voxels
                         if (!chunk) return;
 
                         Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(worldPosition, chunk);
-                        SetEvaluatedVoxel(change, change, chunk, voxelChunkPosition);
+                        VoxelChange evaluatedChange = GetEvaluated(change, chunk, voxelChunkPosition);
+                        SetEvaluatedVoxel(change, evaluatedChange, chunk, voxelChunkPosition);
                         break;
                     }
                     case VoxelVolumeForm.Prism:
@@ -213,7 +221,8 @@ namespace Voxels
 
                             Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
 
-                            VoxelChange evaluatedChange = change;
+                            /* Evaluated Change */
+                            VoxelChange evaluatedChange = GetEvaluated(change, chunk, voxelChunkPosition);
                             evaluatedChange.form = VoxelVolumeForm.Single;
                             SetEvaluatedVoxel( change, evaluatedChange, chunk, voxelChunkPosition);
                         }
@@ -249,7 +258,8 @@ namespace Voxels
                             
                             if (!overrideBreakable && voxel.IsUnbreakable) continue;
 
-                            VoxelChange evaluatedChange = default;
+                            /* Evaluated Change */
+                            VoxelChange evaluatedChange = GetEvaluated(change, chunk, voxelChunkPosition, false);
                             if (isAdditive)
                             {
                                 newDensity = checked((byte) (byte.MaxValue - newDensity));
@@ -269,11 +279,8 @@ namespace Voxels
 
                             if (isInside)
                             {
-                                if (!isAdditive)
-                                {
-                                    if (change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
-                                        evaluatedChange.hasBlock = false;
-                                }
+                                if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
+                                    evaluatedChange.hasBlock = false;
                                 if (change.color is Color32 color)
                                     evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
                                 if (change.texture is byte texture)

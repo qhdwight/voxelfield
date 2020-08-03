@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Collections;
@@ -6,6 +7,7 @@ using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
 using UnityEngine.Playables;
+using Object = UnityEngine.Object;
 
 namespace Swihoni.Sessions.Items
 {
@@ -58,7 +60,7 @@ namespace Swihoni.Sessions.Items
             {
                 return _itemModifiers[itemId - 1];
             }
-            catch (KeyNotFoundException)
+            catch (Exception)
             {
                 Debug.LogError($"No Item ID registered for {itemId}. Check your Resources folder to make sure you have the proper ID set. All IDs must be ascending with no skipping.");
                 throw;

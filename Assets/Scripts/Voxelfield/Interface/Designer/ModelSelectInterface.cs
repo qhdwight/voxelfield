@@ -3,6 +3,8 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Interfaces;
+using Swihoni.Sessions.Items.Modifiers;
+using Swihoni.Sessions.Player.Components;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,8 +31,8 @@ namespace Voxelfield.Interface.Designer
         }
 
         public override void Render(SessionBase session, Container sessionContainer)
-            => SetInterfaceActive(NoInterrupting && sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer &&
-                                  InputProvider.GetInput(InputType.OpenModelSelect));
+            => SetInterfaceActive(NoInterrupting && HasItemEquipped(session, sessionContainer, ModeIdProperty.Designer, ItemId.ModelWand)
+                                                 && InputProvider.GetInput(InputType.OpenContext));
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {

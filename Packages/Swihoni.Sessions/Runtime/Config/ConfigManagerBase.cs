@@ -210,7 +210,7 @@ namespace Swihoni.Sessions.Config
             }
         }
 
-        private static string GetConfigFile()
+        public static string GetConfigFile()
         {
             string parentFolder = Directory.GetParent(Application.dataPath).FullName;
             if (Application.platform == RuntimePlatform.OSXPlayer) parentFolder = Directory.GetParent(parentFolder).FullName;

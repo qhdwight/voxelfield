@@ -47,7 +47,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (isOnServer && context.player.WithPropertyWithValue(out FlashProperty flash))
                 flash.Value -= context.durationUs / 2_000_000f;
 
-            if (PlayerModifierBehaviorBase.WithStringCommands(context, out IEnumerable<string[]> stringCommands))
+            if (PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> stringCommands))
                 foreach (string[] stringCommand in stringCommands)
                     ConfigManagerBase.TryHandleArguments(stringCommand);
 
@@ -99,7 +99,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         /// </summary>
         public virtual void ModifyChecked(in SessionContext context) => SynchronizeBehavior(context);
 
-        public static bool WithStringCommands(in SessionContext context, out IEnumerable<string[]> commands)
+        public static bool WithServerStringCommands(in SessionContext context, out IEnumerable<string[]> commands)
         {
             if (context.player.Without<ServerTag>() || context.commands.Without(out StringCommandProperty command) || !command.AsNewString(out string stringCommand))
             {

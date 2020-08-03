@@ -46,8 +46,7 @@ namespace Swihoni.Sessions.Config
                           AutocompleteConsole = 104,
                           PreviousConsoleCommand = 105,
                           NextConsoleCommand = 106,
-                          OpenModelSelect = 107,
-                          OpenVoxelSelect = 108,
+                          OpenContext = 107,
                           Buy = 109,
                           TogglePauseMenu = 110,
                           ToggleChat = 111;
@@ -133,6 +132,7 @@ namespace Swihoni.Sessions.Config
 #else
                 [PlayerInput.UseThree] = KeyCode.Mouse2,
 #endif
+                [PlayerInput.UseFour] = KeyCode.Mouse3,
                 [PlayerInput.Reload] = KeyCode.R,
                 [PlayerInput.ItemOne] = KeyCode.Alpha1,
                 [PlayerInput.ItemTwo] = KeyCode.Alpha2,
@@ -156,8 +156,7 @@ namespace Swihoni.Sessions.Config
                 [PlayerInput.Fly] = KeyCode.F,
                 [InputType.Buy] = KeyCode.B,
                 [PlayerInput.Throw] = KeyCode.G,
-                [InputType.OpenModelSelect] = KeyCode.M,
-                [InputType.OpenVoxelSelect] = KeyCode.V,
+                [InputType.OpenContext] = KeyCode.Tab,
                 [InputType.TogglePauseMenu] = KeyCode.Escape,
                 [InputType.ToggleChat] = KeyCode.T,
                 [PlayerInput.Respawn] = KeyCode.Return

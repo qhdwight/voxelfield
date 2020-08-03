@@ -158,7 +158,7 @@ namespace Voxelfield.Item
             //     move.position.Value += new Vector3 {y = height - hit.distance};
         }
 
-        protected override bool CanTernaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory)
+        protected override bool CanTertiaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory)
         {
             if (!base.CanPrimaryUse(item, inventory) || WithoutHit(context, m_EditDistance, out RaycastHit hit))
             {
@@ -175,7 +175,7 @@ namespace Voxelfield.Item
             return true;
         }
 
-        protected override void TernaryUse(in SessionContext context, ItemComponent item)
+        protected override void TertiaryUse(in SessionContext context, ItemComponent item)
         {
             if (!(m_CachedPosition is Position3Int position) || !(context.session.Injector is ServerInjector server)) return;
 

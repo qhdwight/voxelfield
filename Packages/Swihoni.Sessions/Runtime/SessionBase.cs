@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
@@ -42,7 +44,8 @@ namespace Swihoni.Sessions
             },
             commandElements = new List<Type>
             {
-                typeof(InputFlagProperty), typeof(WantedItemIndexProperty), typeof(MouseComponent), typeof(WantedTeamProperty),
+                typeof(InputFlagProperty), typeof(MouseComponent),
+                typeof(WantedTeamProperty), typeof(WantedItemIndexProperty),
                 typeof(ChatEntryProperty), typeof(StringCommandProperty)
             }
         };
@@ -485,5 +488,10 @@ namespace Swihoni.Sessions
             => move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
 
         public static string ToSnakeCase(this string @string) => string.Concat(@string.Select((c, i) => i > 0 && char.IsUpper(c) ? $"_{c}" : $"{c}")).ToLower();
+
+        public static DualDictionary<T, string> GetNameMap<T>(this Type type)
+            => new DualDictionary<T, string>(type
+                                            .GetFields(BindingFlags.Static | BindingFlags.Public)
+                                            .ToDictionary(field => (T) field.GetValue(null), field => field.Name.ToSnakeCase()));
     }
 }

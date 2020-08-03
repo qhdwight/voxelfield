@@ -125,7 +125,13 @@ namespace Voxelfield.Session
     [Serializable, SingleTick]
     public class WantedItemComponent : ComponentBase
     {
-        public ByteProperty id, index;
+        public ByteProperty id;
+    }
+
+    [Serializable]
+    public class WantedItemIdsComponent : ArrayElement<ByteProperty>
+    {
+        public WantedItemIdsComponent() : base(InventoryComponent.ItemsCount) { }
     }
 
     [Serializable, OnlyServerTrusted, ModeElement]
@@ -154,7 +160,7 @@ namespace Voxelfield.Session
             SessionElements = SessionElements.NewStandardSessionElements();
             SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent),
                                                      typeof(BrokeVoxelTickProperty));
-            SessionElements.commandElements.AppendAll(typeof(WantedItemComponent));
+            SessionElements.commandElements.AppendAll(typeof(WantedItemComponent), typeof(WantedItemIdsComponent));
             SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(OrderedVoxelChangesProperty),
                                                typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent), typeof(DualScoresComponent));
         }

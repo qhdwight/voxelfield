@@ -13,7 +13,7 @@ namespace Voxelfield.Interface
     {
         private LoadOutButton[][] m_LoadOutButtons;
 
-        public WantedItemComponent WantedItem { get; set; } = new WantedItemComponent();
+        public WantedItemIdsComponent WantedItems { get; set; } = new WantedItemIdsComponent();
 
         private void Start()
         {
@@ -26,11 +26,17 @@ namespace Voxelfield.Interface
                                                                                           if (hasComponent)
                                                                                               button.OnClick.AddListener(() =>
                                                                                               {
-                                                                                                  WantedItem.index.Value = (byte) (slotIndex + 1);
-                                                                                                  WantedItem.id.Value = button.ItemId;
+                                                                                                  var index = (byte) (slotIndex + 1);
+                                                                                                  WantedItems[index].Value = button.ItemId;
                                                                                               });
                                                                                           return hasComponent;
                                                                                       }).ToArray()).ToArray();
+        }
+
+        public override void SessionStateChange(bool isActive)
+        {
+            base.SessionStateChange(isActive);
+            if (!isActive) WantedItems.Clear();
         }
 
         internal void Render(InventoryComponent inventory)
@@ -48,11 +54,6 @@ namespace Voxelfield.Interface
         public override void Render(SessionBase session, Container sessionContainer) {  }
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
-        {
-            if (WantedItem.id.WithoutValue || WantedItem.index.WithoutValue) return;
-
-            commands.Require<WantedItemComponent>().SetTo(WantedItem);
-            WantedItem.Clear();
-        }
+            => commands.Require<WantedItemIdsComponent>().SetTo(WantedItems);
     }
 }

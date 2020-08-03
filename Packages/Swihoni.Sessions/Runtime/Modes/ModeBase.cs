@@ -154,6 +154,16 @@ namespace Swihoni.Sessions.Modes
             player.ZeroIfWith<HealthProperty>();
             player.ClearIfWith<HitMarkerComponent>();
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
+            if (player.With(out InventoryComponent inventory))
+            {
+                for (var i = 1; i <= inventory.Count; i++)
+                {
+                    ItemComponent item = inventory[i];
+                    item.status.Zero();
+                }
+                inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                inventory.equipStatus.elapsedUs.Value = 0u;
+            }
         }
 
         public virtual void Render(SessionBase session, Container sessionContainer) => session.Injector.OnRenderMode(sessionContainer);
@@ -180,7 +190,7 @@ namespace Swihoni.Sessions.Modes
                 SpawnPlayer(context);
             }
 
-            if (!PlayerModifierBehaviorBase.WithStringCommands(context, out IEnumerable<string[]> commands)) return;
+            if (!PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> commands)) return;
             foreach (string[] arguments in commands)
                 if (arguments[0] == "restart_mode")
                 {

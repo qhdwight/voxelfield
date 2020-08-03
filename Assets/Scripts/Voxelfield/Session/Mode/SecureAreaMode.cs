@@ -237,7 +237,7 @@ namespace Voxelfield.Session.Mode
             if (isBuyTime) BuyingMode.HandleBuying(this, player, context.commands);
             player.Require<FrozenProperty>().Value = isBuyTime;
 
-            if (PlayerModifierBehaviorBase.WithStringCommands(context, out IEnumerable<string[]> stringCommands))
+            if (PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> stringCommands))
             {
                 foreach (string[] arguments in stringCommands)
                     switch (arguments[0])

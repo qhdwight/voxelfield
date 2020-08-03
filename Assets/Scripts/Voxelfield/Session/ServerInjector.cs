@@ -63,7 +63,7 @@ namespace Voxelfield.Session
 
         public void ApplyVoxelChanges(VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
         {
-            // ReSharper disable once PossibleInvalidOperationException
+            if (!change.position.HasValue) throw new ArgumentException("Voxel change does not have position!");
             if (MapManager.Singleton.Models.ContainsKey(change.position.Value)) return;
 
             var changed = Session.GetLatestSession().Require<OrderedVoxelChangesProperty>();

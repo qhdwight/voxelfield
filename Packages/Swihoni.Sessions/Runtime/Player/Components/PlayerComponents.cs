@@ -160,9 +160,11 @@ namespace Swihoni.Sessions.Player.Components
     [Serializable, ModeElement, ClientChecked, CustomInterpolation]
     public class InventoryComponent : ComponentBase
     {
+        public const int ItemsCount = 10;
+        
         public ByteProperty equippedIndex, previousEquippedIndex;
         public ByteStatusComponent equipStatus, adsStatus;
-        public ArrayElement<ItemComponent> items = new ArrayElement<ItemComponent>(10);
+        public ArrayElement<ItemComponent> items = new ArrayElement<ItemComponent>(ItemsCount);
 
         [ClientNonChecked] public TimeUsProperty tracerTimeUs;
         [ClientNonChecked] public VectorProperty tracerStart, tracerEnd;

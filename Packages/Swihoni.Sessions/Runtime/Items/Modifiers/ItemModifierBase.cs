@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using System.Reflection;
 using Swihoni.Collections;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
@@ -13,7 +11,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           PrimaryUsing = 1,
                           SecondaryUsing = 2,
                           TernaryUsing = 3,
-                          Last = TernaryUsing,
+                          QuaternaryUsing = 4,
+                          Last = QuaternaryUsing,
                           RequestRemoval = byte.MaxValue;
     }
 
@@ -46,11 +45,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                           ImpactGrenade = 16,
                           SandBomb = 17;
 
-        public static DualDictionary<byte, string> Names { get; }
-
-        static ItemId() => Names = new DualDictionary<byte, string>(typeof(ItemId)
-                                                                   .GetFields(BindingFlags.Static | BindingFlags.Public)
-                                                                   .ToDictionary(field => (byte) field.GetValue(null), field => field.Name.ToSnakeCase()));
+        public static DualDictionary<byte, string> Names { get; } = typeof(ItemId).GetNameMap<byte>();
     }
 
     [Serializable]
@@ -81,8 +76,10 @@ namespace Swihoni.Sessions.Items.Modifiers
                     StartStatus(context, inventory, item, GetUseStatus(inputs));
                 else if (inputs.GetInput(PlayerInput.UseTwo) && CanSecondaryUse(context, item, inventory))
                     StartStatus(context, inventory, item, ItemStatusId.SecondaryUsing);
-                else if (inputs.GetInput(PlayerInput.UseThree) && CanTernaryUse(context, item, inventory))
+                else if (inputs.GetInput(PlayerInput.UseThree) && CanTertiaryUse(context, item, inventory))
                     StartStatus(context, inventory, item, ItemStatusId.TernaryUsing);
+                else if (inputs.GetInput(PlayerInput.UseFour) && CanQuaternaryUse(context, item, inventory))
+                    StartStatus(context, inventory, item, ItemStatusId.QuaternaryUsing);
             }
             ModifyStatus(context, item, inventory, inputs);
         }
@@ -132,7 +129,10 @@ namespace Swihoni.Sessions.Items.Modifiers
                     SecondaryUse(context);
                     break;
                 case ItemStatusId.TernaryUsing:
-                    TernaryUse(context, item);
+                    TertiaryUse(context, item);
+                    break;
+                case ItemStatusId.QuaternaryUsing:
+                    QuaternaryUse(context);
                     break;
             }
         }
@@ -154,21 +154,26 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected virtual byte GetUseStatus(InputFlagProperty input) => ItemStatusId.PrimaryUsing;
 
-        protected virtual bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false) =>
-            (item.status.id != ItemStatusId.PrimaryUsing || justFinishedUse)
-         && item.status.id != ItemStatusId.SecondaryUsing
-         && item.status.id != ItemStatusId.TernaryUsing
-         && inventory.equipStatus.id == ItemEquipStatusId.Equipped;
+        protected virtual bool CanPrimaryUse(ItemComponent item, InventoryComponent inventory, bool justFinishedUse = false)
+            => (item.status.id != ItemStatusId.PrimaryUsing || justFinishedUse)
+            && item.status.id != ItemStatusId.SecondaryUsing
+            && item.status.id != ItemStatusId.TernaryUsing
+            && item.status.id != ItemStatusId.QuaternaryUsing
+            && inventory.equipStatus.id == ItemEquipStatusId.Equipped;
 
         protected virtual bool CanSecondaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory) => false;
 
-        protected virtual bool CanTernaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory) => false;
+        protected virtual bool CanTertiaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory) => false;
 
-        protected virtual void SecondaryUse(in SessionContext context) { }
+        protected virtual bool CanQuaternaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory) => false;
 
         protected virtual void PrimaryUse(in SessionContext context, InventoryComponent inventory, ItemComponent item) { }
 
-        protected virtual void TernaryUse(in SessionContext context, ItemComponent item) { }
+        protected virtual void SecondaryUse(in SessionContext context) { }
+
+        protected virtual void TertiaryUse(in SessionContext context, ItemComponent item) { }
+
+        protected virtual void QuaternaryUse(in SessionContext context) { }
 
         public void ModifyCommands(SessionBase session, InputFlagProperty commandsToModify) { }
 

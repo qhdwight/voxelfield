@@ -6,6 +6,7 @@
       <Path>../../../Library/Unity/cache/packages/packages.unity.com/com.unity.test-framework@1.1.13</Path>
     </attachedFolders>
     <explicitIncludes>
+      <Path>Library/PackageCache/com.unity.ext.nunit@1.0.0</Path>
       <Path>Library/PackageCache/com.unity.ide.rider@2.0.5</Path>
       <Path>Library/PackageCache/com.unity.ide.vscode@1.2.1</Path>
       <Path>Library/PackageCache/com.unity.postprocessing@2.3.0</Path>

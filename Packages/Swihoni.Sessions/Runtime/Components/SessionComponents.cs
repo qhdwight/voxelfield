@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using Swihoni.Collections;
 using Swihoni.Components;
+using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Util;
 
 namespace Swihoni.Sessions.Components
@@ -156,9 +159,23 @@ namespace Swihoni.Sessions.Components
     public class ModeIdProperty : ByteProperty
     {
         public const byte Deathmatch = 0, Showdown = 1, Ctf = 2, SecureArea = 3, Designer = 4;
+        public static DualDictionary<byte, string> Names { get; } = typeof(ModeIdProperty).GetNameMap<byte>();
 
         public ModeIdProperty(byte value) : base(value) { }
         public ModeIdProperty() { }
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Names.GetForward(Value));
+
+        public override void ParseValue(string stringValue)
+        {
+            try
+            {
+                base.ParseValue(stringValue);
+            }
+            catch (Exception)
+            {
+                Value = Names.GetReverse(stringValue);
+            }
+        }
     }
 
     [Serializable]

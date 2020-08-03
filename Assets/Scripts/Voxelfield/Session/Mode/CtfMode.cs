@@ -86,10 +86,13 @@ namespace Voxelfield.Session.Mode
 
             if (context.player.Require<HealthProperty>().IsAlive) return;
 
-            var wantedItem = context.commands.Require<WantedItemComponent>();
-            if (wantedItem.id.WithValue && wantedItem.index.WithValue)
+            var wantedItems = context.commands.Require<WantedItemIdsComponent>();
+            var inventory = context.player.Require<InventoryComponent>();
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (var i = 2; i < wantedItems.Length; i++)
             {
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(context.player.Require<InventoryComponent>(), wantedItem.id, wantedItem.index);
+                byte wantedId = wantedItems[i].Else();
+                if (inventory[i].id != wantedId) PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, wantedId, i);
             }
         }
 
@@ -217,7 +220,7 @@ namespace Voxelfield.Session.Mode
             if (player.With(out HealthProperty health)) health.Value = begin ? (byte) 0 : ConfigManagerBase.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
             if (player.With(out InventoryComponent inventory))
-            {    
+            {
                 if (begin) inventory.Zero();
                 PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
                 PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);

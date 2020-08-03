@@ -35,9 +35,9 @@ namespace Swihoni.Sessions.Player.Modifiers
             var input = context.commands.Require<InputFlagProperty>();
             var wantedItemIndex = context.commands.Require<WantedItemIndexProperty>();
 
-            if (input.GetInput(PlayerInput.DropItem) && inventory.equippedIndex != 1 && inventory.equipStatus.id == ItemEquipStatusId.Equipped
-             && inventory.WithItemEquipped(out ItemComponent item))
-                DropActiveItem(context, item, inventory);
+            if (input.GetInput(PlayerInput.DropItem) && inventory.equipStatus.id == ItemEquipStatusId.Equipped
+                                                     && inventory.WithItemEquipped(out ItemComponent item) && inventory.equippedIndex != 1)
+                ThrowActiveItem(context, item, inventory);
             TryPickupItemEntity(context, inventory);
 
             ModifyEquipStatus(context, inventory, wantedItemIndex);
@@ -53,12 +53,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             itemModifier.ModifyChecked(context, equippedItem, inventory, input);
 
             if (equippedItem.status.id == ItemStatusId.RequestRemoval)
-            {
-                equippedItem.id.Value = ItemId.None;
-                inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
-                inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
-                inventory.equipStatus.elapsedUs.Value = 0u;
-            }
+                SetItemAtIndex(inventory, ItemId.None, inventory.equippedIndex);
         }
 
         private void TryPickupItemEntity(in SessionContext context, InventoryComponent inventory)
@@ -71,7 +66,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                           && AddItem(inventory, checked((byte) (itemEntity.id - 100)), out byte index))
             {
                 ItemComponent item = inventory[index];
-                EntityContainer entity =  context.sessionContainer.Require<EntityArrayElement>()[itemEntity.Index];
+                EntityContainer entity = context.sessionContainer.Require<EntityArrayElement>()[itemEntity.Index];
                 var itemOnEntity = entity.Require<ItemComponent>();
                 item.ammoInMag.SetTo(itemOnEntity.ammoInMag);
                 item.ammoInReserve.SetTo(itemOnEntity.ammoInReserve);
@@ -80,7 +75,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        private void DropActiveItem(in SessionContext context, ItemComponent item, InventoryComponent inventory)
+        private void ThrowActiveItem(in SessionContext context, ItemComponent item, InventoryComponent inventory)
         {
             Container player = context.player;
             if (player.With<ServerTag>())
@@ -100,16 +95,12 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
 
             // Could set status to request removal but then one tick passes
-            item.Clear();
-            item.id.Value = ItemId.None;
-            inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
-            inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
-            inventory.equipStatus.elapsedUs.Value = 0u;
+            SetItemAtIndex(inventory, ItemId.None, inventory.equippedIndex);
         }
 
         private static void TryExecuteCommands(in SessionContext context)
         {
-            if (!WithStringCommands(context, out IEnumerable<string[]> commands)) return;
+            if (!WithServerStringCommands(context, out IEnumerable<string[]> commands)) return;
             foreach (string[] arguments in commands)
                 if (arguments[0] == "give_item" && ConfigManagerBase.Active.allowCheats)
                 {
@@ -215,14 +206,17 @@ namespace Swihoni.Sessions.Player.Modifiers
         public override void ModifyCommands(SessionBase session, Container commands, int playerId)
         {
             if (commands.Without(out InputFlagProperty inputs)) return;
-            inputs.SetInput(PlayerInput.UseOne, InputProvider.GetInput(PlayerInput.UseOne));
-            inputs.SetInput(PlayerInput.UseTwo, InputProvider.GetInput(PlayerInput.UseTwo));
-            inputs.SetInput(PlayerInput.UseThree, InputProvider.GetInput(PlayerInput.UseThree));
-            inputs.SetInput(PlayerInput.Reload, InputProvider.GetInput(PlayerInput.Reload));
-            inputs.SetInput(PlayerInput.Fly, InputProvider.GetInput(PlayerInput.Fly));
-            inputs.SetInput(PlayerInput.Ads, InputProvider.GetInput(PlayerInput.Ads));
-            inputs.SetInput(PlayerInput.Throw, InputProvider.GetInput(PlayerInput.Throw));
-            inputs.SetInput(PlayerInput.DropItem, InputProvider.GetInput(PlayerInput.DropItem));
+            
+            void SetInput(byte id) => inputs.SetInput(id, InputProvider.GetInput(id));
+            SetInput(PlayerInput.UseOne);
+            SetInput(PlayerInput.UseTwo);
+            SetInput(PlayerInput.UseThree);
+            SetInput(PlayerInput.UseFour);
+            SetInput(PlayerInput.Reload);
+            SetInput(PlayerInput.Fly);
+            SetInput(PlayerInput.Ads);
+            SetInput(PlayerInput.Throw);
+            SetInput(PlayerInput.DropItem);
             if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
             if (InputProvider.GetInput(PlayerInput.ItemOne)) itemIndex.Value = 1;
             else if (InputProvider.GetInput(PlayerInput.ItemTwo)) itemIndex.Value = 2;
@@ -301,17 +295,19 @@ namespace Swihoni.Sessions.Player.Modifiers
         public static void SetItemAtIndex(InventoryComponent inventory, byte itemId, int index, ushort count = 1)
         {
             ItemComponent item = inventory[index];
-            item.id.Value = itemId;
             if (itemId == ItemId.None)
             {
+                item.Clear();
+                item.id.Value = ItemId.None;
                 if (inventory.equippedIndex == index)
                 {
                     inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
-                    inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                    inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
                     inventory.equipStatus.elapsedUs.Value = 0u;
                 }
                 return;
             }
+            item.id.Value = itemId;
             item.status.id.Value = ItemStatusId.Idle;
             item.status.elapsedUs.Value = 0u;
             ItemModifierBase itemModifier = ItemAssetLink.GetModifier(itemId);
@@ -325,7 +321,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (inventory.HasNoItemEquipped)
             {
                 inventory.equippedIndex.Value = FindReplacement(inventory, out byte replacementIndex) ? replacementIndex : NoneIndex;
-                inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                inventory.equipStatus.id.Value = inventory.HasItemEquipped ? ItemEquipStatusId.Equipping : ItemEquipStatusId.Unequipped;
                 inventory.equipStatus.elapsedUs.Value = 0u;
             }
             else if (inventory.equippedIndex == index)

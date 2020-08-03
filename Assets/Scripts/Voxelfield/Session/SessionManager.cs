@@ -16,6 +16,7 @@ using Swihoni.Util;
 using UnityEngine;
 using Voxels;
 using Voxels.Map;
+using static Swihoni.Sessions.Config.ConsoleCommandExecutor;
 #if UNITY_EDITOR
 using System.IO;
 using UnityEditor;
@@ -49,19 +50,25 @@ namespace Voxelfield.Session
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
-            ConsoleCommandExecutor.SetCommand("host", arguments => StartHost());
-            ConsoleCommandExecutor.SetCommand("edit", arguments => StartEdit(arguments));
-            ConsoleCommandExecutor.SetCommand("save", arguments =>
+            SetCommand("host", arguments => StartHost());
+            SetCommand("edit", arguments => StartEdit(arguments));
+            SetCommand("save", arguments =>
             {
                 string newFile = arguments.Length > 1 ? arguments[1] : null;
                 if (newFile != null)
-                {
                     SessionBase.SessionEnumerable.First().GetLatestSession().Require<VoxelMapNameProperty>().SetTo(newFile);
-                }
                 MapManager.Singleton.SaveCurrentMap(newFile);
             });
-            ConsoleCommandExecutor.SetCommand("serve", arguments => StartServer(DefaultEndPoint));
-            ConsoleCommandExecutor.SetCommand("connect", arguments =>
+            SetCommand("map_remove_singles", arguments =>
+            {
+                OrderedVoxelChangesProperty changes = MapManager.Singleton.Map.voxelChanges, clone = changes.Clone();
+                changes.Clear();
+                foreach (VoxelChange voxel in clone.List)
+                    if (voxel.form != VoxelVolumeForm.Single)
+                        changes.Add(voxel);
+            });
+            SetCommand("serve", arguments => StartServer(DefaultEndPoint));
+            SetCommand("connect", arguments =>
             {
                 try
                 {
@@ -80,30 +87,30 @@ namespace Voxelfield.Session
                 }
             });
 #if ENABLE_MONO
-            ConsoleCommandExecutor.SetCommand("wsl_connect",
-                                              arguments => ConsoleCommandExecutor.ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
+            SetCommand("wsl_connect",
+                       arguments => ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
 #endif
-            ConsoleCommandExecutor.SetCommand("online_quick_play", arguments => GameLiftClientManager.QuickPlay());
-            ConsoleCommandExecutor.SetCommand("online_start_new", arguments => GameLiftClientManager.StartNew());
-            ConsoleCommandExecutor.SetCommand("disconnect", arguments => DisconnectAll());
+            SetCommand("online_quick_play", arguments => GameLiftClientManager.QuickPlay());
+            SetCommand("online_start_new", arguments => GameLiftClientManager.StartNew());
+            SetCommand("disconnect", arguments => DisconnectAll());
 #if UNITY_EDITOR
-            ConsoleCommandExecutor.SetCommand("disconnect_client", arguments => SessionBase.SessionEnumerable.First(session => session is Client).Stop());
+            SetCommand("disconnect_client", arguments => SessionBase.SessionEnumerable.First(session => session is Client).Stop());
 #endif
-            ConsoleCommandExecutor.SetCommand("update_chunks", arguments =>
+            SetCommand("update_chunks", arguments =>
             {
                 foreach (Chunk chunk in ChunkManager.Singleton.Chunks.Values)
                     chunk.UpdateAndApply();
             });
-            ConsoleCommandExecutor.SetCommand("switch_teams", arguments =>
+            SetCommand("switch_teams", arguments =>
             {
                 if (arguments.Length > 1 && byte.TryParse(arguments[1], out byte team))
                     SessionBase.SessionEnumerable.First().GetLocalCommands().Require<WantedTeamProperty>().Value = team;
             });
 
-            ConsoleCommandExecutor.SetCommand("rollback_override", arguments => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(arguments[1]));
-            ConsoleCommandExecutor.SetCommand("open_log", arguments => Application.OpenURL($"file://{Application.consoleLogPath}"));
+            SetCommand("rollback_override", arguments => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(arguments[1]));
+            SetCommand("open_log", arguments => Application.OpenURL($"file://{Application.consoleLogPath}"));
 
-            ConsoleCommandExecutor.SetCommand("steam_status", arguments =>
+            SetCommand("steam_status", arguments =>
             {
                 if (SteamClient.IsValid) Debug.Log($"Logged in as {SteamClient.Name}, ID: {SteamClient.SteamId}");
                 else Debug.LogWarning("Not connected to steam");

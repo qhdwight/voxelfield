@@ -1,4 +1,7 @@
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Items.Modifiers;
+using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
 
@@ -26,6 +29,12 @@ namespace Swihoni.Sessions.Interfaces
         {
             if (m_IsDuringGame && !isActive) SetInterfaceActive(false);
         }
+
+        protected static bool HasItemEquipped(SessionBase session, Container sessionContainer, byte modeId, byte itemId)
+            => sessionContainer.Require<ModeIdProperty>() == modeId
+            && session.IsValidLocalPlayer(sessionContainer, out Container localPlayer)
+            && localPlayer.Require<InventoryComponent>().WithItemEquipped(out ItemComponent item)
+            && item.id == itemId;
 
         protected bool NoInterrupting => !SessionBase.InterruptingInterface || SessionBase.InterruptingInterface == this;
     }
