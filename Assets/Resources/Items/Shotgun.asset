@@ -24,6 +24,8 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 0
     isPersistent: 0
+  - durationUs: 0
+    isPersistent: 0
   - durationUs: 2000000
     isPersistent: 0
   - durationUs: 2000000

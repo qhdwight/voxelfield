@@ -196,7 +196,7 @@ namespace Swihoni.Sessions.Config
 
         public static void OnConfigUpdated(PropertyBase property, ConfigAttribute config)
         {
-            if (config.Type == ConfigType.Client) WriteActive();
+            WriteActive();
             config.Update();
         }
 

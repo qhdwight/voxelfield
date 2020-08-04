@@ -50,8 +50,8 @@ namespace Voxelfield.Item
             };
             server.ApplyVoxelChanges(change);
         }
-        
-        protected bool WithoutBreakableVoxel(in Position3Int position, out Voxel voxel)
+
+        public bool WithoutBreakableVoxel(in Position3Int position, out Voxel voxel)
         {
             Voxel? _voxel = ChunkManager.Singleton.GetVoxel(position);
             voxel = _voxel ?? default;
@@ -66,7 +66,7 @@ namespace Voxelfield.Item
             return withoutHit;
         }
 
-        protected bool WithoutClientHit(in SessionContext context, float distance, out RaycastHit hit)
+        public bool WithoutClientHit(in SessionContext context, float distance, out RaycastHit hit)
         {
             Container player = context.player;
             if (player.With<ServerTag>() && player.Without<HostTag>())
@@ -78,6 +78,20 @@ namespace Voxelfield.Item
             bool withoutHit = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask) == 0;
             hit = RaycastHits[0];
             return withoutHit;
+        }
+        
+        protected void PickVoxel(in SessionContext context)
+        {
+            if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)) return;
+
+            var position = (Position3Int) (hit.point - hit.normal * 0.1f);
+            if (WithoutBreakableVoxel(position, out Voxel voxel)) return;
+
+            var designer = context.session.GetLocalCommands().Require<DesignerPlayerComponent>();
+            VoxelChange pickedChange = default;
+            pickedChange.color = voxel.color;
+            pickedChange.texture = voxel.texture;
+            designer.selectedVoxel.Value = pickedChange;
         }
 
         private Position3Int? m_CachedPosition; // Guaranteed set by can use and tested in actual use 

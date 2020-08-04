@@ -15,11 +15,13 @@ namespace Voxels
 
     public enum MapLoadingStage
     {
+        Waiting,
         CleaningUp,
         SettingUp,
         Generating,
         UpdatingMesh,
-        Completed
+        Completed,
+        Failed
     }
 
     public struct MapProgressInfo
@@ -46,18 +48,7 @@ namespace Voxels
         public int ChunkSize => m_ChunkSize;
         public MapContainer Map { get; private set; }
         public Dictionary<Position3Int, Chunk> Chunks { get; } = new Dictionary<Position3Int, Chunk>();
-        private MapProgressInfo m_Progress = new MapProgressInfo {stage = MapLoadingStage.Completed};
-        public MapProgressInfo ProgressInfo
-        {
-            get => m_Progress;
-            private set
-            {
-                ProgressCallback?.Invoke(value);
-                m_Progress = value;
-            }
-        }
-
-        public MapProgressCallback ProgressCallback { get; set; }
+        public MapProgressInfo ProgressInfo { get; set; } = new MapProgressInfo {stage = MapLoadingStage.Completed};
 
         public IEnumerator LoadMap(MapContainer map)
         {
@@ -86,8 +77,7 @@ namespace Voxels
             {
                 DecommissionChunkInPosition(chunkPosition);
                 progress += 1.0f / commissionedChunks;
-                var progressInfo = new MapProgressInfo {stage = MapLoadingStage.CleaningUp, progress = progress};
-                ProgressCallback?.Invoke(progressInfo);
+                ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.CleaningUp, progress = progress};
                 yield return null;
             }
         }
@@ -144,9 +134,10 @@ namespace Voxels
         /// </summary>
         private IEnumerator ManagePoolSize()
         {
-            int totalAmountOfChunks;
-            while ((totalAmountOfChunks = m_ChunkPool.Count + Chunks.Count) != m_PoolSize)
+            var adjust = true;
+            while (adjust)
             {
+                int totalAmountOfChunks = m_ChunkPool.Count + Chunks.Count;
                 if (totalAmountOfChunks < m_PoolSize)
                 {
                     GameObject chunkInstance = Instantiate(m_ChunkPrefab);
@@ -156,8 +147,12 @@ namespace Voxels
                     chunk.Initialize(this, m_ChunkSize);
                     m_ChunkPool.Push(chunk);
                 }
-                else if (totalAmountOfChunks > m_PoolSize)
-                    Destroy(m_ChunkPool.Pop().gameObject);
+                else
+                {
+                    // if (totalAmountOfChunks > m_PoolSize)
+                    //     Destroy(m_ChunkPool.Pop().gameObject);
+                    adjust = false;
+                }
                 yield return null;
             }
         }

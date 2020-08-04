@@ -156,7 +156,7 @@ namespace Swihoni.Sessions.Config
                 [PlayerInput.Fly] = KeyCode.F,
                 [InputType.Buy] = KeyCode.B,
                 [PlayerInput.Throw] = KeyCode.G,
-                [InputType.OpenContext] = KeyCode.Tab,
+                [InputType.OpenContext] = KeyCode.V,
                 [InputType.TogglePauseMenu] = KeyCode.Escape,
                 [InputType.ToggleChat] = KeyCode.T,
                 [PlayerInput.Respawn] = KeyCode.Return

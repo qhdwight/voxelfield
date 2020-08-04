@@ -5,7 +5,7 @@ using Voxelfield.Session;
 using Voxelfield.Session.Mode;
 
 namespace Voxelfield
-{
+{    
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
     public class ConfigManager : ConfigManagerBase
     {

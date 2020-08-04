@@ -22,6 +22,10 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 500000
     isPersistent: 0
+  - durationUs: 0
+    isPersistent: 0
+  - durationUs: 0
+    isPersistent: 0
   m_EquipStatusModiferProperties:
   - durationUs: 100000
     isPersistent: 0

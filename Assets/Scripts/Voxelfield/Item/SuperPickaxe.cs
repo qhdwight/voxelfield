@@ -15,28 +15,17 @@ namespace Voxelfield.Item
             if (WithoutHit(context, m_EditDistance, out RaycastHit hit) || !(context.session.Injector is ServerInjector server)) return;
 
             var designer = context.player.Require<DesignerPlayerComponent>();
+            if (designer.editRadius < Mathf.Epsilon) return;
+
             var position = (Position3Int) hit.point;
             VoxelChange change = context.player.Require<DesignerPlayerComponent>().selectedVoxel;
             change.Merge(new VoxelChange {position = position, magnitude = designer.editRadius, form = VoxelVolumeForm.Spherical});
             server.ApplyVoxelChanges(change, overrideBreakable: true);
         }
 
-        protected override void QuaternaryUse(in SessionContext context)
-        {
-            if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)) return;
+        protected override void QuaternaryUse(in SessionContext context) => PickVoxel(context);
 
-            var position = (Position3Int) (hit.point - hit.normal * 0.1f);
-            if (WithoutBreakableVoxel(position, out Voxel voxel) || voxel.OnlySmooth) return;
-            
-            var designer = context.player.Require<DesignerPlayerComponent>();
-            VoxelChange pickedChange = default;
-            pickedChange.color = voxel.color;
-            pickedChange.texture = voxel.texture;
-            designer.selectedVoxel.Value = pickedChange;
-        }
-
-        protected override bool CanQuaternaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory)
-            => base.CanPrimaryUse(item, inventory);
+        protected override bool CanQuaternaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
 
         protected override void PlaceBlock(in SessionContext context, ServerInjector server, in Position3Int position)
         {

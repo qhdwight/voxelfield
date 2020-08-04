@@ -85,7 +85,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4012204722728796741, guid: 2181dda42291c44b0853559b8d164618,
         type: 3}
-      propertyPath: m_StatusVisualProperties.Array.data[4].animationClip
+      propertyPath: m_StatusVisualProperties.Array.data[5].animationClip
       value: 
       objectReference: {fileID: 7400000, guid: 8b4eb825ff60fb8428693196b010c542, type: 2}
     - target: {fileID: 4012204722728796763, guid: 2181dda42291c44b0853559b8d164618,

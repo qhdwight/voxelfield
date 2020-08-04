@@ -309,7 +309,9 @@ MonoBehaviour:
     - timeUs: 0
       audio: {fileID: 3520456744884771955}
       particleSystem: {fileID: 0}
-      tracer: {fileID: 0}
+    isReverseAnimation: 0
+  - animationClip: {fileID: 0}
+    animationEvents: []
     isReverseAnimation: 0
   - animationClip: {fileID: 0}
     animationEvents: []
@@ -322,7 +324,6 @@ MonoBehaviour:
     - timeUs: 0
       audio: {fileID: 0}
       particleSystem: {fileID: 0}
-      tracer: {fileID: 0}
     isReverseAnimation: 0
   m_EquipStatusVisualProperties:
   - animationClip: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
@@ -330,7 +331,6 @@ MonoBehaviour:
     - timeUs: 0
       audio: {fileID: 856624331643220773}
       particleSystem: {fileID: 0}
-      tracer: {fileID: 0}
     isReverseAnimation: 1
   - animationClip: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
     animationEvents: []

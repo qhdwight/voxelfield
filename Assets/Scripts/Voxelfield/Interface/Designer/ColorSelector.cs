@@ -12,6 +12,8 @@ namespace Voxelfield.Interface.Designer
 
         public Slider.SliderEvent OnValueChanged => m_Slider.onValueChanged;
         
+        public int Index { get; set; }
+        
         private void Awake()
         {
             m_Slider = GetComponentInChildren<Slider>();
@@ -20,10 +22,13 @@ namespace Voxelfield.Interface.Designer
             m_HandleImage = m_Slider.handleRect.GetComponent<Image>();
         }
 
-        public void SetColor(in Color color)
+        public void SetColor(in Color? _color)
         {
+            Color color = _color.GetValueOrDefault(Color.black);
+            
             m_HandleImage.color = color;
             m_FillImage.color = color;
+            m_Slider.value = color[Index];
         }
     }
 }

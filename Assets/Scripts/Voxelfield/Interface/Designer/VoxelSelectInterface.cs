@@ -17,45 +17,45 @@ namespace Voxelfield.Interface.Designer
         [SerializeField] private Button m_ButtonPrefab = default;
         [SerializeField] private ColorSelector[] m_ColorValueSelectors = default;
 
-        private int m_WantedTexture = VoxelTexture.Solid;
-        private Color32 m_WantedColor = new Color32(255, 255, 255, 255);
+        private VoxelChange m_Change;
 
         private void Start()
         {
-            for (byte modelId = 0; modelId <= VoxelTexture.Last; modelId++)
+            for (byte id = 0; id <= VoxelTexture.Last; id++)
             {
                 Button button = Instantiate(m_ButtonPrefab, transform);
                 var text = button.GetComponentInChildren<TextMeshProUGUI>();
-                text.SetText(VoxelTexture.Name(modelId));
-                int _modelId = modelId;
-                button.onClick.AddListener(() => m_WantedTexture = _modelId);
+                text.SetText(VoxelTexture.Name(id));
+                int _id = id;
+                button.onClick.AddListener(() => m_Change.texture = (byte) _id);
             }
             void SelectorListener(int index, float floatValue)
             {
                 var value = (byte) Mathf.RoundToInt(floatValue);
-                m_WantedColor[index] = value;
-                foreach (ColorSelector selector in m_ColorValueSelectors)
-                    selector.SetColor(m_WantedColor);
+                Color32 color = m_Change.color.GetValueOrDefault(new Color32 {a = byte.MaxValue});
+                color[index] = value;
+                m_Change.color = color;
             }
             for (var colorIndex = 0; colorIndex < m_ColorValueSelectors.Length; colorIndex++)
             {
                 ColorSelector selector = m_ColorValueSelectors[colorIndex];
-                int _colorIndex = colorIndex;
-                selector.OnValueChanged.AddListener(floatValue => SelectorListener(_colorIndex, floatValue));
+                selector.Index = colorIndex;
+                selector.OnValueChanged.AddListener(floatValue => SelectorListener(selector.Index, floatValue));
             }
         }
 
         public override void Render(SessionBase session, Container sessionContainer)
-            => SetInterfaceActive(NoInterrupting && HasItemEquipped(session, sessionContainer, ModeIdProperty.Designer, ItemId.VoxelWand)
+            => SetInterfaceActive(NoInterrupting && HasItemEquipped(session, sessionContainer, ModeIdProperty.Designer, ItemId.VoxelWand, ItemId.SuperPickaxe)
                                                  && InputProvider.GetInput(InputType.OpenContext));
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
             Container localCommands = session.GetLocalCommands();
             var designer = localCommands.Require<DesignerPlayerComponent>();
-            ref VoxelChange voxel = ref designer.selectedVoxel.DirectValue;
-            voxel.texture = (byte) m_WantedTexture;
-            voxel.color = m_WantedColor;
+            designer.selectedVoxel.DirectValue.Merge(m_Change);
+            m_Change = default;
+            foreach (ColorSelector selector in m_ColorValueSelectors)
+                selector.SetColor(designer.selectedVoxel.DirectValue.color);
         }
     }
 }

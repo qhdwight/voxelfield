@@ -82,5 +82,10 @@ PrefabInstance:
       propertyPath: m_EquipStatusVisualProperties.Array.data[1].animationClip
       value: 
       objectReference: {fileID: 7400000, guid: 5b97f2cbcc0303f468952c95b57e5597, type: 2}
+    - target: {fileID: 7274393323216527679, guid: b145cb9d7211a794fbcb8dde5c61741d,
+        type: 3}
+      propertyPath: m_StatusVisualProperties.Array.data[4].animationClip
+      value: 
+      objectReference: {fileID: 7400000, guid: 1d9dc74a5dec67d4a864d17fbca4b550, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b145cb9d7211a794fbcb8dde5c61741d, type: 3}

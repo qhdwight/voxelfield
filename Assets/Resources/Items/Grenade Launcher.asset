@@ -24,6 +24,8 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 0
     isPersistent: 0
+  - durationUs: 0
+    isPersistent: 0
   - durationUs: 2000000
     isPersistent: 0
   - durationUs: 2000000
@@ -77,6 +79,7 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 100000
     isPersistent: 0
+  m_RaycastThickness: 0
   isPrimary: 1
   m_ThrowablePrefab: {fileID: 2388795190162426220, guid: 68c64ec7bf794411589497f72485794d,
     type: 3}

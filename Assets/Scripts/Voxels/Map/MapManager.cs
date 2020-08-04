@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,7 +30,6 @@ namespace Voxels.Map
 
         private Pool<ModelBehaviorBase>[] m_ModelsPool;
         private StringProperty m_WantedMapName;
-        private IEnumerator m_ManageActionsRoutine;
 
         public static ModelBehaviorBase[] ModelPrefabs { get; private set; }
 
@@ -55,10 +55,33 @@ namespace Voxels.Map
 
         private void Start()
         {
-            m_ManageActionsRoutine = ManageActionsRoutine();
             m_WantedMapName = _emptyMapName;
-            StartCoroutine(m_ManageActionsRoutine);
+            StartCoroutine(Runner());
             SetupModelPool();
+        }
+
+        private IEnumerator Runner()
+        {
+            IEnumerator loadMapEnumerator = null;
+            while (Application.isPlaying)
+            {
+                MapLoadingStage stage = ChunkManager.Singleton.ProgressInfo.stage;
+                object current = null;
+                try
+                {
+                    if (stage == MapLoadingStage.Waiting)
+                       loadMapEnumerator = LoadNamedMap(m_WantedMapName);
+                    if (stage != MapLoadingStage.Failed && loadMapEnumerator != null)
+                        if (loadMapEnumerator.MoveNext()) current = loadMapEnumerator.Current;
+                        else loadMapEnumerator = null; // Done loading
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogError($"Failed to load map: {m_WantedMapName.AsNewString()}: {exception.Message}");
+                    ChunkManager.Singleton.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Failed};
+                }
+                yield return current;
+            }
         }
 
         private void SetupModelPool() =>
@@ -70,16 +93,6 @@ namespace Voxels.Map
                                modelInstance.name = modelBehaviorPrefab.name;
                                return modelInstance;
                            }, (modelBehavior, isActive) => modelBehavior.gameObject.SetActive(false))).ToArray();
-
-        private IEnumerator ManageActionsRoutine()
-        {
-            while (Application.isPlaying)
-            {
-                yield return Map.name == m_WantedMapName
-                    ? null
-                    : LoadNamedMap(m_WantedMapName);
-            }
-        }
 
         private static string GetMapPath(StringProperty mapName)
             => Path.ChangeExtension(Path.Combine(GetDirectory(MapSaveFolder), mapName.Builder.ToString()), MapSaveExtension);
@@ -133,7 +146,7 @@ namespace Voxels.Map
             if (m_TruncateDimension) map.dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, 0, -1), upperBound = new Position3IntProperty(0, 0, 0)};
 #endif
 
-            yield return LoadMapSave(map);
+            yield return ChunkManager.Singleton.LoadMap(map);
 
             LoadModels(map);
 
@@ -192,24 +205,19 @@ namespace Voxels.Map
         //             int modelId = Random.Range(0, models.Length);
         //             Quaternion rotation = Quaternion.Euler(0.0f, Random.Range(0.0f, 360.0f), 0.0f);
         //             ModelManager.Singleton.LoadInModel(modelId, hit.point, rotation);
-        //             mapSave.Models.Add((Position3Int) hit.point, new ModelData {modelId = (ushort) modelId, rotation = rotation});
+        //             mapSave.Models.Add((Position3Int) hit.point, new MoEdelData {modelId = (ushort) modelId, rotation = rotation});
         //         }
         //         SaveMapSave(mapSave);
         //     }
         // }
 
-        public void SetMap(StringProperty mapName) => m_WantedMapName = mapName;
-
-        public void UnloadMap() => SetMap(_emptyMapName);
-
-        private static IEnumerator LoadMapSave(MapContainer save)
+        public void SetNamedMap(StringProperty mapName)
         {
-//        if (!save.DynamicChunkLoading)
-//        {    
-//            LoadingScreen.Singleton.SetInterfaceActive(true);
-//            LoadingScreen.Singleton.SetProgress(0.0f);
-//        }
-            yield return ChunkManager.Singleton.LoadMap(save);
+            if (m_WantedMapName != mapName)
+                ChunkManager.Singleton.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Waiting};
+            m_WantedMapName = mapName;
         }
+
+        public void SetMapToUnloaded() => SetNamedMap(_emptyMapName);
     }
 }

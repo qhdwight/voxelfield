@@ -39,6 +39,10 @@ namespace Voxelfield.Item
 
         protected override bool OverrideBreakable => true;
 
+        protected override void QuaternaryUse(in SessionContext context) => PickVoxel(context);
+
+        protected override bool CanQuaternaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
+        
         protected override void SecondaryUse(in SessionContext context)
         {
             Container player = context.player;

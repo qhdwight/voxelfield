@@ -30,11 +30,11 @@ namespace Swihoni.Sessions.Interfaces
             if (m_IsDuringGame && !isActive) SetInterfaceActive(false);
         }
 
-        protected static bool HasItemEquipped(SessionBase session, Container sessionContainer, byte modeId, byte itemId)
+        protected static bool HasItemEquipped(SessionBase session, Container sessionContainer, byte modeId, byte itemId, byte? itemId2 = null)
             => sessionContainer.Require<ModeIdProperty>() == modeId
             && session.IsValidLocalPlayer(sessionContainer, out Container localPlayer)
             && localPlayer.Require<InventoryComponent>().WithItemEquipped(out ItemComponent item)
-            && item.id == itemId;
+            && (item.id == itemId || item.id == itemId2);
 
         protected bool NoInterrupting => !SessionBase.InterruptingInterface || SessionBase.InterruptingInterface == this;
     }

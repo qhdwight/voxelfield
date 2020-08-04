@@ -156,7 +156,9 @@ MonoBehaviour:
     - timeUs: 0
       audio: {fileID: 1235588910771471549}
       particleSystem: {fileID: 0}
-      tracer: {fileID: 0}
+    isReverseAnimation: 0
+  - animationClip: {fileID: 0}
+    animationEvents: []
     isReverseAnimation: 0
   - animationClip: {fileID: 0}
     animationEvents: []
@@ -172,7 +174,6 @@ MonoBehaviour:
     - timeUs: 0
       audio: {fileID: 6916200535741987114}
       particleSystem: {fileID: 0}
-      tracer: {fileID: 0}
     isReverseAnimation: 0
   m_EquipStatusVisualProperties:
   - animationClip: {fileID: 7400000, guid: a1f87a57559906843a17bc632108d04a, type: 2}
@@ -180,14 +181,12 @@ MonoBehaviour:
     - timeUs: 0
       audio: {fileID: -8263556623041877389}
       particleSystem: {fileID: 0}
-      tracer: {fileID: 0}
     isReverseAnimation: 1
   - animationClip: {fileID: 7400000, guid: a1f87a57559906843a17bc632108d04a, type: 2}
     animationEvents:
     - timeUs: 0
       audio: {fileID: 7151360806400906146}
       particleSystem: {fileID: 0}
-      tracer: {fileID: 0}
     isReverseAnimation: 0
   m_IkL: {fileID: 7032793369846869465}
   m_IkR: {fileID: 7032793369469315942}
@@ -197,6 +196,7 @@ MonoBehaviour:
   m_Crosshair: {fileID: 0}
   m_FovMultiplier: 0.5
   m_AdsTarget: {fileID: 7032793368327812526}
+  m_IsMagazineShell: 0
 --- !u!82 &-8263556623041877389
 AudioSource:
   m_ObjectHideFlags: 0

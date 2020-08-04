@@ -30,6 +30,8 @@ namespace Voxelfield.Session
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
         protected AuthTicket m_SteamAuthenticationTicket;
 
+        private bool m_IsLoading = true;
+
         protected bool TryGetSteamAuthTicket()
         {
             if (m_SteamAuthenticationTicket != null) throw new Exception("Authentication ticket has already been obtained");
@@ -49,7 +51,7 @@ namespace Voxelfield.Session
                     modelBehavior.RenderContainer();
         }
 
-        protected override void OnDispose() => MapManager.Singleton.UnloadMap();
+        protected override void OnDispose() => MapManager.Singleton.SetMapToUnloaded();
 
         public override void OnStop()
         {
@@ -58,13 +60,18 @@ namespace Voxelfield.Session
 
         protected override void OnSettingsTick(Container session)
         {
-            MapManager.Singleton.SetMap(session.Require<VoxelMapNameProperty>());
-            if (!IsLoading(session))
+            MapManager.Singleton.SetNamedMap(session.Require<VoxelMapNameProperty>());
+
+            MapLoadingStage stage = ChunkManager.Singleton.ProgressInfo.stage;
+            if (stage == MapLoadingStage.Failed) throw new Exception("Map failed to load");
+
+            m_IsLoading = session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name || stage != MapLoadingStage.Completed;
+            
+            if (!m_IsLoading)
                 foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
                     modelBehavior.SetInMode(session);
         }
 
-        public override bool IsLoading(Container session) => session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name
-                                                          || ChunkManager.Singleton.ProgressInfo.stage != MapLoadingStage.Completed;
+        public override bool IsLoading(Container session) => m_IsLoading;
     }
 }
