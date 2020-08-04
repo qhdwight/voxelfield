@@ -65,7 +65,7 @@ namespace Voxelfield.Session
                 changes.Clear();
                 foreach (VoxelChange voxel in clone.List)
                     if (voxel.form != VoxelVolumeForm.Single)
-                        changes.Add(voxel);
+                        changes.Append(voxel);
             });
             SetCommand("serve", arguments => StartServer(DefaultEndPoint));
             SetCommand("connect", arguments =>

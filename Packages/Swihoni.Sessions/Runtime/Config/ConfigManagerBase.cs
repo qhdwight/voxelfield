@@ -285,7 +285,7 @@ namespace Swihoni.Sessions.Config
 
         public static void OnCommand(string command)
         {
-            Active.consoleHistory.Add(new StringProperty(command));
+            Active.consoleHistory.Append(new StringProperty(command));
             WriteActive();
         }
     }

@@ -41,7 +41,7 @@ namespace Swihoni.Components
             WithValue = true;
         }
 
-        public void Add(T element)
+        public void Append(T element)
         {
             m_List.Add(element);
             WithValue = true;
@@ -52,6 +52,21 @@ namespace Swihoni.Components
                 Debug.LogWarning($"Had to remove since over max size: {m_MaxSize}");
 #endif
             }
+        }
+
+        public void RemoveEnd() => m_List.RemoveAt(m_List.Count - 1);
+
+        public bool TryRemoveEnd(out T element)
+        {
+            int index = m_List.Count - 1;
+            if (index < 0)
+            {
+                element = default;
+                return false;
+            }
+            element = m_List[index];
+            m_List.RemoveAt(index);
+            return true;
         }
 
         public override void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation) => throw new NotImplementedException();
@@ -105,7 +120,7 @@ namespace Swihoni.Components
             {
                 var element = Activator.CreateInstance<T>();
                 element.Parse(elementString.Trim());
-                Add(element);
+                Append(element);
             }
         }
     }

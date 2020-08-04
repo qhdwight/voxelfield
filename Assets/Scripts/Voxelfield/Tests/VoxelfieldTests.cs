@@ -22,7 +22,7 @@ namespace Voxelfield.Tests
                 natural = true, orientation = 4, replace = true, yaw = 321f, hasBlock = true, isBreakable = true, modifiesBlocks = true,
                 noRandom = true, upperBound = new Position3Int(2, 3, 4), revert = true
             };
-            ordered.Add(change);
+            ordered.Append(change);
 
             var writer = new NetDataWriter();
             ordered.Serialize(writer);

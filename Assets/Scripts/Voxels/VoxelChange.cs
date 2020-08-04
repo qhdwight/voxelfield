@@ -22,7 +22,8 @@ namespace Voxels
         public float? magnitude, yaw;
         public VoxelVolumeForm? form;
         public Position3Int? upperBound;
-        public List<Voxel> undo;
+        public List<(Chunk, Position3Int, Voxel)> undo;
+        public bool isUndo;
 
         #region Generated
 

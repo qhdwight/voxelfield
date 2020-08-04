@@ -15,7 +15,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
-using Voxels.Map;
+
 #if VOXELFIELD_RELEASE_SERVER
 using Swihoni.Sessions.Modes;
 using Amazon;
@@ -63,14 +63,25 @@ namespace Voxelfield.Session
 
         public void ApplyVoxelChanges(VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
         {
-            if (!change.position.HasValue) throw new ArgumentException("Voxel change does not have position!");
-            if (MapManager.Singleton.Models.ContainsKey(change.position.Value)) return;
+            void Apply() => ChunkManager.Singleton.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
+            if (change.isUndo)
+            {
+                if (m_MasterChanges.TryRemoveEnd(out VoxelChange lastChange))
+                {
+                    change.undo = lastChange.undo;
+                    Apply();
+                }
+            }
+            else
+            {
+                if (!change.position.HasValue) throw new ArgumentException("Voxel change does not have position!");
 
-            var changed = Session.GetLatestSession().Require<OrderedVoxelChangesProperty>();
-            change.undo = new List<Voxel>((int) change.magnitude.GetValueOrDefault(1).Square());
-            ChunkManager.Singleton.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
-            changed.Add(change);
-            m_MasterChanges.Add(change);
+                var changed = Session.GetLatestSession().Require<OrderedVoxelChangesProperty>();
+                changed.Append(change);
+                change.undo = new List<(Chunk, Position3Int, Voxel)>((int) change.magnitude.GetValueOrDefault(1).Square());
+                m_MasterChanges.Append(change);
+                Apply();
+            }
         }
 
         public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)

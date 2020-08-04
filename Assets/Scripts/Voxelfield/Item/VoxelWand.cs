@@ -14,7 +14,7 @@ namespace Voxelfield.Item
     public class VoxelWand : SculptingItem
     {
         [RuntimeInitializeOnLoadMethod]
-        private static void InitializeCommands() => SessionBase.RegisterSessionCommand("set", "revert", "breakable", "dirt");
+        private static void InitializeCommands() => SessionBase.RegisterSessionCommand("set", "revert", "breakable", "dirt", "undo");
 
         protected override void Swing(in SessionContext context, ItemComponent item)
         {
@@ -42,7 +42,7 @@ namespace Voxelfield.Item
         protected override void QuaternaryUse(in SessionContext context) => PickVoxel(context);
 
         protected override bool CanQuaternaryUse(in SessionContext context, ItemComponent item, InventoryComponent inventory) => base.CanPrimaryUse(item, inventory);
-        
+
         protected override void SecondaryUse(in SessionContext context)
         {
             Container player = context.player;
@@ -109,6 +109,12 @@ namespace Voxelfield.Item
                         var change = new VoxelChange {position = designer.positionOne, upperBound = designer.positionTwo, form = VoxelVolumeForm.Prism, isBreakable = breakable};
                         var server = (ServerInjector) session.Injector;
                         server.ApplyVoxelChanges(change, overrideBreakable: true);
+                        break;
+                    }
+                    case "undo":
+                    {
+                        var server = (ServerInjector) session.Injector;
+                        server.ApplyVoxelChanges(new VoxelChange {isUndo = true});
                         break;
                     }
                 }

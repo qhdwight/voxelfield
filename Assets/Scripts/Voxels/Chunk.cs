@@ -91,7 +91,11 @@ namespace Voxels
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetVoxelDataNoCheck(in Position3Int position, in VoxelChange change)
-            => m_Voxels?[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)].SetVoxelData(change);
+            => m_Voxels[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)].SetVoxelData(change);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetVoxelDataRawNoCheck(in Position3Int position, in Voxel voxel)
+            => m_Voxels[position.z + m_ChunkSize * (position.y + m_ChunkSize * position.x)] = voxel;
 
         public Voxel? GetVoxel(in Position3Int internalPosition) =>
             InsideChunk(internalPosition)

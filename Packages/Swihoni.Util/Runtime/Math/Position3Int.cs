@@ -18,6 +18,8 @@ namespace Swihoni.Util.Math
             this.z = z;
         }
 
+        public Position3Int(int i) : this(i, i, i) { }
+
         public bool Equals(Position3Int other) => this == other;
 
         public override bool Equals(object other) => other is Position3Int && GetHashCode() == other.GetHashCode();
