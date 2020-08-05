@@ -148,6 +148,8 @@ namespace Swihoni.Sessions
             {
                 case ClientCommandsCode:
                 {
+                    if (IsLoading) break;
+                    
                     m_EmptyClientCommands.Deserialize(reader);
                     if (CanSetupNewPlayer(serverPlayer))
                     {
@@ -163,7 +165,8 @@ namespace Swihoni.Sessions
 #if !VOXELFIELD_RELEASE_SERVER
                     var clientView = new ClientCommandsContainer(m_EmptyDebugClientView.ElementTypes);
                     clientView.Deserialize(reader);
-                    DebugBehavior.Singleton.Render(this, clientId, clientView, new Color(1.0f, 0.0f, 0.0f, 0.3f));
+                    var context = new SessionContext(this, playerId: clientId, player: clientView);
+                    DebugBehavior.Singleton.Render(context, new Color(1.0f, 0.0f, 0.0f, 0.3f));
 #endif
                     break;
                 }
@@ -175,7 +178,7 @@ namespace Swihoni.Sessions
             }
         }
 
-        private bool CanSetupNewPlayer(Container serverPlayer) => !IsLoading && m_Injector.ShouldSetupPlayer(serverPlayer);
+        private bool CanSetupNewPlayer(Container serverPlayer) => m_Injector.ShouldSetupPlayer(serverPlayer);
 
         private static uint _timeUs, _durationUs;
 
@@ -318,21 +321,14 @@ namespace Swihoni.Sessions
                                 serverPlayerTimeUs.Value = serverStamp.timeUs;
                             }
                         }
-                        if (!IsLoading)
-                        {
-                            MergeTrustedFromCommands(serverPlayer, receivedClientCommands);
-                            // serverPlayer.MergeFrom(receivedClientCommands);
-                        }
+                        MergeTrustedFromCommands(serverPlayer, receivedClientCommands);
                     }
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
 
-                    if (!IsLoading)
-                    {
-                        var context = new SessionContext(this, serverSession, receivedClientCommands, clientId, serverPlayer,
-                                                         durationUs: clientStamp.durationUs, tickDelta: tickDelta);
-                        GetPlayerModifier(serverPlayer, clientId).ModifyChecked(context);
-                        mode.ModifyPlayer(context);
-                    }
+                    var context = new SessionContext(this, serverSession, receivedClientCommands, clientId, serverPlayer,
+                                                     durationUs: clientStamp.durationUs, tickDelta: tickDelta);
+                    GetPlayerModifier(serverPlayer, clientId).ModifyChecked(context);
+                    mode.ModifyPlayer(context);
                 }
             }
             else
@@ -366,9 +362,9 @@ namespace Swihoni.Sessions
 
         public override Ray GetRayForPlayerId(int playerId) => GetLatestSession().GetPlayer(playerId).GetRayForPlayer();
 
-        protected override void RollbackHitboxes(int playerId)
+        protected override void RollbackHitboxes(in SessionContext context)
         {
-            uint latencyUs = GetModifyingPayerFromId(playerId).Require<ServerPingComponent>().latencyUs;
+            uint latencyUs = GetModifyingPayerFromId(context.playerId).Require<ServerPingComponent>().latencyUs;
             for (var _modifierId = 0; _modifierId < MaxPlayers; _modifierId++)
             {
                 int modifierId = _modifierId; // Copy for use in lambda
@@ -388,9 +384,10 @@ namespace Swihoni.Sessions
                                                                    m_SessionHistory.Size, GetPlayerInHistory);
                 }
                 PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(rollbackPlayer, modifierId);
-                if (modifier) modifier.EvaluateHitboxes(this, modifierId, rollbackPlayer);
+                var playerContext = new SessionContext(existing: context, playerId: modifierId, player: rollbackPlayer);
+                if (modifier) modifier.EvaluateHitboxes(playerContext);
 
-                if (modifierId == 0) DebugBehavior.Singleton.Render(this, modifierId, rollbackPlayer, new Color(0.0f, 0.0f, 1.0f, 0.3f));
+                if (modifierId == 0) DebugBehavior.Singleton.Render(playerContext, new Color(0.0f, 0.0f, 1.0f, 0.3f));
             }
         }
 

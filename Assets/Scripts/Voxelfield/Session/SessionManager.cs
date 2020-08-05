@@ -21,7 +21,6 @@ using static Swihoni.Sessions.Config.ConsoleCommandExecutor;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
-
 #else
 using LiteNetLib;
 #endif
@@ -46,6 +45,15 @@ namespace Voxelfield.Session
         public static bool GameLiftReady { get; set; }
         private float m_InactiveServerElapsedSeconds;
 #endif
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void Initialize()
+        {
+            WantsApplicationQuit = false;
+#if VOXELFIELD_RELEASE_SERVER
+            GameLiftReady = false;
+#endif
+        }
 
         private void Start()
         {
@@ -90,8 +98,8 @@ namespace Voxelfield.Session
             SetCommand("wsl_connect",
                        arguments => ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
 #endif
-            SetCommand("online_quick_play", arguments => GameLiftClientManager.QuickPlay());
-            SetCommand("online_start_new", arguments => GameLiftClientManager.StartNew());
+            SetCommand("online_quick_play", arguments => QuickPlayGameLift());
+            SetCommand("online_start_new", arguments => StartNewGameLift());
             SetCommand("disconnect", arguments => DisconnectAll());
 #if UNITY_EDITOR
             SetCommand("disconnect_client", arguments => SessionBase.SessionEnumerable.First(session => session is Client).Stop());
@@ -216,35 +224,35 @@ namespace Voxelfield.Session
             }
 
             /* Handle timeout */
-            const float maxIdleTimeSeconds = 3.0f * 60.0f;
-            void AddTime()
             {
-                if (Mathf.Approximately(m_InactiveServerElapsedSeconds, 0.0f))
-                    Debug.LogWarning($"Stopping server in {maxIdleTimeSeconds} seconds due to inactivity...");
-                m_InactiveServerElapsedSeconds += Time.deltaTime;
-            }
-            try
-            {
-                if (SessionBase.SessionEnumerable.FirstOrDefault(session => session is Server) is Server server)
+                float maxIdleTimeSeconds = Application.isEditor ? 5.0f : 30.0f;
+                void AddTime()
                 {
-                    // TODO:refactor use session and count number of player session id's?
-                    int activePlayerSessionCount = server.Socket.NetworkManager.ConnectedPeersCount;
-                    if (activePlayerSessionCount == 0) AddTime();
-                    else m_InactiveServerElapsedSeconds = 0.0f;
+                    if (Mathf.Approximately(m_InactiveServerElapsedSeconds, 0.0f))
+                        Debug.LogWarning($"Stopping server in {maxIdleTimeSeconds} seconds due to inactivity...");
+                    m_InactiveServerElapsedSeconds += Time.deltaTime;
                 }
-                else AddTime();
-            }
-            catch (Exception)
-            {
-                AddTime();
-            }
-            if (m_InactiveServerElapsedSeconds > maxIdleTimeSeconds)
-            {
-                DisconnectAll();
-                GenericOutcome outcome = GameLiftServerAPI.ProcessEnding();
-                if (!outcome.Success)
+                try
                 {
-                    Debug.LogError($"Failed to graciously process ending: {outcome.Error}");
+                    if (SessionBase.SessionEnumerable.FirstOrDefault(session => session is Server) is Server server)
+                    {
+                        // TODO:refactor use session and count number of player session id's?
+                        int activePlayerSessionCount = server.Socket.NetworkManager.ConnectedPeersCount;
+                        if (activePlayerSessionCount == 0) AddTime();
+                        else m_InactiveServerElapsedSeconds = 0.0f;
+                    }
+                    else AddTime();
+                }
+                catch (Exception)
+                {
+                    AddTime();
+                }
+                if (m_InactiveServerElapsedSeconds > maxIdleTimeSeconds)
+                {
+                    DisconnectAll();
+                    GenericOutcome outcome = GameLiftServerAPI.ProcessEnding();
+                    if (outcome.Success) Debug.Log("Processed ending");
+                    else Debug.LogError($"Failed to process ending graciously: {outcome.Error}");
                     WantsApplicationQuit = true;
                 }
             }
@@ -272,7 +280,7 @@ namespace Voxelfield.Session
             }
             if (Input.GetKeyDown(KeyCode.J))
             {
-                GameLiftClientManager.QuickPlay();
+                QuickPlayGameLift();
             }
             if (Input.GetKeyDown(KeyCode.L))
             {
@@ -283,6 +291,9 @@ namespace Voxelfield.Session
                 DisconnectAll();
             }
         }
+
+        private static async void QuickPlayGameLift() => await GameLiftClientManager.QuickPlayAsync();
+        private static async void StartNewGameLift() => await GameLiftClientManager.StartNewAsync();
 
         private void FixedUpdate()
         {

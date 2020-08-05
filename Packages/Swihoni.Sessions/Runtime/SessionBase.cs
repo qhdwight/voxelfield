@@ -351,7 +351,7 @@ namespace Swihoni.Sessions
 
         public abstract Ray GetRayForPlayerId(int playerId);
 
-        public virtual void RollbackHitboxesFor(int playerId)
+        public virtual void RollbackHitboxesFor(in SessionContext context)
         {
             // Usually transform sync happens after FixedUpdate() is called. However, our raycast is in fixed update.
             // So, we need to preemptively force the colliders in the hitbox to update.
@@ -486,12 +486,5 @@ namespace Swihoni.Sessions
 
         public static Vector3 GetPlayerEyePosition(this MoveComponent move)
             => move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
-
-        public static string ToSnakeCase(this string @string) => string.Concat(@string.Select((c, i) => i > 0 && char.IsUpper(c) ? $"_{c}" : $"{c}")).ToLower();
-
-        public static DualDictionary<T, string> GetNameMap<T>(this Type type)
-            => new DualDictionary<T, string>(type
-                                            .GetFields(BindingFlags.Static | BindingFlags.Public)
-                                            .ToDictionary(field => (T) field.GetValue(null), field => field.Name.ToSnakeCase()));
     }
 }

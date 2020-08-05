@@ -2,23 +2,23 @@ using Swihoni.Components;
 
 namespace Swihoni.Sessions.Player
 {
-    public class PlayerHitboxManager : PlayerVisualizerBase
+    public class PlayerHitboxManager : PlayerVisualizerBehaviorBase
     {
         private PlayerHitbox[] m_PlayerHitboxes;
         public Container CurrentPlayer { get; private set; }
 
-        internal override void Setup(SessionBase session)
+        internal override void Setup()
         {
-            base.Setup(session);
+            base.Setup();
             m_PlayerHitboxes = GetComponentsInChildren<PlayerHitbox>();
             foreach (PlayerHitbox hitbox in m_PlayerHitboxes)
                 hitbox.Setup(this);
         }
 
-        public override void Evaluate(SessionBase session, int playerId, Container player)
+        public override void Evaluate(in SessionContext context)
         {
-            CurrentPlayer = player;
-            base.Evaluate(session, playerId, player);
+            CurrentPlayer = context.player;
+            base.Evaluate(context);
         }
     }
 }

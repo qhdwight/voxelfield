@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Entities
             var throwable = context.entity.Require<ThrowableComponent>();
             throwable.thrownElapsedUs.Value += context.durationUs;
 
-            if (throwable.thrownElapsedUs > ModeManager.GetMode(context.sessionContainer).ItemEntityLifespanUs)
+            if (throwable.thrownElapsedUs > context.Mode.ItemEntityLifespanUs)
                 context.entity.Clear();
         }
     }

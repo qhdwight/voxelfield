@@ -9,7 +9,7 @@ namespace Voxelfield
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
     public class ConfigManager : ConfigManagerBase
     {
-        [Config("map_name", ConfigType.ServerSession)] public VoxelMapNameProperty mapName = new VoxelMapNameProperty("Castle");
+        [Config("map_name", ConfigType.ServerSession)] public VoxelMapNameProperty mapName = new VoxelMapNameProperty("Fort");
 
         [Config("enable_mini_map")] public BoolProperty enableMiniMap = new BoolProperty();
 

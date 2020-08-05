@@ -1,5 +1,9 @@
+using System;
+using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using LiteNetLib.Utils;
+using Swihoni.Collections;
 using UnityEngine;
 
 namespace Swihoni.Components
@@ -54,5 +58,17 @@ namespace Swihoni.Components
             string expanded = Regex.Replace(@string, "[mM]", "000000");
             return Regex.Replace(expanded, "[kK]", "000");
         }
+
+        public static string ToSnakeCase(this string @string)
+            => string.Concat(@string.Select((c, i) => i > 0 && (char.IsUpper(c) || char.IsNumber(c)) ? $"_{c}" : $"{c}")).ToLower();
+
+        public static DualDictionary<T, string> GetNameMap<T>(this Type type)
+            => new DualDictionary<T, string>(type.IsEnum
+                                                 ? Enum.GetValues(type).OfType<T>().Distinct()
+                                                       .ToDictionary(@enum => @enum,
+                                                                     @enum => @enum.ToString().ToSnakeCase())
+                                                 : type.GetFields(BindingFlags.Static | BindingFlags.Public)
+                                                       .ToDictionary(field => (T) field.GetValue(null),
+                                                                     field => field.Name.ToSnakeCase()));
     }
 }

@@ -161,7 +161,7 @@ namespace Swihoni.Sessions.Player.Components
     public class InventoryComponent : ComponentBase
     {
         public const int ItemsCount = 10;
-        
+
         public ByteProperty equippedIndex, previousEquippedIndex;
         public ByteStatusComponent equipStatus, adsStatus;
         public ArrayElement<ItemComponent> items = new ArrayElement<ItemComponent>(ItemsCount);
@@ -184,6 +184,8 @@ namespace Swihoni.Sessions.Player.Components
             return false;
         }
 
+        private static ItemModifierBase _m1;
+
         public override void CustomInterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
         {
             InventoryComponent i1 = (InventoryComponent) c1, i2 = (InventoryComponent) c2;
@@ -194,11 +196,14 @@ namespace Swihoni.Sessions.Player.Components
             }
             // TODO:feature handle when id of equipped weapon changes
             ItemModifierBase m1 = ItemAssetLink.GetModifier(i1.EquippedItemComponent.id);
-            if (m1 is GunModifierBase gm1)
+            _m1 = m1; // Prevent closure allocation
+            if (m1 is GunModifierBase)
+            {
                 adsStatus.InterpolateFrom(i1.adsStatus, i2.adsStatus, interpolation,
-                                          aimStatusId => VisualDuration(gm1.GetAdsStatusModifierProperties(aimStatusId)));
+                                          aimStatusId => VisualDuration(((GunModifierBase) _m1).GetAdsStatusModifierProperties(aimStatusId)));
+            }
             equipStatus.InterpolateFrom(i1.equipStatus, i2.equipStatus, interpolation,
-                                        equipStatusId => VisualDuration(m1.GetEquipStatusModifierProperties(equipStatusId)));
+                                        equipStatusId => VisualDuration(_m1.GetEquipStatusModifierProperties(equipStatusId)));
             equippedIndex.Value = i1.equippedIndex;
             for (var i = 0; i < i1.items.Length; i++)
                 items[i].InterpolateFrom(i1.items[i], i2.items[i], interpolation);

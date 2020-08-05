@@ -99,15 +99,14 @@ namespace Swihoni.Sessions.Items.Modifiers
             item.ammoInMag.Value--;
 
             SessionBase session = context.session;
-            int playerId = context.playerId;
-            Ray ray = session.GetRayForPlayerId(playerId);
-            session.RollbackHitboxesFor(playerId);
+            Ray ray = session.GetRayForPlayerId(context.playerId);
+            session.RollbackHitboxesFor(context);
 
             int hitCount = FireRaycast(ray);
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)
             {
                 RaycastHit hit = RaycastHits[hitIndex];
-                if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId || HitPlayers.Contains(hitbox.Manager)) continue;
+                if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == context.playerId || HitPlayers.Contains(hitbox.Manager)) continue;
                 HitPlayers.Add(hitbox.Manager);
                 if (context.player.With<ServerTag>())
                 {

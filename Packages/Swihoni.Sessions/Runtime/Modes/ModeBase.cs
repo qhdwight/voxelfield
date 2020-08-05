@@ -123,8 +123,6 @@ namespace Swihoni.Sessions.Modes
 
         public virtual bool CanSpectate(Container session, Container player) => false;
 
-        public virtual Color GetTeamColor(int teamId) => Color.white;
-
         protected virtual Vector3 GetSpawnPosition(in SessionContext context) => new Vector3 {y = 8.0f};
 
         public virtual void BeginModify(in SessionContext context)
@@ -286,13 +284,21 @@ namespace Swihoni.Sessions.Modes
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
 
         public virtual StringBuilder BuildUsername(StringBuilder builder, Container player)
-            => builder.AppendPropertyValue(player.Require<UsernameProperty>());
+        {
+            Color color = GetTeamColor(player.Require<TeamProperty>());
+            string hex = GetHexColor(color);
+            return builder.Append("<color=#").Append(hex).Append(">").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</color>");
+        }
+
+        public virtual Color GetTeamColor(byte? teamId) => Color.white;
+        public Color GetTeamColor(Container player) => GetTeamColor(player.Require<TeamProperty>());
+        public virtual Color GetTeamColor(TeamProperty team) => GetTeamColor(team.AsNullable);
 
         protected static int GetActivePlayerCount(Container session)
             => session.Require<PlayerContainerArrayElement>().Count(player => player.Require<HealthProperty>().WithValue);
 
         public virtual void Initialize() { }
-        
+
         public virtual uint ItemEntityLifespanUs => 20_000_000u;
     }
 }

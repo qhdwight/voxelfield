@@ -188,7 +188,7 @@ namespace Voxels
         {
             uint flags = reader.GetUInt();
             VoxelChange change = default;
-
+            
             if (FlagUtil.HasFlag(flags, 0)) change.position = Position3Int.Deserialize(reader);
             if (FlagUtil.HasFlag(flags, 1)) change.texture = reader.GetByte();
             if (FlagUtil.HasFlag(flags, 2)) change.density = reader.GetByte();
@@ -232,7 +232,7 @@ namespace Voxels
             if (FlagUtil.HasFlag(flags, 26)) change.hasBlock = FlagUtil.HasFlag(flags, 27);
             if (FlagUtil.HasFlag(flags, 28)) change.isBreakable = FlagUtil.HasFlag(flags, 29);
             if (FlagUtil.HasFlag(flags, 30)) change.natural = FlagUtil.HasFlag(flags, 31);
-
+            
             return change;
         }
     }

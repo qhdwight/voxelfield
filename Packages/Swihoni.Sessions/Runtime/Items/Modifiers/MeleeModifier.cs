@@ -19,7 +19,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             int playerId = context.playerId;
             SessionBase session = context.session;
             Ray ray = session.GetRayForPlayerId(playerId);
-            session.RollbackHitboxesFor(playerId);
+            session.RollbackHitboxesFor(context);
             int count = Physics.RaycastNonAlloc(ray, RaycastHits, m_Distance, m_RaycastMask);
             if (count == 0) return;
 

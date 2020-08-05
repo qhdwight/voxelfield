@@ -40,11 +40,10 @@ namespace Voxelfield
 
         public static string PlayerSessionId { get; private set; } = string.Empty;
 
-        public static void QuickPlay() => StartClient(GetQuickPlayGameSession);
+        public static async Task<Client> QuickPlayAsync() => await StartClientAsync(GetQuickPlayGameSessionAsync);
+        public static async Task<Client> StartNewAsync() => await StartClientAsync(CreateNewGameSessionAsync);
 
-        public static void StartNew() => StartClient(CreateNewGameSession);
-
-        private static async void StartClient(Func<string, Task<GameSession>> sessionGetter)
+        private static async Task<Client> StartClientAsync(Func<string, Task<GameSession>> sessionGetter)
         {
             try
             {
@@ -53,20 +52,16 @@ namespace Voxelfield
 #endif
                 string playerId = GetPlayerId();
                 GameSession gameSession = await sessionGetter(playerId);
-                await StartClientForGameSession(gameSession, playerId);
+                return await StartClientForGameSessionAsync(gameSession, playerId);
             }
             catch (Exception exception)
             {
-                if (Debug.isDebugBuild)
-                {
-                    Debug.LogError($"Unable to get game session: {exception}");
-                    throw;
-                }
-                Debug.LogError($"Unable to start online game. Error: {exception.Message}");
+                Debug.LogError(Debug.isDebugBuild ? $"Unable to get game session: {exception}" : $"Unable to start online game. Error: {exception.Message}");
+                throw;
             }
         }
 
-        private static async Task StartClientForGameSession(GameSession gameSession, string playerId)
+        private static async Task<Client> StartClientForGameSessionAsync(GameSession gameSession, string playerId)
         {
             Debug.Log("Creating player session request...");
             var playerRequest = new CreatePlayerSessionRequest {GameSessionId = gameSession.GameSessionId, PlayerId = playerId};
@@ -76,7 +71,7 @@ namespace Voxelfield
             Debug.Log($"Connecting to server endpoint: {endPoint}");
 
             PlayerSessionId = playerSession.PlayerSessionId;
-            SessionManager.StartClient(endPoint);
+            return SessionManager.StartClient(endPoint);
         }
 
         private static string GetPlayerId()
@@ -87,7 +82,7 @@ namespace Voxelfield
             return playerId;
         }
 
-        private static async Task<GameSession> GetQuickPlayGameSession(string playerId)
+        private static async Task<GameSession> GetQuickPlayGameSessionAsync(string playerId)
         {
 #if VOXELFIELD_RELEASE_CLIENT
             try
@@ -102,7 +97,7 @@ namespace Voxelfield
                 Debug.Log("Searching game sessions...");
                 SearchGameSessionsResponse sessionsResponse = await GameLiftClient.SearchGameSessionsAsync(searchRequest);
                 return sessionsResponse.GameSessions.Count == 0
-                    ? await CreateNewGameSession(playerId)
+                    ? await CreateNewGameSessionAsync(playerId)
                     : sessionsResponse.GameSessions.First();
             }
             catch (InvalidRequestException)
@@ -111,11 +106,11 @@ namespace Voxelfield
                 throw;
             }
 #else
-            return await CreateNewGameSession(playerId);
+            return await CreateNewGameSessionAsync(playerId);
 #endif
         }
 
-        private static async Task<GameSession> CreateNewGameSession(string playerId)
+        private static async Task<GameSession> CreateNewGameSessionAsync(string playerId)
         {
             Debug.Log("No active sessions found. Requesting to start one...");
             var newSessionRequest = new CreateGameSessionRequest

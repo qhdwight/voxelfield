@@ -16,7 +16,7 @@ namespace Swihoni.Sessions.Items
         private static ItemModifierBase[] _itemModifiers;
         private static Pool<ItemVisualBehavior>[] _itemVisualPools;
         private static ItemVisualBehavior[] _itemVisualPrefabs;
-        
+
         public static IReadOnlyList<ItemModifierBase> ItemVisualPrefabs => _itemModifiers;
 
         [RuntimeInitializeOnLoadMethod]
@@ -62,7 +62,10 @@ namespace Swihoni.Sessions.Items
             }
             catch (Exception)
             {
-                Debug.LogError($"No Item ID registered for {itemId}. Check your Resources folder to make sure you have the proper ID set. All IDs must be ascending with no skipping.");
+                Debug.LogError($"No Item ID registered for {itemId}");
+#if UNITY_EDITOR
+                Debug.LogError("Check your Resources folder to make sure you have the proper ID set. All IDs must be ascending with no skipping.");
+#endif
                 throw;
             }
         }

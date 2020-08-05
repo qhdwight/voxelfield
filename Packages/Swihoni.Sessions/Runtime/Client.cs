@@ -137,7 +137,8 @@ namespace Swihoni.Sessions
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 bool isPossessed = isActualLocalPlayer && !isSpectating || isSpectating && playerId == spectatingPlayerId;
-                if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isPossessed);
+                var context = new SessionContext(this, m_RenderSession, playerId: playerId, player: renderPlayer);
+                if (visuals) visuals.Render(context, isPossessed);
             }
             Profiler.EndSample();
 
@@ -277,14 +278,16 @@ namespace Swihoni.Sessions
 
                     {
                         // TODO:refactor make class
-                        UIntProperty serverTimeUs = serverSession.Require<ServerStampComponent>().timeUs,
-                                     localizedServerTimeUs = serverSession.Require<LocalizedClientStampComponent>().timeUs;
+
+                        var serverStamp = serverSession.Require<ServerStampComponent>();
+                        var previousServerStamp = serverSession.Require<LocalizedClientStampComponent>();
+                        UIntProperty serverTimeUs = serverStamp.timeUs, localizedServerTimeUs = previousServerStamp.timeUs;
 
                         if (localizedServerTimeUs.WithValue)
                         {
                             uint previousTimeUs = previousServerSession.Require<ServerStampComponent>().timeUs;
                             if (serverTimeUs >= previousTimeUs) localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
-                            else Debug.LogError($"Updated server session time was less. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
+                            else Debug.LogError($"Updated server session time was less. Current: {serverStamp}; Previous: {previousServerStamp} μs");
                         }
                         else localizedServerTimeUs.Value = _timeUs;
 
@@ -317,7 +320,9 @@ namespace Swihoni.Sessions
                         {
                             uint previousTimeUs = previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs;
                             if (serverTimeUs >= previousTimeUs) localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
-                            else Debug.LogError($"Updated server player time was greater. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
+#if UNITY_EDITOR
+                            else Debug.LogWarning($"Updated server player time was greater. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
+#endif
                         }
                         else localizedServerTimeUs.Value = _timeUs;
 
@@ -550,7 +555,7 @@ namespace Swihoni.Sessions
 
         public override Ray GetRayForPlayerId(int playerId) => m_PlayerPredictionHistory.Peek().GetRayForPlayer();
 
-        protected override void RollbackHitboxes(int playerId)
+        protected override void RollbackHitboxes(in SessionContext context)
         {
             if (!DebugBehavior.Singleton.SendDebug) return;
             for (var i = 0; i < MaxPlayers; i++)

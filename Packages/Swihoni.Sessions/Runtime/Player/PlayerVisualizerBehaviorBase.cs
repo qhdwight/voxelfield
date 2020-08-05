@@ -1,36 +1,35 @@
 using System;
-using Swihoni.Components;
 using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player
 {
-    public abstract class PlayerVisualizerBase : MonoBehaviour, IDisposable
+    public abstract class PlayerVisualizerBehaviorBase : MonoBehaviour, IDisposable
     {
-        private PlayerBodyAnimatorBehavior m_BodyAnimator;
-        private PlayerItemAnimatorBehavior m_ItemAnimator;
+        public PlayerBodyAnimatorBehavior BodyAnimator { get; private set; }
+        public PlayerItemAnimatorBehavior ItemAnimator { get; private set; }
 
         public int PlayerId { get; private set; }
 
-        internal virtual void Setup(SessionBase session)
+        internal virtual void Setup()
         {
-            m_BodyAnimator = GetComponent<PlayerBodyAnimatorBehavior>();
-            m_ItemAnimator = GetComponentInChildren<PlayerItemAnimatorBehavior>();
-            m_BodyAnimator.Setup();
-            m_ItemAnimator.Setup();
+            BodyAnimator = GetComponent<PlayerBodyAnimatorBehavior>();
+            ItemAnimator = GetComponentInChildren<PlayerItemAnimatorBehavior>();
+            BodyAnimator.Setup();
+            ItemAnimator.Setup();
         }
 
-        public virtual void Evaluate(SessionBase session, int playerId, Container player)
+        public virtual void Evaluate(in SessionContext context)
         {
-            PlayerId = playerId;
-            if (m_BodyAnimator) m_BodyAnimator.Render(session, player, false);
-            if (m_ItemAnimator) m_ItemAnimator.Render(player, false);
+            PlayerId = context.playerId;
+            if (BodyAnimator) BodyAnimator.Render(context, false);
+            if (ItemAnimator) ItemAnimator.Render(context, false);
         }
 
         public void Dispose()
         {
-            m_BodyAnimator.Dispose();
-            m_ItemAnimator.Dispose();
+            BodyAnimator.Dispose();
+            ItemAnimator.Dispose();
         }
     }
 }

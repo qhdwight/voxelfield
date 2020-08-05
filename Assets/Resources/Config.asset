@@ -20,16 +20,13 @@ MonoBehaviour:
     m_Value: 1
   modeId:
     m_Flags: 1
-    m_Value: 2
+    m_Value: 3
   respawnDuration:
     m_Flags: 1
     m_Value: 5000000
   respawnHealth:
     m_Flags: 1
     m_Value: 100
-  restartMode:
-    m_Flags: 1
-    m_Value: 0
   fov:
     m_Flags: 1
     m_Value: 60
@@ -59,6 +56,7 @@ MonoBehaviour:
   consoleHistory:
     m_Flags: 1
     m_List: []
+    m_MaxSize: 32
   resolutionWidth:
     m_Flags: 0
     m_Value: 0
@@ -73,9 +71,6 @@ MonoBehaviour:
     m_Value: 3
   mapName:
     m_Flags: 1
-  forceStart:
-    m_Flags: 1
-    m_Value: 0
   enableMiniMap:
     m_Flags: 1
     m_Value: 0
@@ -94,7 +89,7 @@ MonoBehaviour:
       m_Value: 20000000
     playerCount:
       m_Flags: 1
-      m_Value: 2
+      m_Value: 4
     roundWinMoney:
       m_Flags: 1
       m_Value: 3000

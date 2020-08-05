@@ -235,15 +235,9 @@ namespace Voxelfield.Session.Mode
                 }
             }
         }
-
-        public Color GetTeamColor(Container container) => GetTeamColor(container.Require<TeamProperty>());
-
-        public override StringBuilder BuildUsername(StringBuilder builder, Container player)
-        {
-            string hex = GetHexColor(GetTeamColor(player.Require<TeamProperty>()));
-            return builder.Append("<color=#").Append(hex).Append(">").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</color>");
-        }
-
-        public override Color GetTeamColor(int teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;
+        
+        public override Color GetTeamColor(byte? teamId) => teamId is byte team
+            ? team == BlueTeam ? m_BlueColor : m_RedColor
+            : Color.white;
     }
 }

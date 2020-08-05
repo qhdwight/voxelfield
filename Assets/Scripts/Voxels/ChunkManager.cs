@@ -225,6 +225,7 @@ namespace Voxels
                                 if (!chunk) continue;
 
                                 Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
+                                ref Voxel voxel = ref chunk.GetVoxelNoCheck(voxelChunkPosition);
 
                                 /* Evaluated Change */
                                 VoxelChange evaluatedChange = GetEvaluated(change, chunk, voxelChunkPosition);
@@ -233,6 +234,11 @@ namespace Voxels
                                     evaluatedChange.density = null;
                                 else if (evaluatedChange.density is byte density && !change.noRandom.GetValueOrDefault())
                                     evaluatedChange.density = checked((byte) Mathf.RoundToInt(density * Random.Range(0.75f, 1.0f)));
+                                if (!change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
+                                {
+                                    evaluatedChange.color = null;
+                                    evaluatedChange.texture = null;
+                                }
                                 SetEvaluatedVoxel(change, evaluatedChange, chunk, voxelChunkPosition);
                             }
                             break;

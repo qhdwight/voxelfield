@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text;
 using LiteNetLib.Utils;
+using Swihoni.Collections;
 using UnityEngine;
 
 namespace Swihoni.Components
@@ -119,13 +120,15 @@ namespace Swihoni.Components
     [Serializable]
     public class BoxedEnumProperty<TEnum> : PropertyBase<TEnum> where TEnum : struct, Enum
     {
+        public static DualDictionary<TEnum, string> Names { get; } = typeof(TEnum).GetNameMap<TEnum>();
+
         public BoxedEnumProperty() { }
         public BoxedEnumProperty(TEnum value) : base(value) { }
         public override bool ValueEquals(in TEnum value) => Equals(Value, value);
         public override void SerializeValue(NetDataWriter writer) => writer.Put((int) (object) Value);
         public override void DeserializeValue(NetDataReader reader) => Value = (TEnum) (object) reader.GetInt();
-        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-        public override void ParseValue(string stringValue) => Value = (TEnum) Enum.Parse(typeof(TEnum), stringValue);
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Names.GetForward(Value));
+        public override void ParseValue(string stringValue) => Value = Names.GetReverse(stringValue);
     }
 
     /// <summary>
@@ -189,7 +192,7 @@ namespace Swihoni.Components
         public override bool Equals(object other) => this == (PropertyBase<T>) other;
 
         public static implicit operator T(PropertyBase<T> property) => property.Value;
-
+        
         // ReSharper disable PossibleNullReferenceException - Properties should not be null
         public static bool operator ==(PropertyBase<T> p1, PropertyBase<T> p2) => p1.WithValue && p2.WithValue && p1.ValueEquals(p2)
                                                                                || p1.WithoutValue && p2.WithoutValue;

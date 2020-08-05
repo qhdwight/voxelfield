@@ -16,20 +16,20 @@ namespace Swihoni.Sessions
         [SerializeField] private string m_AutoCommand = string.Empty;
         [SerializeField] private bool m_RunAutoCommand = default;
 
-        private StrictPool<PlayerVisualizerBehavior> m_Pool;
+        private StrictPool<PlayerDebugVisualizerBehavior> m_Pool;
 
         public bool SendDebug;
         public UIntProperty RollbackOverrideUs;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize() => _visualizerPrefab = Resources.LoadAll<GameObject>("Players")
-                                                                         .First(gameObject => gameObject.GetComponent<PlayerVisualizerBehavior>() != null);
+                                                                         .First(gameObject => gameObject.GetComponent<PlayerDebugVisualizerBehavior>() != null);
 
-        private static StrictPool<PlayerVisualizerBehavior> CreatePool() =>
-            new StrictPool<PlayerVisualizerBehavior>(16, () =>
+        private static StrictPool<PlayerDebugVisualizerBehavior> CreatePool() =>
+            new StrictPool<PlayerDebugVisualizerBehavior>(16, () =>
             {
                 GameObject instance = Instantiate(_visualizerPrefab);
-                var visualizer = instance.GetComponent<PlayerVisualizerBehavior>();
+                var visualizer = instance.GetComponent<PlayerDebugVisualizerBehavior>();
                 visualizer.Setup();
                 instance.SetActive(false);
                 return visualizer;
@@ -45,19 +45,19 @@ namespace Swihoni.Sessions
         {
             if (m_Pool == null) return;
             m_Pool.ReturnAll();
-            foreach (PlayerVisualizerBehavior visual in m_Pool)
+            foreach (PlayerDebugVisualizerBehavior visual in m_Pool)
                 visual.Dispose();
         }
 
-        public void Render(SessionBase session, int playerId, Container player, Color color)
+        public void Render(in SessionContext context, in Color color)
         {
             if (!SendDebug) return;
             if (m_Pool == null) m_Pool = CreatePool();
-            PlayerVisualizerBehavior visualizer = m_Pool.Obtain();
-            visualizer.gameObject.SetActive(true);
-            visualizer.Setup(session);
-            visualizer.Evaluate(session, playerId, player);
-            visualizer.Renderer.material.color = color;
+            PlayerDebugVisualizerBehavior debugVisualizer = m_Pool.Obtain();
+            debugVisualizer.gameObject.SetActive(true);
+            debugVisualizer.Setup();
+            debugVisualizer.Evaluate(context);
+            debugVisualizer.BodyAnimator.SetColor(color);
         }
     }
 }

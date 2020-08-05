@@ -7,8 +7,6 @@ using LiteNetLib.Utils;
 using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions;
-using Swihoni.Sessions.Entities;
-using Swihoni.Util.Math;
 using Voxels;
 using Voxels.Map;
 
@@ -60,12 +58,13 @@ namespace Voxelfield.Session
 
         protected override void OnSettingsTick(Container session)
         {
-            MapManager.Singleton.SetNamedMap(session.Require<VoxelMapNameProperty>());
+            var mapName = session.Require<VoxelMapNameProperty>();
+            MapManager.Singleton.SetNamedMap(mapName);
 
             MapLoadingStage stage = ChunkManager.Singleton.ProgressInfo.stage;
             if (stage == MapLoadingStage.Failed) throw new Exception("Map failed to load");
 
-            m_IsLoading = session.Require<VoxelMapNameProperty>() != MapManager.Singleton.Map.name || stage != MapLoadingStage.Completed;
+            m_IsLoading = mapName != MapManager.Singleton.Map.name || stage != MapLoadingStage.Completed;
             
             if (!m_IsLoading)
                 foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)

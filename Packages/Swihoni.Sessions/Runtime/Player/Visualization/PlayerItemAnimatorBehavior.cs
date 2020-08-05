@@ -24,6 +24,8 @@ namespace Swihoni.Sessions.Player.Visualization
         [SerializeField] private Renderer m_FpvArmsRenderer = default;
         [SerializeField] private Camera m_FpvCamera = default;
 
+        private Material m_FpvMaterial;
+
         private Animator m_Animator;
         private PlayableGraph m_Graph;
         private ItemVisualBehavior m_ItemVisual;
@@ -38,14 +40,16 @@ namespace Swihoni.Sessions.Player.Visualization
 
             ArmIk = GetComponent<ArmIk>();
             m_Animator = GetComponent<Animator>();
+            if (m_IsFpv) m_FpvMaterial = m_FpvArmsRenderer.material;
             string rootName = transform.root.name;
             m_Graph = PlayableGraph.Create($"{rootName} {m_GraphName} Item Animator");
             m_Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
             AnimationPlayableOutput.Create(m_Graph, $"{rootName} {m_GraphName} Output", m_Animator);
         }
 
-        public void Render(Container player, bool isLocalPlayer)
+        public void Render(in SessionContext context, bool isLocalPlayer)
         {
+            Container player = context.player;
             if (player.Without(out InventoryComponent inventory)) return;
 
             bool isVisible = (player.Without(out HealthProperty health) || health.IsActiveAndAlive) && inventory.HasItemEquipped;
@@ -98,6 +102,8 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             m_Animator.enabled = isVisible;
             ArmIk.enabled = isVisible;
+
+            if (m_IsFpv) m_FpvMaterial.color = context.Mode.GetTeamColor(player);
         }
 
         private (bool, ShadowCastingMode) DetermineItemVisibility(bool isLocalPlayer)

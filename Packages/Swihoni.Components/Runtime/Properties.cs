@@ -172,7 +172,7 @@ namespace Swihoni.Components
         public override bool ValueEquals(in bool value) => value == Value;
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetBool();
-        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
+        public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value ? "true" : "false");
         public override void ParseValue(string stringValue) => Value = bool.Parse(stringValue);
     }
 

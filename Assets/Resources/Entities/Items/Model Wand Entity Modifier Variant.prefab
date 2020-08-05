@@ -12,11 +12,6 @@ PrefabInstance:
       propertyPath: id
       value: 110
       objectReference: {fileID: 0}
-    - target: {fileID: 5575573772687058528, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
-        type: 3}
-      propertyPath: itemId
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 5575573772687058529, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}
       propertyPath: m_Size.x

@@ -23,11 +23,11 @@ namespace Swihoni.Sessions.Player.Visualization
             m_ColorKeys = colorGradient.colorKeys;
         }
 
-        public override void Render(SessionBase session, Container player, bool isLocalPlayer)
+        public override void Render(in SessionContext context, bool isLocalPlayer)
         {
-            foreach (PlayerItemAnimatorBehavior animator in m_ItemAnimators) animator.Render(player, isLocalPlayer);
+            foreach (PlayerItemAnimatorBehavior animator in m_ItemAnimators) animator.Render(context, isLocalPlayer);
             if (!m_Tracer) return;
-            var inventory = player.Require<InventoryComponent>();
+            var inventory = context.player.Require<InventoryComponent>();
             bool isTracerEnabled = inventory.tracerTimeUs.WithValue;
             if (isTracerEnabled)
             {

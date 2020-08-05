@@ -7,10 +7,6 @@ namespace Swihoni.Sessions.Editor
     public static class MenuItems
     {
         [MenuItem("Session/Save Default Config")]
-        public static void SaveDefaultConfig()
-        {
-            ConfigManagerBase.WriteDefaults();
-            Application.OpenURL($"file://{ConfigManagerBase.GetConfigFile()}");
-        }
+        public static void SaveDefaultConfig() => ConfigManagerBase.WriteDefaults(true);
     }
 }

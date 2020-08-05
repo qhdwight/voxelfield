@@ -3,19 +3,18 @@
 // #undef UNITY_EDITOR
 #endif
 
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
-using UnityEngine;
-using Voxelfield.Session;
 #if UNITY_EDITOR
 using Amazon;
 using Amazon.Runtime;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
-using Swihoni.Sessions;
+using UnityEditor;
 
 #endif
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using Voxelfield.Session;
 #if VOXELFIELD_RELEASE_SERVER
 using GameSession = Aws.GameLift.Server.Model.GameSession;
 using Aws.GameLift;
@@ -82,9 +81,9 @@ namespace Voxelfield
         [MenuItem("Build/Create Game Lift Fleet", priority = 300)]
         private static async void CreateFleet()
         {
-            Debug.Log("Executing upload zsh script...");
-            string uploadResult = SessionExtensions.ExecuteProcess($"{Application.dataPath}/Builds/gamelift_publish.zsh");
-            Debug.Log($"Upload standard output: {uploadResult}");
+            // Debug.Log("Executing upload zsh script...");
+            // string uploadResult = SessionExtensions.ExecuteProcess($"{Application.dataPath}/Builds/gamelift_publish.zsh {Application.version}");
+            // Debug.Log($"Upload standard output: {uploadResult}");
 
             var config = new AmazonGameLiftConfig {RegionEndpoint = RegionEndpoint.USWest1};
             var credentials = new BasicAWSCredentials(@"AKIAWKQVDVRWSC42QICS", @"upFhGo0YCcbw+ljii4btFV7EW0TUz3PXTNgk+tje");
@@ -114,7 +113,7 @@ namespace Voxelfield
             };
             var fleetRequest = new CreateFleetRequest
             {
-                Name = $"fleet-{build.Version}",
+                Name = $"voxelfield_{build.Version}",
                 FleetType = FleetType.ON_DEMAND,
                 CertificateConfiguration = new CertificateConfiguration {CertificateType = CertificateType.DISABLED},
                 BuildId = buildId,

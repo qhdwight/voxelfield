@@ -108,7 +108,8 @@ namespace Swihoni.Sessions
                 }
                 PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                 bool isPossessed = isActualLocalPlayer && !isSpectating || isSpectating && playerId == spectatingPlayerId;
-                if (visuals) visuals.Render(this, m_RenderSession, playerId, renderPlayer, isPossessed);
+                var context = new SessionContext(this, m_RenderSession, playerId: playerId, player: renderPlayer);
+                if (visuals) visuals.Render(context, isPossessed);
             }
             Profiler.EndSample();
 
@@ -152,19 +153,20 @@ namespace Swihoni.Sessions
             base.PostTick(tickSession);
         }
 
-        protected override void RollbackHitboxes(int playerId)
+        protected override void RollbackHitboxes(in SessionContext context)
         {
-            if (playerId == HostPlayerId)
+            if (context.playerId == HostPlayerId)
             {
-                for (var i = 0; i < MaxPlayers; i++)
+                for (var playerId = 0; playerId < MaxPlayers; playerId++)
                 {
-                    var visuals = (PlayerVisualsDispatcherBehavior) PlayerManager.UnsafeVisuals[i];
+                    var visuals = (PlayerVisualsDispatcherBehavior) PlayerManager.UnsafeVisuals[playerId];
                     if (!visuals) continue;
                     Container player = visuals.GetRecentPlayer();
-                    GetPlayerModifier(player, i).EvaluateHitboxes(this, i, player);
+                    var playerContext = new SessionContext(existing: context, playerId: playerId, player: player);
+                    GetPlayerModifier(player, playerId).EvaluateHitboxes(playerContext);
                 }
             }
-            else base.RollbackHitboxes(playerId);
+            else base.RollbackHitboxes(context);
         }
 
         public override int GetPeerPlayerId(NetPeer peer) => base.GetPeerPlayerId(peer) + 1; // Reserve zero for host player

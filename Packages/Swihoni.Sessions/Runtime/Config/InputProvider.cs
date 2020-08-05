@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Swihoni.Collections;
@@ -55,10 +56,8 @@ namespace Swihoni.Sessions.Config
 
         static InputType()
         {
-            foreach (FieldInfo field in typeof(InputType).GetFields(BindingFlags.Static | BindingFlags.Public))
-                Names.Add((byte) field.GetValue(null), field.Name);
-            foreach (FieldInfo field in typeof(PlayerInput).GetFields(BindingFlags.Static | BindingFlags.Public))
-                Names.Add((byte) field.GetValue(null), field.Name);
+            foreach (FieldInfo field in new[] {typeof(InputType), typeof(PlayerInput)}.SelectMany(t => t.GetFields(BindingFlags.Static | BindingFlags.Public)))
+                Names.Add((byte) field.GetValue(null), field.Name.ToSnakeCase());
         }
     }
 

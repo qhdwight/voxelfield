@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
+using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
@@ -74,9 +74,7 @@ namespace Voxelfield.Session.Mode
         protected override void HandleAutoRespawn(in SessionContext context, HealthProperty health)
         {
             if (context.sessionContainer.Require<SecureAreaComponent>().roundTime.WithoutValue)
-            {
                 base.HandleAutoRespawn(in context, health);
-            }
             else
             {
                 // TODO:refactor this snippet is used multiple times
@@ -106,33 +104,30 @@ namespace Voxelfield.Session.Mode
             Container sessionContainer = context.sessionContainer;
             uint durationUs = context.durationUs;
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
-            int activePlayerCount = GetActivePlayerCount(sessionContainer);
+            
+            var players = sessionContainer.Require<PlayerContainerArrayElement>();
+            int activePlayerCount = 0, redAlive = 0, blueAlive = 0;
+            foreach (Container player in players)
+            {
+                var health = player.Require<HealthProperty>();
+                if (health.WithoutValue) continue;
+                
+                activePlayerCount++;
+                if (health.IsDead) continue;
+                
+                if (player.Require<TeamProperty>().TryWithValue(out byte team))
+                    if (team == RedTeam) redAlive++;
+                    else if (team == BlueTeam) blueAlive++;
+            }
 
             SiteBehavior[] siteBehaviors = GetSiteBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
             if (secureArea.roundTime.WithValue)
             {
-                bool canAdvance = true,
-                     redJustSecured = false,
-                     isBuyTime = secureArea.roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
-
-                var players = sessionContainer.Require<PlayerContainerArrayElement>();
-                int redAlive = 0, blueAlive = 0;
-                foreach (Container player in players)
+                bool runTimer = true, redJustSecured = false, endedWithKills = false;
+                bool inFightTime = secureArea.roundTime >= m_Config.roundEndDurationUs && secureArea.roundTime < m_Config.roundEndDurationUs + m_Config.roundDurationUs;
+                if (inFightTime)
                 {
-                    if (player.Require<HealthProperty>().IsActiveAndAlive)
-                    {
-                        byte team = player.Require<TeamProperty>();
-                        if (team == RedTeam) redAlive++;
-                        else if (team == BlueTeam) blueAlive++;
-                    }
-                }
-
-                bool inRegularFightTime = secureArea.roundTime > m_Config.roundEndDurationUs,
-                     inRealizedFightTime = !isBuyTime && (inRegularFightTime || secureArea.RedInside(out SiteComponent _)),
-                     endedWithKills = false;
-                if (inRealizedFightTime)
-                {
-                    if (inRegularFightTime && activePlayerCount > 1)
+                    if (activePlayerCount > 1)
                     {
                         if (redAlive == 0)
                         {
@@ -145,11 +140,9 @@ namespace Voxelfield.Session.Mode
                             secureArea.lastWinningTeam.Value = RedTeam;
                         }
                         if (redAlive == 0 || blueAlive == 0)
-                        {
                             secureArea.roundTime.Value = m_Config.roundEndDurationUs;
-                            endedWithKills = true;
-                        }
                     }
+                    if (redAlive == 0 || blueAlive == 0) endedWithKills = true;
 
                     if (!endedWithKills)
                     {
@@ -176,6 +169,7 @@ namespace Voxelfield.Session.Mode
                             }
                             site.isRedInside.Value = isRedInside;
                             site.isBlueInside.Value = isBlueInside;
+                            
                             if (isRedInside && !isBlueInside)
                             {
                                 // Red securing with no opposition
@@ -188,14 +182,14 @@ namespace Voxelfield.Session.Mode
                                     sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
                                     secureArea.lastWinningTeam.Value = RedTeam;
                                 }
-                                canAdvance = redJustSecured = site.timeUs == 0u;
+                                runTimer = redJustSecured = site.timeUs == 0u;
                             }
-                            if (isRedInside && isBlueInside) canAdvance = false; // Both in site
+                            if (isRedInside && isBlueInside) runTimer = false; // Both in site
                         }
                     }
                 }
 
-                if (canAdvance)
+                if (runTimer)
                 {
                     if (secureArea.roundTime > durationUs)
                     {
@@ -350,6 +344,7 @@ namespace Voxelfield.Session.Mode
                         if (money.Value > MaxMoney) money.Value = MaxMoney;
                     }
                 });
+                context.sessionContainer.Require<EntityArrayElement>().Clear();
             }
         }
 
@@ -386,16 +381,8 @@ namespace Voxelfield.Session.Mode
 
         public ushort GetCost(int itemId) => m_ItemPrices[itemId - 1];
 
-        public override StringBuilder BuildUsername(StringBuilder builder, Container player)
-        {
-            if (player.Require<TeamProperty>().TryWithValue(out byte team))
-            {
-                string hex = GetHexColor(GetTeamColor(team));
-                return builder.Append("<color=#").Append(hex).Append(">").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</color>");
-            }
-            return base.BuildUsername(builder, player);
-        }
-
-        public override Color GetTeamColor(int teamId) => teamId == BlueTeam ? m_BlueColor : m_RedColor;
+        public override Color GetTeamColor(byte? teamId) => teamId is byte team
+            ? team == BlueTeam ? m_BlueColor : m_RedColor
+            : Color.white;
     }
 }

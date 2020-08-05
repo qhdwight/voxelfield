@@ -1,4 +1,8 @@
 using Swihoni.Components;
+using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Modes;
+using Swihoni.Sessions.Player.Components;
+using UnityEngine;
 
 namespace Swihoni.Sessions
 {
@@ -14,7 +18,7 @@ namespace Swihoni.Sessions
         public SessionContext(SessionBase session = null, Container sessionContainer = null, Container commands = null,
                               int? playerId = null, Container player = null,
                               Container entity = null,
-                              uint? timeUs = null, uint? durationUs = null, int? tickDelta = null, in SessionContext? existing = null)
+                              uint? timeUs = null, uint? durationUs = null, int? tickDelta = null, in SessionContext? existing = null) 
         {
             if (existing is SessionContext context)
             {
@@ -42,7 +46,11 @@ namespace Swihoni.Sessions
             }
         }
 
-        public Container GetModifyingPlayer() => session.GetModifyingPayerFromId(playerId, sessionContainer);
+        public Color TeamColor => Mode.GetTeamColor(player.Require<TeamProperty>());
+
+        public ModeBase Mode => ModeManager.GetMode(sessionContainer.Require<ModeIdProperty>());
+
+        public Container ModifyingPlayer => session.GetModifyingPayerFromId(playerId, sessionContainer);
 
         public Container GetModifyingPlayer(int otherPlayerId) => session.GetModifyingPayerFromId(otherPlayerId, sessionContainer);
     }

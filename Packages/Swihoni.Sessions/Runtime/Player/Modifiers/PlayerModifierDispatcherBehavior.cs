@@ -30,7 +30,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_Modifiers = GetComponents<PlayerModifierBehaviorBase>();
             m_HitboxManager = GetComponent<PlayerHitboxManager>();
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.Setup();
-            if (m_HitboxManager) m_HitboxManager.Setup(session);
+            if (m_HitboxManager) m_HitboxManager.Setup();
             m_Trigger = GetComponentInChildren<PlayerTrigger>(true);
             if (m_Trigger) m_Trigger.Setup(playerId);
         }
@@ -55,7 +55,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                            && context.commands.WithPropertyWithValue(out ChatEntryProperty chat))
             {
                 var namedChat = new ChatEntryProperty();
-                ModeManager.GetMode(context.sessionContainer).BuildUsername(namedChat.Builder, context.player).Append("> ").AppendPropertyValue(chat);
+                context.Mode.BuildUsername(namedChat.Builder, context.player).Append("> ").AppendPropertyValue(chat);
                 chats.Append(namedChat);
             }
         }
@@ -82,7 +82,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             foreach (PlayerModifierBehaviorBase modifier in m_Modifiers) modifier.ModifyCommands(session, commandsToModify, playerId);
         }
 
-        public void EvaluateHitboxes(SessionBase session, int playerId, Container player) => m_HitboxManager.Evaluate(session, playerId, player);
+        public void EvaluateHitboxes(in SessionContext context) => m_HitboxManager.Evaluate(context);
 
         public void Dispose()
         {

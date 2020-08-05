@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
@@ -36,6 +37,8 @@ namespace Swihoni.Sessions.Player.Visualization
         private AnimationMixerPlayable m_Mixer;
         private float m_LastNormalizedTime;
 
+        public Dictionary<Renderer, Material> m_TpvMaterials;
+
         internal override void Setup()
         {
             if (m_Graph.IsValid()) return;
@@ -60,13 +63,16 @@ namespace Swihoni.Sessions.Player.Visualization
             m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
             m_RagdollColliders = GetComponentsInChildren<Collider>();
             m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();
+
+            m_TpvMaterials = m_TpvRenders.ToDictionary(r => r, r => r.material);
         }
 
         private PlayerMovement m_PrefabPlayerMovement; // TODO:refactor make parameter
 
-        public override void Render(SessionBase session, Container player, bool isLocalPlayer)
+        public override void Render(in SessionContext context, bool isLocalPlayer)
         {
-            var modifierPrefab = (PlayerModifierDispatcherBehavior) session.PlayerManager.GetModifierPrefab(player.Require<ByteIdProperty>());
+            Container player = context.player;
+            var modifierPrefab = (PlayerModifierDispatcherBehavior) context.session.PlayerManager.GetModifierPrefab(player.Require<ByteIdProperty>());
             m_PrefabPlayerMovement = modifierPrefab.Movement;
 
             bool withHealth = player.With(out HealthProperty health),
@@ -97,6 +103,15 @@ namespace Swihoni.Sessions.Player.Visualization
                 m_Animator.transform.SetPositionAndRotation(move.position, Quaternion.AngleAxis(playerCamera.yaw, Vector3.up));
                 RenderMove(move);
             }
+
+            SetColor(context.Mode.GetTeamColor(player));
+        }
+
+        public void SetColor(in Color color)
+        {
+            if (m_TpvMaterials != null)
+                foreach (Material material in m_TpvMaterials.Values)
+                    material.color = color;
         }
 
         public override void SetActive(bool isActive)

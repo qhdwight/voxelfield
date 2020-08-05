@@ -129,12 +129,12 @@ namespace Swihoni.Sessions
             EntityManager.RenderAll(renderEntities, (visual, entity) => ((EntityVisualBehavior) visual).Render(entity));
         }
 
-        protected abstract void RollbackHitboxes(int playerId);
+        protected abstract void RollbackHitboxes(in SessionContext context);
 
-        public sealed override void RollbackHitboxesFor(int playerId)
+        public sealed override void RollbackHitboxesFor(in SessionContext context)
         {
-            RollbackHitboxes(playerId);
-            base.RollbackHitboxesFor(playerId);
+            RollbackHitboxes(context);
+            base.RollbackHitboxesFor(context);
         }
     }
 }

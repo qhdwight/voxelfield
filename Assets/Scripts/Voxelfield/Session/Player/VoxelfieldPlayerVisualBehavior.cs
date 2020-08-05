@@ -1,4 +1,3 @@
-using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
@@ -13,10 +12,10 @@ namespace Voxelfield.Session.Player
 
         public override void SetActive(bool isActive) => m_LastBreakTick = byte.MaxValue;
 
-        public override void Render(SessionBase session, Container player, bool isLocalPlayer)
+        public override void Render(in SessionContext context, bool isLocalPlayer)
         {
             if (!m_BreakVoxelAudioSource) return;
-            if (player.WithPropertyWithValue(out BrokeVoxelTickProperty breakTick))
+            if (context.player.WithPropertyWithValue(out BrokeVoxelTickProperty breakTick))
             {
                 m_BreakVoxelAudioSource.pitch = Random.Range(0.8f, 1.2f);
                 m_BreakVoxelAudioSource.volume = Random.Range(0.8f, 1.0f);

@@ -173,7 +173,7 @@ namespace Swihoni.Sessions.Config
                 switch (split.Count)
                 {
                     case 2:
-                        if (split[1] == "None")
+                        if (split[1] == "none")
                         {
                             property.Clear();
                             Debug.Log($"Cleared {split[0]}");
@@ -217,7 +217,13 @@ namespace Swihoni.Sessions.Config
             return Path.ChangeExtension(Path.Combine(parentFolder, "Config"), "vfc");
         }
 
-        public static void WriteDefaults() => Write(Default.Value);
+        public static void WriteDefaults(bool open = false)
+        {
+            Write(Default.Value);
+            if (open) OpenSettings();
+        }
+
+        public static void OpenSettings() => Application.OpenURL($"file://{GetConfigFile()}");
 
         private static void WriteActive() => Write(Active);
 
@@ -248,8 +254,16 @@ namespace Swihoni.Sessions.Config
                         string[] cells = line.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
                         string key = cells[0], stringValue = cells.Length == 1 ? string.Empty : cells[1].Trim();
                         PropertyBase property = Active.m_NameToConfig[key].Item1;
-                        if (stringValue == "None") property.Clear();
-                        else property.ParseValue(stringValue);
+                        if (stringValue == "none") property.Clear();
+                        else
+                            try
+                            {
+                                property.ParseValue(stringValue);
+                            }
+                            catch (Exception exception)
+                            {
+                                throw new Exception($"Failed to parse value: {stringValue}: {exception.Message}");
+                            }
                     }
                     OnActiveLoaded();
                 }

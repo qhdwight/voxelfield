@@ -2810,6 +2810,41 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 847859820}
     m_Modifications:
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1573267509}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: Voxelfield.Interface.MainMenuInterface, Voxelfield.Interface
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnQuitButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 7936714081107386826, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -10543,6 +10578,41 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 847859820}
     m_Modifications:
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1573267509}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: Voxelfield.Interface.MainMenuInterface, Voxelfield.Interface
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnSettingsButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 7936714081107386826, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -19690,6 +19760,18 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &2066611257 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+    type: 3}
+  m_PrefabInstance: {fileID: 2471454430389237608}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2075367743
 GameObject:
   m_ObjectHideFlags: 0
@@ -20634,6 +20716,46 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 847859820}
     m_Modifications:
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1573267509}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: Voxelfield.Interface.MainMenuInterface, Voxelfield.Interface
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnPlayButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.UI.Button, UnityEngine.UI
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936714081107386825, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
+      value: 
+      objectReference: {fileID: 2066611257}
     - target: {fileID: 7936714081107386826, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_LocalPosition.x

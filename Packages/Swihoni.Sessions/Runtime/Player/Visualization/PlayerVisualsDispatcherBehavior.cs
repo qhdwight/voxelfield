@@ -16,7 +16,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public virtual void Dispose() { }
 
-        public abstract void Render(SessionBase session, Container player, bool isLocalPlayer);
+        public abstract void Render(in SessionContext context, bool isLocalPlayer);
 
         public virtual void SetActive(bool isActive) { }
     }
@@ -51,13 +51,13 @@ namespace Swihoni.Sessions.Player.Visualization
         private static Vector3 GetPosition(Container session, int playerId)
             => session.GetPlayer(playerId).Require<MoveComponent>().GetPlayerEyePosition();
 
-        public void Render(SessionBase session, Container sessionContainer, int playerId, Container player, bool isLocalPlayer)
+        public void Render(in SessionContext context, bool isLocalPlayer)
         {
+            Container player = context.player, sessionContainer = context.sessionContainer;
             bool withHealth = player.With(out HealthProperty health),
                  withMove = player.With(out MoveComponent move),
                  isVisible = !withHealth || health.WithValue,
-                 showDamageNotifier = false,
-                 showUsername = false;
+                 showDamageNotifier = false, showUsername = false;
 
             if (isVisible)
             {
@@ -89,14 +89,14 @@ namespace Swihoni.Sessions.Player.Visualization
 
                     if (damageNotifier.elapsedUs > 0u)
                     {
-                        LookAtCamera(m_DamageText, sessionContainer, playerId, new Vector3 {y = 0.2f});
+                        LookAtCamera(m_DamageText, sessionContainer, context.playerId, new Vector3 {y = 0.2f});
                         m_DamageNotifierBuilder.Clear().Append(damageNotifier.damage.Value).Commit(m_DamageText);
                     }
                 }
 
                 if (showUsername)
                 {
-                    LookAtCamera(m_UsernameText, sessionContainer, playerId, new Vector3 {y = 0.2f});
+                    LookAtCamera(m_UsernameText, sessionContainer, context.playerId, new Vector3 {y = 0.2f});
                     m_UsernameBuilder.Clear();
                     ModeManager.GetMode(sessionContainer).BuildUsername(m_UsernameBuilder, player).Commit(m_UsernameText);
                 }
@@ -106,7 +106,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
             SetCameraVisible(isLocalPlayer && move.position.WithValue);
 
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(session, player, isLocalPlayer);
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.Render(context, isLocalPlayer);
 
             m_RecentRender = player;
         }

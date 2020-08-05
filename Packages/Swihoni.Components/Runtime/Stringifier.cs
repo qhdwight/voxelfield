@@ -21,7 +21,7 @@ namespace Swihoni.Components
         }
 
         public static StringBuilder AppendProperty(this StringBuilder builder, PropertyBase property)
-            => property.WithValue ? property.AppendValue(builder) : builder.Append("None");
+            => property.WithValue ? property.AppendValue(builder) : builder.Append("none");
 
         public static StringBuilder AppendPropertyValue(this StringBuilder builder, PropertyBase property) => property.AppendValue(builder);
     }

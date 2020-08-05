@@ -50,7 +50,7 @@ namespace Voxelfield.Session.Mode
 
             var mode = (CtfMode) ModeManager.GetMode(ModeIdProperty.Ctf);
             Color color = mode.GetTeamColor(Container);
-            float cosine = Mathf.Cos(flag.captureElapsedTimeUs.Else(0u) * TimeConversions.MicrosecondToSecond * m_TakingBlinkRate);
+            float cosine = Mathf.Cos(flag.captureElapsedTimeUs.Else() * TimeConversions.MicrosecondToSecond * m_TakingBlinkRate);
             color.a = cosine.Remap(-1.0f, 1.0f, 0.8f, 1.0f);
             m_Material.color = color;
 
