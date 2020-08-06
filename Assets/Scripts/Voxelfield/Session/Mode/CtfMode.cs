@@ -54,15 +54,15 @@ namespace Voxelfield.Session.Mode
             context.sessionContainer.Require<DualScoresComponent>().Zero();
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
-            base.Render(session, sessionContainer);
+            base.Render(context);
 
-            FlagBehavior[][] flagBehaviors = GetFlagBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
-            ArrayElement<FlagArrayElement> flags = sessionContainer.Require<CtfComponent>().teamFlags;
+            FlagBehavior[][] flagBehaviors = GetFlagBehaviors(context.sessionContainer.Require<VoxelMapNameProperty>());
+            ArrayElement<FlagArrayElement> flags = context.sessionContainer.Require<CtfComponent>().teamFlags;
             for (var flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
-                flagBehaviors[flagTeam][flagId].Render(session, sessionContainer, flags[flagTeam][flagId]);
+                flagBehaviors[flagTeam][flagId].Render(context, flags[flagTeam][flagId]);
         }
 
         public override void Modify(in SessionContext context)
@@ -89,10 +89,10 @@ namespace Voxelfield.Session.Mode
             var wantedItems = context.commands.Require<WantedItemIdsComponent>();
             var inventory = context.player.Require<InventoryComponent>();
             // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 2; i < wantedItems.Length; i++)
+            for (var i = 1; i < wantedItems.Length; i++)
             {
-                byte wantedId = wantedItems[i].Else();
-                if (inventory[i].id != wantedId) PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, wantedId, i);
+                ByteProperty wantedId = wantedItems[i];
+                if (inventory[i].id != wantedId) PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, wantedId.AsNullable, i);
             }
         }
 
@@ -221,8 +221,8 @@ namespace Voxelfield.Session.Mode
             player.ZeroIfWith<RespawnTimerProperty>();
             if (player.With(out InventoryComponent inventory))
             {
-                if (begin) inventory.Zero();
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
+                if (begin) PlayerItemManagerModiferBehavior.Clear(inventory);
+                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 0);
                 PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);
             }
             if (player.With(out MoveComponent move))
@@ -235,7 +235,7 @@ namespace Voxelfield.Session.Mode
                 }
             }
         }
-        
+
         public override Color GetTeamColor(byte? teamId) => teamId is byte team
             ? team == BlueTeam ? m_BlueColor : m_RedColor
             : Color.white;

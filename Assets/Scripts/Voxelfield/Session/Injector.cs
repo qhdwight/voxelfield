@@ -41,10 +41,10 @@ namespace Voxelfield.Session
             return false;
         }
 
-        protected override void OnRenderMode(Container session)
+        protected override void OnRenderMode(in SessionContext context)
         {
-            base.OnRenderMode(session);
-            if (!IsLoading(session))
+            base.OnRenderMode(in context);
+            if (!IsLoading(context))
                 foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
                     modelBehavior.RenderContainer();
         }
@@ -71,6 +71,6 @@ namespace Voxelfield.Session
                     modelBehavior.SetInMode(session);
         }
 
-        public override bool IsLoading(Container session) => m_IsLoading;
+        public override bool IsLoading(in SessionContext context) => m_IsLoading;
     }
 }

@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Entities
 
         public override void CustomInterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
         {
-            ThrowableComponent t1 = (ThrowableComponent) c1, t2 = (ThrowableComponent) c2;
+            // ThrowableComponent t1 = (ThrowableComponent) c1, t2 = (ThrowableComponent) c2;
             // Note: Only first level properties as of now
             for (var i = 0; i < Count; i++)
             {

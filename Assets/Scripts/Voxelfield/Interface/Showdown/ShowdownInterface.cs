@@ -9,22 +9,23 @@ namespace Voxelfield.Interface.Showdown
 {
     public class ShowdownInterface : RoundInterfaceBase
     {
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
+            Container sessionContainer = context.sessionContainer;
             bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Showdown;
             if (isVisible)
             {
                 var showdown = sessionContainer.Require<ShowdownSessionComponent>();
                 BuildUpperText(showdown);
-                BuildLocalPlayer(session, sessionContainer, showdown);
+                BuildLocalPlayer(context, showdown);
             }
             SetInterfaceActive(isVisible);
         }
 
-        private void BuildLocalPlayer(SessionBase session, Container sessionContainer, ShowdownSessionComponent showdown)
+        private void BuildLocalPlayer(in SessionContext context, ShowdownSessionComponent showdown)
         {
             var isProgressVisible = false;
-            if (showdown.number.WithValue && session.IsValidLocalPlayer(sessionContainer, out Container localPlayer))
+            if (showdown.number.WithValue && context.IsValidLocalPlayer(out Container localPlayer, out byte _))
             {
                 var showdownPlayer = localPlayer.Require<ShowdownPlayerComponent>();
                 uint securingElapsedUs = showdownPlayer.elapsedSecuringUs;

@@ -1,3 +1,4 @@
+using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -19,55 +20,72 @@ namespace Voxelfield.Interface
         [SerializeField] private UpperScoreInterface m_ScoreInterface = default;
         [SerializeField] private Image m_HasFlagSprite = default;
         [SerializeField] private BufferedTextGui m_RespawnText = default;
+        [SerializeField] private AudioSource m_TakeFlagAudioSource = default;
+        [SerializeField] private BufferedTextGui m_NotificationText = default;
         private LoadOutInterface m_LoadOutInterface;
+        private CtfMode m_CtfMode;
+        private readonly uint?[] m_LastFlagCaptureTimesUs = new uint?[FlagArrayElement.Count * 2];
 
         protected override void Awake()
         {
             base.Awake();
             m_LoadOutInterface = GetComponentInChildren<LoadOutInterface>();
+            m_CtfMode = (CtfMode) ModeManager.GetMode(ModeIdProperty.Ctf);
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
+            Container sessionContainer = context.sessionContainer;
             bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Ctf;
             if (isVisible)
             {
                 var ctf = sessionContainer.Require<CtfComponent>();
-                RenderLocalPlayer(session, sessionContainer, ctf);
+                RenderLocalPlayer(context, ctf);
 
-                var mode = (CtfMode) ModeManager.GetMode(ModeIdProperty.Ctf);
                 var teamScores = sessionContainer.Require<DualScoresComponent>();
-                m_ScoreInterface.Render(teamScores[CtfMode.BlueTeam], mode.GetTeamColor(CtfMode.BlueTeam),
-                                        teamScores[CtfMode.RedTeam], mode.GetTeamColor(CtfMode.RedTeam));
+                m_ScoreInterface.Render(teamScores[CtfMode.BlueTeam], m_CtfMode.GetTeamColor(CtfMode.BlueTeam),
+                                        teamScores[CtfMode.RedTeam], m_CtfMode.GetTeamColor(CtfMode.RedTeam));
             }
             SetInterfaceActive(isVisible);
         }
 
-        private void RenderLocalPlayer(SessionBase session, Container sessionContainer, CtfComponent ctf)
+        private void RenderLocalPlayer(in SessionContext context, CtfComponent ctf)
         {
-            bool isTaking = false, hasFlag = false, isRespawnVisible = false;
-            if (session.IsValidLocalPlayer(sessionContainer, out Container localPlayer, false))
+            bool localTaking = false, localHasFlag = false, isRespawnVisible = false, isNotificationVisible = false;
+            if (context.IsValidLocalPlayer(out Container localPlayer, out byte localPlayerId, false))
             {
                 if (localPlayer.Require<HealthProperty>().IsAlive)
                 {
                     ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
                     for (var flagTeam = 0; flagTeam < flags.Length; flagTeam++)
                     {
-                        if (flagTeam == localPlayer.Require<TeamProperty>()) continue; // Can't possibly take a team flag... Unless???
-                        foreach (FlagComponent flag in flags[flagTeam])
+                        for (var flagIndex = 0; flagIndex < flags[flagTeam].Length; flagIndex++)
                         {
-                            if (flag.capturingPlayerId == sessionContainer.Require<LocalPlayerId>())
+                            FlagComponent flag = flags[flagTeam][flagIndex];
+                            ElapsedUsProperty captureTimeUs = flag.captureElapsedTimeUs;
+                            if (flag.capturingPlayerId.TryWithValue(out byte capturingPlayerId))
                             {
-                                if (flag.captureElapsedTimeUs < CtfMode.TakeFlagDurationUs)
+                                bool isTaking = captureTimeUs < CtfMode.TakeFlagDurationUs;
+                                if (capturingPlayerId == localPlayerId)
                                 {
-                                    isTaking = true;
-                                    m_TakeProgress.Set(flag.captureElapsedTimeUs, CtfMode.TakeFlagDurationUs);
+                                    if (isTaking)
+                                    {
+                                        localTaking = true;
+                                        m_TakeProgress.Set(captureTimeUs, CtfMode.TakeFlagDurationUs);
+                                    }
+                                    else localHasFlag = true;
                                 }
-                                else
-                                {
-                                    hasFlag = true;
-                                }
+                                isNotificationVisible = true;
+                                StringBuilder builder = m_NotificationText.StartBuild();
+                                m_CtfMode.BuildUsername(builder, context.GetPlayer(capturingPlayerId))
+                                         .Append(isTaking ? " is Taking a Flag" : " Has a Flag")
+                                         .Commit(m_NotificationText);
                             }
+                            int flatIndex = flagTeam * flags.Length + flagIndex;
+                            if (m_LastFlagCaptureTimesUs[flatIndex] is uint lt && captureTimeUs.TryWithValue(out uint ct)
+                                                                               && lt < CtfMode.TakeFlagDurationUs && ct > CtfMode.TakeFlagDurationUs)
+                                m_TakeFlagAudioSource.Play();
+                            m_LastFlagCaptureTimesUs[flatIndex] = captureTimeUs.AsNullable;
                         }
                     }
                 }
@@ -83,9 +101,10 @@ namespace Voxelfield.Interface
                 }
             }
             else m_LoadOutInterface.SetInterfaceActive(false);
-            m_HasFlagSprite.enabled = hasFlag;
-            m_TakeProgress.SetInterfaceActive(isTaking);
+            m_HasFlagSprite.enabled = localHasFlag;
+            m_TakeProgress.SetInterfaceActive(localTaking);
             m_RespawnText.enabled = isRespawnVisible;
+            m_NotificationText.enabled = isNotificationVisible;
         }
     }
 }

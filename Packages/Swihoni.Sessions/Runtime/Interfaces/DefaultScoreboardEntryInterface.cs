@@ -9,7 +9,7 @@ namespace Swihoni.Sessions.Interfaces
     {
         [SerializeField] protected BufferedTextGui m_UsernameText = default, m_KillsText = default, m_DamageText = default, m_DeathsText = default, m_PingText = default;
 
-        public override void Render(SessionBase session, Container sessionContainer, Container player)
+        public override void Render(in SessionContext context, Container player)
         {
             bool isVisible = player.Without(out HealthProperty health) || health.WithValue;
             if (isVisible && player.With(out StatsComponent stats))
@@ -18,7 +18,7 @@ namespace Swihoni.Sessions.Interfaces
                 m_DamageText.StartBuild().Append(stats.damage).Commit(m_DamageText);
                 m_DeathsText.StartBuild().Append(stats.deaths).Commit(m_DeathsText);
                 m_PingText.StartBuild().Append(stats.ping).Commit(m_PingText);
-                SessionBase.BuildUsername(sessionContainer, m_UsernameText.StartBuild(), player).Commit(m_UsernameText);
+                context.Mode.BuildUsername(m_UsernameText.StartBuild(), player).Commit(m_UsernameText);
             }
             SetInterfaceActive(isVisible);
         }

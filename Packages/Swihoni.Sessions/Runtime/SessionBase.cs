@@ -59,7 +59,7 @@ namespace Swihoni.Sessions
 
         protected internal virtual void OnClientReceive(ServerSessionContainer serverSession) { }
 
-        protected internal virtual void OnRenderMode(Container session) { }
+        protected internal virtual void OnRenderMode(in SessionContext context) { }
 
         protected internal virtual void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
 
@@ -67,7 +67,7 @@ namespace Swihoni.Sessions
 
         protected internal virtual void OnDispose() { }
 
-        public virtual bool IsLoading(Container session) => false;
+        public virtual bool IsLoading(in SessionContext context) => false;
 
         public virtual void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior) { }
 
@@ -130,6 +130,7 @@ namespace Swihoni.Sessions
 
         protected static Container _container;
         protected static SessionBase _session;
+        protected static SessionContext _context;
 
         protected readonly SessionInjectorBase m_Injector;
         private long m_FixedUpdateTicks, m_RenderTicks;
@@ -267,18 +268,6 @@ namespace Swihoni.Sessions
             Cursor.visible = desiredVisibility;
         }
 
-        public bool IsValidLocalPlayer(Container sessionContainer, out Container localPlayer, bool needsToBeAlive = true)
-        {
-            var localPlayerId = sessionContainer.Require<LocalPlayerId>();
-            if (localPlayerId.WithoutValue)
-            {
-                localPlayer = default;
-                return false;
-            }
-            localPlayer = GetModifyingPayerFromId(localPlayerId);
-            return !needsToBeAlive || localPlayer.Require<HealthProperty>().IsActiveAndAlive;
-        }
-
         protected virtual void Render(uint renderTimeUs) { }
 
         protected virtual void Tick(uint tick, uint timeUs, uint durationUs)
@@ -386,7 +375,7 @@ namespace Swihoni.Sessions
                     action(sessionInterface);
         }
 
-        public virtual bool IsLoading => m_Injector.IsLoading(GetLatestSession());
+        public virtual bool IsLoading => m_Injector.IsLoading(new SessionContext(this, GetLatestSession()));
 
         public virtual void Dispose()
         {
@@ -419,10 +408,7 @@ namespace Swihoni.Sessions
                 ConfigManagerBase.TryHandleArguments(arguments);
             }
         }
-
-        public static StringBuilder BuildUsername(Container sessionContainer, StringBuilder builder, Container player)
-            => ModeManager.GetMode(sessionContainer).BuildUsername(builder, player);
-
+        
         protected void RenderVerified(Container session)
         {
             _session = this;

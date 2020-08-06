@@ -17,10 +17,10 @@ namespace Voxelfield.Interface
             m_Camera.enabled = isActive;
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
             bool isVisible = ((ConfigManager) ConfigManagerBase.Active).enableMiniMap;
-            if (isVisible && session.IsValidLocalPlayer(sessionContainer, out Container localPlayer)
+            if (isVisible && context.IsValidLocalPlayer(out Container localPlayer, out byte _)
                           && localPlayer.With(out MoveComponent move) && localPlayer.With(out CameraComponent cam))
             {
                 Vector3 position = move.position + new Vector3 {y = 200.0f};

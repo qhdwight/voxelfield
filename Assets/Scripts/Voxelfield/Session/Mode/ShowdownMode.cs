@@ -144,7 +144,7 @@ namespace Voxelfield.Session.Mode
             if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
             if (player.With(out InventoryComponent inventory))
             {
-                inventory.Zero();
+                PlayerItemManagerModiferBehavior.Clear(inventory);
                 PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
             }
             player.Require<ShowdownPlayerComponent>().Zero();
@@ -219,12 +219,12 @@ namespace Voxelfield.Session.Mode
 
         public override bool AllowTeamSwap(in SessionContext context) => InWarmup(context.sessionContainer);
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
-            base.Render(session, sessionContainer);
+            base.Render(context);
 
             if (MapManager.Singleton.Models.Count == 0) return;
-            ArrayElement<CurePackageComponent> cures = sessionContainer.Require<ShowdownSessionComponent>().curePackages;
+            ArrayElement<CurePackageComponent> cures = context.sessionContainer.Require<ShowdownSessionComponent>().curePackages;
             // TODO:performance
             m_CurePackages = MapManager.Singleton.Models.Values
                                        .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Cure)
@@ -243,8 +243,8 @@ namespace Voxelfield.Session.Mode
         //     }
         // }
 
-        public bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer)
-            => sessionLocalPlayer.Require<HealthProperty>().IsAlive && sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
+        public bool CanBuy(in SessionContext context, Container sessionLocalPlayer)
+            => sessionLocalPlayer.Require<HealthProperty>().IsAlive && context.sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
 
         public ushort GetCost(int itemId) => throw new NotImplementedException();
     }

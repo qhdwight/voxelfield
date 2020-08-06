@@ -23,10 +23,10 @@ namespace Swihoni.Sessions.Config
 
     public class ConfigAttribute : ConfigAttributeBase
     {
-        public string Name { get; }
+        public string Name { get; set; }
         public ConfigType Type { get; }
 
-        public ConfigAttribute(string name, ConfigType type = ConfigType.Client)
+        public ConfigAttribute(ConfigType type = ConfigType.Client, string name = null)
         {
             Name = name;
             Type = type;
@@ -37,10 +37,10 @@ namespace Swihoni.Sessions.Config
     {
 #if !UNITY_EDITOR
         internal override void Update() => Screen.SetResolution(ConfigManagerBase.Active.resolutionWidth, ConfigManagerBase.Active.resolutionHeight,
-                                                                ConfigManagerBase.Active.fullScreen, ConfigManagerBase.Active.refreshRate);
+                                                                ConfigManagerBase.Active.fullScreenMode, ConfigManagerBase.Active.refreshRate);
 #endif
 
-        public DisplayConfigAttribute(string name) : base(name) { }
+        public DisplayConfigAttribute(string name = null) : base(name: name) { }
     }
 
     [Serializable]
@@ -66,37 +66,37 @@ namespace Swihoni.Sessions.Config
             if (defaults.resolutionWidth.WithoutValue) defaults.resolutionWidth.Value = Screen.width / 2;
             if (defaults.resolutionHeight.WithoutValue) defaults.resolutionHeight.Value = Screen.height / 2;
             if (defaults.refreshRate.WithoutValue) defaults.refreshRate.Value = Screen.currentResolution.refreshRate;
-            if (defaults.fullScreen.WithoutValue) defaults.fullScreen.Value = FullScreenMode.Windowed;
+            if (defaults.fullScreenMode.WithoutValue) defaults.fullScreenMode.Value = FullScreenMode.Windowed;
 #endif
-            defaults.input = new InputBindingProperty();
+            defaults.inputBindings = new InputBindingProperty();
             return defaults;
         }
 
         private Dictionary<Type, (PropertyBase, ConfigAttribute)> m_TypeToConfig;
         private Dictionary<string, (PropertyBase, ConfigAttribute)> m_NameToConfig;
 
-        [Config("tick_rate", ConfigType.ServerSession)] public TickRateProperty tickRate = new TickRateProperty(60);
-        [Config("allow_cheats", ConfigType.ServerSession)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
-        [Config("mode_id", ConfigType.ServerSession)] public ModeIdProperty modeId = new ModeIdProperty();
+        [Config(ConfigType.ServerSession)] public TickRateProperty tickRate = new TickRateProperty(60);
+        [Config(ConfigType.ServerSession)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
+        [Config(ConfigType.ServerSession)] public ModeIdProperty modeId = new ModeIdProperty();
 
-        [Config("respawn_duration", ConfigType.ServerSession)] public TimeUsProperty respawnDuration = new TimeUsProperty();
-        [Config("respawn_health", ConfigType.ServerSession)] public ByteProperty respawnHealth = new ByteProperty(100);
+        [Config(ConfigType.ServerSession)] public TimeUsProperty respawnDuration = new TimeUsProperty();
+        [Config(ConfigType.ServerSession)] public ByteProperty respawnHealth = new ByteProperty(100);
 
-        [Config("fov")] public ByteProperty fov = new ByteProperty(60);
-        [Config("target_fps")] public UShortProperty targetFps = new UShortProperty(200);
-        [Config("volume")] public FloatProperty volume = new FloatProperty(0.5f);
-        [Config("sensitivity")] public FloatProperty sensitivity = new FloatProperty(2.0f);
-        [Config("ads_multiplier")] public FloatProperty adsMultiplier = new FloatProperty(1.0f);
-        [Config("crosshair_thickness")] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
-        [Config("input_bindings")] public InputBindingProperty input = new InputBindingProperty();
-        [Config("fps_update_rate")] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
-        [Config("log_prediction_errors")] public BoolProperty logPredictionErrors = new BoolProperty();
-        [Config("previous_commands")] public ListProperty<StringProperty> consoleHistory = new ListProperty<StringProperty>(32);
+        [Config] public ByteProperty fov = new ByteProperty(60);
+        [Config] public UShortProperty targetFps = new UShortProperty(200);
+        [Config] public FloatProperty volume = new FloatProperty(0.5f);
+        [Config] public FloatProperty sensitivity = new FloatProperty(2.0f);
+        [Config] public FloatProperty adsMultiplier = new FloatProperty(1.0f);
+        [Config] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
+        [Config] public InputBindingProperty inputBindings = new InputBindingProperty();
+        [Config] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
+        [Config] public BoolProperty logPredictionErrors = new BoolProperty();
+        [Config] public ListProperty<StringProperty> consoleHistory = new ListProperty<StringProperty>(32);
 
-        [DisplayConfig("resolution_width")] public IntProperty resolutionWidth = new IntProperty();
-        [DisplayConfig("resolution_height")] public IntProperty resolutionHeight = new IntProperty();
-        [DisplayConfig("refresh_rate")] public IntProperty refreshRate = new IntProperty();
-        [DisplayConfig("fullscreen_mode")] public BoxedEnumProperty<FullScreenMode> fullScreen = new BoxedEnumProperty<FullScreenMode>();
+        [DisplayConfig] public IntProperty resolutionWidth = new IntProperty();
+        [DisplayConfig] public IntProperty resolutionHeight = new IntProperty();
+        [DisplayConfig] public IntProperty refreshRate = new IntProperty();
+        [DisplayConfig] public BoxedEnumProperty<FullScreenMode> fullScreenMode = new BoxedEnumProperty<FullScreenMode>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
@@ -130,6 +130,7 @@ namespace Swihoni.Sessions.Config
                 bool isConfig = element.TryAttribute(out ConfigAttribute config);
                 if (isConfig)
                 {
+                    if (config.Name == null) config.Name = element.Field.Name.ToSnakeCase();
                     switch (element)
                     {
                         case ComponentBase component:
@@ -230,10 +231,8 @@ namespace Swihoni.Sessions.Config
         private static void Write(ConfigManagerBase config)
         {
             var builder = new StringBuilder();
-            foreach (KeyValuePair<string, (PropertyBase, ConfigAttribute)> pair in config.m_NameToConfig)
-            {
+            foreach (KeyValuePair<string, (PropertyBase, ConfigAttribute)> pair in config.m_NameToConfig.OrderBy(key => key.Key))
                 builder.Append(pair.Key).Append(Separator).Append(" ").AppendProperty(pair.Value.Item1).Append("\n");
-            }
             string configPath = GetConfigFile();
             File.WriteAllText(configPath, builder.ToString());
 #if UNITY_EDITOR

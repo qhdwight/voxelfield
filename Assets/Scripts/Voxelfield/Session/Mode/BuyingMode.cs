@@ -8,7 +8,7 @@ namespace Voxelfield.Session.Mode
 {
     public interface IModeWithBuying
     {
-        bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer);
+        bool CanBuy(in SessionContext context, Container sessionLocalPlayer);
 
         ushort GetCost(int itemId);
     }
@@ -27,7 +27,7 @@ namespace Voxelfield.Session.Mode
                     if (cost <= money)
                     {
                         var inventory = player.Require<InventoryComponent>();
-                        if (PlayerItemManagerModiferBehavior.AddItem(inventory, wantedBuyItemId, out byte _))
+                        if (PlayerItemManagerModiferBehavior.AddItem(inventory, wantedBuyItemId).HasValue)
                             money.Value -= cost;
                     }
                 }

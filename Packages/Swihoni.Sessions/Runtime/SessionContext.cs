@@ -18,7 +18,7 @@ namespace Swihoni.Sessions
         public SessionContext(SessionBase session = null, Container sessionContainer = null, Container commands = null,
                               int? playerId = null, Container player = null,
                               Container entity = null,
-                              uint? timeUs = null, uint? durationUs = null, int? tickDelta = null, in SessionContext? existing = null) 
+                              uint? timeUs = null, uint? durationUs = null, int? tickDelta = null, in SessionContext? existing = null)
         {
             if (existing is SessionContext context)
             {
@@ -53,5 +53,21 @@ namespace Swihoni.Sessions
         public Container ModifyingPlayer => session.GetModifyingPayerFromId(playerId, sessionContainer);
 
         public Container GetModifyingPlayer(int otherPlayerId) => session.GetModifyingPayerFromId(otherPlayerId, sessionContainer);
+
+        public Container GetPlayer(int otherPlayerId) => sessionContainer.GetPlayer(otherPlayerId);
+        
+        public bool IsValidLocalPlayer(out Container localPlayer, out byte localPlayerId, bool needsToBeAlive = true)
+        {
+            var localPlayerIdProperty = sessionContainer.Require<LocalPlayerId>();
+            if (localPlayerIdProperty.WithoutValue)
+            {
+                localPlayer = default;
+                localPlayerId = default;
+                return false;
+            }
+            localPlayerId = localPlayerIdProperty;
+            localPlayer = GetModifyingPlayer(localPlayerId);
+            return !needsToBeAlive || localPlayer.Require<HealthProperty>().IsActiveAndAlive;
+        }
     }
 }

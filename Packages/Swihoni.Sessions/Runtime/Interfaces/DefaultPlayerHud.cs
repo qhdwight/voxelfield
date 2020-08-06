@@ -37,15 +37,16 @@ namespace Swihoni.Sessions.Interfaces
             m_DefaultCrosshair = m_Crosshair.sprite;
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
+            Container sessionContainer = context.sessionContainer;
             bool IsVisible(out Container sessionLocalPlayer, out HealthProperty localHealth)
             {
                 sessionLocalPlayer = default;
                 localHealth = default;
                 var localPlayerId = sessionContainer.Require<LocalPlayerId>();
                 if (localPlayerId.WithoutValue) return false;
-                sessionLocalPlayer = session.GetModifyingPayerFromId(localPlayerId);
+                sessionLocalPlayer = sessionContainer.GetPlayer(localPlayerId);
                 return sessionLocalPlayer.Without(out localHealth) || localHealth.IsActiveAndAlive;
             }
             bool isActive = IsVisible(out Container localPlayer, out HealthProperty health);
@@ -92,7 +93,7 @@ namespace Swihoni.Sessions.Interfaces
                     for (var index = 0; index < inventory.items.Length; index++)
                     {
                         ItemComponent item = inventory.items[index];
-                        if (item.id == ItemId.None) continue;
+                        if (item.id.WithoutValue) continue;
                         if (realizedIndex++ != 0) builder.Append("  ");
                         string itemName = ItemAssetLink.GetModifier(item.id).itemName;
                         // TODO:feature show key bind instead

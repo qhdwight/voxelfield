@@ -1,6 +1,5 @@
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
@@ -19,7 +18,7 @@ namespace Swihoni.Sessions.Interfaces
             SetInterfaceActive(false);
         }
 
-        public abstract void Render(SessionBase session, Container sessionContainer);
+        public abstract void Render(in SessionContext context);
 
         public virtual void OnMostRecent(SessionBase session, Container sessionContainer) { }
 
@@ -30,9 +29,9 @@ namespace Swihoni.Sessions.Interfaces
             if (m_IsDuringGame && !isActive) SetInterfaceActive(false);
         }
 
-        protected static bool HasItemEquipped(SessionBase session, Container sessionContainer, byte modeId, byte itemId, byte? itemId2 = null)
-            => sessionContainer.Require<ModeIdProperty>() == modeId
-            && session.IsValidLocalPlayer(sessionContainer, out Container localPlayer)
+        protected static bool HasItemEquipped(in SessionContext context, byte modeId, byte itemId, byte? itemId2 = null)
+            => context.sessionContainer.Require<ModeIdProperty>() == modeId
+            && context.IsValidLocalPlayer(out Container localPlayer, out byte _)
             && localPlayer.Require<InventoryComponent>().WithItemEquipped(out ItemComponent item)
             && (item.id == itemId || item.id == itemId2);
 

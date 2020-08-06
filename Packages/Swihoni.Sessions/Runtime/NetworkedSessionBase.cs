@@ -9,6 +9,7 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
+using UnityEditor;
 
 namespace Swihoni.Sessions
 {
@@ -97,20 +98,19 @@ namespace Swihoni.Sessions
 
         protected override void Render(uint renderTimeUs)
         {
-            Container latestSession = GetLatestSession();
-            RenderInterfaces(latestSession);
-            ModeManager.GetMode(m_RenderSession).Render(this, m_RenderSession);
+            var context = new SessionContext(this, m_RenderSession, timeUs: renderTimeUs);
+            RenderInterfaces(context);
+            ModeManager.GetMode(m_RenderSession).Render(context);
         }
 
-        protected void RenderInterfaces(Container session)
+        protected void RenderInterfaces(SessionContext context)
         {
-            _session = this;
-            _container = session;
+            _context = context;
             _isInGame = !IsLoading;
             ForEachSessionInterface(sessionInterface =>
             {
                 if (!sessionInterface.IsDuringGame || _isInGame)
-                    sessionInterface.Render(_session, _container);
+                    sessionInterface.Render(_context);
             });
         }
 

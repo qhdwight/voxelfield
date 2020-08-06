@@ -20,12 +20,12 @@ namespace Voxelfield.Interface
             m_SecureAreaMode = (SecureAreaMode) ModeManager.GetMode(ModeIdProperty.SecureArea);
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
-            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.SecureArea;
+            bool isVisible = context.sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.SecureArea;
             if (isVisible)
             {
-                var secureArea = sessionContainer.Require<SecureAreaComponent>();
+                var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
                 BuildUpperText(secureArea);
                 BuildProgress(secureArea);
             }

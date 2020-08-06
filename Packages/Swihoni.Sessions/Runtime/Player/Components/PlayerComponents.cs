@@ -143,9 +143,9 @@ namespace Swihoni.Sessions.Player.Components
         // Embedded item components are only explicitly interpolated, since usually it only needs to be done on equipped item
         public void InterpolateFrom(ItemComponent i1, ItemComponent i2, float interpolation)
         {
-            if (i1.id == ItemId.None)
+            if (i1.id.WithoutValue || i2.id.WithoutValue)
             {
-                this.SetTo(i1);
+                this.SetTo(i2);
                 return;
             }
             _modifier = ItemAssetLink.GetModifier(i1.id);
@@ -170,8 +170,8 @@ namespace Swihoni.Sessions.Player.Components
         [ClientNonChecked] public VectorProperty tracerStart, tracerEnd;
 
         public ItemComponent EquippedItemComponent => this[equippedIndex];
-        public bool HasItemEquipped => !HasNoItemEquipped;
-        public bool HasNoItemEquipped => equippedIndex == PlayerItemManagerModiferBehavior.NoneIndex;
+        public bool HasItemEquipped => equippedIndex.WithValue;
+        public bool HasNoItemEquipped => !HasItemEquipped;
 
         public bool WithItemEquipped(out ItemComponent equippedItem)
         {
@@ -209,7 +209,7 @@ namespace Swihoni.Sessions.Player.Components
                 items[i].InterpolateFrom(i1.items[i], i2.items[i], interpolation);
         }
 
-        public new ItemComponent this[int index] => items[index - 1];
+        public new ItemComponent this[int index] => items[index];
 
         public static uint VisualDuration(ItemStatusModiferProperties m) => m.isPersistent ? uint.MaxValue : m.durationUs;
     }

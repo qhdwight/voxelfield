@@ -259,6 +259,12 @@ namespace Swihoni.Components
             if (otherProperty.WithValue) Value = otherProperty.Value;
             else Clear();
         }
+        
+        public void SetToNullable(T? nullable)
+        {
+            if (nullable is T value) Value = value;
+            else Clear();
+        }
 
         /// <exception cref="ArgumentException">If types are different.</exception>
         public sealed override void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation)

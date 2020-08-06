@@ -45,7 +45,7 @@ MonoBehaviour:
   crosshairThickness:
     m_Flags: 1
     m_Value: 1
-  input:
+  inputBindings:
     m_Flags: 1
   fpsUpdateRate:
     m_Flags: 1
@@ -66,14 +66,17 @@ MonoBehaviour:
   refreshRate:
     m_Flags: 0
     m_Value: 0
-  fullScreen:
+  fullScreenMode:
     m_Flags: 0
-    m_Value: 3
+    m_Value: 0
   mapName:
     m_Flags: 1
   enableMiniMap:
     m_Flags: 1
     m_Value: 0
+  authenticateSteam:
+    m_Flags: 1
+    m_Value: 1
   secureAreaConfig:
     roundEndDurationUs:
       m_Flags: 1

@@ -17,24 +17,25 @@ namespace Voxelfield.Interface.Designer
     {
         [SerializeField] private BufferedTextGui m_InformationText = default;
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
+            Container sessionContainer = context.sessionContainer;
             bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer
                           && sessionContainer.Require<LocalPlayerId>().WithValue;
             Container localPlayer = default;
-            byte equippedItemId = ItemId.None;
+            byte? equippedItemId = null;
             if (isVisible)
             {
                 int localPlayerId = sessionContainer.Require<LocalPlayerId>();
-                localPlayer = session.GetModifyingPayerFromId(localPlayerId, sessionContainer);
+                localPlayer = context.GetPlayer(localPlayerId);
                 if (localPlayer.Require<InventoryComponent>().WithItemEquipped(out ItemComponent item)) equippedItemId = item.id;
             }
-            if (equippedItemId == ItemId.None || equippedItemId != ItemId.VoxelWand && equippedItemId != ItemId.ModelWand) isVisible = false;
+            if (!equippedItemId.HasValue || equippedItemId != ItemId.VoxelWand && equippedItemId != ItemId.ModelWand) isVisible = false;
             if (isVisible)
             {
                 var designer = localPlayer.Require<DesignerPlayerComponent>();
                 StringBuilder builder = m_InformationText.StartBuild();
-                switch (equippedItemId)
+                switch (equippedItemId.Value)
                 {
                     case ItemId.VoxelWand:
                         AppendProperty("P1: ", designer.positionOne, builder).Append("\n");

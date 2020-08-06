@@ -27,13 +27,13 @@ namespace Voxelfield.Session.Mode
             m_SpriteMaterial = m_SpriteRenderer.material;
         }
 
-        public void Render(SessionBase session, Container sessionContainer, FlagComponent flag)
+        public void Render(in SessionContext context, FlagComponent flag)
         {
             Vector3 spritePosition;
             bool isFlagTaken = flag.captureElapsedTimeUs.WithValue && flag.captureElapsedTimeUs > CtfMode.TakeFlagDurationUs;
             if (isFlagTaken)
             {
-                Container capturingPlayer = session.GetModifyingPayerFromId(flag.capturingPlayerId);
+                Container capturingPlayer = context.GetPlayer(flag.capturingPlayerId);
                 spritePosition = capturingPlayer.Require<MoveComponent>().GetPlayerEyePosition() + new Vector3 {y = 0.2f};
             }
             else spritePosition = transform.position + new Vector3 {y = 2.8f};
@@ -44,7 +44,7 @@ namespace Voxelfield.Session.Mode
             float distanceMultiplier = Mathf.Clamp(Vector3.Distance(localPosition, spritePosition) * 0.05f, 1.0f, 5.0f);
             spritePosition += new Vector3 {y = distanceMultiplier};
             m_SpriteRenderer.transform.localScale = Vector3.one * distanceMultiplier;
-            if (isFlagTaken && sessionContainer.Require<LocalPlayerId>() == flag.capturingPlayerId) isIconVisible = false;
+            if (isFlagTaken && context.sessionContainer.Require<LocalPlayerId>() == flag.capturingPlayerId) isIconVisible = false;
 
             m_SpriteRenderer.transform.position = spritePosition;
 

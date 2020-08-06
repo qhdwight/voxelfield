@@ -7,7 +7,7 @@ namespace Swihoni.Sessions.Interfaces
     {
         private byte? m_WantedTeam;
 
-        public override void Render(SessionBase session, Container sessionContainer) { }
+        public override void Render(in SessionContext context) { }
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {

@@ -8,10 +8,10 @@ namespace Swihoni.Sessions.Interfaces
     public abstract class ScoreboardInterfaceBase<T> : ArrayViewerInterfaceBase<T, PlayerContainerArrayElement, Container>
         where T : ElementInterfaceBase<Container>
     {
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
             SetInterfaceActive(!SessionBase.InterruptingInterface && InputProvider.GetInput(InputType.OpenScoreboard));
-            base.Render(session, sessionContainer);
+            base.Render(context);
         }
 
         protected override bool Less(Container e1, Container e2)

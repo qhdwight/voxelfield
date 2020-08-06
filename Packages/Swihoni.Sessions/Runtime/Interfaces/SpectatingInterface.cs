@@ -16,8 +16,9 @@ namespace Swihoni.Sessions.Interfaces
             m_Text = GetComponentInChildren<BufferedTextGui>();
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
+            Container sessionContainer = context.sessionContainer;
             bool isVisible = sessionContainer.WithPropertyWithValue(out SpectatingPlayerId spectatingPlayerId);
             if (isVisible)
             {

@@ -27,8 +27,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
     public static class ItemId
     {
-        public const byte None = 0,
-                          Rifle = 1,
+        public const byte Rifle = 1,
                           Grenade = 2,
                           Molotov = 3,
                           Shotgun = 4,

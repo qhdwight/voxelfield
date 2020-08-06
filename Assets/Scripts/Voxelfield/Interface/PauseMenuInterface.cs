@@ -14,7 +14,7 @@ namespace Voxelfield.Interface
 {
     public class PauseMenuInterface : SessionInterfaceBehavior
     {
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
             if (NoInterrupting && InputProvider.GetInputDown(InputType.TogglePauseMenu)) ToggleInterfaceActive();
         }

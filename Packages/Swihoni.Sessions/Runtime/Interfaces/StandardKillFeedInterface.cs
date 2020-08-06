@@ -12,10 +12,10 @@ namespace Swihoni.Sessions.Interfaces
             return e1.elapsedUs < e2.elapsedUs;
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
             SetInterfaceActive(true);
-            base.Render(session, sessionContainer);
+            base.Render(context);
         }
     }
 }

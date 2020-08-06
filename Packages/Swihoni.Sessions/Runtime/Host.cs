@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using LiteNetLib;
@@ -68,62 +69,71 @@ namespace Swihoni.Sessions
 
         protected override void Render(uint renderTimeUs)
         {
-            Profiler.BeginSample("Host Render Setup");
-            if (IsLoading || m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
-                          || m_RenderSession.Without(out LocalPlayerId renderLocalPlayerId)
-                          || m_HostCommands.Require<HealthProperty>().WithoutValue)
+            try
             {
+                Profiler.BeginSample("Host Render Setup");
+                if (IsLoading || m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
+                              || m_RenderSession.Without(out LocalPlayerId renderLocalPlayerId)
+                              || m_HostCommands.Require<HealthProperty>().WithoutValue)
+                {
+                    Profiler.EndSample();
+                    return;
+                }
+
+                var tickRate = GetLatestSession().Require<TickRateProperty>();
+                if (!tickRate.WithValue) return;
+
+                m_RenderSession.SetTo(GetLatestSession());
                 Profiler.EndSample();
-                return;
+
+                Profiler.BeginSample("Host Spectate Setup");
+                bool isSpectating = Client.IsSpectating(m_RenderSession, renderPlayers, HostPlayerId, out SpectatingPlayerId spectatingPlayerId);
+                renderLocalPlayerId.Value = isSpectating ? spectatingPlayerId.Value : (byte) HostPlayerId;
+                Profiler.EndSample();
+
+                Profiler.BeginSample("Host Render Players");
+                for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
+                {
+                    Container renderPlayer = renderPlayers[playerId];
+                    bool isActualLocalPlayer = playerId == HostPlayerId;
+                    if (isActualLocalPlayer)
+                    {
+                        // Inject host player component
+                        renderPlayer.SetTo(m_HostCommands);
+                    }
+                    else
+                    {
+                        uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
+                        _indexer = playerId;
+                        _serverHistory = m_SessionHistory;
+                        RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size,
+                                                                       historyIndex => _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_indexer]);
+                    }
+                    PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
+                    bool isPossessed = isActualLocalPlayer && !isSpectating || isSpectating && playerId == spectatingPlayerId;
+                    var playerContext = new SessionContext(this, m_RenderSession, playerId: playerId, player: renderPlayer);
+                    if (visuals) visuals.Render(playerContext, isPossessed);
+                }
+                Profiler.EndSample();
+            
+                var context = new SessionContext(this, m_RenderSession);
+            
+                Profiler.BeginSample("Host Render Interfaces");
+                RenderInterfaces(context);
+                Profiler.EndSample();
+
+                Profiler.BeginSample("Host Render Entities");
+                RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
+                Profiler.EndSample();
+
+                Profiler.BeginSample("Host Render Mode");
+                context.Mode.Render(context);
+                Profiler.EndSample();
             }
-
-            var tickRate = GetLatestSession().Require<TickRateProperty>();
-            if (!tickRate.WithValue) return;
-
-            m_RenderSession.SetTo(GetLatestSession());
-            Profiler.EndSample();
-
-            Profiler.BeginSample("Host Spectate Setup");
-            bool isSpectating = Client.IsSpectating(m_RenderSession, renderPlayers, HostPlayerId, out SpectatingPlayerId spectatingPlayerId);
-            renderLocalPlayerId.Value = isSpectating ? spectatingPlayerId.Value : (byte) HostPlayerId;
-            Profiler.EndSample();
-
-            Profiler.BeginSample("Host Render Players");
-            for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
+            catch (Exception exception)
             {
-                Container renderPlayer = renderPlayers[playerId];
-                bool isActualLocalPlayer = playerId == HostPlayerId;
-                if (isActualLocalPlayer)
-                {
-                    // Inject host player component
-                    renderPlayer.SetTo(m_HostCommands);
-                }
-                else
-                {
-                    uint playerRenderTimeUs = renderTimeUs - tickRate.PlayerRenderIntervalUs;
-                    _indexer = playerId;
-                    _serverHistory = m_SessionHistory;
-                    RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size,
-                                                                   historyIndex => _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_indexer]);
-                }
-                PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
-                bool isPossessed = isActualLocalPlayer && !isSpectating || isSpectating && playerId == spectatingPlayerId;
-                var context = new SessionContext(this, m_RenderSession, playerId: playerId, player: renderPlayer);
-                if (visuals) visuals.Render(context, isPossessed);
+                Debug.LogError($"Exception trying to render: {exception}");
             }
-            Profiler.EndSample();
-
-            Profiler.BeginSample("Host Render Interfaces");
-            RenderInterfaces(m_RenderSession);
-            Profiler.EndSample();
-
-            Profiler.BeginSample("Host Render Entities");
-            RenderEntities<ServerStampComponent>(renderTimeUs, tickRate.TickIntervalUs);
-            Profiler.EndSample();
-
-            Profiler.BeginSample("Host Render Mode");
-            ModeManager.GetMode(m_RenderSession).Render(this, m_RenderSession);
-            Profiler.EndSample();
         }
 
         protected override void PreTick(Container tickSession)

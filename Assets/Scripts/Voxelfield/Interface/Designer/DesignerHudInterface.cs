@@ -24,10 +24,10 @@ namespace Voxelfield.Interface.Designer
 
         private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
             Container localPlayer = default;
-            bool isVisible = sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer && session.IsValidLocalPlayer(sessionContainer, out localPlayer);
+            bool isVisible = context.sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.Designer && context.IsValidLocalPlayer(out localPlayer, out byte _);
             FloatProperty editRadius = default;
             if (isVisible)
             {

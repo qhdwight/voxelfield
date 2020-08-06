@@ -17,18 +17,18 @@ namespace Swihoni.Sessions.Interfaces
 
         // private static StringBuilder GetName(int playerId, Container session) => new StringBuilder("ok");
 
-        public override void Render(SessionBase session, Container sessionContainer, KillFeedComponent feed)
+        public override void Render(in SessionContext context, KillFeedComponent feed)
         {
             bool isVisible = feed.elapsedUs.WithValue;
             if (isVisible)
             {
                 m_Text.StartBuild()
-                      .AppendUsername(feed.killingPlayerId, sessionContainer)
+                      .AppendUsername(context, feed.killingPlayerId)
                       .Append(" [")
                       .AppendPropertyValue(feed.weaponName)
                       .Append("] ")
                       .Append(feed.isHeadShot ? "<sprite=0> " : string.Empty)
-                      .AppendUsername(feed.killedPlayerId, sessionContainer).Commit(m_Text);
+                      .AppendUsername(context, feed.killedPlayerId).Commit(m_Text);
             }
             SetInterfaceActive(isVisible);
         }
@@ -36,12 +36,11 @@ namespace Swihoni.Sessions.Interfaces
 
     internal static class KillFeedExtensions
     {
-        internal static StringBuilder AppendUsername(this StringBuilder builder, int playerId, Container sessionContainer)
+        internal static StringBuilder AppendUsername(this StringBuilder builder, in SessionContext context, int playerId)
         {
-            Container player = sessionContainer.GetPlayer(playerId);
-            bool isLocalPlayer = sessionContainer.WithPropertyWithValue(out LocalPlayerId localPlayerId) && playerId == localPlayerId;
+            bool isLocalPlayer = context.sessionContainer.WithPropertyWithValue(out LocalPlayerId localPlayerId) && playerId == localPlayerId;
             if (isLocalPlayer) builder.Append("<b><i>");
-            SessionBase.BuildUsername(sessionContainer, builder, player);
+            context.Mode.BuildUsername(builder, context.GetPlayer(playerId));
             if (isLocalPlayer) builder.Append("</i></b>");
             return builder;
         }

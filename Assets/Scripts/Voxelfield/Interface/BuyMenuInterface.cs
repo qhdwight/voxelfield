@@ -62,9 +62,9 @@ namespace Voxelfield.Interface
             m_WantedBuyItemId = null;
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
-            bool isActive = ShouldBeActive(session, sessionContainer, out Container localPlayer);
+            bool isActive = ShouldBeActive(context, out Container localPlayer);
 
             if (isActive && InputProvider.GetInputDown(InputType.Buy)) m_PlayerWantsVisible = !m_PlayerWantsVisible;
             isActive = isActive && m_PlayerWantsVisible;
@@ -82,16 +82,16 @@ namespace Voxelfield.Interface
             m_PlayerWantsVisible = isActive;
         }
 
-        private static bool ShouldBeActive(SessionBase session, Container sessionContainer, out Container sessionLocalPlayer)
+        private static bool ShouldBeActive(in SessionContext context, out Container sessionLocalPlayer)
         {
             sessionLocalPlayer = default;
-            var localPlayerId = sessionContainer.Require<LocalPlayerId>();
+            var localPlayerId = context.sessionContainer.Require<LocalPlayerId>();
             if (localPlayerId.WithoutValue) return false;
 
-            if (ModeManager.GetMode(sessionContainer) is IModeWithBuying buyingMode)
+            if (context.Mode is IModeWithBuying buyingMode)
             {
-                sessionLocalPlayer = session.GetModifyingPayerFromId(localPlayerId);
-                return buyingMode.CanBuy(session, sessionContainer, sessionLocalPlayer);
+                sessionLocalPlayer = context.GetModifyingPlayer(localPlayerId);
+                return buyingMode.CanBuy(context, sessionLocalPlayer);
             }
             return false;
         }

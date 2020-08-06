@@ -12,13 +12,13 @@ namespace Swihoni.Sessions.Config
 {
     public static class InputProvider
     {
-        public static bool GetInput(byte type) => Input.GetKey(ConfigManagerBase.Active.input.GetKeyCode(type));
+        public static bool GetInput(byte type) => Input.GetKey(ConfigManagerBase.Active.inputBindings.GetKeyCode(type));
 
         /// <summary>
         /// Should be called in normal Unity Update() methods
         /// </summary>
         /// <returns>If this is the first Unity frame an input is pressed</returns>
-        public static bool GetInputDown(byte type) => Input.GetKeyDown(ConfigManagerBase.Active.input.GetKeyCode(type));
+        public static bool GetInputDown(byte type) => Input.GetKeyDown(ConfigManagerBase.Active.inputBindings.GetKeyCode(type));
 
         public static float GetAxis(byte positive, byte negative) => (GetInput(positive) ? 1.0f : 0.0f) + (GetInput(negative) ? -1.0f : 0.0f);
 

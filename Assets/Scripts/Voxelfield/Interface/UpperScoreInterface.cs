@@ -30,12 +30,12 @@ namespace Voxelfield.Interface
             m_RightScore.color = rightColor;
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
-            bool isVisible = sessionContainer.With(out DualScoresComponent dualScores) && dualScores[0].WithValue && dualScores[1].WithValue && !session.IsLoading;
+            bool isVisible = context.sessionContainer.With(out DualScoresComponent dualScores) && dualScores[0].WithValue && dualScores[1].WithValue && !context.session.IsLoading;
             if (isVisible)
             {
-                ModeBase mode = ModeManager.GetMode(sessionContainer);
+                ModeBase mode = context.Mode;
                 Render(dualScores[0], mode.GetTeamColor(0), dualScores[1], mode.GetTeamColor(1));
             }
             SetInterfaceActive(isVisible);

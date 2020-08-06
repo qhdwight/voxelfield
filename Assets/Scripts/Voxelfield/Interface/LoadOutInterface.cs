@@ -26,7 +26,7 @@ namespace Voxelfield.Interface
                                                                                           if (hasComponent)
                                                                                               button.OnClick.AddListener(() =>
                                                                                               {
-                                                                                                  var index = (byte) (slotIndex + 1);
+                                                                                                  var index = (byte) slotIndex;
                                                                                                   WantedItems[index].Value = button.ItemId;
                                                                                               });
                                                                                           return hasComponent;
@@ -43,15 +43,15 @@ namespace Voxelfield.Interface
         {
             if (NoInterrupting && InputProvider.GetInputDown(InputType.Buy)) ToggleInterfaceActive();
 
-            for (var i = 1; i <= m_LoadOutButtons.Length; i++)
+            for (var i = 0; i < m_LoadOutButtons.Length; i++)
             {
                 ItemComponent item = inventory[i];
-                foreach (LoadOutButton loadOutButton in m_LoadOutButtons[i - 1])
-                    loadOutButton.SetChecked(item.id == loadOutButton.ItemId);
+                foreach (LoadOutButton loadOutButton in m_LoadOutButtons[i])
+                    loadOutButton.SetChecked(item.id.AsNullable == loadOutButton.ItemId);
             }
         }
 
-        public override void Render(SessionBase session, Container sessionContainer) {  }
+        public override void Render(in SessionContext context) {  }
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
             => commands.Require<WantedItemIdsComponent>().SetTo(WantedItems);

@@ -9,7 +9,7 @@ namespace Voxelfield.Interface
 {
     public class MainMenuInterface : SessionInterfaceBehavior
     {
-        public override void Render(SessionBase session, Container sessionContainer) { }
+        public override void Render(in SessionContext context) { }
 
         private void Update() => SetInterfaceActive(SessionBase.SessionCount == 0);
 

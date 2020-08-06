@@ -44,7 +44,9 @@ namespace Voxelfield.Session
     [Serializable, ModeElement]
     public class FlagArrayElement : ArrayElement<FlagComponent>
     {
-        public FlagArrayElement() : base(2) { }
+        public const int Count = 2;
+        
+        public FlagArrayElement() : base(Count) { }
     }
 
     [Serializable, ModeElement]

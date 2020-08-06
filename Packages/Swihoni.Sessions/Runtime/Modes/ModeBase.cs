@@ -102,8 +102,9 @@ namespace Swihoni.Sessions.Modes
             player.ZeroIfWith<RespawnTimerProperty>();
             if (player.With(out InventoryComponent inventory))
             {
-                inventory.Zero();
-                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe,
+                PlayerItemManagerModiferBehavior.Clear(inventory);
+                PlayerItemManagerModiferBehavior.AddItems(inventory,
+                                                          ItemId.Pickaxe,
                                                           ItemId.Rifle,
                                                           ItemId.Shotgun,
                                                           ItemId.Sniper,
@@ -154,7 +155,7 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out StatsComponent stats)) stats.deaths.Value++;
             if (player.With(out InventoryComponent inventory))
             {
-                for (var i = 1; i <= inventory.Count; i++)
+                for (var i = 0; i < inventory.Count; i++)
                 {
                     ItemComponent item = inventory[i];
                     item.status.Zero();
@@ -164,7 +165,7 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual void Render(SessionBase session, Container sessionContainer) => session.Injector.OnRenderMode(sessionContainer);
+        public virtual void Render(in SessionContext context) => context.session.Injector.OnRenderMode(context);
 
         public virtual void ModifyPlayer(in SessionContext context)
         {

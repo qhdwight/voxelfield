@@ -8,7 +8,7 @@ namespace Swihoni.Sessions.Interfaces
 {
     public abstract class ElementInterfaceBase<TElement> : InterfaceBehaviorBase
     {
-        public abstract void Render(SessionBase session, Container sessionContainer, TElement element);
+        public abstract void Render(in SessionContext context, TElement element);
     }
 
     public abstract class ArrayViewerInterfaceBase<TEntry, TArray, TElement> : SessionInterfaceBehavior
@@ -51,9 +51,9 @@ namespace Swihoni.Sessions.Interfaces
 
         protected abstract bool Less(TElement e1, TElement e2);
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
-            if (sessionContainer.Without(out TArray array)) return;
+            if (context.sessionContainer.Without(out TArray array)) return;
 
             TEntry[] entries = GetEntries(array);
 
@@ -61,7 +61,7 @@ namespace Swihoni.Sessions.Interfaces
             {
                 TElement element = array[i];
                 TEntry entry = entries[i];
-                entry.Render(session, sessionContainer, element);
+                entry.Render(context, element);
             }
 
             SortEntries(array);

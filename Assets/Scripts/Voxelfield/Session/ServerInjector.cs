@@ -48,8 +48,6 @@ namespace Voxelfield.Session
 
     public class ServerInjector : Injector
     {
-        private bool AuthenticateSteam = false;
-
 #if VOXELFIELD_RELEASE_SERVER
         private static readonly BasicAWSCredentials DynamoCredentials = new BasicAWSCredentials(@"AKIAWKQVDVRW5MFWZJMG", @"rPxMDaGjpBiaJ9OuT/he5XU4g6rft8ykzXJDgLYP");
         private static readonly AmazonDynamoDBConfig DynamoConfig = new AmazonDynamoDBConfig {RegionEndpoint = RegionEndpoint.USWest1};
@@ -226,7 +224,7 @@ namespace Voxelfield.Session
 
         public override void OnStart()
         {
-            if (!AuthenticateSteam) return;
+            if (!ConfigManager.Active.authenticateSteam) return;
             try
             {
                 var server = (Server) Session;

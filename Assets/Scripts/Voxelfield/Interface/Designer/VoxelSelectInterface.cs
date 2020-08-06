@@ -44,8 +44,8 @@ namespace Voxelfield.Interface.Designer
             }
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
-            => SetInterfaceActive(NoInterrupting && HasItemEquipped(session, sessionContainer, ModeIdProperty.Designer, ItemId.VoxelWand, ItemId.SuperPickaxe)
+        public override void Render(in SessionContext context)
+            => SetInterfaceActive(NoInterrupting && HasItemEquipped(context, ModeIdProperty.Designer, ItemId.VoxelWand, ItemId.SuperPickaxe)
                                                  && InputProvider.GetInput(InputType.OpenContext));
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)

@@ -39,8 +39,16 @@ namespace Swihoni.Components
 
         public static uint InterpolateUInt(uint u1, uint u2, float interpolation)
         {
-            decimal d1 = u1, d2 = u2, i = (decimal) interpolation;
-            return (uint) Math.Round(d1 + (d2 - d1) * i);
+            try
+            {
+                decimal d1 = u1, d2 = u2, i = (decimal) interpolation;
+                return (uint) Math.Round(d1 + (d2 - d1) * i);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"Interpolating unsigned integer failed: {u1}, {u2}, {interpolation}: {exception.Message}");
+                return 0u;
+            }
         }
     }
 

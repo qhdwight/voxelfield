@@ -1,5 +1,4 @@
 using System;
-using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
@@ -21,7 +20,7 @@ namespace Swihoni.Sessions.Interfaces
         private float m_LastUpdateTime;
         private long m_LastMemory;
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
             float time = Time.realtimeSinceStartup, delta = time - m_LastUpdateTime;
             if (delta < m_UpdateRate) return;
@@ -31,8 +30,8 @@ namespace Swihoni.Sessions.Interfaces
             m_LastMemory = totalMemory;
 
             var isPingVisible = false;
-            if (session is Client && sessionContainer.WithPropertyWithValue(out LocalPlayerId localPlayer)
-                                  && sessionContainer.GetPlayer(localPlayer).With(out StatsComponent stats) && stats.ping.WithValue)
+            if (context.session is Client && context.sessionContainer.WithPropertyWithValue(out LocalPlayerId localPlayer)
+                                          && context.sessionContainer.GetPlayer(localPlayer).With(out StatsComponent stats) && stats.ping.WithValue)
             {
                 isPingVisible = true;
                 m_PingText.StartBuild().Append("Ping: ").Append(stats.ping).Append(" ms").Commit(m_PingText);
@@ -40,7 +39,7 @@ namespace Swihoni.Sessions.Interfaces
             m_PingText.gameObject.SetActive(isPingVisible);
 
             var isPredictionVisible = false;
-            if (session is Client client)
+            if (context.session is Client client)
             {
                 isPredictionVisible = true;
                 m_PredictionErrorText.StartBuild().Append("Pred Err: ").Append(client.PredictionErrors).Commit(m_PredictionErrorText);
@@ -49,7 +48,7 @@ namespace Swihoni.Sessions.Interfaces
 
             var areNetworkStatsVisible = false;
 
-            if (session is NetworkedSessionBase networkSession && networkSession.Socket.NetworkManager.ConnectedPeersCount > 0)
+            if (context.session is NetworkedSessionBase networkSession && networkSession.Socket.NetworkManager.ConnectedPeersCount > 0)
             {
                 areNetworkStatsVisible = true;
                 m_ResetErrorText.StartBuild().Append("Rst Err: ").Append(networkSession.ResetErrors).Commit(m_ResetErrorText);

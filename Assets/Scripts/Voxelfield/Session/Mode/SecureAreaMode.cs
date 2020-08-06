@@ -18,18 +18,18 @@ using Random = UnityEngine.Random;
 
 namespace Voxelfield.Session.Mode
 {
-    [Serializable, Config("sa")]
+    [Serializable, Config(name: "sa")]
     public class SecureAreaConfig : ComponentBase
     {
-        [Config("end_duration")] public UIntProperty roundEndDurationUs;
-        [Config("duration")] public UIntProperty roundDurationUs;
-        [Config("buy_duration")] public UIntProperty buyDurationUs;
-        [Config("secure_duration")] public UIntProperty secureDurationUs;
-        [Config("player_count")] public ByteProperty playerCount;
-        [Config("win_bonus")] public UShortProperty roundWinMoney;
-        [Config("lose_bonus")] public UShortProperty roundLoseMoney;
-        [Config("kill_bonus")] public UShortProperty killMoney;
-        [Config("max_rounds")] public ByteProperty maxRounds;
+        [Config(name: "end_duration")] public UIntProperty roundEndDurationUs;
+        [Config(name: "duration")] public UIntProperty roundDurationUs;
+        [Config(name: "buy_duration")] public UIntProperty buyDurationUs;
+        [Config(name: "secure_duration")] public UIntProperty secureDurationUs;
+        [Config] public ByteProperty playerCount;
+        [Config(name: "win_bonus")] public UShortProperty roundWinMoney;
+        [Config(name: "lose_bonus")] public UShortProperty roundLoseMoney;
+        [Config(name: "kill_bonus")] public UShortProperty killMoney;
+        [Config] public ByteProperty maxRounds;
     }
 
     [CreateAssetMenu(fileName = "Secure Area", menuName = "Session/Mode/Secure Area", order = 0)]
@@ -104,17 +104,17 @@ namespace Voxelfield.Session.Mode
             Container sessionContainer = context.sessionContainer;
             uint durationUs = context.durationUs;
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
-            
+
             var players = sessionContainer.Require<PlayerContainerArrayElement>();
             int activePlayerCount = 0, redAlive = 0, blueAlive = 0;
             foreach (Container player in players)
             {
                 var health = player.Require<HealthProperty>();
                 if (health.WithoutValue) continue;
-                
+
                 activePlayerCount++;
                 if (health.IsDead) continue;
-                
+
                 if (player.Require<TeamProperty>().TryWithValue(out byte team))
                     if (team == RedTeam) redAlive++;
                     else if (team == BlueTeam) blueAlive++;
@@ -169,7 +169,7 @@ namespace Voxelfield.Session.Mode
                             }
                             site.isRedInside.Value = isRedInside;
                             site.isBlueInside.Value = isBlueInside;
-                            
+
                             if (isRedInside && !isBlueInside)
                             {
                                 // Red securing with no opposition
@@ -265,9 +265,9 @@ namespace Voxelfield.Session.Mode
                 var inventory = player.Require<InventoryComponent>();
                 if (health.IsInactiveOrDead || money.count.WithoutValue)
                 {
-                    inventory.Zero();
-                    PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 1);
-                    PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 2);
+                    PlayerItemManagerModiferBehavior.Clear(inventory);
+                    PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 0);
+                    PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 1);
                     if (money.count.WithoutValue) money.count.Value = 800;
                 }
                 if (health.IsActiveAndAlive) PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);
@@ -348,14 +348,14 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
-            if (session.IsLoading) return;
+            if (context.session.IsLoading) return;
 
-            base.Render(session, sessionContainer);
+            base.Render(context);
 
-            SiteBehavior[] siteBehaviors = GetSiteBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
-            var secureArea = sessionContainer.Require<SecureAreaComponent>();
+            SiteBehavior[] siteBehaviors = GetSiteBehaviors(context.sessionContainer.Require<VoxelMapNameProperty>());
+            var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             for (var siteIndex = 0; siteIndex < siteBehaviors.Length; siteIndex++)
                 siteBehaviors[siteIndex].Render(secureArea.sites[siteIndex]);
         }
@@ -372,10 +372,10 @@ namespace Voxelfield.Session.Mode
                 ? 0.0f
                 : base.CalculateWeaponDamage(context);
 
-        public bool CanBuy(SessionBase session, Container sessionContainer, Container sessionLocalPlayer)
+        public bool CanBuy(in SessionContext context, Container sessionLocalPlayer)
         {
             if (sessionLocalPlayer.Require<HealthProperty>().IsDead) return false;
-            var secureArea = sessionContainer.Require<SecureAreaComponent>();
+            var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             return secureArea.roundTime.WithValue && secureArea.roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
         }
 

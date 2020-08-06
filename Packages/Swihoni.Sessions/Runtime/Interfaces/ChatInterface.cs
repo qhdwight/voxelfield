@@ -36,7 +36,7 @@ namespace Swihoni.Sessions.Interfaces
             m_WantedInput = null;
         }
 
-        public override void Render(SessionBase session, Container sessionContainer)
+        public override void Render(in SessionContext context)
         {
             if (NoInterrupting && InputProvider.GetInputDown(InputType.ToggleChat) && !m_Input.isFocused)
                 ToggleInterfaceActive();
