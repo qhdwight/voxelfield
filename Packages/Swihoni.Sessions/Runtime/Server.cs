@@ -141,40 +141,63 @@ namespace Swihoni.Sessions
 
         void IReceiver.OnReceive(NetPeer fromPeer, NetDataReader reader, byte code)
         {
-            Container serverSession = GetLatestSession();
-            int clientId = GetPeerPlayerId(fromPeer);
-            Container serverPlayer = GetModifyingPlayerFromId(clientId);
-            switch (code)
+            try
             {
-                case ClientCommandsCode:
+                Container serverSession = GetLatestSession();
+                int clientId = GetPeerPlayerId(fromPeer);
+                Container serverPlayer = GetModifyingPlayerFromId(clientId);
+                switch (code)
                 {
-                    if (IsLoading) break;
-                    
-                    m_EmptyClientCommands.Deserialize(reader);
-                    if (CanSetupNewPlayer(serverPlayer))
+                    case ClientCommandsCode:
                     {
-                        Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {clientId}");
-                        var modifyContext = new SessionContext(this, serverSession, playerId: clientId, player: serverPlayer);
-                        SetupNewPlayer(modifyContext);
+                        if (IsLoading) break;
+
+                        m_EmptyClientCommands.Deserialize(reader);
+                        if (CanSetupNewPlayer(serverPlayer))
+                        {
+                            Debug.Log($"[{GetType().Name}] Setting up new player for connection: {fromPeer.EndPoint}, allocated id is: {clientId}");
+                            var modifyContext = new SessionContext(this, serverSession, playerId: clientId, player: serverPlayer);
+                            SetupNewPlayer(modifyContext);
+                        }
+                        HandleClientCommand(clientId, m_EmptyClientCommands, serverSession, serverPlayer);
+                        break;
                     }
-                    HandleClientCommand(clientId, m_EmptyClientCommands, serverSession, serverPlayer);
-                    break;
-                }
-                case DebugClientViewCode:
-                {
+                    case DebugClientViewCode:
+                    {
 #if !VOXELFIELD_RELEASE_SERVER
-                    var clientView = new ClientCommandsContainer(m_EmptyDebugClientView.ElementTypes);
-                    clientView.Deserialize(reader);
-                    var context = new SessionContext(this, playerId: clientId, player: clientView);
-                    DebugBehavior.Singleton.Render(context, new Color(1.0f, 0.0f, 0.0f, 0.3f));
+                        var clientView = new ClientCommandsContainer(m_EmptyDebugClientView.ElementTypes);
+                        clientView.Deserialize(reader);
+                        var context = new SessionContext(this, playerId: clientId, player: clientView);
+                        DebugBehavior.Singleton.Render(context, new Color(1.0f, 0.0f, 0.0f, 0.3f));
 #endif
-                    break;
+                        break;
+                    }
+                    default:
+                    {
+                        m_Injector.OnReceiveCode(fromPeer, reader, code);
+                        break;
+                    }
                 }
-                default:
-                {
-                    m_Injector.OnReceiveCode(fromPeer, reader, code);
-                    break;
-                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"Exception while handling packet from: {fromPeer.EndPoint}: {exception}");
+                DisconnectPeerSafely("Internal server error", fromPeer);
+            }
+        }
+
+        private void DisconnectPeerSafely(string reason, NetPeer peer)
+        {
+            try
+            {
+                var writer = new NetDataWriter();
+                writer.Put(reason);
+                m_Socket.NetworkManager.DisconnectPeer(peer, writer);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"Exception disconnecting graciously: {peer.EndPoint}: {exception}");
+                m_Socket.NetworkManager.DisconnectPeerForce(peer);
             }
         }
 
@@ -194,13 +217,20 @@ namespace Swihoni.Sessions
                 _timeUs = timeUs;
                 _durationUs = durationUs;
                 _container = serverSession;
-                EntityManager.ModifyAll(serverSession, (modifer, _, entity) =>
+                try
                 {
-                    var entityModifier = (EntityModifierBehavior) modifer;
-                    var modifyContext = new SessionContext(_session, _container, entity: entity, timeUs: _timeUs, durationUs: _durationUs);
-                    entityModifier.Modify(modifyContext);
-                });
-                GetModifyingMode(serverSession).Modify(new SessionContext(_session, _container, timeUs: _timeUs, durationUs: _durationUs));
+                    EntityManager.ModifyAll(serverSession, (modifer, _, entity) =>
+                    {
+                        var entityModifier = (EntityModifierBehavior) modifer;
+                        var modifyContext = new SessionContext(_session, _container, entity: entity, timeUs: _timeUs, durationUs: _durationUs);
+                        entityModifier.Modify(modifyContext);
+                    });
+                    GetModifyingMode(serverSession).Modify(new SessionContext(_session, _container, timeUs: _timeUs, durationUs: _durationUs));
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogError($"Exception modifying non-player: {exception}");
+                }
             }
 
             SendServerSession(tick, serverSession);
@@ -327,8 +357,15 @@ namespace Swihoni.Sessions
 
                     var context = new SessionContext(this, serverSession, receivedClientCommands, clientId, serverPlayer,
                                                      durationUs: clientStamp.durationUs, tickDelta: tickDelta);
-                    GetPlayerModifier(serverPlayer, clientId).ModifyChecked(context);
-                    mode.ModifyPlayer(context);
+                    try
+                    {
+                        GetPlayerModifier(serverPlayer, clientId).ModifyChecked(context);
+                        mode.ModifyPlayer(context);
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.LogError($"Exception modifying checked player: {context.playerId}: {exception}");
+                    }
                 }
             }
             else

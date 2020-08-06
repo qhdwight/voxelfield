@@ -56,10 +56,9 @@ namespace Swihoni.Collections
 
         public void Dispose()
         {
-            foreach (T pool in m_Pool)
-            {
-                if (pool is IDisposable disposable) disposable.Dispose();
-            }
+            foreach (T element in m_Pool)
+                if (element is IDisposable disposable)
+                    disposable.Dispose();
         }
     }
 }

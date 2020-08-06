@@ -50,17 +50,24 @@ namespace Swihoni.Sessions
                 {
                     PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(hostPlayer, HostPlayerId);
                     var hostContext = new SessionContext(this, session, m_HostCommands, HostPlayerId, m_HostCommands, durationUs: durationUs, tickDelta: 1);
-                    if (hostModifier)
+                    try
                     {
-                        hostModifier.ModifyCommands(this, m_HostCommands, HostPlayerId);
-                        _container = m_HostCommands; // Prevent closure allocation
-                        _session = this;
-                        ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(HostPlayerId, _session, _container));
-                        // this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs
-                        hostModifier.ModifyTrusted(hostContext, m_HostCommands);
-                        hostModifier.ModifyChecked(hostContext);
+                        if (hostModifier)
+                        {
+                            hostModifier.ModifyCommands(this, m_HostCommands, HostPlayerId);
+                            _container = m_HostCommands; // Prevent closure allocation
+                            _session = this;
+                            ForEachSessionInterface(@interface => @interface.ModifyLocalTrusted(HostPlayerId, _session, _container));
+                            // this, HostPlayerId, m_HostCommands, m_HostCommands, m_HostCommands, deltaUs
+                            hostModifier.ModifyTrusted(hostContext, m_HostCommands);
+                            hostModifier.ModifyChecked(hostContext);
+                        }
+                        GetModifyingMode(session).ModifyPlayer(hostContext);
                     }
-                    GetModifyingMode(session).ModifyPlayer(hostContext);
+                    catch (Exception exception)
+                    {
+                        Debug.LogError($"Exception modifying checked host: {exception}");
+                    }
                 }
             }
             var stamp = m_HostCommands.Require<ServerStampComponent>();
