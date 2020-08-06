@@ -37,8 +37,9 @@ namespace Voxelfield.Session.Mode
 
         public override void Initialize() => m_LastMapName = new VoxelMapNameProperty();
 
-        private FlagBehavior[][] GetFlagBehaviors(StringProperty mapName)
+        private FlagBehavior[][] GetFlagBehaviors()
         {
+            StringProperty mapName = MapManager.Singleton.Map.name;
             if (m_LastMapName == mapName) return m_FlagBehaviors;
             m_LastMapName.SetTo(mapName);
             return m_FlagBehaviors = MapManager.Singleton.Models.Values
@@ -58,7 +59,7 @@ namespace Voxelfield.Session.Mode
         {
             base.Render(context);
 
-            FlagBehavior[][] flagBehaviors = GetFlagBehaviors(context.sessionContainer.Require<VoxelMapNameProperty>());
+            FlagBehavior[][] flagBehaviors = GetFlagBehaviors();
             ArrayElement<FlagArrayElement> flags = context.sessionContainer.Require<CtfComponent>().teamFlags;
             for (var flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
@@ -70,7 +71,7 @@ namespace Voxelfield.Session.Mode
             base.Modify(context);
 
             var ctf = context.sessionContainer.Require<CtfComponent>();
-            FlagBehavior[][] flagBehaviors = GetFlagBehaviors(context.sessionContainer.Require<VoxelMapNameProperty>());
+            FlagBehavior[][] flagBehaviors = GetFlagBehaviors();
             for (byte flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
             {
@@ -83,6 +84,8 @@ namespace Voxelfield.Session.Mode
         public override void ModifyPlayer(in SessionContext context)
         {
             base.ModifyPlayer(in context);
+
+            context.player.Require<FrozenProperty>().Value = context.sessionContainer.Require<DualScoresComponent>().Any(score => score >= 3);
 
             if (context.player.Require<HealthProperty>().IsAlive) return;
 
@@ -213,7 +216,6 @@ namespace Voxelfield.Session.Mode
         {
             Container player = context.player;
             if (begin) player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
-            player.ZeroIfWith<FrozenProperty>();
             if (begin) player.ZeroIfWith<StatsComponent>();
             player.Require<ByteIdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();

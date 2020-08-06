@@ -21,15 +21,15 @@ namespace Voxelfield.Session.Mode
     [Serializable, Config(name: "sa")]
     public class SecureAreaConfig : ComponentBase
     {
-        [Config(name: "end_duration")] public UIntProperty roundEndDurationUs;
-        [Config(name: "duration")] public UIntProperty roundDurationUs;
-        [Config(name: "buy_duration")] public UIntProperty buyDurationUs;
-        [Config(name: "secure_duration")] public UIntProperty secureDurationUs;
-        [Config] public ByteProperty playerCount;
-        [Config(name: "win_bonus")] public UShortProperty roundWinMoney;
-        [Config(name: "lose_bonus")] public UShortProperty roundLoseMoney;
-        [Config(name: "kill_bonus")] public UShortProperty killMoney;
-        [Config] public ByteProperty maxRounds;
+        [Config(ConfigType.Mode, "end_duration")] public UIntProperty roundEndDurationUs;
+        [Config(ConfigType.Mode, "duration")] public UIntProperty roundDurationUs;
+        [Config(ConfigType.Mode, "buy_duration")] public UIntProperty buyDurationUs;
+        [Config(ConfigType.Mode, "secure_duration")] public UIntProperty secureDurationUs;
+        [Config(ConfigType.Mode)] public ByteProperty playerCount;
+        [Config(ConfigType.Mode, "win_bonus")] public UShortProperty roundWinMoney;
+        [Config(ConfigType.Mode, "lose_bonus")] public UShortProperty roundLoseMoney;
+        [Config(ConfigType.Mode, "kill_bonus")] public UShortProperty killMoney;
+        [Config(ConfigType.Mode)] public ByteProperty maxRounds;
     }
 
     [CreateAssetMenu(fileName = "Secure Area", menuName = "Session/Mode/Secure Area", order = 0)]
@@ -60,8 +60,9 @@ namespace Voxelfield.Session.Mode
             SessionBase.RegisterSessionCommand("give_money");
         }
 
-        private SiteBehavior[] GetSiteBehaviors(StringProperty mapName)
+        private SiteBehavior[] GetSiteBehaviors()
         {
+            StringProperty mapName = MapManager.Singleton.Map.name;
             if (m_LastMapName == mapName) return m_SiteBehaviors;
             m_LastMapName.SetTo(mapName);
             return m_SiteBehaviors = MapManager.Singleton.Models.Values
@@ -73,15 +74,14 @@ namespace Voxelfield.Session.Mode
 
         protected override void HandleAutoRespawn(in SessionContext context, HealthProperty health)
         {
-            if (context.sessionContainer.Require<SecureAreaComponent>().roundTime.WithoutValue)
-                base.HandleAutoRespawn(in context, health);
-            else
+            if (context.sessionContainer.Require<SecureAreaComponent>().roundTime.WithValue)
             {
                 // TODO:refactor this snippet is used multiple times
                 if (health.IsAlive || context.player.Without(out RespawnTimerProperty respawn)) return;
                 if (respawn.Value > context.durationUs) respawn.Value -= context.durationUs;
                 else respawn.Value = 0u;
             }
+            else base.HandleAutoRespawn(in context, health);
         }
 
         protected override void KillPlayer(in DamageContext damageContext)
@@ -120,7 +120,7 @@ namespace Voxelfield.Session.Mode
                     else if (team == BlueTeam) blueAlive++;
             }
 
-            SiteBehavior[] siteBehaviors = GetSiteBehaviors(sessionContainer.Require<VoxelMapNameProperty>());
+            SiteBehavior[] siteBehaviors = GetSiteBehaviors();
             if (secureArea.roundTime.WithValue)
             {
                 bool runTimer = true, redJustSecured = false, endedWithKills = false;
@@ -225,11 +225,12 @@ namespace Voxelfield.Session.Mode
 
         public override void ModifyPlayer(in SessionContext context)
         {
-            TimeUsProperty roundTime = context.sessionContainer.Require<SecureAreaComponent>().roundTime;
+            var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
+            TimeUsProperty roundTime = secureArea.roundTime;
             bool isBuyTime = roundTime.WithValue && roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
             Container player = context.player;
             if (isBuyTime) BuyingMode.HandleBuying(this, player, context.commands);
-            player.Require<FrozenProperty>().Value = isBuyTime;
+            player.Require<FrozenProperty>().Value = isBuyTime || AtMaxRounds(secureArea, context.sessionContainer.Require<DualScoresComponent>());
 
             if (PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> stringCommands))
             {
@@ -243,13 +244,13 @@ namespace Voxelfield.Session.Mode
                         }
                         case "force_start":
                         {
-                            FirstRound(context, context.sessionContainer.Require<SecureAreaComponent>());
+                            FirstRound(context, secureArea);
                             break;
                         }
                     }
             }
 
-            base.ModifyPlayer(in context);
+            base.ModifyPlayer(context);
         }
 
         protected override void SpawnPlayer(in SessionContext context, bool begin = false)
@@ -320,33 +321,30 @@ namespace Voxelfield.Session.Mode
         private void NextRound(in SessionContext context, SecureAreaComponent secureArea)
         {
             var scores = context.sessionContainer.Require<DualScoresComponent>();
-            bool isLastRound = secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_Config.maxRounds;
-            if (isLastRound)
+            if (AtMaxRounds(secureArea, scores)) return;
+
+            secureArea.roundTime.Value = m_Config.roundEndDurationUs + m_Config.roundDurationUs + m_Config.buyDurationUs;
+            foreach (SiteComponent site in secureArea.sites)
             {
-                context.ForEachActivePlayer((in SessionContext playerModifyContext) => playerModifyContext.player.Require<FrozenProperty>().Value = true);
+                site.Zero();
+                site.timeUs.Value = m_Config.secureDurationUs;
             }
-            else
+            context.ForEachActivePlayer((in SessionContext playerModifyContext) =>
             {
-                secureArea.roundTime.Value = m_Config.roundEndDurationUs + m_Config.roundDurationUs + m_Config.buyDurationUs;
-                foreach (SiteComponent site in secureArea.sites)
+                SpawnPlayer(playerModifyContext);
+                if (secureArea.lastWinningTeam.WithValue)
                 {
-                    site.Zero();
-                    site.timeUs.Value = m_Config.secureDurationUs;
+                    Container player = playerModifyContext.player;
+                    UShortProperty money = player.Require<MoneyComponent>().count;
+                    money.Value += player.Require<TeamProperty>() == secureArea.lastWinningTeam ? m_Config.roundWinMoney : m_Config.roundLoseMoney;
+                    if (money.Value > MaxMoney) money.Value = MaxMoney;
                 }
-                context.ForEachActivePlayer((in SessionContext playerModifyContext) =>
-                {
-                    SpawnPlayer(playerModifyContext);
-                    if (secureArea.lastWinningTeam.WithValue)
-                    {
-                        Container player = playerModifyContext.player;
-                        UShortProperty money = player.Require<MoneyComponent>().count;
-                        money.Value += player.Require<TeamProperty>() == secureArea.lastWinningTeam ? m_Config.roundWinMoney : m_Config.roundLoseMoney;
-                        if (money.Value > MaxMoney) money.Value = MaxMoney;
-                    }
-                });
-                context.sessionContainer.Require<EntityArrayElement>().Clear();
-            }
+            });
+            context.sessionContainer.Require<EntityArrayElement>().Clear();
         }
+
+        private bool AtMaxRounds(SecureAreaComponent secureArea, DualScoresComponent scores)
+            => secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_Config.maxRounds;
 
         public override void Render(in SessionContext context)
         {
@@ -354,7 +352,7 @@ namespace Voxelfield.Session.Mode
 
             base.Render(context);
 
-            SiteBehavior[] siteBehaviors = GetSiteBehaviors(context.sessionContainer.Require<VoxelMapNameProperty>());
+            SiteBehavior[] siteBehaviors = GetSiteBehaviors();
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             for (var siteIndex = 0; siteIndex < siteBehaviors.Length; siteIndex++)
                 siteBehaviors[siteIndex].Render(secureArea.sites[siteIndex]);

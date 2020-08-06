@@ -94,7 +94,6 @@ namespace Swihoni.Sessions.Modes
         protected virtual void SpawnPlayer(in SessionContext context, bool begin = false)
         {
             Container player = context.player;
-            player.ZeroIfWith<FrozenProperty>();
             if (begin) player.ZeroIfWith<StatsComponent>();
             player.Require<ByteIdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();

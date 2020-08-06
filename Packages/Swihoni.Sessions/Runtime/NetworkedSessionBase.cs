@@ -92,7 +92,7 @@ namespace Swihoni.Sessions
             command.Require<WantedItemIndexProperty>().Zero();
         }
 
-        public override Container GetModifyingPayerFromId(int playerId, Container session = null) => (session ?? GetLatestSession()).GetPlayer(playerId);
+        public override Container GetModifyingPlayerFromId(int playerId, Container session = null) => (session ?? GetLatestSession()).GetPlayer(playerId);
 
         public override Container GetLatestSession() => m_SessionHistory.Peek();
 

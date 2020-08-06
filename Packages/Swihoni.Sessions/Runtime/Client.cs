@@ -79,7 +79,7 @@ namespace Swihoni.Sessions
             Container verifiedLatestSession = GetLatestSession();
             if (!GetLocalPlayerId(verifiedLatestSession, out int localPlayerId))
                 return;
-            Container verifiedPlayer = GetModifyingPayerFromId(localPlayerId, verifiedLatestSession);
+            Container verifiedPlayer = GetModifyingPlayerFromId(localPlayerId, verifiedLatestSession);
             UpdateInputs(verifiedPlayer, localPlayerId);
             var context = new SessionContext(this, commands: m_CommandHistory.Peek(), playerId: localPlayerId, player: m_CommandHistory.Peek(),
                                              timeUs: timeUs, durationUs: durationUs);

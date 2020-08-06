@@ -50,9 +50,9 @@ namespace Swihoni.Sessions
 
         public ModeBase Mode => ModeManager.GetMode(sessionContainer.Require<ModeIdProperty>());
 
-        public Container ModifyingPlayer => session.GetModifyingPayerFromId(playerId, sessionContainer);
+        public Container ModifyingPlayer => session.GetModifyingPlayerFromId(playerId, sessionContainer);
 
-        public Container GetModifyingPlayer(int otherPlayerId) => session.GetModifyingPayerFromId(otherPlayerId, sessionContainer);
+        public Container GetModifyingPlayer(int otherPlayerId) => session.GetModifyingPlayerFromId(otherPlayerId, sessionContainer);
 
         public Container GetPlayer(int otherPlayerId) => sessionContainer.GetPlayer(otherPlayerId);
         

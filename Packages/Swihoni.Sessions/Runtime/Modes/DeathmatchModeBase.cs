@@ -11,7 +11,7 @@ namespace Swihoni.Sessions.Modes
         {
             base.KillPlayer(damageContext);
 
-            if (damageContext.sessionContext.player.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Active.respawnDuration;
+            if (damageContext.hitPlayer.With(out RespawnTimerProperty respawnTimer)) respawnTimer.Value = ConfigManagerBase.Active.respawnDuration;
         }
 
         public override void ModifyPlayer(in SessionContext context)

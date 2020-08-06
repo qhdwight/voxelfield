@@ -13,7 +13,8 @@ namespace Swihoni.Sessions.Config
     public enum ConfigType
     {
         Client,
-        ServerSession
+        Session,
+        Mode
     }
 
     public abstract class ConfigAttributeBase : Attribute
@@ -75,12 +76,12 @@ namespace Swihoni.Sessions.Config
         private Dictionary<Type, (PropertyBase, ConfigAttribute)> m_TypeToConfig;
         private Dictionary<string, (PropertyBase, ConfigAttribute)> m_NameToConfig;
 
-        [Config(ConfigType.ServerSession)] public TickRateProperty tickRate = new TickRateProperty(60);
-        [Config(ConfigType.ServerSession)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
-        [Config(ConfigType.ServerSession)] public ModeIdProperty modeId = new ModeIdProperty();
+        [Config(ConfigType.Session)] public TickRateProperty tickRate = new TickRateProperty(60);
+        [Config(ConfigType.Session)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
+        [Config(ConfigType.Session)] public ModeIdProperty modeId = new ModeIdProperty();
 
-        [Config(ConfigType.ServerSession)] public TimeUsProperty respawnDuration = new TimeUsProperty();
-        [Config(ConfigType.ServerSession)] public ByteProperty respawnHealth = new ByteProperty(100);
+        [Config(ConfigType.Session)] public TimeUsProperty respawnDuration = new TimeUsProperty();
+        [Config(ConfigType.Session)] public ByteProperty respawnHealth = new ByteProperty(100);
 
         [Config] public ByteProperty fov = new ByteProperty(60);
         [Config] public UShortProperty targetFps = new UShortProperty(200);
@@ -148,7 +149,7 @@ namespace Swihoni.Sessions.Config
                             }
                             else
                             {
-                                if (config.Type == ConfigType.ServerSession)
+                                if (config.Type == ConfigType.Session)
                                     m_TypeToConfig.Add(property.GetType(), (property, config));
                                 ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssueSessionCommand);
                             }

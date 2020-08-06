@@ -43,7 +43,7 @@ namespace Swihoni.Sessions
 
             if (!IsLoading)
             {
-                Container hostPlayer = GetModifyingPayerFromId(HostPlayerId, session);
+                Container hostPlayer = GetModifyingPlayerFromId(HostPlayerId, session);
                 if (hostPlayer.Require<HealthProperty>().WithValue)
                 {
                     PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(hostPlayer, HostPlayerId);
@@ -182,8 +182,8 @@ namespace Swihoni.Sessions
         public override int GetPeerPlayerId(NetPeer peer) => base.GetPeerPlayerId(peer) + 1; // Reserve zero for host player
 
         // TODO:refactor bad
-        public override Container GetModifyingPayerFromId(int playerId, Container session = null)
-            => playerId == HostPlayerId ? m_HostCommands : base.GetModifyingPayerFromId(playerId, session);
+        public override Container GetModifyingPlayerFromId(int playerId, Container session = null)
+            => playerId == HostPlayerId ? m_HostCommands : base.GetModifyingPlayerFromId(playerId, session);
 
         public override Ray GetRayForPlayerId(int playerId)
             => playerId == HostPlayerId ? m_HostCommands.GetRayForPlayer() : base.GetRayForPlayerId(playerId);

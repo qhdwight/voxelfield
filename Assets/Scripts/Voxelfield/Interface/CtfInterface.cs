@@ -78,7 +78,7 @@ namespace Voxelfield.Interface
                                 isNotificationVisible = true;
                                 StringBuilder builder = m_NotificationText.StartBuild();
                                 m_CtfMode.BuildUsername(builder, context.GetPlayer(capturingPlayerId))
-                                         .Append(isTaking ? " is Taking a Flag" : " Has a Flag")
+                                         .Append(isTaking ? " is taking a flag" : " has a flag")
                                          .Commit(m_NotificationText);
                             }
                             int flatIndex = flagTeam * flags.Length + flagIndex;

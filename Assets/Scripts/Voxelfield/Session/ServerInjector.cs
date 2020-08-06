@@ -193,7 +193,7 @@ namespace Voxelfield.Session
             void Accept()
             {
                 NetPeer peer = socketRequest.Accept();
-                Container player = Session.GetModifyingPayerFromId(Session.GetPeerPlayerId(peer));
+                Container player = Session.GetModifyingPlayerFromId(Session.GetPeerPlayerId(peer));
 #if VOXELFIELD_RELEASE_SERVER
                 // TODO:security what if already exists
                 m_GameLiftPlayerSessionIds.Add(peer, request.gameLiftPlayerSessionId.AsNewString());
@@ -260,7 +260,7 @@ namespace Voxelfield.Session
             {
                 if (m_SteamPlayerIds.TryGetReverse(serverSteamId, out NetPeer peer))
                 {
-                    Session.GetModifyingPayerFromId(Session.GetPeerPlayerId(peer)).Require<SteamIdProperty>().Value = playerSteamId;
+                    Session.GetModifyingPlayerFromId(Session.GetPeerPlayerId(peer)).Require<SteamIdProperty>().Value = playerSteamId;
                     Debug.Log($"Successfully validated {playerSteamId}");
                 }
                 else Debug.LogError($"Peer not found for Steam ID {playerSteamId}");

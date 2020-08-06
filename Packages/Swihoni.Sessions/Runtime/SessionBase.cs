@@ -366,7 +366,7 @@ namespace Swihoni.Sessions
             return m_Mode = mode;
         }
 
-        public abstract Container GetModifyingPayerFromId(int playerId, Container session = null);
+        public abstract Container GetModifyingPlayerFromId(int playerId, Container session = null);
 
         protected static void ForEachSessionInterface(Action<SessionInterfaceBehavior> action)
         {

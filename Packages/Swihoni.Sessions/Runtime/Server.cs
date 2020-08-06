@@ -55,7 +55,7 @@ namespace Swihoni.Sessions
 
         private void OnLatencyUpdated(NetPeer peer, int latency)
         {
-            Container player = GetModifyingPayerFromId(GetPeerPlayerId(peer));
+            Container player = GetModifyingPlayerFromId(GetPeerPlayerId(peer));
             var ping = player.Require<ServerPingComponent>();
             ping.latencyUs.Value = checked((uint) latency * 1_000);
             if (player.With(out StatsComponent stats))
@@ -66,7 +66,7 @@ namespace Swihoni.Sessions
         {
             int playerId = GetPeerPlayerId(peer);
             Debug.LogWarning($"Dropping player with id: {playerId}, reason: {disconnect.Reason}, error code: {disconnect.SocketErrorCode}");
-            Container player = GetModifyingPayerFromId(playerId);
+            Container player = GetModifyingPlayerFromId(playerId);
             try
             {
                 m_Injector.OnServerLoseConnection(peer, player);
@@ -143,7 +143,7 @@ namespace Swihoni.Sessions
         {
             Container serverSession = GetLatestSession();
             int clientId = GetPeerPlayerId(fromPeer);
-            Container serverPlayer = GetModifyingPayerFromId(clientId);
+            Container serverPlayer = GetModifyingPlayerFromId(clientId);
             switch (code)
             {
                 case ClientCommandsCode:
@@ -218,7 +218,7 @@ namespace Swihoni.Sessions
         protected void SendPeerLatestSession(uint tick, NetPeer peer, Container serverSession)
         {
             int playerId = GetPeerPlayerId(peer);
-            Container player = GetModifyingPayerFromId(playerId, serverSession);
+            Container player = GetModifyingPlayerFromId(playerId, serverSession);
 
             if (player.Require<HealthProperty>().WithValue)
             {
@@ -364,7 +364,7 @@ namespace Swihoni.Sessions
 
         protected override void RollbackHitboxes(in SessionContext context)
         {
-            uint latencyUs = GetModifyingPayerFromId(context.playerId).Require<ServerPingComponent>().latencyUs;
+            uint latencyUs = GetModifyingPlayerFromId(context.playerId).Require<ServerPingComponent>().latencyUs;
             for (var _modifierId = 0; _modifierId < MaxPlayers; _modifierId++)
             {
                 int modifierId = _modifierId; // Copy for use in lambda
