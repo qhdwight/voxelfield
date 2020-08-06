@@ -223,9 +223,9 @@ namespace Voxelfield.Session.Mode
             player.ZeroIfWith<RespawnTimerProperty>();
             if (player.With(out InventoryComponent inventory))
             {
-                if (begin) PlayerItemManagerModiferBehavior.Clear(inventory);
-                PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 0);
-                PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);
+                PlayerItemManagerModiferBehavior.ResetEquipStatus(inventory);
+                if (begin) PlayerItemManagerModiferBehavior.SetAllItems(inventory, ItemId.Pickaxe);
+                else PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);
             }
             if (player.With(out MoveComponent move))
             {

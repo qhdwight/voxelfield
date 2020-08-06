@@ -21,9 +21,8 @@ namespace Swihoni.Sessions.Player.Modifiers
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("give_item");
 
-        public static void Clear(InventoryComponent inventory)
+        public static void ResetEquipStatus(InventoryComponent inventory)
         {
-            inventory.Clear();
             inventory.adsStatus.Zero();
             inventory.equipStatus.Zero();
         }
@@ -219,7 +218,9 @@ namespace Swihoni.Sessions.Player.Modifiers
             SetInput(PlayerInput.Throw);
             SetInput(PlayerInput.DropItem);
             if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
-            if (InputProvider.GetInput(PlayerInput.ItemOne)) itemIndex.Value = 0;
+            float wheel = InputProvider.GetMouseScrollWheel();
+            if (Mathf.Abs(wheel) > Mathf.Epsilon) itemIndex.Value += (byte) (wheel > 0.0f ? 1 : -1);
+            else if (InputProvider.GetInput(PlayerInput.ItemOne)) itemIndex.Value = 0;
             else if (InputProvider.GetInput(PlayerInput.ItemTwo)) itemIndex.Value = 1;
             else if (InputProvider.GetInput(PlayerInput.ItemThree)) itemIndex.Value = 2;
             else if (InputProvider.GetInput(PlayerInput.ItemFour)) itemIndex.Value = 3;
@@ -231,10 +232,13 @@ namespace Swihoni.Sessions.Player.Modifiers
             else if (InputProvider.GetInput(PlayerInput.ItemTen)) itemIndex.Value = 9;
             else if (InputProvider.GetInput(PlayerInput.ItemLast))
             {
-                ByteProperty previousEquipped = commands.Require<InventoryComponent>().previousEquippedIndex;
-                if (previousEquipped.WithValue) itemIndex.Value = previousEquipped;
+                if (session.GetLocalPlayer().Require<InventoryComponent>().previousEquippedIndex.TryWithValue(out byte previousEquipped))
+                    itemIndex.Value = previousEquipped;
             }
+            itemIndex.Value = Clamp(itemIndex, 0, InventoryComponent.ItemsCount - 1);
         }
+
+        private static byte Clamp(byte i, byte min, byte max) => Math.Min(Math.Max(i, min), max);
 
         private static byte? FindItem(InventoryComponent inventory, Predicate<ItemComponent> predicate)
         {
@@ -244,7 +248,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 return itemIndex;
             }
             return null;
-        }    
+        }
 
         public static byte? FindEmpty(InventoryComponent inventory)
             => FindItem(inventory, item => item.id.WithoutValue);
@@ -254,11 +258,6 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (inventory.previousEquippedIndex.WithoutValue || inventory[inventory.previousEquippedIndex].id.WithoutValue)
                 return FindItem(inventory, item => item.id.WithValue);
             return inventory.previousEquippedIndex;
-        }
-
-        public static void AddItems(InventoryComponent inventory, params byte[] itemIds)
-        {
-            foreach (byte itemId in itemIds) AddItem(inventory, itemId);
         }
 
         public static byte? AddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
@@ -291,6 +290,12 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
+        public static void SetAllItems(InventoryComponent inventory, params byte[] ids)
+        {
+            for (var i = 0; i < inventory.items.Length; i++)
+                SetItemAtIndex(inventory, i < ids.Length ? ids[i] : (byte?) null, i);
+        }
+        
         public static void SetItemAtIndex(InventoryComponent inventory, byte? _itemId, int index, ushort count = 1)
         {
             ItemComponent item = inventory[index];

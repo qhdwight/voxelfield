@@ -16,6 +16,7 @@ namespace Voxelfield.Interface
 
         public byte ItemId => m_ItemId;
         public UnityEvent OnClick => m_Button.onClick;
+        public bool IsChecked => m_CheckMarkImage.gameObject.activeInHierarchy;
 
         private void Awake()
         {

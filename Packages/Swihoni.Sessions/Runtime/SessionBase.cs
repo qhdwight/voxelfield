@@ -352,6 +352,8 @@ namespace Swihoni.Sessions
 
         public virtual Container GetLocalCommands() => throw new NotSupportedException();
 
+        public virtual Container GetLocalPlayer() => throw new NotSupportedException();
+
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public virtual ModeBase GetModifyingMode(Container session = null)
         {

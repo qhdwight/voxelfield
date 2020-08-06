@@ -120,6 +120,7 @@ namespace Voxelfield.Session
 
             SetCommand("steam_status", arguments =>
             {
+                if (!SteamClient.IsValid) SteamClientBehavior.Initialize();
                 if (SteamClient.IsValid) Debug.Log($"Logged in as {SteamClient.Name}, ID: {SteamClient.SteamId}");
                 else Debug.LogWarning("Not connected to steam");
             });

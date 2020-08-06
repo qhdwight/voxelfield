@@ -5,22 +5,22 @@ namespace Voxels
 {
     public static class Noise
     {
-        private static void Shuffle<T>(this IList<T> list, int seed)  
-        {  
+        private static void Shuffle(int seed)
+        {
+            _permutations = new List<byte>(StandardPermutations);
+            if (seed == 0) return;
             Random.InitState(seed);
-            int n = list.Count;  
+            int n = _permutations.Count;  
             while (n > 1) {  
                 n--;  
                 int k = Random.Range(0, n);  
-                T value = list[k];  
-                list[k] = list[n];  
-                list[n] = value;  
+                byte value = _permutations[k];  
+                _permutations[k] = _permutations[n];  
+                _permutations[n] = value;  
             }  
         }
-
-        private static int LastSeed;
         
-        private static readonly List<byte> Permutations = new List<byte>
+        private static readonly List<byte> StandardPermutations = new List<byte>
         {
             151, 160, 137, 91, 90, 15,
             131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
@@ -37,6 +37,8 @@ namespace Voxels
             138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
         };
 
+        private static List<byte> _permutations = new List<byte>();
+
         // F2 = (sqrt(3) - 1) / 2
         // G2 = (3 - sqrt(3)) / 6   = F2 / (1 + 2 * K)
         private const float F2 = 0.366025403f, G2 = 0.211324865f;
@@ -44,7 +46,7 @@ namespace Voxels
         private static byte Perm(int i)
         {
             int r = i % byte.MaxValue;
-            return Permutations[r < 0 ? r + byte.MaxValue : i];
+            return _permutations[r < 0 ? r + byte.MaxValue : i];
         }
 
         private static float Grad(int hash, float x, float y)
@@ -114,19 +116,10 @@ namespace Voxels
             return 45.23065f * (n0 + n1 + n2);
         }
 
-        private static void EnsureSeed(int seed)
-        {
-            if (seed != LastSeed)
-            {
-                Random.InitState(seed);
-                Permutations.Shuffle(seed);
-                LastSeed = seed;
-            }
-        }
+        public static void SetSeed(int seed) => Shuffle(seed);
 
         public static float Simplex(float x, float y, TerrainGenerationComponent terrainGeneration)
         {
-            EnsureSeed(terrainGeneration.seed);
             float output = 0.0f, denominator = 0.0f, frequency = 1.0f, amplitude = 1.0f;
             for (var i = 0; i < terrainGeneration.octaves; i++)
             {

@@ -35,6 +35,8 @@ namespace Swihoni.Sessions
 
         public override Container GetLocalCommands() => m_HostCommands;
 
+        public override Container GetLocalPlayer() => m_HostCommands;
+
         protected override void Input(uint timeUs, uint durationUs)
         {
             Container session = GetLatestSession();

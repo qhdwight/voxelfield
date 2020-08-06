@@ -27,7 +27,7 @@ namespace Voxelfield.Interface
                                                                                               button.OnClick.AddListener(() =>
                                                                                               {
                                                                                                   var index = (byte) slotIndex;
-                                                                                                  WantedItems[index].Value = button.ItemId;
+                                                                                                  WantedItems[index].SetToNullable(button.IsChecked ? (byte?) null : button.ItemId);
                                                                                               });
                                                                                           return hasComponent;
                                                                                       }).ToArray()).ToArray();

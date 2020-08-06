@@ -101,18 +101,18 @@ namespace Swihoni.Sessions.Modes
             player.ZeroIfWith<RespawnTimerProperty>();
             if (player.With(out InventoryComponent inventory))
             {
-                PlayerItemManagerModiferBehavior.Clear(inventory);
-                PlayerItemManagerModiferBehavior.AddItems(inventory,
-                                                          ItemId.Pickaxe,
-                                                          ItemId.Rifle,
-                                                          ItemId.Shotgun,
-                                                          ItemId.Sniper,
-                                                          ItemId.Deagle,
-                                                          ItemId.Grenade,
-                                                          ItemId.Molotov,
-                                                          ItemId.C4,
-                                                          ItemId.Smg,
-                                                          ItemId.MissileLauncher);
+                PlayerItemManagerModiferBehavior.ResetEquipStatus(inventory);
+                PlayerItemManagerModiferBehavior.SetAllItems(inventory,
+                                                             ItemId.Pickaxe,
+                                                             ItemId.Rifle,
+                                                             ItemId.Shotgun,
+                                                             ItemId.Sniper,
+                                                             ItemId.Deagle,
+                                                             ItemId.Grenade,
+                                                             ItemId.Molotov,
+                                                             ItemId.C4,
+                                                             ItemId.Smg,
+                                                             ItemId.MissileLauncher);
             }
             if (player.With(out MoveComponent move))
             {

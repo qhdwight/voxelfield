@@ -1,9 +1,10 @@
 #if UNITY_EDITOR
-// #define VOXELFIELD_RELEASE_SERVER
+// // #define VOXELFIELD_RELEASE_SERVER
 #endif
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using LiteNetLib;
 using Steamworks;
@@ -12,6 +13,7 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
@@ -59,6 +61,8 @@ namespace Voxelfield.Session
         private readonly OrderedVoxelChangesProperty m_MasterChanges = new OrderedVoxelChangesProperty();
         private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new DualDictionary<NetPeer, SteamId>();
 
+        private bool m_UseSteam;
+        
         public void ApplyVoxelChanges(VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
         {
             void Apply() => ChunkManager.Singleton.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
@@ -108,7 +112,7 @@ namespace Voxelfield.Session
             else Debug.LogError($"Peer {peer.EndPoint} did not have Game Lift player session id!");
 #endif
 
-            if (SteamServer.IsValid)
+            if (m_UseSteam)
             {
                 if (m_SteamPlayerIds.TryGetForward(peer, out SteamId steamId))
                 {
@@ -164,45 +168,66 @@ namespace Voxelfield.Session
             RequestConnectionComponent request = m_RequestConnection;
             void Reject(string message)
             {
-                m_RejectionWriter.Reset();
-                m_RejectionWriter.Put(message);
-                socketRequest.Reject(m_RejectionWriter);
+                try
+                {
+                    m_RejectionWriter.Reset();
+                    m_RejectionWriter.Put(message);
+                    socketRequest.Reject(m_RejectionWriter);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogError($"Exception rejecting graciously: {exception}");
+                    socketRequest.RejectForce();
+                }
             }
-            int nextPeerId = ((NetworkedSessionBase) Session).Socket.NetworkManager.PeekNextId();
-            if (nextPeerId >= SessionBase.MaxPlayers - 1)
+            try
             {
-                Reject("Too many players are already connected to the server!");
-                return;
-            }
+                int nextPeerId = ((NetworkedSessionBase) Session).Socket.NetworkManager.PeekNextId();
+                if (nextPeerId >= SessionBase.MaxPlayers - 1)
+                {
+                    Reject("Too many players are already connected to the server!");
+                    return;
+                }
 
-            request.Deserialize(socketRequest.Data);
-            string version = request.version.AsNewString();
-            if (version != Application.version)
-            {
-                Reject("Your version does not match that of the server.");
-                return;
-            }
+                request.Deserialize(socketRequest.Data);
+                string version = request.version.AsNewString();
+                if (version != Application.version)
+                {
+                    Reject("Your version does not match that of the server.");
+                    return;
+                }
 
-            byte[] rawAuthenticationToken = Convert.FromBase64String(request.steamAuthenticationToken.AsNewString());
-            if (SteamServer.IsValid && !SteamServer.BeginAuthSession(rawAuthenticationToken, request.steamPlayerId.Value))
-            {
-                Reject("A Steam authentication error occurred");
-                return;
-            }
+                if (m_UseSteam)
+                {
+                    if (request.steamPlayerId.TryWithValue(out ulong playerSteamId))
+                    {
+                        byte[] rawAuthenticationToken = Convert.FromBase64String(request.steamAuthenticationToken.AsNewString());
+                        if (!SteamServer.BeginAuthSession(rawAuthenticationToken, playerSteamId))
+                        {
+                            Reject("Server Steam authentication error occurred");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Reject("Server requires Steam authentication");
+                        return;
+                    }
+                }
 
-            void Accept()
-            {
-                NetPeer peer = socketRequest.Accept();
-                Container player = Session.GetModifyingPlayerFromId(Session.GetPeerPlayerId(peer));
+                void Accept()
+                {
+                    NetPeer peer = socketRequest.Accept();
+                    Container player = Session.GetModifyingPlayerFromId(Session.GetPeerPlayerId(peer));
 #if VOXELFIELD_RELEASE_SERVER
                 // TODO:security what if already exists
                 m_GameLiftPlayerSessionIds.Add(peer, request.gameLiftPlayerSessionId.AsNewString());
 #endif
-                if (!SteamServer.IsValid) return;
-                // TODO:security handle case where steam player with ID already connected
-                player.Require<SteamIdProperty>().SetTo(request.steamPlayerId);
-                m_SteamPlayerIds.Add(peer, request.steamPlayerId.Value);
-            }
+                    if (!m_UseSteam) return;
+                    // TODO:security handle case where steam player with ID already connected
+                    player.Require<SteamIdProperty>().SetTo(request.steamPlayerId);
+                    m_SteamPlayerIds.Add(peer, request.steamPlayerId.Value);
+                }
 
 #if VOXELFIELD_RELEASE_SERVER
             string playerSessionId = request.gameLiftPlayerSessionId.AsNewString();
@@ -218,13 +243,19 @@ namespace Voxelfield.Session
                 Reject("A player session authentication error occurred");
             }
 #else
-            Accept();
+                Accept();
 #endif
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"Exception on new connection: {exception}");
+                Reject("Internal server error");
+            }
         }
 
         public override void OnStart()
         {
-            if (!ConfigManager.Active.authenticateSteam) return;
+            if (!(m_UseSteam = ConfigManager.Active.authenticateSteam)) return;
             try
             {
                 var server = (Server) Session;
@@ -245,12 +276,17 @@ namespace Voxelfield.Session
                     SteamServer.Init(480, parameters, false);
                     SteamServer.LogOnAnonymous();
                 }
+                if (!SteamClient.IsValid) SteamClientBehavior.InitializeOrThrow();
                 SteamServer.OnValidateAuthTicketResponse += SteamServerOnOnValidateAuthTicketResponse;
-                Debug.Log("Successfully initialized Steam server");
+                const string message = "Successfully initialized Steam server";
+                string separator = string.Concat(Enumerable.Repeat("@", message.Length));
+                Debug.Log($"{separator}\n{message}\n{separator}");
             }
             catch (Exception exception)
             {
-                Debug.LogError($"Failed to initialize Steam server {exception.Message}");
+                string message = $"Failed to initialize Steam server {exception.Message}",
+                       separator = string.Concat(Enumerable.Repeat("@", message.Length));
+                Debug.LogError($"{separator}\n{message}\n{separator}");
             }
         }
 
@@ -285,17 +321,17 @@ namespace Voxelfield.Session
 
         public override void OnSetupHost(in SessionContext context)
         {
-            if (SteamClient.IsValid) context.player.Require<SteamIdProperty>().Value = SteamClient.SteamId;
+            if (m_UseSteam) context.player.Require<SteamIdProperty>().Value = SteamClient.SteamId;
         }
 
         protected override void OnSettingsTick(Container session)
         {
-            if (SteamServer.IsValid) SteamServer.RunCallbacks();
+            if (m_UseSteam) SteamServer.RunCallbacks();
             base.OnSettingsTick(session);
         }
 
         public override bool ShouldSetupPlayer(Container serverPlayer) => base.ShouldSetupPlayer(serverPlayer)
-                                                                       && (!SteamServer.IsValid || serverPlayer.Require<SteamIdProperty>().WithValue);
+                                                                       && (!m_UseSteam || serverPlayer.Require<SteamIdProperty>().WithValue);
 
         public override string GetUsername(in SessionContext context)
         {

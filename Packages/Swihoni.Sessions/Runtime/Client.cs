@@ -74,6 +74,8 @@ namespace Swihoni.Sessions
 
         public override Container GetLocalCommands() => m_CommandHistory.Peek();
 
+        public override Container GetLocalPlayer() => m_PlayerPredictionHistory.Peek();
+
         protected override void Input(uint timeUs, uint durationUs)
         {
             Container verifiedLatestSession = GetLatestSession();

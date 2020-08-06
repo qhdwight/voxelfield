@@ -3,6 +3,10 @@
 // #undef UNITY_EDITOR
 #endif
 
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using Voxelfield.Session;
 #if UNITY_EDITOR
 using Amazon;
 using Amazon.Runtime;
@@ -11,10 +15,6 @@ using Amazon.GameLift.Model;
 using UnityEditor;
 
 #endif
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using Voxelfield.Session;
 #if VOXELFIELD_RELEASE_SERVER
 using GameSession = Aws.GameLift.Server.Model.GameSession;
 using Aws.GameLift;
@@ -30,6 +30,37 @@ namespace Voxelfield
 #if VOXELFIELD_RELEASE_SERVER
         private void Start()
         {
+            // try
+            // {
+            //     var parameters = new SteamServerInit
+            //     {
+            //         DedicatedServer = true,
+            //         GamePort = 27015, QueryPort = 27016,
+            //         Secure = true,
+            //         VersionString = Application.version,
+            //         GameDescription = Application.productName,
+            //         IpAddress = NetUtils.ResolveAddress("127.0.0.1"),
+            //         ModDir = Application.productName,
+            //         SteamPort = 0
+            //     };
+            //     if (!SteamServer.IsValid)
+            //     {
+            //         SteamServer.Init(480, parameters, false);
+            //         SteamServer.LogOnAnonymous();
+            //     }
+            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            //     Debug.Log("Successfully initialized Steam server");
+            // }
+            // catch (Exception exception)
+            // {
+            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            //     Debug.LogError($"Failed to initialize Steam server {exception.Message}");
+            // }
+            
             GenericOutcome outcome = GameLiftServerAPI.InitSDK();
             if (outcome.Success)
             {
@@ -82,7 +113,7 @@ namespace Voxelfield
         private static async void CreateFleet()
         {
             // Debug.Log("Executing upload zsh script...");
-            // string uploadResult = SessionExtensions.ExecuteProcess($"{Application.dataPath}/Builds/gamelift_publish.zsh {Application.version}");
+            // string uploadResult = SessionExtensions.ExecuteProcess($"{Application.dataPath}/../Builds/gamelift_publish.zsh {Application.version}");
             // Debug.Log($"Upload standard output: {uploadResult}");
 
             var config = new AmazonGameLiftConfig {RegionEndpoint = RegionEndpoint.USWest1};
@@ -122,7 +153,7 @@ namespace Voxelfield
                 RuntimeConfiguration = new RuntimeConfiguration
                 {
                     GameSessionActivationTimeoutSeconds = 600, MaxConcurrentGameSessionActivations = 1,
-                    ServerProcesses = new List<ServerProcess> {new ServerProcess {ConcurrentExecutions = 1, LaunchPath = "/local/game/Voxelfield"}}
+                    ServerProcesses = new List<ServerProcess> {new ServerProcess {ConcurrentExecutions = 1, LaunchPath = "/local/game/Voxelfield", Parameters = "-logFile /local/game/server.log"}}
                 },
                 NewGameSessionProtectionPolicy = ProtectionPolicy.FullProtection
             };

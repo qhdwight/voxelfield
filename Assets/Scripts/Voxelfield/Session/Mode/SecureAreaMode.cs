@@ -266,9 +266,8 @@ namespace Voxelfield.Session.Mode
                 var inventory = player.Require<InventoryComponent>();
                 if (health.IsInactiveOrDead || money.count.WithoutValue)
                 {
-                    PlayerItemManagerModiferBehavior.Clear(inventory);
-                    PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pickaxe, 0);
-                    PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, ItemId.Pistol, 1);
+                    PlayerItemManagerModiferBehavior.ResetEquipStatus(inventory);
+                    PlayerItemManagerModiferBehavior.SetAllItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
                     if (money.count.WithoutValue) money.count.Value = 800;
                 }
                 if (health.IsActiveAndAlive) PlayerItemManagerModiferBehavior.RefillAllAmmo(inventory);

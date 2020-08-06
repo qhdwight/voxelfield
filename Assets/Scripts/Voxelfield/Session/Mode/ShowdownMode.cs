@@ -144,8 +144,8 @@ namespace Voxelfield.Session.Mode
             if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
             if (player.With(out InventoryComponent inventory))
             {
-                PlayerItemManagerModiferBehavior.Clear(inventory);
-                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
+                PlayerItemManagerModiferBehavior.ResetEquipStatus(inventory);
+                PlayerItemManagerModiferBehavior.SetAllItems(inventory, ItemId.Pickaxe, ItemId.Pistol);
             }
             player.Require<ShowdownPlayerComponent>().Zero();
         }

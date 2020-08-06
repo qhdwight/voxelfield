@@ -135,15 +135,16 @@ namespace Voxels
             return baseChange;
         }
 
-        public void CreateTerrainFromSave(MapContainer save)
+        public void CreateTerrainFromSave(MapContainer map)
         {
+            Noise.SetSeed(map.terrainGeneration.seed);
             m_Generating = true;
             for (var x = 0; x < m_ChunkSize; x++)
             for (var z = 0; z < m_ChunkSize; z++)
             for (var y = 0; y < m_ChunkSize; y++)
             {
                 var position = new Position3Int(x, y, z);
-                VoxelChange change = GetChangeFromMap(position, save);
+                VoxelChange change = GetChangeFromMap(position, map);
                 SetVoxelDataNoCheck(position, change);
             }
             m_Generating = false;

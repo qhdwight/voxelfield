@@ -1,23 +1,29 @@
-// #undef UNITY_EDITOR
+#if UNITY_EDITOR
+// #define VOXELFIELD_RELEASE_CLIENT
+#endif
 
-using UnityEngine;
-
-#if !UNITY_EDITOR
 using System;
 using Steamworks;
-#endif
+using UnityEngine;
 
 namespace Swihoni.Util
 {
     [DisallowMultipleComponent]
-    public class SteamClientBehavior : MonoBehaviour
+    public class SteamClientBehavior : SingletonBehavior<SteamClientBehavior>
     {
-#if !UNITY_EDITOR
-        private void Awake()
+        protected override void Awake()
+        {
+            base.Awake();
+            Initialize();
+        }
+
+        public static void InitializeOrThrow() => SteamClient.Init(480, false);
+        
+        public static void Initialize()
         {
             try
             {
-                SteamClient.Init(480, false);
+                InitializeOrThrow();
                 Debug.Log("Successfully initialized Steam client");
             }
             catch (Exception)
@@ -35,6 +41,5 @@ namespace Swihoni.Util
         {
             if (SteamClient.IsValid) SteamClient.Shutdown();
         }
-#endif
     }
 }

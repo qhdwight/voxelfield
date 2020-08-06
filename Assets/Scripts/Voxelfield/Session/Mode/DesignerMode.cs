@@ -30,8 +30,8 @@ namespace Voxelfield.Session.Mode
             player.ZeroIfWith<RespawnTimerProperty>();
             if (player.With(out InventoryComponent inventory))
             {
-                PlayerItemManagerModiferBehavior.Clear(inventory);
-                PlayerItemManagerModiferBehavior.AddItems(inventory, ItemId.SuperPickaxe, ItemId.VoxelWand, ItemId.ModelWand);
+                PlayerItemManagerModiferBehavior.ResetEquipStatus(inventory);
+                PlayerItemManagerModiferBehavior.SetAllItems(inventory, ItemId.SuperPickaxe, ItemId.VoxelWand, ItemId.ModelWand);
             }
             var designer = player.Require<DesignerPlayerComponent>();
             designer.NavigateProperties(_p =>
