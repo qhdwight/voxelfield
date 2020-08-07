@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-#define VOXELFIELD_RELEASE_SERVER
+// #define VOXELFIELD_RELEASE_SERVER
 #endif
 
 using System;
@@ -99,7 +99,6 @@ namespace Voxelfield.Session
                        arguments => ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
 #endif
             SetCommand("online_quick_play", arguments => QuickPlayGameLift());
-            SetCommand("online_start_new", arguments => StartNewGameLift());
             SetCommand("disconnect", arguments => DisconnectAll());
 #if UNITY_EDITOR
             SetCommand("disconnect_client", arguments => SessionBase.SessionEnumerable.First(session => session is Client).Stop());
@@ -294,7 +293,6 @@ namespace Voxelfield.Session
         }
 
         private static async void QuickPlayGameLift() => await GameLiftClientManager.QuickPlayAsync();
-        private static async void StartNewGameLift() => await GameLiftClientManager.StartNewAsync();
 
         private void FixedUpdate()
         {

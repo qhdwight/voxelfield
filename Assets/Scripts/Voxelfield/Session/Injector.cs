@@ -57,10 +57,12 @@ namespace Voxelfield.Session
             if (SteamClient.IsValid) m_SteamAuthenticationTicket?.Cancel();
         }
 
+        protected virtual void OnMapChange() { }
+
         protected override void OnSettingsTick(Container session)
         {
             var mapName = session.Require<VoxelMapNameProperty>();
-            MapManager.Singleton.SetNamedMap(mapName);
+            if (MapManager.Singleton.SetNamedMap(mapName)) OnMapChange();
 
             MapLoadingStage stage = ChunkManager.Singleton.ProgressInfo.stage;
             if (stage == MapLoadingStage.Failed) throw new Exception("Map failed to load");

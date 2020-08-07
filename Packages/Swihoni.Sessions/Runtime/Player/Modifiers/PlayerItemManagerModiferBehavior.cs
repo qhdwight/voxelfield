@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             inventory.adsStatus.Zero();
             inventory.equipStatus.Zero();
         }
-        
+
         public override void ModifyChecked(in SessionContext context)
         {
             Container player = context.player;
@@ -126,11 +126,9 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             ByteStatusComponent equipStatus = inventory.equipStatus;
             // Unequip current item if desired
-            bool
-                hasValidWantedIndex = wantedItemIndex.WithValue && inventory[wantedItemIndex].id.WithValue,
-                wantsNewIndex = wantedItemIndex != inventory.equippedIndex,
-                isAlreadyUnequipping = equipStatus.id == ItemEquipStatusId.Unequipping;
-            if (hasValidWantedIndex && wantsNewIndex && !isAlreadyUnequipping)
+            bool hasValidWantedIndex = wantedItemIndex.WithValue && inventory[wantedItemIndex].id.WithValue,
+                 isAlreadyUnequipping = equipStatus.id == ItemEquipStatusId.Unequipping;
+            if (hasValidWantedIndex && wantedItemIndex != inventory.equippedIndex && !isAlreadyUnequipping)
             {
                 equipStatus.id.Value = ItemEquipStatusId.Unequipping;
                 equipStatus.elapsedUs.Value = 0u;
@@ -213,32 +211,31 @@ namespace Swihoni.Sessions.Player.Modifiers
             SetInput(PlayerInput.UseThree);
             SetInput(PlayerInput.UseFour);
             SetInput(PlayerInput.Reload);
-            SetInput(PlayerInput.Fly);
             SetInput(PlayerInput.Ads);
             SetInput(PlayerInput.Throw);
             SetInput(PlayerInput.DropItem);
-            if (commands.Without(out WantedItemIndexProperty itemIndex)) return;
+
+            if (commands.Without(out WantedItemIndexProperty wantedItemIndex)) return;
+
+            var inventory = session.GetLocalPlayer().Require<InventoryComponent>();
             float wheel = InputProvider.GetMouseScrollWheel();
-            if (Mathf.Abs(wheel) > Mathf.Epsilon) itemIndex.Value += (byte) (wheel > 0.0f ? 1 : -1);
-            else if (InputProvider.GetInput(PlayerInput.ItemOne)) itemIndex.Value = 0;
-            else if (InputProvider.GetInput(PlayerInput.ItemTwo)) itemIndex.Value = 1;
-            else if (InputProvider.GetInput(PlayerInput.ItemThree)) itemIndex.Value = 2;
-            else if (InputProvider.GetInput(PlayerInput.ItemFour)) itemIndex.Value = 3;
-            else if (InputProvider.GetInput(PlayerInput.ItemFive)) itemIndex.Value = 4;
-            else if (InputProvider.GetInput(PlayerInput.ItemSix)) itemIndex.Value = 5;
-            else if (InputProvider.GetInput(PlayerInput.ItemSeven)) itemIndex.Value = 6;
-            else if (InputProvider.GetInput(PlayerInput.ItemEight)) itemIndex.Value = 7;
-            else if (InputProvider.GetInput(PlayerInput.ItemNine)) itemIndex.Value = 8;
-            else if (InputProvider.GetInput(PlayerInput.ItemTen)) itemIndex.Value = 9;
-            else if (InputProvider.GetInput(PlayerInput.ItemLast))
-            {
-                if (session.GetLocalPlayer().Require<InventoryComponent>().previousEquippedIndex.TryWithValue(out byte previousEquipped))
-                    itemIndex.Value = previousEquipped;
-            }
-            itemIndex.Value = Clamp(itemIndex, 0, InventoryComponent.ItemsCount - 1);
+            if (Mathf.Abs(wheel) > Mathf.Epsilon)
+                wantedItemIndex.Value = (byte) Clamp(inventory.equippedIndex.Else(wantedItemIndex) + (wheel > 0.0f ? 1 : -1), 0, InventoryComponent.ItemsCount - 1);
+            else if (InputProvider.GetInput(PlayerInput.ItemOne)) wantedItemIndex.Value = 0;
+            else if (InputProvider.GetInput(PlayerInput.ItemTwo)) wantedItemIndex.Value = 1;
+            else if (InputProvider.GetInput(PlayerInput.ItemThree)) wantedItemIndex.Value = 2;
+            else if (InputProvider.GetInput(PlayerInput.ItemFour)) wantedItemIndex.Value = 3;
+            else if (InputProvider.GetInput(PlayerInput.ItemFive)) wantedItemIndex.Value = 4;
+            else if (InputProvider.GetInput(PlayerInput.ItemSix)) wantedItemIndex.Value = 5;
+            else if (InputProvider.GetInput(PlayerInput.ItemSeven)) wantedItemIndex.Value = 6;
+            else if (InputProvider.GetInput(PlayerInput.ItemEight)) wantedItemIndex.Value = 7;
+            else if (InputProvider.GetInput(PlayerInput.ItemNine)) wantedItemIndex.Value = 8;
+            else if (InputProvider.GetInput(PlayerInput.ItemTen)) wantedItemIndex.Value = 9;
+            else if (InputProvider.GetInput(PlayerInput.ItemLast) && inventory.previousEquippedIndex.TryWithValue(out byte previousEquipped))
+                wantedItemIndex.Value = previousEquipped;
         }
 
-        private static byte Clamp(byte i, byte min, byte max) => Math.Min(Math.Max(i, min), max);
+        private static int Clamp(int i, int min, int max) => Math.Min(Math.Max(i, min), max);
 
         private static byte? FindItem(InventoryComponent inventory, Predicate<ItemComponent> predicate)
         {
@@ -295,7 +292,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             for (var i = 0; i < inventory.items.Length; i++)
                 SetItemAtIndex(inventory, i < ids.Length ? ids[i] : (byte?) null, i);
         }
-        
+
         public static void SetItemAtIndex(InventoryComponent inventory, byte? _itemId, int index, ushort count = 1)
         {
             ItemComponent item = inventory[index];

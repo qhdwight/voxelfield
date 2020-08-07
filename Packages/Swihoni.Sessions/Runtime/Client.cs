@@ -34,9 +34,6 @@ namespace Swihoni.Sessions
             m_CommandHistory = new CyclicArray<ClientCommandsContainer>(HistoryCount, () => m_EmptyClientCommands.Clone());
             SetFirstCommand(m_CommandHistory.Peek());
             m_PlayerPredictionHistory = new CyclicArray<Container>(HistoryCount, () => new Container(elements.playerElements.Append(typeof(ClientStampComponent))));
-            Container firstPrediction = m_PlayerPredictionHistory.Peek();
-            firstPrediction.Zero();
-            firstPrediction.Require<ClientStampComponent>().Clear();
 
             foreach (ServerSessionContainer session in m_SessionHistory)
             {
@@ -374,9 +371,10 @@ namespace Swihoni.Sessions
 
         public static void ClearSingleTicks(ElementBase commands) => commands.Navigate(_element =>
         {
-            if (_element.WithAttribute<SingleTickAttribute>())
+            if (_element.TryAttribute(out SingleTickAttribute singleTickAttribute))
             {
-                _element.Clear();
+                if (singleTickAttribute.Zero) _element.Zero();
+                else _element.Clear();
                 return Navigation.SkipDescendents;
             }
             return Navigation.Continue;

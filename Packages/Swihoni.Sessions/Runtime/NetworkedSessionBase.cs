@@ -73,7 +73,6 @@ namespace Swihoni.Sessions
             session.Require<PlayerContainerArrayElement>().SetAll(() => new Container(playerElements));
             // TODO:refactor standard entity components
             session.Require<EntityArrayElement>().SetAll(() => new EntityContainer(typeof(ThrowableComponent), typeof(ItemComponent)));
-            session.ZeroIfWith<KillFeedElement>();
             return session;
         }
 

@@ -45,7 +45,7 @@ namespace Swihoni.Sessions.Player.Components
         public FloatProperty mouseDeltaX, mouseDeltaY;
     }
 
-    [Serializable, ClientTrusted]
+    [Serializable, ClientTrusted, SingleTick(true)]
     public class InputFlagProperty : UIntProperty
     {
         public bool GetInput(int input) => (Value & (1 << input)) != 0;
@@ -56,9 +56,14 @@ namespace Swihoni.Sessions.Player.Components
             if (enabled) Value |= (uint) (1 << input);
             else Value &= (uint) ~(1 << input);
         }
+        
+        public void SetInput(int input)
+        {
+            if (WithoutValue) Value = 0;
+            Value |= (uint) (1 << input);
+        }
 
-        public float GetAxis(int positiveInput, int negativeInput)
-            => (GetInput(positiveInput) ? 1.0f : 0.0f) + (GetInput(negativeInput) ? -1.0f : 0.0f);
+        public float GetAxis(int positiveInput, int negativeInput) => (GetInput(positiveInput) ? 1.0f : 0.0f) + (GetInput(negativeInput) ? -1.0f : 0.0f);
     }
 
     [Serializable, ClientTrusted]

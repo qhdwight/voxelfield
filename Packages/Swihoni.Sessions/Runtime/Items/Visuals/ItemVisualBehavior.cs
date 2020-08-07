@@ -149,7 +149,7 @@ namespace Swihoni.Sessions.Items.Visuals
             if (m_Renders == null) return;
             foreach (Renderer meshRenderer in m_Renders)
             {
-                meshRenderer.enabled = IsMeshVisible(meshRenderer, isVisible, item, equipStatus);
+                meshRenderer.enabled = IsMeshVisible(meshRenderer, isVisible, item);
                 meshRenderer.shadowCastingMode = shadowCastingMode;
             }
             // _item = item;
@@ -163,8 +163,8 @@ namespace Swihoni.Sessions.Items.Visuals
             if (m_Renders == null) return;
             foreach (Renderer meshRenderer in m_Renders) meshRenderer.enabled = isActive;
         }
-
-        protected virtual bool IsMeshVisible(Renderer meshRenderer, bool isItemVisible, ItemComponent item, ByteStatusComponent equipStatus)
+        
+        protected virtual bool IsMeshVisible(Renderer meshRenderer, bool isItemVisible /* from component only */, ItemComponent item)
         {
             if (isItemVisible && !meshRenderer.enabled) return false; // Override from animator
             return isItemVisible;

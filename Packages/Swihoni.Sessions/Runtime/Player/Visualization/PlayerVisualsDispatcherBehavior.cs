@@ -47,10 +47,7 @@ namespace Swihoni.Sessions.Player.Visualization
         }
 
         private readonly StringBuilder m_DamageNotifierBuilder = new StringBuilder();
-
-        private static Vector3 GetPosition(Container session, int playerId)
-            => session.GetPlayer(playerId).Require<MoveComponent>().GetPlayerEyePosition();
-
+        
         public void Render(in SessionContext context, bool isLocalPlayer)
         {
             Container player = context.player, sessionContainer = context.sessionContainer;
@@ -89,14 +86,14 @@ namespace Swihoni.Sessions.Player.Visualization
 
                     if (damageNotifier.elapsedUs > 0u)
                     {
-                        LookAtCamera(m_DamageText, sessionContainer, context.playerId, new Vector3 {y = 0.2f});
+                        LookAtCamera(m_DamageText, context, new Vector3 {y = 0.2f});
                         m_DamageNotifierBuilder.Clear().Append(damageNotifier.damage.Value).Commit(m_DamageText);
                     }
                 }
 
                 if (showUsername)
                 {
-                    LookAtCamera(m_UsernameText, sessionContainer, context.playerId, new Vector3 {y = 0.2f});
+                    LookAtCamera(m_UsernameText, context, new Vector3 {y = 0.2f});
                     m_UsernameBuilder.Clear();
                     ModeManager.GetMode(sessionContainer).AppendUsername(m_UsernameBuilder, player).Commit(m_UsernameText);
                 }
@@ -111,10 +108,10 @@ namespace Swihoni.Sessions.Player.Visualization
             m_RecentRender = player;
         }
 
-        private static void LookAtCamera(TMP_Text text, Container session, int playerId, in Vector3 offset)
+        private static void LookAtCamera(TMP_Text text, in SessionContext context, in Vector3 offset)
         {
             Vector3 cameraPosition = SessionBase.ActiveCamera.transform.position,
-                    textPosition = GetPosition(session, playerId) + offset;
+                    textPosition = context.player.Require<MoveComponent>().GetPlayerEyePosition() + offset;
             float distanceMultiplier = Mathf.Clamp(Vector3.Distance(cameraPosition, textPosition) * 0.05f, 1.0f, 5.0f);
             var localScale = new Vector3(-distanceMultiplier, distanceMultiplier, 1.0f);
             Transform t = text.transform;
@@ -135,6 +132,8 @@ namespace Swihoni.Sessions.Player.Visualization
             if (!isActive) SetCameraVisible(false);
             if (m_Visuals == null) return;
             foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.SetActive(isActive);
+            m_UsernameText.enabled = isActive;
+            m_DamageText.enabled = isActive;
         }
 
         public void Dispose()

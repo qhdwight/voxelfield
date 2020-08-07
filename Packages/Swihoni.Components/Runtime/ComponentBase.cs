@@ -8,6 +8,9 @@ namespace Swihoni.Components
 {
     public class SingleTickAttribute : Attribute
     {
+        public bool Zero { get; }
+
+        public SingleTickAttribute(bool zero = false) => Zero = zero;
     }
 
     public abstract class ElementBase

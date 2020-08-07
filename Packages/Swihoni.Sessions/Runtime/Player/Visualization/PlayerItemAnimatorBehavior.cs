@@ -56,7 +56,7 @@ namespace Swihoni.Sessions.Player.Visualization
 
             if (isVisible)
             {
-                m_ItemVisual = SetupVisualItem(inventory);
+                SetupVisualItem(inventory);
                 if (m_ItemVisual)
                 {
                     if (m_IsFpv) transform.localPosition = m_ItemVisual.FpvOffset;
@@ -93,11 +93,7 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             else
             {
-                if (m_ItemVisual)
-                {
-                    ItemAssetLink.ReturnVisuals(m_ItemVisual);
-                    m_ItemVisual = null;
-                }
+                TryReturnActive();
                 if (m_FpvArmsRenderer) m_FpvArmsRenderer.enabled = false;
             }
             m_Animator.enabled = isVisible;
@@ -146,27 +142,38 @@ namespace Swihoni.Sessions.Player.Visualization
 
         private bool m_WasNewItemVisualThisRenderFrame;
 
-        private ItemVisualBehavior SetupVisualItem(InventoryComponent inventory)
+        private void SetupVisualItem(InventoryComponent inventory)
         {
-            if (inventory.HasNoItemEquipped)
+            try
             {
-                if (m_ItemVisual) ItemAssetLink.ReturnVisuals(m_ItemVisual);
-                m_ItemVisual = null;
-                return null;
-            }
-            byte itemId = inventory.EquippedItemComponent.id;
-            if (m_ItemVisual && itemId == m_ItemVisual.ModiferProperties.id) return m_ItemVisual;
+                if (inventory.HasNoItemEquipped) TryReturnActive();
+                byte itemId = inventory.EquippedItemComponent.id;
+                if (m_ItemVisual && itemId == m_ItemVisual.ModiferProperties.id) return;
 
-            if (m_ItemVisual) ItemAssetLink.ReturnVisuals(m_ItemVisual); // We have existing visuals but they are the wrong item id
-            ItemVisualBehavior newVisuals = ItemAssetLink.ObtainVisuals(itemId, this, m_Graph);
-            Transform itemTransform = newVisuals.transform;
-            itemTransform.SetParent(transform);
-            itemTransform.localPosition = Vector3.zero;
-            itemTransform.localRotation = Quaternion.identity;
-            m_ItemVisual = newVisuals;
-            m_WasNewItemVisualThisRenderFrame = true;
-            m_Animator.Rebind();
-            return newVisuals;
+                TryReturnActive(); // We have existing visuals but they are the wrong item id
+                ItemVisualBehavior newVisuals = ItemAssetLink.ObtainVisuals(itemId, this, m_Graph);
+                Transform itemTransform = newVisuals.transform;
+                itemTransform.SetParent(transform);
+                itemTransform.localPosition = Vector3.zero;
+                itemTransform.localRotation = Quaternion.identity;
+                m_ItemVisual = newVisuals;
+                m_WasNewItemVisualThisRenderFrame = true;
+                m_Animator.Rebind();
+                m_Graph.Evaluate();
+            }
+            catch (Exception exception)
+            {
+#if !VOXELFIELD_RELEASE_CLIENT
+                Debug.LogError(exception);
+#endif
+                TryReturnActive();
+            }
+        }
+
+        private void TryReturnActive()
+        {
+            if (m_ItemVisual) ItemAssetLink.ReturnVisuals(m_ItemVisual);
+            m_ItemVisual = null;
         }
 
         public void AnimateAim(InventoryComponent inventory)
@@ -220,11 +227,7 @@ namespace Swihoni.Sessions.Player.Visualization
             if (!isActive)
             {
                 if (m_FpvArmsRenderer) m_FpvArmsRenderer.enabled = false;
-                if (m_ItemVisual)
-                {
-                    if (m_ItemVisual) ItemAssetLink.ReturnVisuals(m_ItemVisual);
-                    m_ItemVisual = null;
-                }
+                TryReturnActive();
             }
         }
     }

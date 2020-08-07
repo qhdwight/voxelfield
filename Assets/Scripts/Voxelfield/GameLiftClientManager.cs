@@ -43,10 +43,16 @@ namespace Voxelfield
 
         public static string PlayerSessionId { get; private set; } = string.Empty;
 
-        public static async Task<Client> QuickPlayAsync() => await StartClientAsync(GetQuickPlayGameSessionAsync);
-        public static async Task<Client> StartNewAsync() => await StartClientAsync(CreateNewGameSessionAsync);
+        public static async Task<Client> QuickPlayAsync() => await StartClientAsync(EnterQueueAsync);
 
-        private static async Task<Client> StartClientAsync(Func<string, Task<GameSession>> sessionGetter)
+        private static async Task<GameSessionPlacement> EnterQueueAsync(string playerId)
+        {
+            var request = new StartGameSessionPlacementRequest {GameSessionQueueName = "us-west-1", PlacementId = playerId};
+            StartGameSessionPlacementResponse response = await Client.StartGameSessionPlacementAsync(request);
+            return response.GameSessionPlacement;
+        }
+
+        private static async Task<Client> StartClientAsync(Func<string, Task<GameSessionPlacement>> sessionGetter)
         {
             try
             {
@@ -54,7 +60,7 @@ namespace Voxelfield
                 if (!SteamClient.IsValid || !SteamClient.IsLoggedOn) throw new AuthenticationException("You need to be connected to Steam to play an online game.");
 #endif
                 string playerId = GetPlayerId();
-                GameSession gameSession = await sessionGetter(playerId);
+                GameSessionPlacement gameSession = await sessionGetter(playerId);
                 return await StartClientForGameSessionAsync(gameSession, playerId);
             }
             catch (Exception exception)
@@ -64,7 +70,7 @@ namespace Voxelfield
             }
         }
 
-        private static async Task<Client> StartClientForGameSessionAsync(GameSession gameSession, string playerId)
+        private static async Task<Client> StartClientForGameSessionAsync(GameSessionPlacement gameSession, string playerId)
         {
             Debug.Log("Creating player session request...");
             var playerRequest = new CreatePlayerSessionRequest {GameSessionId = gameSession.GameSessionId, PlayerId = playerId};
@@ -77,57 +83,53 @@ namespace Voxelfield
             return SessionManager.StartClient(endPoint);
         }
 
-        private static string GetPlayerId()
-        {
-            string playerId = SteamClient.IsValid && SteamClient.IsLoggedOn
-                ? SteamClient.SteamId.ToString()
-                : Guid.NewGuid().ToString();
-            return playerId;
-        }
+        private static string GetPlayerId() => SteamClient.IsValid && SteamClient.IsLoggedOn
+            ? SteamClient.SteamId.ToString()
+            : Guid.NewGuid().ToString();
 
-        private static async Task<GameSession> GetQuickPlayGameSessionAsync(string playerId)
-        {
-#if VOXELFIELD_RELEASE_CLIENT
-            try
-            {
-                var searchRequest = new SearchGameSessionsRequest
-                {
-                    Limit = 1,
-                    AliasId = FleetAlias,
-                    FilterExpression = "hasAvailablePlayerSessions=true",
-                    SortExpression = "creationTimeMillis ASC"
-                };
-                Debug.Log("Searching game sessions...");
-                SearchGameSessionsResponse sessionsResponse = await GameLiftClient.SearchGameSessionsAsync(searchRequest);
-                return sessionsResponse.GameSessions.Count == 0
-                    ? await CreateNewGameSessionAsync(playerId)
-                    : sessionsResponse.GameSessions.First();
-            }
-            catch (InvalidRequestException)
-            {
-                Debug.LogError("No active online servers found to search for game sessions");
-                throw;
-            }
-#else
-            return await CreateNewGameSessionAsync(playerId);
-#endif
-        }
-
-        private static async Task<GameSession> CreateNewGameSessionAsync(string playerId)
-        {
-            Debug.Log("No active sessions found. Requesting to start one...");
-            var newSessionRequest = new CreateGameSessionRequest
-            {
-                CreatorId = playerId,
-#if VOXELFIELD_RELEASE_CLIENT
-                AliasId = FleetAlias,
-#else
-                FleetId = "fleet-0",
-#endif
-                MaximumPlayerSessionCount = SessionBase.MaxPlayers
-            };
-            CreateGameSessionResponse response = await Client.CreateGameSessionAsync(newSessionRequest);
-            return response.GameSession;
-        }
+        //         private static async Task<GameSession> GetQuickPlayGameSessionAsync(string playerId)
+//         {
+// #if VOXELFIELD_RELEASE_CLIENT
+//             try
+//             {
+//                 var searchRequest = new SearchGameSessionsRequest
+//                 {
+//                     Limit = 1,
+//                     AliasId = FleetAlias,
+//                     FilterExpression = "hasAvailablePlayerSessions=true",
+//                     SortExpression = "creationTimeMillis ASC"
+//                 };
+//                 Debug.Log("Searching game sessions...");
+//                 SearchGameSessionsResponse sessionsResponse = await GameLiftClient.SearchGameSessionsAsync(searchRequest);
+//                 return sessionsResponse.GameSessions.Count == 0
+//                     ? await CreateNewGameSessionAsync(playerId)
+//                     : sessionsResponse.GameSessions.First();
+//             }
+//             catch (InvalidRequestException)
+//             {
+//                 Debug.LogError("No active online servers found to search for game sessions");
+//                 throw;
+//             }
+// #else
+//             return await CreateNewGameSessionAsync(playerId);
+// #endif
+//         }
+//
+//         private static async Task<GameSession> CreateNewGameSessionAsync(string playerId)
+//         {
+//             Debug.Log("No active sessions found. Requesting to start one...");
+//             var newSessionRequest = new CreateGameSessionRequest
+//             {
+//                 CreatorId = playerId,
+// #if VOXELFIELD_RELEASE_CLIENT
+//                 AliasId = FleetAlias,
+// #else
+//                 FleetId = "fleet-0",
+// #endif
+//                 MaximumPlayerSessionCount = SessionBase.MaxPlayers
+//             };
+//             CreateGameSessionResponse response = await Client.CreateGameSessionAsync(newSessionRequest);
+//             return response.GameSession;
+//         }
     }
 }

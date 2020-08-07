@@ -211,11 +211,12 @@ namespace Voxels.Map
         //     }
         // }
 
-        public void SetNamedMap(StringProperty mapName)
+        public bool SetNamedMap(StringProperty mapName)
         {
-            if (m_WantedMapName != mapName)
-                ChunkManager.Singleton.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Waiting};
+            if (m_WantedMapName == mapName) return false;
+            ChunkManager.Singleton.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Waiting};
             m_WantedMapName = mapName;
+            return true;
         }
 
         public void SetMapToUnloaded() => SetNamedMap(_emptyMapName);

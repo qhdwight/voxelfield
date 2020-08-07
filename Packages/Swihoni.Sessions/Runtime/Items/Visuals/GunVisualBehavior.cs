@@ -15,11 +15,11 @@ namespace Swihoni.Sessions.Items.Visuals
 
         private void Awake() => m_MagazineRenderer = transform.Find("Item/Magazine").GetComponent<Renderer>();
 
-        protected override bool IsMeshVisible(Renderer meshRenderer, bool isItemVisible, ItemComponent item, ByteStatusComponent equipStatus)
+        protected override bool IsMeshVisible(Renderer meshRenderer, bool isItemVisible, ItemComponent item)
         {
             if (m_IsMagazineShell && isItemVisible && meshRenderer == m_MagazineRenderer && item.ammoInMag == 0 && item.status.id != GunStatusId.Reloading)
                 return false;
-            return base.IsMeshVisible(meshRenderer, isItemVisible, item, equipStatus);
+            return base.IsMeshVisible(meshRenderer, isItemVisible, item);
         }
     }
 }

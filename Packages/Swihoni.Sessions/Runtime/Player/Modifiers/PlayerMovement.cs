@@ -81,13 +81,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             m_Controller.gameObject.SetActive(isControllerActive);
         }
 
-        // TODO:refactor bad
-        private bool m_LastFlyInput;
-
         public override void ModifyChecked(in SessionContext context)
         {
-            if (context.tickDelta < 1) return;
-
             Container player = context.player;
             if (player.Without(out MoveComponent move)) return;
 
@@ -97,24 +92,19 @@ namespace Swihoni.Sessions.Player.Modifiers
              || player.With(out HealthProperty health) && health.IsDead
              || context.commands.Without(out InputFlagProperty inputs)) return;
 
-            float duration = context.durationUs * TimeConversions.MicrosecondToSecond;
-
             if (context.sessionContainer.Require<AllowCheatsProperty>())
             {
                 bool flyInput = inputs.GetInput(PlayerInput.Fly);
-                if (flyInput && !m_LastFlyInput) move.type.Value = move.type == MoveType.Grounded ? MoveType.Flying : MoveType.Grounded;
-                m_LastFlyInput = flyInput;
+                if (flyInput) move.type.Value = move.type == MoveType.Grounded ? MoveType.Flying : MoveType.Grounded;
             }
-            else
-            {
-                move.type.Value = MoveType.Grounded;
-                m_LastFlyInput = false;
-            }
+            else move.type.Value = MoveType.Grounded;
 
-            // Vector3 prePosition = move.position;
+            if (context.tickDelta < 1) return;
+
+            float duration = context.durationUs * TimeConversions.MicrosecondToSecond;
+
             if (move.type == MoveType.Grounded) FullMove(player, move, inputs, duration);
             else FlyMove(move, inputs, duration);
-            // if (session.GetMode().RestrictMovement(prePosition, move.position)) move.position.Value = prePosition;
 
             ModifyStatus(move, inputs, duration);
         }
@@ -139,19 +129,20 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public override void ModifyCommands(SessionBase session, Container commands, int playerId)
         {
-            if (commands.Without(out InputFlagProperty input)) return;
+            if (commands.Without(out InputFlagProperty inputs)) return;
 
-            input.SetInput(PlayerInput.Forward, InputProvider.GetInput(PlayerInput.Forward));
-            input.SetInput(PlayerInput.Backward, InputProvider.GetInput(PlayerInput.Backward));
-            input.SetInput(PlayerInput.Right, InputProvider.GetInput(PlayerInput.Right));
-            input.SetInput(PlayerInput.Left, InputProvider.GetInput(PlayerInput.Left));
-            input.SetInput(PlayerInput.Jump, InputProvider.GetInput(PlayerInput.Jump));
-            input.SetInput(PlayerInput.Crouch, InputProvider.GetInput(PlayerInput.Crouch));
-            input.SetInput(PlayerInput.Sprint, InputProvider.GetInput(PlayerInput.Sprint));
-            input.SetInput(PlayerInput.Walk, InputProvider.GetInput(PlayerInput.Walk));
-            input.SetInput(PlayerInput.Suicide, InputProvider.GetInput(PlayerInput.Suicide));
-            input.SetInput(PlayerInput.Interact, InputProvider.GetInput(PlayerInput.Interact));
-            input.SetInput(PlayerInput.Respawn, InputProvider.GetInput(PlayerInput.Respawn));
+            inputs.SetInput(PlayerInput.Forward, InputProvider.GetInput(PlayerInput.Forward));
+            inputs.SetInput(PlayerInput.Backward, InputProvider.GetInput(PlayerInput.Backward));
+            inputs.SetInput(PlayerInput.Right, InputProvider.GetInput(PlayerInput.Right));
+            inputs.SetInput(PlayerInput.Left, InputProvider.GetInput(PlayerInput.Left));
+            inputs.SetInput(PlayerInput.Jump, InputProvider.GetInput(PlayerInput.Jump));
+            inputs.SetInput(PlayerInput.Crouch, InputProvider.GetInput(PlayerInput.Crouch));
+            inputs.SetInput(PlayerInput.Sprint, InputProvider.GetInput(PlayerInput.Sprint));
+            inputs.SetInput(PlayerInput.Walk, InputProvider.GetInput(PlayerInput.Walk));
+            inputs.SetInput(PlayerInput.Suicide, InputProvider.GetInput(PlayerInput.Suicide));
+            inputs.SetInput(PlayerInput.Interact, InputProvider.GetInput(PlayerInput.Interact));
+            inputs.SetInput(PlayerInput.Respawn, InputProvider.GetInput(PlayerInput.Respawn));
+            if (InputProvider.GetInputDown(PlayerInput.Fly)) inputs.SetInput(PlayerInput.Fly);
         }
 
         private void ModifyStatus(MoveComponent move, InputFlagProperty inputs, float duration)

@@ -315,6 +315,8 @@ namespace Voxelfield.Session
             if (m_UseSteam) context.player.Require<SteamIdProperty>().Value = SteamClient.SteamId;
         }
 
+        protected override void OnMapChange() => m_MasterChanges.Zero();
+
         protected override void OnSettingsTick(Container session)
         {
             if (m_UseSteam) SteamServer.RunCallbacks();
