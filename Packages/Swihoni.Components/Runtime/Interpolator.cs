@@ -8,7 +8,7 @@ namespace Swihoni.Components
     /// This is useful for properties that don't have a well defined interpolation function.
     /// TODO:feature allow for all elements not just properties
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
     public class TakeSecondForInterpolationAttribute : Attribute
     {
     }

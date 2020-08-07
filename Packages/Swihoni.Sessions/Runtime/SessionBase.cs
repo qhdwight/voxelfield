@@ -423,25 +423,28 @@ namespace Swihoni.Sessions
     {
         public static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
 
-        public static string ExecuteProcess(string command)
-        {
+        public static string ExecuteProcess(string command, string workingDirectory = null)
+        {    
             int firstSpace = command.IndexOf(" ", StringComparison.Ordinal);
-            var processInfo = new ProcessStartInfo {CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true};
+            var processInfo = new ProcessStartInfo {CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true};
+            if (workingDirectory != null) processInfo.WorkingDirectory = workingDirectory;
             if (firstSpace == -1) processInfo.FileName = command;
             else
             {
                 processInfo.FileName = command.Substring(0, firstSpace);
                 processInfo.Arguments = command.Substring(firstSpace + 1);
             }
-            Process process = Process.Start(processInfo);
-            if (process != null)
+
+            using (Process process = Process.Start(processInfo))
             {
-                process.WaitForExit();
-                string result = process.StandardOutput.ReadToEnd();
-                process.Close();
-                return result;
+                if (process != null)
+                {
+                    process.WaitForExit();
+                    if (process.ExitCode != 0) throw new Exception($"Process failed with exit code: {process.ExitCode}");
+                    return process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+                }   
             }
-            return string.Empty;
+            throw new Exception("Process failed to start");
         }
 
         public delegate void ModifyPlayerAction(in SessionContext playerSessionContext);
@@ -474,5 +477,10 @@ namespace Swihoni.Sessions
 
         public static Vector3 GetPlayerEyePosition(this MoveComponent move)
             => move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
+
+        public static StringBuilder AppendRealizedUsername(this StringBuilder builder, Container player)
+            => player.WithPropertyWithValue(out SteamIdProperty steamId)
+                ? builder.Append(steamId.AsFriend.Name)
+                : builder.AppendPropertyValue(player.Require<UsernameProperty>());
     }
 }

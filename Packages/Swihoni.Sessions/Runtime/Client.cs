@@ -115,7 +115,7 @@ namespace Swihoni.Sessions
                 bool isSpectating = IsSpectating(m_RenderSession, renderPlayers, actualLocalPlayerId, out SpectatingPlayerId spectatingPlayerId);
                 renderLocalPlayerId.Value = isSpectating ? spectatingPlayerId.Value : (byte) actualLocalPlayerId;
                 Profiler.EndSample();
-                
+
                 Profiler.BeginSample("Client Render Players");
                 for (var playerId = 0; playerId < renderPlayers.Length; playerId++)
                 {
@@ -147,7 +147,7 @@ namespace Swihoni.Sessions
                 Profiler.EndSample();
 
                 var context = new SessionContext(this, m_RenderSession);
-                
+
                 Profiler.BeginSample("Client Render Interfaces");
                 RenderInterfaces(context);
                 Profiler.EndSample();
@@ -372,16 +372,15 @@ namespace Swihoni.Sessions
             }
         }
 
-        public static void ClearSingleTicks(ElementBase commands) =>
-            commands.Navigate(_element =>
+        public static void ClearSingleTicks(ElementBase commands) => commands.Navigate(_element =>
+        {
+            if (_element.WithAttribute<SingleTickAttribute>())
             {
-                if (_element.WithAttribute<SingleTickAttribute>())
-                {
-                    _element.Clear();
-                    return Navigation.SkipDescendents;
-                }
-                return Navigation.Continue;
-            });
+                _element.Clear();
+                return Navigation.SkipDescendents;
+            }
+            return Navigation.Continue;
+        });
 
         private void Predict(uint tick, uint timeUs, int localPlayerId)
         {

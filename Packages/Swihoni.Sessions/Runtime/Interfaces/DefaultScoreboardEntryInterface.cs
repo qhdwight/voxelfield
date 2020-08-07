@@ -18,7 +18,7 @@ namespace Swihoni.Sessions.Interfaces
                 m_DamageText.StartBuild().Append(stats.damage).Commit(m_DamageText);
                 m_DeathsText.StartBuild().Append(stats.deaths).Commit(m_DeathsText);
                 m_PingText.StartBuild().Append(stats.ping).Commit(m_PingText);
-                context.Mode.BuildUsername(m_UsernameText.StartBuild(), player).Commit(m_UsernameText);
+                context.Mode.AppendUsername(m_UsernameText.StartBuild(), player).Commit(m_UsernameText);
             }
             SetInterfaceActive(isVisible);
         }

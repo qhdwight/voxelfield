@@ -98,7 +98,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 {
                     LookAtCamera(m_UsernameText, sessionContainer, context.playerId, new Vector3 {y = 0.2f});
                     m_UsernameBuilder.Clear();
-                    ModeManager.GetMode(sessionContainer).BuildUsername(m_UsernameBuilder, player).Commit(m_UsernameText);
+                    ModeManager.GetMode(sessionContainer).AppendUsername(m_UsernameBuilder, player).Commit(m_UsernameText);
                 }
             }
             m_UsernameText.enabled = showUsername;

@@ -282,11 +282,11 @@ namespace Swihoni.Sessions.Modes
 
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
 
-        public virtual StringBuilder BuildUsername(StringBuilder builder, Container player)
+        public virtual StringBuilder AppendUsername(StringBuilder builder, Container player)
         {
             Color color = GetTeamColor(player.Require<TeamProperty>());
             string hex = GetHexColor(color);
-            return builder.Append("<color=#").Append(hex).Append(">").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</color>");
+            return builder.Append("<color=#").Append(hex).Append(">").AppendRealizedUsername(player).Append("</color>");
         }
 
         public virtual Color GetTeamColor(byte? teamId) => Color.white;

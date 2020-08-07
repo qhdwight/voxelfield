@@ -7,6 +7,7 @@ using LiteNetLib.Utils;
 using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Player.Components;
 using Voxels;
 using Voxels.Map;
 

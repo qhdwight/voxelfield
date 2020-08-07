@@ -11,9 +11,9 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "litenetlib": "0.01",
-        "com.swihoni.util": "0.0.1",
-        "com.swihoni.collections": "0.0.1"
+        "litenetlib": "1.9.3",
+        "com.swihoni.util": "1.0.0",
+        "com.swihoni.collections": "1.0.0"
       }
     },
     "com.swihoni.sessions": {
@@ -21,9 +21,9 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.swihoni.collections": "0.0.1",
-        "com.swihoni.components": "0.0.1",
-        "com.swihoni.util": "0.0.1"
+        "com.swihoni.collections": "1.0.0",
+        "com.swihoni.components": "1.0.0",
+        "com.swihoni.util": "1.0.0"
       }
     },
     "com.swihoni.util": {

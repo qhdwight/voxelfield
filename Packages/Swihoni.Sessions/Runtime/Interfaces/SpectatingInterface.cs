@@ -24,7 +24,7 @@ namespace Swihoni.Sessions.Interfaces
             {
                 StringBuilder builder = m_Text.StartBuild();
                 builder.Append("Spectating: ");
-                ModeManager.GetMode(sessionContainer).BuildUsername(builder, sessionContainer.GetPlayer(spectatingPlayerId));
+                ModeManager.GetMode(sessionContainer).AppendUsername(builder, sessionContainer.GetPlayer(spectatingPlayerId));
                 builder.Commit(m_Text);
             }
             SetInterfaceActive(isVisible);

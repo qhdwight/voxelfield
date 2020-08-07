@@ -77,7 +77,7 @@ namespace Voxelfield.Interface
                                 }
                                 isNotificationVisible = true;
                                 StringBuilder builder = m_NotificationText.StartBuild();
-                                m_CtfMode.BuildUsername(builder, context.GetPlayer(capturingPlayerId))
+                                m_CtfMode.AppendUsername(builder, context.GetPlayer(capturingPlayerId))
                                          .Append(isTaking ? " is taking a flag" : " has a flag")
                                          .Commit(m_NotificationText);
                             }

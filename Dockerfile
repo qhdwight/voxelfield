@@ -2,7 +2,7 @@
 FROM amazonlinux:latest
 
 # RUN apt-get update -y && apt-get install -y zsh curl git steamcmd
-RUN yum update -y && yum install -y zsh curl git steamcmd
+RUN yum update -y && yum install -y zsh curl git
 RUN amazon-linux-extras install java-openjdk11
 
 RUN mkdir /local/game
@@ -21,7 +21,7 @@ RUN chmod +x Voxelfield
 # RUN java -jar GameLiftLocal.jar -p 27015 &
 
 # CMD ./Voxelfield
-CMD zsh
+CMD zsh 
 
 EXPOSE 27015/udp
 EXPOSE 27015/tcp

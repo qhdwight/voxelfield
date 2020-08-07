@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// #define VOXELFIELD_RELEASE_SERVER
+#define VOXELFIELD_RELEASE_SERVER
 #endif
 
 using System;
@@ -120,7 +120,7 @@ namespace Voxelfield.Session
 
             SetCommand("steam_status", arguments =>
             {
-                if (!SteamClient.IsValid) SteamClientBehavior.Initialize();
+                if (!SteamClient.IsValid) SteamClientBehavior.TryInitialize();
                 if (SteamClient.IsValid) Debug.Log($"Logged in as {SteamClient.Name}, ID: {SteamClient.SteamId}");
                 else Debug.LogWarning("Not connected to steam");
             });
@@ -226,7 +226,7 @@ namespace Voxelfield.Session
 
             /* Handle timeout */
             {
-                float maxIdleTimeSeconds = Application.isEditor ? 5.0f : 30.0f;
+                float maxIdleTimeSeconds = Application.isEditor ? 5.0f : 60.0f;
                 void AddTime()
                 {
                     if (Mathf.Approximately(m_InactiveServerElapsedSeconds, 0.0f))
@@ -412,8 +412,8 @@ namespace Voxelfield.Session
                     executablePath = Path.ChangeExtension(executablePath, "app");
                     break;
             }
-            // PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Standalone,
-            //                                         scripting == ScriptingImplementation.Mono2x ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.Low);
+            PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Standalone,
+                                                    scripting == ScriptingImplementation.Mono2x ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.Low);
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = new[] {"Assets/Scenes/Base.unity"},

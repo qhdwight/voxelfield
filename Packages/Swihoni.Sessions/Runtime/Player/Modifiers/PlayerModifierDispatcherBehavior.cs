@@ -54,7 +54,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                            && context.commands.WithPropertyWithValue(out ChatEntryProperty chat))
             {
                 var namedChat = new ChatEntryProperty();
-                context.Mode.BuildUsername(namedChat.Builder, context.player).Append("> ").AppendPropertyValue(chat);
+                context.Mode.AppendUsername(namedChat.Builder, context.player).Append("> ").AppendPropertyValue(chat);
                 chats.Append(namedChat);
             }
         }

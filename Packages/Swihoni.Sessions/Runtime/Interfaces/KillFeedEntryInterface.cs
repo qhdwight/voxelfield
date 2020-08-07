@@ -40,7 +40,7 @@ namespace Swihoni.Sessions.Interfaces
         {
             bool isLocalPlayer = context.sessionContainer.WithPropertyWithValue(out LocalPlayerId localPlayerId) && playerId == localPlayerId;
             if (isLocalPlayer) builder.Append("<b><i>");
-            context.Mode.BuildUsername(builder, context.GetPlayer(playerId));
+            context.Mode.AppendUsername(builder, context.GetPlayer(playerId));
             if (isLocalPlayer) builder.Append("</i></b>");
             return builder;
         }

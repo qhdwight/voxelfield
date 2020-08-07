@@ -25,8 +25,11 @@ namespace Voxelfield
 {
     public static class GameLiftClientManager
     {
-        private const string FleetAlias = "alias-c6bbceef-6fe9-4f60-9949-5db6b26350a1";
-        private static readonly BasicAWSCredentials Credentials = new BasicAWSCredentials(@"AKIAWKQVDVRWQMYAUBAV", @"62ixippCgELFUDKgPlGnWqtd0WEZ3w51YhEnMK8C");
+        // private const string FleetAlias = "alias-c6bbceef-6fe9-4f60-9949-5db6b26350a1"; // shaweewoo.codes
+        // private static readonly BasicAWSCredentials Credentials = new BasicAWSCredentials(@"AKIAWKQVDVRWQMYAUBAV", @"62ixippCgELFUDKgPlGnWqtd0WEZ3w51YhEnMK8C"); // shaweewoo.codes
+
+        private const string FleetAlias = "alias-860fde8f-5f40-45bb-8f17-2b10a8ed1f34";                                                                          // shaweewoo.jo
+        private static readonly BasicAWSCredentials Credentials = new BasicAWSCredentials(@"AKIA354QE4UEBBDFV2G2", @"Az53naLwz6/PxGfCRvOMeNQv1Au1lsCGrpvfXOIB"); // shaweewoo.jo
         private static readonly AmazonGameLiftConfig Config = new AmazonGameLiftConfig
         {
 #if VOXELFIELD_RELEASE_CLIENT
@@ -36,7 +39,7 @@ namespace Voxelfield
             ServiceURL = $"http://localhost:{SessionManager.DefaultPort}"
 #endif
         };
-        private static readonly AmazonGameLiftClient GameLiftClient = new AmazonGameLiftClient(Credentials, Config);
+        private static readonly AmazonGameLiftClient Client = new AmazonGameLiftClient(Credentials, Config);
 
         public static string PlayerSessionId { get; private set; } = string.Empty;
 
@@ -65,7 +68,7 @@ namespace Voxelfield
         {
             Debug.Log("Creating player session request...");
             var playerRequest = new CreatePlayerSessionRequest {GameSessionId = gameSession.GameSessionId, PlayerId = playerId};
-            CreatePlayerSessionResponse playerResponse = await GameLiftClient.CreatePlayerSessionAsync(playerRequest);
+            CreatePlayerSessionResponse playerResponse = await Client.CreatePlayerSessionAsync(playerRequest);
             PlayerSession playerSession = playerResponse.PlayerSession;
             IPEndPoint endPoint = NetUtils.MakeEndPoint(playerSession.IpAddress, playerSession.Port);
             Debug.Log($"Connecting to server endpoint: {endPoint}");
@@ -123,7 +126,7 @@ namespace Voxelfield
 #endif
                 MaximumPlayerSessionCount = SessionBase.MaxPlayers
             };
-            CreateGameSessionResponse response = await GameLiftClient.CreateGameSessionAsync(newSessionRequest);
+            CreateGameSessionResponse response = await Client.CreateGameSessionAsync(newSessionRequest);
             return response.GameSession;
         }
     }

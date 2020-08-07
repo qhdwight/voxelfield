@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// #define VOXELFIELD_RELEASE_SERVER
+#define VOXELFIELD_RELEASE_SERVER
 // #undef UNITY_EDITOR
 #endif
 
@@ -13,7 +13,6 @@ using Amazon.Runtime;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
 using UnityEditor;
-
 #endif
 #if VOXELFIELD_RELEASE_SERVER
 using GameSession = Aws.GameLift.Server.Model.GameSession;
@@ -30,37 +29,6 @@ namespace Voxelfield
 #if VOXELFIELD_RELEASE_SERVER
         private void Start()
         {
-            // try
-            // {
-            //     var parameters = new SteamServerInit
-            //     {
-            //         DedicatedServer = true,
-            //         GamePort = 27015, QueryPort = 27016,
-            //         Secure = true,
-            //         VersionString = Application.version,
-            //         GameDescription = Application.productName,
-            //         IpAddress = NetUtils.ResolveAddress("127.0.0.1"),
-            //         ModDir = Application.productName,
-            //         SteamPort = 0
-            //     };
-            //     if (!SteamServer.IsValid)
-            //     {
-            //         SteamServer.Init(480, parameters, false);
-            //         SteamServer.LogOnAnonymous();
-            //     }
-            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            //     Debug.Log("Successfully initialized Steam server");
-            // }
-            // catch (Exception exception)
-            // {
-            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            //     Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            //     Debug.LogError($"Failed to initialize Steam server {exception.Message}");
-            // }
-            
             GenericOutcome outcome = GameLiftServerAPI.InitSDK();
             if (outcome.Success)
             {
@@ -106,66 +74,6 @@ namespace Voxelfield
         private void OnApplicationQuit() => GameLiftServerAPI.Destroy();
 #else
         private void Start() { }
-#endif
-
-#if UNITY_EDITOR
-        [MenuItem("Build/Create Game Lift Fleet", priority = 300)]
-        private static async void CreateFleet()
-        {
-            // Debug.Log("Executing upload zsh script...");
-            // string uploadResult = SessionExtensions.ExecuteProcess($"{Application.dataPath}/../Builds/gamelift_publish.zsh {Application.version}");
-            // Debug.Log($"Upload standard output: {uploadResult}");
-
-            var config = new AmazonGameLiftConfig {RegionEndpoint = RegionEndpoint.USWest1};
-            var credentials = new BasicAWSCredentials(@"AKIAWKQVDVRWSC42QICS", @"upFhGo0YCcbw+ljii4btFV7EW0TUz3PXTNgk+tje");
-            var client = new AmazonGameLiftClient(credentials, config);
-            // var buildRequest = new CreateBuildRequest
-            // {
-            //     Name = "voxelfield", OperatingSystem = OperatingSystem.AMAZON_LINUX_2, Version = Application.version,
-            //     StorageLocation = new S3Location{}
-            // };
-            // CreateBuildResponse response = client.CreateBuild(buildRequest);
-            ListBuildsResponse builds = await client.ListBuildsAsync(new ListBuildsRequest {Limit = 1, Status = BuildStatus.READY});
-            Build build = builds.Builds.OrderByDescending(b => b.CreationTime).First();
-            string buildId = build.BuildId;
-            Debug.Log($"Using build: {build.Name} version: {build.Version} for new fleet");
-
-            string activeFleetId = (await client.ListFleetsAsync(new ListFleetsRequest {Limit = 1})).FleetIds.FirstOrDefault();
-            if (activeFleetId == null) Debug.Log("No active fleet to terminate");
-            else
-            {
-                await client.DeleteFleetAsync(activeFleetId);
-                Debug.Log("Marked active fleet for termination");
-            }
-
-            IpPermission CreateIpPermission(IpProtocol protocol) => new IpPermission
-            {
-                FromPort = SessionManager.DefaultPort, IpRange = "0.0.0.0/0", Protocol = protocol, ToPort = SessionManager.DefaultPort
-            };
-            var fleetRequest = new CreateFleetRequest
-            {
-                Name = $"voxelfield_{build.Version}",
-                FleetType = FleetType.ON_DEMAND,
-                CertificateConfiguration = new CertificateConfiguration {CertificateType = CertificateType.DISABLED},
-                BuildId = buildId,
-                EC2InboundPermissions = new List<IpPermission> {CreateIpPermission(IpProtocol.TCP), CreateIpPermission(IpProtocol.UDP)},
-                EC2InstanceType = EC2InstanceType.C5Large,
-                RuntimeConfiguration = new RuntimeConfiguration
-                {
-                    GameSessionActivationTimeoutSeconds = 600, MaxConcurrentGameSessionActivations = 1,
-                    ServerProcesses = new List<ServerProcess> {new ServerProcess {ConcurrentExecutions = 1, LaunchPath = "/local/game/Voxelfield", Parameters = "-logFile /local/game/server.log"}}
-                },
-                NewGameSessionProtectionPolicy = ProtectionPolicy.FullProtection
-            };
-            CreateFleetResponse response = await client.CreateFleetAsync(fleetRequest);
-            Debug.Log("Created fleet");
-
-            ListAliasesResponse aliases = await client.ListAliasesAsync(new ListAliasesRequest {Limit = 1, Name = "na"});
-            Alias alias = aliases.Aliases.First();
-            var routine = new RoutingStrategy {FleetId = response.FleetAttributes.FleetId, Type = RoutingStrategyType.SIMPLE};
-            await client.UpdateAliasAsync(new UpdateAliasRequest {AliasId = alias.AliasId, RoutingStrategy = routine});
-            Debug.Log("Updated alias");
-        }
 #endif
     }
 }

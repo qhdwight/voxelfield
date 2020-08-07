@@ -13,7 +13,6 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
@@ -37,12 +36,6 @@ namespace Voxelfield.Session
     }
 
     [Serializable]
-    public class SteamIdProperty : ULongProperty
-    {
-        public Friend AsFriend => new Friend(Value);
-    }
-
-    [Serializable]
     public class SteamAuthenticationTicketProperty : StringProperty
     {
         public SteamAuthenticationTicketProperty() : base(512) { }
@@ -62,7 +55,7 @@ namespace Voxelfield.Session
         private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new DualDictionary<NetPeer, SteamId>();
 
         private bool m_UseSteam;
-        
+
         public void ApplyVoxelChanges(VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
         {
             void Apply() => ChunkManager.Singleton.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
@@ -160,8 +153,6 @@ namespace Voxelfield.Session
             DynamoClient.UpdateItemAsync(m_AddKill);
         }
 #endif
-
-        public override void OnPlayerRegisterAppend(Container player) => player.RegisterAppend(typeof(SteamIdProperty));
 
         protected override void OnServerNewConnection(ConnectionRequest socketRequest)
         {
@@ -276,7 +267,7 @@ namespace Voxelfield.Session
                     SteamServer.Init(480, parameters, false);
                     SteamServer.LogOnAnonymous();
                 }
-                if (!SteamClient.IsValid) SteamClientBehavior.InitializeOrThrow();
+
                 SteamServer.OnValidateAuthTicketResponse += SteamServerOnOnValidateAuthTicketResponse;
                 const string message = "Successfully initialized Steam server";
                 string separator = string.Concat(Enumerable.Repeat("@", message.Length));
@@ -284,7 +275,7 @@ namespace Voxelfield.Session
             }
             catch (Exception exception)
             {
-                string message = $"Failed to initialize Steam server {exception.Message}",
+                string message = $"Failed to initialize Steam: {exception.Message}",
                        separator = string.Concat(Enumerable.Repeat("@", message.Length));
                 Debug.LogError($"{separator}\n{message}\n{separator}");
             }
@@ -333,19 +324,7 @@ namespace Voxelfield.Session
         public override bool ShouldSetupPlayer(Container serverPlayer) => base.ShouldSetupPlayer(serverPlayer)
                                                                        && (!m_UseSteam || serverPlayer.Require<SteamIdProperty>().WithValue);
 
-        public override string GetUsername(in SessionContext context)
-        {
-            try
-            {
-                string name = context.player.Require<SteamIdProperty>().AsFriend.Name;
-                // TODO:security sanitize name?
-                return name;
-            }
-            catch (Exception)
-            {
-                return base.GetUsername(context);
-            }
-        }
+        public override string GetUsername(in SessionContext context) => m_UseSteam ? null : base.GetUsername(context);
 
         private static readonly RaycastHit[] CachedHits = new RaycastHit[2];
 
@@ -390,7 +369,7 @@ namespace Voxelfield.Session
         public override void OnStop()
         {
             base.OnStop();
-            if (SteamServer.IsValid) SteamServer.Shutdown();
+            if (m_UseSteam) SteamServer.Shutdown();
         }
     }
 }

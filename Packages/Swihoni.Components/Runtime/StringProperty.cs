@@ -124,6 +124,11 @@ namespace Swihoni.Components
 
         public void SetTo(string @string)
         {
+            if (@string == null)
+            {
+                Clear();
+                return;
+            }
             ThrowIfOverMaxSize(@string.Length);
             Zero();
             Builder.Append(@string);
