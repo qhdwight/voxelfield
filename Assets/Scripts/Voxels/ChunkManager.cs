@@ -352,7 +352,7 @@ namespace Voxels
             Position3Int chunkPosition = WorldToChunk(worldPosition);
             return GetChunkFromPosition(chunkPosition);
         }
-        
+
         public static void UpdateChunkMesh(Chunk chunk) => chunk.UpdateAndApply();
 
         public void AddChunksToUpdateFromVoxel(in Position3Int voxelChunkPosition, Chunk originatingChunk, ICollection<Chunk> chunksToUpdate)

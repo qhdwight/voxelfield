@@ -4,7 +4,6 @@ using System.Net;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
@@ -124,9 +123,9 @@ namespace Swihoni.Sessions
                     if (visuals) visuals.Render(playerContext, isPossessed);
                 }
                 Profiler.EndSample();
-            
+
                 var context = new SessionContext(this, m_RenderSession);
-            
+
                 Profiler.BeginSample("Host Render Interfaces");
                 RenderInterfaces(context);
                 Profiler.EndSample();
@@ -153,7 +152,7 @@ namespace Swihoni.Sessions
             if (hostPlayer.Require<HealthProperty>().WithValue)
             {
                 // Inject our current player component before normal update cycle
-                hostPlayer.MergeFrom(m_HostCommands);
+                hostPlayer.SetTo(m_HostCommands);
             }
         }
 

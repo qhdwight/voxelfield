@@ -1,5 +1,4 @@
 using System;
-using Swihoni.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
 
@@ -36,7 +35,7 @@ namespace Swihoni.Sessions.Player.Visualization
                 m_AlphaKeys[1].alpha = inventory.tracerTimeUs / 1_000_000.0f;
                 m_AlphaKeys[2].alpha = inventory.tracerTimeUs / 1_000_000.0f;
                 m_Gradient.SetKeys(m_ColorKeys, m_AlphaKeys);
-                m_Tracer.colorGradient = m_Gradient;   
+                m_Tracer.colorGradient = m_Gradient;
             }
             m_Tracer.enabled = isTracerEnabled;
         }

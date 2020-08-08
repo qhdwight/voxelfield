@@ -142,6 +142,7 @@ namespace Swihoni.Sessions.Items.Visuals
                 m_Mixer.SetInputWeight(i, i == animationIndex ? 1.0f : 0.0f);
             ref AnimationClipPlayable itemAnimation = ref m_Animations[animationIndex];
             itemAnimation.SetTime(interpolation * animationClip.length);
+            foreach (Renderer meshRenderer in m_Renders) meshRenderer.enabled = true;
             m_PlayerGraph.Evaluate();
             foreach (ChildBehavior child in m_ChildBehaviors)
                 child.Evaluate();
@@ -160,10 +161,10 @@ namespace Swihoni.Sessions.Items.Visuals
 
         public void SetActive(bool isActive)
         {
-            if (m_Renders == null) return;
-            foreach (Renderer meshRenderer in m_Renders) meshRenderer.enabled = isActive;
+            if (m_Renders == null || isActive) return;
+            foreach (Renderer meshRenderer in m_Renders) meshRenderer.enabled = false;
         }
-        
+
         protected virtual bool IsMeshVisible(Renderer meshRenderer, bool isItemVisible /* from component only */, ItemComponent item)
         {
             if (isItemVisible && !meshRenderer.enabled) return false; // Override from animator

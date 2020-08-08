@@ -11,9 +11,9 @@ namespace Voxelfield.Interface.Designer
         private Image m_FillImage = default, m_HandleImage = default;
 
         public Slider.SliderEvent OnValueChanged => m_Slider.onValueChanged;
-        
+
         public int Index { get; set; }
-        
+
         private void Awake()
         {
             m_Slider = GetComponentInChildren<Slider>();
@@ -25,7 +25,7 @@ namespace Voxelfield.Interface.Designer
         public void SetColor(in Color? _color)
         {
             Color color = _color.GetValueOrDefault(Color.black);
-            
+
             m_HandleImage.color = color;
             m_FillImage.color = color;
             m_Slider.value = color[Index];

@@ -1,7 +1,6 @@
 using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using UnityEngine;
 
 namespace Swihoni.Sessions.Entities
 {
@@ -43,7 +42,7 @@ namespace Swihoni.Sessions.Entities
                 //         Debug.Log("Ok Boomer");
                 // }
                 // else
-                    p.InterpolateFrom(p1, p2, interpolation);
+                p.InterpolateFrom(p1, p2, interpolation);
             }
         }
     }

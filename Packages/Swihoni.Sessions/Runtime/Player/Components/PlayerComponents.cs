@@ -4,7 +4,6 @@ using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
-using Swihoni.Sessions.Player.Modifiers;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Components
@@ -214,7 +213,7 @@ namespace Swihoni.Sessions.Player.Components
 
         public static uint VisualDuration(ItemStatusModiferProperties m) => m.isPersistent ? uint.MaxValue : m.durationUs;
     }
-    
+
     [Serializable, TakeSecondForInterpolation]
     public class SteamIdProperty : ULongProperty
     {

@@ -4,7 +4,6 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Items.Modifiers;
-using Swihoni.Sessions.Player.Components;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

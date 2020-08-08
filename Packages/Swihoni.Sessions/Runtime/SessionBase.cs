@@ -2,12 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using Steamworks;
-using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
@@ -411,7 +408,7 @@ namespace Swihoni.Sessions
                 ConfigManagerBase.TryHandleArguments(arguments);
             }
         }
-        
+
         protected void RenderVerified(Container session)
         {
             _session = this;
@@ -425,7 +422,7 @@ namespace Swihoni.Sessions
         public static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
 
         public static string ExecuteProcess(string command, string workingDirectory = null)
-        {    
+        {
             int firstSpace = command.IndexOf(" ", StringComparison.Ordinal);
             var processInfo = new ProcessStartInfo {CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true};
             if (workingDirectory != null) processInfo.WorkingDirectory = workingDirectory;
@@ -443,7 +440,7 @@ namespace Swihoni.Sessions
                     process.WaitForExit();
                     if (process.ExitCode != 0) throw new Exception($"Process failed with exit code: {process.ExitCode}");
                     return process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
-                }   
+                }
             }
             throw new Exception("Process failed to start");
         }

@@ -1,5 +1,4 @@
 using System.Text;
-using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Modes;
@@ -71,10 +70,7 @@ namespace Voxelfield.Interface
                 }
                 builder.AppendTime(displayTimeUs);
             }
-            else
-            {
-                builder.Append("Warmup. Waiting for more players...");
-            }
+            else builder.Append("Warmup. Waiting for more players...");
             builder.Commit(m_UpperText);
         }
     }

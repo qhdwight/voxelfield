@@ -56,7 +56,7 @@ namespace Swihoni.Sessions.Player.Components
             if (enabled) Value |= (uint) (1 << input);
             else Value &= (uint) ~(1 << input);
         }
-        
+
         public void SetInput(int input)
         {
             if (WithoutValue) Value = 0;

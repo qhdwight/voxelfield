@@ -70,7 +70,7 @@ namespace Voxels.Map
                 try
                 {
                     if (stage == MapLoadingStage.Waiting)
-                       loadMapEnumerator = LoadNamedMap(m_WantedMapName);
+                        loadMapEnumerator = LoadNamedMap(m_WantedMapName);
                     if (stage != MapLoadingStage.Failed && loadMapEnumerator != null)
                         if (loadMapEnumerator.MoveNext()) current = loadMapEnumerator.Current;
                         else loadMapEnumerator = null; // Done loading

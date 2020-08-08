@@ -55,7 +55,7 @@ namespace Swihoni.Sessions
         public Container GetModifyingPlayer(int otherPlayerId) => session.GetModifyingPlayerFromId(otherPlayerId, sessionContainer);
 
         public Container GetPlayer(int otherPlayerId) => sessionContainer.GetPlayer(otherPlayerId);
-        
+
         public bool IsValidLocalPlayer(out Container localPlayer, out byte localPlayerId, bool needsToBeAlive = true)
         {
             var localPlayerIdProperty = sessionContainer.Require<LocalPlayerId>();

@@ -61,10 +61,10 @@ namespace Voxelfield.Tests
 
             var writer = new NetDataWriter();
             map.Serialize(writer);
-            
+
             var reader = new NetDataReader(writer.Data);
             var read = new TerrainGenerationComponent();
-            
+
             read.Deserialize(reader);
             Assert.AreEqual(0, map.voxelChanges.Count);
         }

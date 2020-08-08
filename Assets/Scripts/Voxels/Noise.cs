@@ -10,16 +10,17 @@ namespace Voxels
             _permutations = new List<byte>(StandardPermutations);
             if (seed == 0) return;
             Random.InitState(seed);
-            int n = _permutations.Count;  
-            while (n > 1) {  
-                n--;  
-                int k = Random.Range(0, n);  
-                byte value = _permutations[k];  
-                _permutations[k] = _permutations[n];  
-                _permutations[n] = value;  
-            }  
+            int n = _permutations.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = Random.Range(0, n);
+                byte value = _permutations[k];
+                _permutations[k] = _permutations[n];
+                _permutations[n] = value;
+            }
         }
-        
+
         private static readonly List<byte> StandardPermutations = new List<byte>
         {
             151, 160, 137, 91, 90, 15,

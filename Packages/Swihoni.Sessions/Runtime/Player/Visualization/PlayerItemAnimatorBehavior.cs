@@ -5,6 +5,7 @@ using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using Swihoni.Util.Animation;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -163,9 +164,7 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             catch (Exception exception)
             {
-#if !VOXELFIELD_RELEASE_CLIENT
-                Debug.LogError(exception);
-#endif
+                ExceptionLogger.Log(exception, "Error setting up visual item");
                 TryReturnActive();
             }
         }

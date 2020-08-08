@@ -9,7 +9,6 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
-using UnityEditor;
 
 namespace Swihoni.Sessions
 {

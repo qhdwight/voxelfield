@@ -139,7 +139,7 @@ namespace Swihoni.Sessions.Entities
             m_LastElapsedUs = throwable.thrownElapsedUs;
             m_LastCollision = (CollisionType.None, null);
             Rigidbody.constraints = m_IsFrozen ? RigidbodyConstraints.FreezeAll : m_InitialConstraints;
-            
+
             base.Modify(context); // Set position and rotation
 
             if (throwable.popTimeUs != uint.MaxValue && throwable.thrownElapsedUs - throwable.popTimeUs > m_PopDurationUs)

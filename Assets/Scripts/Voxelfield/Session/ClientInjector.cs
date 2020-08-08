@@ -16,7 +16,7 @@ namespace Voxelfield.Session
         private readonly UIntProperty m_Pointer = new UIntProperty();
         private readonly SortedDictionary<uint, OrderedVoxelChangesProperty> m_OrderedTickChanges = new SortedDictionary<uint, OrderedVoxelChangesProperty>();
         private readonly TouchedChunks m_TouchedChunks = new TouchedChunks();
-        
+
         public override NetDataWriter GetConnectWriter()
         {
             var writer = new NetDataWriter();
@@ -36,18 +36,18 @@ namespace Voxelfield.Session
         {
             var serverChanges = serverSession.Require<OrderedVoxelChangesProperty>();
             UIntProperty serverTick = serverSession.Require<ServerStampComponent>().tick;
-            
+
             if (serverChanges.Count > 0)
             {
                 OrderedVoxelChangesProperty changes = m_ChangesPool.Obtain();
                 changes.SetTo(serverChanges);
                 m_OrderedTickChanges.Add(serverTick, changes);
             }
-            
+
             var tickSkipped = false;
             bool shouldApply = m_Pointer.WithoutValue || serverTick - m_Pointer == 1 || (tickSkipped = serverTick - m_Pointer > serverSession.Require<TickRateProperty>() * 3);
             if (!shouldApply) return;
-            
+
             ApplyStoredChanges();
             if (tickSkipped) Debug.LogError($"Did not receive voxel changes for {m_Pointer}");
             m_Pointer.Value = serverTick;

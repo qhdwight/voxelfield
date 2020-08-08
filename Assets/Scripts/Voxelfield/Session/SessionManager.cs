@@ -21,6 +21,7 @@ using static Swihoni.Sessions.Config.ConsoleCommandExecutor;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+
 #else
 using LiteNetLib;
 #endif
@@ -182,7 +183,7 @@ namespace Voxelfield.Session
             }
             catch (Exception exception)
             {
-                Debug.LogError(exception);
+                ExceptionLogger.Log(exception, "Error starting session");
                 session.Stop();
                 return null;
             }
@@ -265,7 +266,7 @@ namespace Voxelfield.Session
             }
             catch (Exception exception)
             {
-                Debug.LogError(exception);
+                ExceptionLogger.Log(exception, "Error updating sessions");
                 DisconnectAll();
             }
 
@@ -303,7 +304,7 @@ namespace Voxelfield.Session
             }
             catch (Exception exception)
             {
-                Debug.LogError(exception);
+                ExceptionLogger.Log(exception, "Error updating sessions (fixed)");
                 DisconnectAll();
             }
         }

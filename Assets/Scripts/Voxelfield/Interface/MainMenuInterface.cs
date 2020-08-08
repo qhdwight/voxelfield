@@ -1,4 +1,3 @@
-using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Interfaces;
@@ -15,6 +14,8 @@ namespace Voxelfield.Interface
 
         public async void OnPlayButton(Button button)
         {
+            GameObject progress = button.GetComponentInChildren<Animator>(true).gameObject;
+            progress.SetActive(true);
             button.interactable = false;
             try
             {
@@ -22,7 +23,8 @@ namespace Voxelfield.Interface
             }
             finally
             {
-                button.interactable = true;
+                if (button) button.interactable = true;
+                if (progress) progress.SetActive(false);
             }
         }
 

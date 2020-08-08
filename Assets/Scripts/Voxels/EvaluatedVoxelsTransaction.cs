@@ -11,7 +11,7 @@ namespace Voxels
             Clear();
         }
     }
-    
+
     // public class EvaluatedVoxelsTransaction : VoxelChangesProperty
     // {
     //     private readonly HashSet<Chunk> m_ChunksToUpdate = new HashSet<Chunk>();

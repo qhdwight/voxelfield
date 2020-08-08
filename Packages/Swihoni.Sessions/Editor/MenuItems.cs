@@ -1,6 +1,5 @@
 using Swihoni.Sessions.Config;
 using UnityEditor;
-using UnityEngine;
 
 namespace Swihoni.Sessions.Editor
 {

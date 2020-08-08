@@ -97,7 +97,9 @@ namespace Swihoni.Components.Networking
             }
             catch (Exception exception)
             {
+#if !VOXELFIELD_RELEASE
                 Debug.LogError(exception);
+#endif
                 return false;
             }
         }

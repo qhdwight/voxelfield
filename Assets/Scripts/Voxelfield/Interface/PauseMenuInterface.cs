@@ -1,4 +1,3 @@
-using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Interfaces;

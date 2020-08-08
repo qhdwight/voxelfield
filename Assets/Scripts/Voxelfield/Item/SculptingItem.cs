@@ -25,8 +25,8 @@ namespace Voxelfield.Item
         protected override void Swing(in SessionContext context, ItemComponent item)
         {
             base.Swing(context, item); // Melee damage
-            if (!(context.session.Injector is ServerInjector server)|| WithoutHit(context, m_EditDistance, out RaycastHit hit)) return;
-            
+            if (!(context.session.Injector is ServerInjector server) || WithoutHit(context, m_EditDistance, out RaycastHit hit)) return;
+
             var position = (Position3Int) (hit.point - hit.normal * 0.1f);
             if (WithoutBreakableVoxel(position, out Voxel voxel)) return;
 
@@ -79,7 +79,7 @@ namespace Voxelfield.Item
             hit = RaycastHits[0];
             return withoutHit;
         }
-        
+
         protected void PickVoxel(in SessionContext context)
         {
             if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)) return;

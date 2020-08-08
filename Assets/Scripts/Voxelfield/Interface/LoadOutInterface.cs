@@ -51,7 +51,7 @@ namespace Voxelfield.Interface
             }
         }
 
-        public override void Render(in SessionContext context) {  }
+        public override void Render(in SessionContext context) { }
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
             => commands.Require<WantedItemIdsComponent>().SetTo(WantedItems);

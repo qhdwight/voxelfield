@@ -1,5 +1,4 @@
 using Swihoni.Components;
-using Swihoni.Sessions.Modes;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Entities
@@ -22,7 +21,7 @@ namespace Swihoni.Sessions.Entities
         public override void Modify(in SessionContext context)
         {
             base.Modify(in context);
-            
+
             var throwable = context.entity.Require<ThrowableComponent>();
             throwable.thrownElapsedUs.Value += context.durationUs;
 

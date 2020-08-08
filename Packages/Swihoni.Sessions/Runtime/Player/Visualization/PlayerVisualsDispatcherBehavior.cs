@@ -47,14 +47,15 @@ namespace Swihoni.Sessions.Player.Visualization
         }
 
         private readonly StringBuilder m_DamageNotifierBuilder = new StringBuilder();
-        
+
         public void Render(in SessionContext context, bool isLocalPlayer)
         {
             Container player = context.player, sessionContainer = context.sessionContainer;
             bool withHealth = player.With(out HealthProperty health),
                  withMove = player.With(out MoveComponent move),
                  isVisible = !withHealth || health.WithValue,
-                 showDamageNotifier = false, showUsername = false;
+                 showDamageNotifier = false,
+                 showUsername = false;
 
             if (isVisible)
             {

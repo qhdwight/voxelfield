@@ -20,8 +20,8 @@ COPY --chown=server Builds/Release/Linux/Mono/Server .
 RUN chmod +x Voxelfield
 # RUN java -jar GameLiftLocal.jar -p 27015 &
 
-# CMD ./Voxelfield
-CMD zsh 
+CMD ./Voxelfield
+#CMD zsh 
 
 EXPOSE 27015/udp
 EXPOSE 27015/tcp

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Swihoni.Collections;
 using Swihoni.Components;
-using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Util;
 
 namespace Swihoni.Sessions.Components

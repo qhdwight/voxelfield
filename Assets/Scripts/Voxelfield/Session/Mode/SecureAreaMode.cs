@@ -371,7 +371,7 @@ namespace Voxelfield.Session.Mode
 
         public bool CanBuy(in SessionContext context, Container sessionLocalPlayer)
         {
-            if (sessionLocalPlayer.Require<HealthProperty>().IsDead) return false;
+            if (sessionLocalPlayer.Require<HealthProperty>().IsInactiveOrDead) return false;
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             return secureArea.roundTime.WithValue && secureArea.roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
         }

@@ -3,16 +3,9 @@
 // #undef UNITY_EDITOR
 #endif
 
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using Voxelfield.Session;
 #if UNITY_EDITOR
-using Amazon;
-using Amazon.Runtime;
-using Amazon.GameLift;
-using Amazon.GameLift.Model;
-using UnityEditor;
+
 #endif
 #if VOXELFIELD_RELEASE_SERVER
 using GameSession = Aws.GameLift.Server.Model.GameSession;

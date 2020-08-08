@@ -25,7 +25,7 @@ namespace Voxelfield.Session
     public class Injector : SessionInjectorBase
     {
         protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
-        
+
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
         protected AuthTicket m_SteamAuthenticationTicket;
 
@@ -68,7 +68,7 @@ namespace Voxelfield.Session
             if (stage == MapLoadingStage.Failed) throw new Exception("Map failed to load");
 
             m_IsLoading = mapName != MapManager.Singleton.Map.name || stage != MapLoadingStage.Completed;
-            
+
             if (!m_IsLoading)
                 foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
                     modelBehavior.SetInMode(session);

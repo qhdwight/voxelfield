@@ -8,7 +8,6 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Util.Interface;
 using UnityEngine;
 using Voxelfield.Session;
-using Voxels;
 using Voxels.Map;
 
 namespace Voxelfield.Interface.Designer

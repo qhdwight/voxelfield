@@ -104,7 +104,7 @@ namespace Swihoni.Components
         {
             if (With(out TElement element)) element.Zero();
         }
-        
+
         public void ClearIfWith<TElement>() where TElement : ElementBase
         {
             if (With(out TElement element)) element.Clear();

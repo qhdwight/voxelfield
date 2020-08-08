@@ -58,10 +58,10 @@ namespace Swihoni.Sessions.Player.Visualization
 
             var output = AnimationPlayableOutput.Create(m_Graph, "Body Output", m_Animator);
             output.SetSourcePlayable(m_Mixer);
-            
+
             /* Ragdoll */
             if (m_IsHitbox) return;
-            
+
             m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
             m_RagdollColliders = GetComponentsInChildren<Collider>();
             m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();

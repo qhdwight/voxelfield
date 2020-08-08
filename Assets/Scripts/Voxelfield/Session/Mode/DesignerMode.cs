@@ -1,6 +1,5 @@
 using Swihoni.Components;
 using Swihoni.Sessions;
-using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;

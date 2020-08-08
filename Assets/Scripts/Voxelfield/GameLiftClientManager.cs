@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// #define VOXELFIELD_RELEASE_CLIENT
+#define VOXELFIELD_RELEASE_CLIENT
 #endif
 
 using System;
@@ -13,10 +13,8 @@ using Steamworks;
 using Swihoni.Sessions;
 using UnityEngine;
 using Voxelfield.Session;
-
 #if VOXELFIELD_RELEASE_CLIENT
 using System.Security.Authentication;
-using System.Linq;
 using Amazon;
 
 #endif
@@ -45,9 +43,14 @@ namespace Voxelfield
 
         public static async Task<Client> QuickPlayAsync() => await StartClientAsync(EnterQueueAsync);
 
-        private static async Task<GameSessionPlacement> EnterQueueAsync(string playerId)
+        private static async Task<GameSessionPlacement> EnterQueueAsync(string _)
         {
-            var request = new StartGameSessionPlacementRequest {GameSessionQueueName = "us-west-1", PlacementId = playerId};
+            var request = new StartGameSessionPlacementRequest
+            {
+                GameSessionQueueName = "us-west-1", PlacementId = Guid.NewGuid().ToString(),
+                MaximumPlayerSessionCount = SessionBase.MaxPlayers
+            };
+            Debug.Log("[Match Finder] Entering queue");
             StartGameSessionPlacementResponse response = await Client.StartGameSessionPlacementAsync(request);
             return response.GameSessionPlacement;
         }
@@ -65,13 +68,24 @@ namespace Voxelfield
             }
             catch (Exception exception)
             {
-                Debug.LogError(Debug.isDebugBuild ? $"Unable to get game session: {exception}" : $"Unable to start online game. Error: {exception.Message}");
+                Debug.LogError($"Unable to retrieve game session: {exception.Message}");
                 throw;
             }
         }
 
         private static async Task<Client> StartClientForGameSessionAsync(GameSessionPlacement gameSession, string playerId)
         {
+            var delay = 2.0;
+            do
+            {
+                await Task.Delay(TimeSpan.FromSeconds(delay));
+                var checkRequest = new DescribeGameSessionPlacementRequest {PlacementId = gameSession.PlacementId};
+                DescribeGameSessionPlacementResponse checkResponse = await Client.DescribeGameSessionPlacementAsync(checkRequest);
+                gameSession = checkResponse.GameSessionPlacement;
+                delay = Math.Min(delay + 2.0, 30.0);
+            } while (gameSession.Status == GameSessionPlacementState.PENDING);
+
+            if (gameSession.Status != GameSessionPlacementState.FULFILLED) throw new Exception($"Error waiting in queue: {gameSession.Status}");
             Debug.Log("Creating player session request...");
             var playerRequest = new CreatePlayerSessionRequest {GameSessionId = gameSession.GameSessionId, PlayerId = playerId};
             CreatePlayerSessionResponse playerResponse = await Client.CreatePlayerSessionAsync(playerRequest);

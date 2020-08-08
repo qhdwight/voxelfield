@@ -124,7 +124,7 @@ namespace Swihoni.Sessions
                         _predictionHistory = m_PlayerPredictionHistory;
                         RenderInterpolatedPlayer<ClientStampComponent>(playerRenderTimeUs, renderPlayer, m_PlayerPredictionHistory.Size,
                                                                        historyIndex => _predictionHistory.Get(-historyIndex));
-                        renderPlayer.MergeFrom(m_CommandHistory.Peek());
+                        MergeCommandInto(renderPlayer, m_CommandHistory.Peek());
                         // localPlayerRenderComponent.MergeSet(DebugBehavior.Singleton.RenderOverride);
                     }
                     else
@@ -162,6 +162,13 @@ namespace Swihoni.Sessions
                 Debug.LogError($"Exception trying to render: {exception}");
             }
         }
+
+        private static void MergeCommandInto(ElementBase element, ElementBase command) => ElementExtensions.NavigateZipped((_element, _command) =>
+        {
+            if (_command.WithoutAttribute<ClientTrustedAttribute>()) return Navigation.Continue;
+            _element.SetTo(_command);
+            return Navigation.SkipDescendents;
+        }, element, command);
 
         internal static bool IsSpectating(Container renderSession, PlayerContainerArrayElement renderPlayers, int actualLocalPlayerId, out SpectatingPlayerId spectatingPlayerId)
         {
@@ -371,13 +378,10 @@ namespace Swihoni.Sessions
 
         public static void ClearSingleTicks(ElementBase commands) => commands.Navigate(_element =>
         {
-            if (_element.TryAttribute(out SingleTickAttribute singleTickAttribute))
-            {
-                if (singleTickAttribute.Zero) _element.Zero();
-                else _element.Clear();
-                return Navigation.SkipDescendents;
-            }
-            return Navigation.Continue;
+            if (!_element.TryAttribute(out SingleTickAttribute singleTickAttribute)) return Navigation.Continue;
+            if (singleTickAttribute.Zero) _element.Zero();
+            else _element.Clear();
+            return Navigation.SkipDescendents;
         });
 
         private void Predict(uint tick, uint timeUs, int localPlayerId)
@@ -409,7 +413,7 @@ namespace Swihoni.Sessions
 
                 // Inject trusted component
                 commands.Require<ClientStampComponent>().SetTo(predictedStamp);
-                predictedPlayer.MergeFrom(commands);
+                MergeCommandInto(predictedPlayer, commands);
                 if (IsLoading || predictedStamp.durationUs.WithoutValue) return;
 
                 PlayerModifierDispatcherBehavior modifier = GetPlayerModifier(predictedPlayer, localPlayerId);
@@ -498,7 +502,7 @@ namespace Swihoni.Sessions
         {
             if (_predicted.WithAttribute<OnlyServerTrustedAttribute>())
             {
-                _latestPredicted.MergeFrom(_server);
+                _latestPredicted.SetTo(_server);
                 return Navigation.SkipDescendents;
             }
             if (_predicted.WithAttribute<ClientTrustedAttribute>() || _predicted.WithAttribute<ClientNonCheckedAttribute>()) return Navigation.SkipDescendents;

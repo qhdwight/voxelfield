@@ -12,13 +12,13 @@ namespace Voxelfield.Editor
 {
     public static class FleetGenerator
     {
+        private const string AccessKey = @"AKIA354QE4UEK73BYOGL", SecretKey = @"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"; // shaweewoo.jo
+        // const string accessKey = @"AKIAWKQVDVRWSC42QICS", secretKey = @"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"; // shaweewoo.codes
+        private static readonly BasicAWSCredentials Credentials = new BasicAWSCredentials(AccessKey, SecretKey);
+
         [MenuItem("Build/Create Game Lift Fleet", priority = 300)]
         private static async void CreateFleet()
         {
-            // const string accessKey = @"AKIAWKQVDVRWSC42QICS", secretKey = @"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"; // shaweewoo.codes
-            const string accessKey = @"AKIA354QE4UEK73BYOGL", secretKey = @"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"; // shaweewoo.jo
-            var credentials = new BasicAWSCredentials(accessKey, secretKey);
-
             // Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", accessKey);
             // Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", secretKey);
             // Debug.Log("Executing upload zsh script...");
@@ -27,7 +27,7 @@ namespace Voxelfield.Editor
             // SessionExtensions.ExecuteProcess(command, buildPath);
 
             var config = new AmazonGameLiftConfig {RegionEndpoint = RegionEndpoint.USWest1};
-            var client = new AmazonGameLiftClient(credentials, config);
+            var client = new AmazonGameLiftClient(Credentials, config);
 
             // var buildRequest = new CreateBuildRequest
             // {
@@ -74,21 +74,50 @@ namespace Voxelfield.Editor
             Debug.Log($"Created fleet: {fleetId}");
 
             /* Request scaling down event to zero instances if no game sessions are present */
-            var scaling = new PutScalingPolicyRequest
+            var sleep = new PutScalingPolicyRequest
             {
                 Name = "sleep", Threshold = 1, ComparisonOperator = ComparisonOperatorType.LessThanThreshold, EvaluationPeriods = 10, FleetId = fleetId,
-                MetricName = MetricName.ActiveGameSessions, PolicyType = "RuleBased", ScalingAdjustment = 0,
-                TargetConfiguration = new TargetConfiguration {TargetValue = 0}, ScalingAdjustmentType = ScalingAdjustmentType.ExactCapacity
+                MetricName = MetricName.ActiveGameSessions, PolicyType = PolicyType.RuleBased, ScalingAdjustment = 0, ScalingAdjustmentType = ScalingAdjustmentType.ExactCapacity
             };
-            await client.PutScalingPolicyAsync(scaling);
+            var scale = new PutScalingPolicyRequest
+            {
+                Name = "scale", Threshold = 0, ComparisonOperator = ComparisonOperatorType.GreaterThanThreshold, EvaluationPeriods = 1, FleetId = fleetId,
+                MetricName = MetricName.QueueDepth, PolicyType = PolicyType.RuleBased, ScalingAdjustment = 1, ScalingAdjustmentType = ScalingAdjustmentType.ChangeInCapacity
+            };
+            await client.PutScalingPolicyAsync(sleep);
+            await client.PutScalingPolicyAsync(scale);
             Debug.Log("Created policy");
 
             /* Update fleet alias to point to new fleet */
-            ListAliasesResponse aliases = await client.ListAliasesAsync(new ListAliasesRequest {Limit = 1, Name = "na"});
+            ListAliasesResponse aliases = await client.ListAliasesAsync(new ListAliasesRequest {Limit = 1, Name = "us-west-1"});
             Alias alias = aliases.Aliases.First();
             var routine = new RoutingStrategy {FleetId = fleetId, Type = RoutingStrategyType.SIMPLE};
             await client.UpdateAliasAsync(new UpdateAliasRequest {AliasId = alias.AliasId, RoutingStrategy = routine});
             Debug.Log($"Updated alias: {alias.AliasId}");
+        }
+
+        [MenuItem("Build/Put Custom Scaling Policies", priority = 301)]
+        private static async void PutCustomScalingPolicies()
+        {
+            const string fleetId = "fleet-f323faca-4254-4548-9003-3f32af88e81d";
+            var config = new AmazonGameLiftConfig {RegionEndpoint = RegionEndpoint.USWest1};
+            var client = new AmazonGameLiftClient(Credentials, config);
+            await client.DeleteScalingPolicyAsync(new DeleteScalingPolicyRequest {FleetId = fleetId, Name = "sleep"});
+            await client.DeleteScalingPolicyAsync(new DeleteScalingPolicyRequest {FleetId = fleetId, Name = "scale"});
+            Debug.Log("Deleted existing policies");
+            var sleep = new PutScalingPolicyRequest
+            {
+                Name = "sleep", Threshold = 1, ComparisonOperator = ComparisonOperatorType.LessThanThreshold, EvaluationPeriods = 10, FleetId = fleetId,
+                MetricName = MetricName.ActiveGameSessions, PolicyType = PolicyType.RuleBased, ScalingAdjustment = 0, ScalingAdjustmentType = ScalingAdjustmentType.ExactCapacity
+            };
+            var scale = new PutScalingPolicyRequest
+            {
+                Name = "scale", Threshold = 0, ComparisonOperator = ComparisonOperatorType.GreaterThanThreshold, EvaluationPeriods = 1, FleetId = fleetId,
+                MetricName = MetricName.QueueDepth, PolicyType = PolicyType.RuleBased, ScalingAdjustment = 1, ScalingAdjustmentType = ScalingAdjustmentType.ChangeInCapacity
+            };
+            await client.PutScalingPolicyAsync(sleep);
+            await client.PutScalingPolicyAsync(scale);
+            Debug.Log("Put custom policies");
         }
     }
 }

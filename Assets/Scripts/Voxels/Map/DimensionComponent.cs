@@ -14,7 +14,7 @@ namespace Voxels.Map
             this.upperBound = upperBound;
         }
     }
-    
+
     [Serializable]
     public class DimensionComponent : ComponentBase
     {

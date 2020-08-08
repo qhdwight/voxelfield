@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
-using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
@@ -198,7 +197,8 @@ namespace Voxelfield.Session.Mode
 
         protected override float CalculateWeaponDamage(in PlayerHitContext context)
         {
-            if (!InWarmup(context.sessionContext.sessionContainer) && context.hitPlayer.Require<TeamProperty>() == context.sessionContext.player.Require<TeamProperty>()) return 0.0f;
+            if (!InWarmup(context.sessionContext.sessionContainer) &&
+                context.hitPlayer.Require<TeamProperty>() == context.sessionContext.player.Require<TeamProperty>()) return 0.0f;
 
             float baseDamage = base.CalculateWeaponDamage(context);
             return CalculateDamageWithMovement(context, baseDamage);

@@ -4,7 +4,6 @@ using Swihoni.Util;
 using Swihoni.Util.Math;
 using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace Voxels
 {

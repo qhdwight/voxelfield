@@ -364,7 +364,7 @@ namespace Swihoni.Sessions
                     }
                     catch (Exception exception)
                     {
-                        Debug.LogError($"Exception modifying checked player: {context.playerId}: {exception}");
+                        ExceptionLogger.Log(exception, $"Exception modifying checked player: {context.playerId}");
                     }
                 }
             }

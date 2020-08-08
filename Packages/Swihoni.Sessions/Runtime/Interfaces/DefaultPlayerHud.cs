@@ -64,13 +64,12 @@ namespace Swihoni.Sessions.Interfaces
                     switch (modifier)
                     {
                         case GunModifierBase gunModifier:
-                            builder
-                               .Append("Ammo ")
-                               .Append(equippedItem.ammoInMag)
-                               .Append("/")
-                               .Append(gunModifier.MagSize)
-                               .Append(" x")
-                               .Append(equippedItem.ammoInReserve);
+                            builder.Append("Ammo ")
+                                   .Append(equippedItem.ammoInMag)
+                                   .Append("/")
+                                   .Append(gunModifier.MagSize)
+                                   .Append(" x")
+                                   .Append(equippedItem.ammoInReserve);
                             break;
                         case ThrowableItemModifierBase _:
                             builder.Append("x").Append(equippedItem.ammoInReserve);
@@ -112,7 +111,7 @@ namespace Swihoni.Sessions.Interfaces
                         Color color = hitMarker.isKill ? m_KillHitMarkerColor : m_DefaultHitMarkerColor;
                         m_HitMarker.color = color;
                         float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsedUs / 1_000_000f);
-                        m_HitMarker.rectTransform.localScale = new Vector2(scale, scale);   
+                        m_HitMarker.rectTransform.localScale = new Vector2(scale, scale);
                     }
                     m_HitMarker.enabled = isHitMarkerVisible;
                 }
@@ -125,7 +124,7 @@ namespace Swihoni.Sessions.Interfaces
                         {
                             Color color = notifierImage.color;
                             color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 2_000_000f);
-                            notifierImage.color = color;   
+                            notifierImage.color = color;
                         }
                         notifierImage.enabled = isNotifierVisible;
                     }

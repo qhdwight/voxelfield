@@ -88,7 +88,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 modifier.transform.SetPositionAndRotation(position, rotation);
                 throwable.position.Value = position;
                 throwable.rotation.Value = rotation;
-                
+
                 Vector3 force = ray.direction * throwForce;
                 if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;
                 throwableModifier.Rigidbody.AddForce(force, ForceMode.Impulse);

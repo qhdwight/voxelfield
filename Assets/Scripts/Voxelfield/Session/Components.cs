@@ -45,7 +45,7 @@ namespace Voxelfield.Session
     public class FlagArrayElement : ArrayElement<FlagComponent>
     {
         public const int Count = 2;
-        
+
         public FlagArrayElement() : base(Count) { }
     }
 

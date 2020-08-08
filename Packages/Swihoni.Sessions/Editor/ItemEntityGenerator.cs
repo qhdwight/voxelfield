@@ -43,7 +43,7 @@ namespace Swihoni.Sessions.Editor
                     }
                 }
                 Recurse(visualInstance.transform);
-                
+
                 visualInstance.name = $"{itemBehavior.itemName} Entity Visual Variant";
                 var visual = visualInstance.AddComponent<EntityVisualBehavior>();
                 visual.id = modelId;
