@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,12 +18,7 @@ namespace Swihoni.Sessions.Config
         Mode
     }
 
-    public abstract class ConfigAttributeBase : Attribute
-    {
-        internal virtual void Update() { }
-    }
-
-    public class ConfigAttribute : ConfigAttributeBase
+    public class ConfigAttribute : Attribute
     {
         public string Name { get; set; }
         public ConfigType Type { get; }
@@ -34,21 +30,19 @@ namespace Swihoni.Sessions.Config
         }
     }
 
-    public class DisplayConfigAttribute : ConfigAttribute
-    {
-#if !UNITY_EDITOR
-        internal override void Update() => Screen.SetResolution(ConfigManagerBase.Active.resolutionWidth, ConfigManagerBase.Active.resolutionHeight,
-                                                                ConfigManagerBase.Active.fullScreenMode, ConfigManagerBase.Active.refreshRate);
-#endif
-
-        public DisplayConfigAttribute(string name = null) : base(name: name) { }
-    }
-
     [Serializable]
-    public class FullscreenProperty : BoxedEnumProperty<FullScreenMode>
+    public class ResolutionProperty : PropertyBase<Resolution>
     {
-        public FullscreenProperty() { }
-        public FullscreenProperty(FullScreenMode value) : base(value) { }
+        private const char Separator = ';';
+
+        public override StringBuilder AppendValue(StringBuilder builder)
+            => builder.Append(Value.width).Append(Separator).Append(" ").Append(Value.height).Append(Separator).Append(" ").Append(Value.refreshRate);
+
+        public override void ParseValue(string stringValue)
+        {
+            string[] split = stringValue.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
+            Value = new Resolution {width = int.Parse(split[0]), height = int.Parse(split[1]), refreshRate = int.Parse(split[2])};
+        }
     }
 
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
@@ -63,12 +57,6 @@ namespace Swihoni.Sessions.Config
         private static ConfigManagerBase LoadDefault()
         {
             ConfigManagerBase defaults = Resources.Load<ConfigManagerBase>("Config").Introspect();
-#if !UNITY_EDITOR
-            if (defaults.resolutionWidth.WithoutValue) defaults.resolutionWidth.Value = Screen.width / 2;
-            if (defaults.resolutionHeight.WithoutValue) defaults.resolutionHeight.Value = Screen.height / 2;
-            if (defaults.refreshRate.WithoutValue) defaults.refreshRate.Value = Screen.currentResolution.refreshRate;
-            if (defaults.fullScreenMode.WithoutValue) defaults.fullScreenMode.Value = FullScreenMode.Windowed;
-#endif
             defaults.inputBindings = new InputBindingProperty();
             return defaults;
         }
@@ -93,11 +81,10 @@ namespace Swihoni.Sessions.Config
         [Config] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
         [Config] public BoolProperty logPredictionErrors = new BoolProperty();
         [Config] public ListProperty<StringProperty> consoleHistory = new ListProperty<StringProperty>(32);
+        [Config] public IntProperty qualityLevel = new IntProperty();
 
-        [DisplayConfig] public IntProperty resolutionWidth = new IntProperty();
-        [DisplayConfig] public IntProperty resolutionHeight = new IntProperty();
-        [DisplayConfig] public IntProperty refreshRate = new IntProperty();
-        [DisplayConfig] public BoxedEnumProperty<FullScreenMode> fullScreenMode = new BoxedEnumProperty<FullScreenMode>();
+        [Config] public ResolutionProperty resolution = new ResolutionProperty();
+        [Config] public BoxedEnumProperty<FullScreenMode> fullScreenMode = new BoxedEnumProperty<FullScreenMode>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
@@ -164,7 +151,15 @@ namespace Swihoni.Sessions.Config
                 Recurse(element);
             }
 
+            PostIntrospect();
+
             return this;
+        }
+
+        protected virtual void PostIntrospect()
+        {
+            if (qualityLevel.WithoutValue)
+                qualityLevel.Value = QualitySettings.GetQualityLevel();
         }
 
         public static void TryHandleArguments(IReadOnlyList<string> split)
@@ -182,24 +177,33 @@ namespace Swihoni.Sessions.Config
                         }
                         else
                         {
-                            property.TryParse(split[1]);
+                            property.TryParseValue(split[1]);
                             Debug.Log($"Set {split[0]} to {split[1]}");
                         }
-                        OnConfigUpdated(property, attribute);
+                        Active.OnConfigUpdated(property, attribute);
                         break;
                     case 1 when property is BoolProperty boolProperty:
                         boolProperty.Value = true;
                         Debug.Log($"Set {split[0]}");
-                        OnConfigUpdated(property, attribute);
+                        Active.OnConfigUpdated(property, attribute);
                         break;
                 }
             }
         }
 
-        public static void OnConfigUpdated(PropertyBase property, ConfigAttribute config)
+        [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
+        private void OnConfigUpdated(PropertyBase property, ConfigAttribute attribute, bool write = true)
         {
-            WriteActive();
-            config.Update();
+            if (!Application.isBatchMode && !Application.isEditor)
+            {
+                if (ReferenceEquals(property, resolution) && resolution.TryWithValue(out Resolution r))
+                    Screen.SetResolution(r.width, r.height, fullScreenMode.Else(Screen.fullScreenMode), r.refreshRate);
+                if (ReferenceEquals(property, fullScreenMode) && fullScreenMode.TryWithValue(out FullScreenMode mode))
+                    Screen.fullScreenMode = mode;
+            }
+            if (ReferenceEquals(property, qualityLevel) && qualityLevel.TryWithValue(out int level))
+                QualitySettings.SetQualityLevel(level);
+            if (write) WriteActive();
         }
 
         public static void UpdateSessionConfig(ComponentBase session)
@@ -252,18 +256,17 @@ namespace Swihoni.Sessions.Config
                     foreach (string line in lines)
                     {
                         string[] cells = line.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
-                        string key = cells[0], stringValue = cells.Length == 1 ? string.Empty : cells[1].Trim();
-                        PropertyBase property = Active.m_NameToConfig[key].Item1;
-                        if (stringValue == "none") property.Clear();
-                        else
-                            try
-                            {
-                                property.ParseValue(stringValue);
-                            }
-                            catch (Exception exception)
-                            {
-                                throw new Exception($"Failed to parse value: {stringValue}: {exception.Message}");
-                            }
+                        if (cells.Length == 0) continue;
+                        
+                        string configName = cells[0], stringValue = cells.Length == 1 ? string.Empty : cells[1].Trim();
+                        if (Active.m_NameToConfig.TryGetValue(configName, out (PropertyBase, ConfigAttribute) tuple))
+                        {
+                            (PropertyBase property, ConfigAttribute attribute) = tuple;
+                            if (stringValue == "none") property.Clear();
+                            else if (property.TryParseValue(stringValue)) Active.OnConfigUpdated(property, attribute, false);
+                            else Debug.LogWarning($"Failed to parse config {configName} with value: {stringValue}");
+                        }
+                        else Debug.LogWarning($"Unrecognized config with name: {configName}");
                     }
                     OnActiveLoaded();
                 }

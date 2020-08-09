@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Swihoni.Collections;
 using Swihoni.Components;
@@ -14,7 +15,6 @@ namespace Swihoni.Sessions
         private static GameObject _visualizerPrefab;
 
         [SerializeField] private string m_AutoCommand = string.Empty;
-        [SerializeField] private bool m_RunAutoCommand = default;
 
         private StrictPool<PlayerDebugVisualizerBehavior> m_Pool;
 
@@ -37,7 +37,13 @@ namespace Swihoni.Sessions
 
         private void Start()
         {
-            if (!m_RunAutoCommand || string.IsNullOrEmpty(m_AutoCommand)) return;
+            string[] arguments = Environment.GetCommandLineArgs();
+            for (var i = 0; i < arguments.Length; i++)
+                if (arguments[i] == "-c")
+                    m_AutoCommand = arguments[i + 1];
+            
+            if (string.IsNullOrEmpty(m_AutoCommand)) return;
+            
             ConsoleCommandExecutor.ExecuteCommand(m_AutoCommand);
         }
 

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Util.Interface;
@@ -20,6 +22,9 @@ namespace Swihoni.Sessions.Interfaces
         [SerializeField] private Transform m_EntryHolder = default;
 
         private TEntry[] m_Entries;
+        private readonly Comparer<TElement> m_Comparer;
+        
+        protected ArrayViewerInterfaceBase() => m_Comparer = Comparer<TElement>.Create(Compare);
 
         protected override void Awake()
         {
@@ -36,20 +41,8 @@ namespace Swihoni.Sessions.Interfaces
                 return entry;
             }).ToArray());
         }
-
-        private void SortEntries(TArray array)
-        {
-            TElement currentMax = null;
-            for (var i = 0; i < array.Length; i++)
-            {
-                TElement element = array[i];
-                if (currentMax != null && Less(element, currentMax)) continue;
-                m_Entries[i].transform.SetAsFirstSibling();
-                currentMax = element;
-            }
-        }
-
-        protected abstract bool Less(TElement e1, TElement e2);
+        
+        protected abstract int Compare(TElement e1, TElement e2);
 
         public override void Render(in SessionContext context)
         {
@@ -57,16 +50,11 @@ namespace Swihoni.Sessions.Interfaces
 
             TEntry[] entries = GetEntries(array);
 
-            for (var i = 0; i < array.Length; i++)
-            {
-                TElement element = array[i];
-                TEntry entry = entries[i];
-                entry.Render(context, element);
-            }
-
-            SortEntries(array);
+            var i = 0;
+            foreach (TElement element in array.ToImmutableSortedSet(m_Comparer))
+                entries[array.Length - ++i].Render(context, element);
         }
 
-        public void Cleanup() => m_Entries = null;
+        private void Cleanup() => m_Entries = null;
     }
 }

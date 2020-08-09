@@ -80,12 +80,7 @@ namespace Swihoni.Sessions
 
         protected virtual void PreTick(Container tickSession) { }
 
-        protected virtual void PostTick(Container tickSession)
-        {
-            if (IsLoading) return;
-
-            RenderVerified(tickSession);
-        }
+        protected virtual void PostTick(Container tickSession) { }
 
         protected override void Render(uint renderTimeUs) { }
 

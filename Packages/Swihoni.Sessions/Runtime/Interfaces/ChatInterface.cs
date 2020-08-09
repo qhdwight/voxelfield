@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -11,6 +12,8 @@ namespace Swihoni.Sessions.Interfaces
 {
     public class ChatInterface : SessionInterfaceBehavior
     {
+        public const string ChatNameSeparator = ">";
+
         [SerializeField] private BufferedTextGui m_Text = default;
         private TMP_InputField m_Input;
         private string m_WantedInput;
@@ -68,20 +71,21 @@ namespace Swihoni.Sessions.Interfaces
             }
         }
 
-        public override void OnMostRecent(SessionBase session, Container sessionContainer)
+        public override void RenderVerified(in SessionContext context)
         {
-            if (sessionContainer.WithPropertyWithValue(out ChatListElement chats))
+            if (context.sessionContainer.WithPropertyWithValue(out ChatListElement chats))
                 foreach (ChatEntryProperty chat in chats.List)
                 {
                     m_Chats.Enqueue(chat.AsNewString());
-                    RenderChats();
+                    RenderChats(context);
                 }
         }
 
-        private void RenderChats()
+        private void RenderChats(in SessionContext context)
         {
             StringBuilder builder = m_Text.StartBuild();
-            foreach (string chat in m_Chats) builder.AppendLine(chat);
+            foreach (string[] split in m_Chats.Select(chat => chat.Split(new[] {' '}, 2)))
+                context.Mode.AppendUsername(builder, context.GetPlayer(int.Parse(split[0]))).Append(ChatNameSeparator).Append(" ").Append(split[1]).Append("\n");
             builder.Commit(m_Text);
         }
     }

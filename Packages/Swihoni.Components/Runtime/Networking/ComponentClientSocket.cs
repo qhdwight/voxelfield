@@ -13,7 +13,9 @@ namespace Swihoni.Components.Networking
             m_NetworkManager.Connect(ip, keyWriter ?? new NetDataWriter());
         }
 
-        public bool SendToServer(ElementBase element, DeliveryMethod deliveryMethod, Action<ElementBase, NetDataWriter> serializeAction = null)
-            => m_NetworkManager.FirstPeer != null && Send(element, m_NetworkManager.FirstPeer, deliveryMethod, serializeAction);
+        public void SendToServer(ElementBase element, DeliveryMethod deliveryMethod, Action<ElementBase, NetDataWriter> serializeAction = null)
+        {
+            if (m_NetworkManager.FirstPeer != null) Send(element, m_NetworkManager.FirstPeer, deliveryMethod, serializeAction);
+        }
     }
 }

@@ -67,7 +67,8 @@ namespace Swihoni.Sessions
             }
             localPlayerId = localPlayerIdProperty;
             localPlayer = GetModifyingPlayer(localPlayerId);
-            return !needsToBeAlive || localPlayer.Require<HealthProperty>().IsActiveAndAlive;
+            var health = localPlayer.Require<HealthProperty>();
+            return health.WithValue && (!needsToBeAlive || health.IsAlive);
         }
     }
 }

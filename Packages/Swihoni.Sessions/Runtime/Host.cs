@@ -159,6 +159,7 @@ namespace Swihoni.Sessions
         protected override void PostTick(Container tickSession)
         {
             if (IsLoading) return;
+            
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
             if (hostPlayer.Require<HealthProperty>().WithoutValue)
             {
@@ -169,6 +170,8 @@ namespace Swihoni.Sessions
                 m_HostCommands.SetTo(hostPlayer);
             }
             base.PostTick(tickSession);
+            
+            RenderVerified(new SessionContext(this, tickSession));
         }
 
         protected override void RollbackHitboxes(in SessionContext context)

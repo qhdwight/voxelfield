@@ -4,11 +4,11 @@ namespace Swihoni.Sessions.Interfaces
 {
     public class StandardKillFeedInterface : ArrayViewerInterfaceBase<KillFeedEntryInterface, KillFeedElement, KillFeedComponent>
     {
-        protected override bool Less(KillFeedComponent e1, KillFeedComponent e2)
+        protected override int Compare(KillFeedComponent e1, KillFeedComponent e2)
         {
-            if (e1.elapsedUs.WithoutValue) return true;
-            if (e2.elapsedUs.WithoutValue) return false;
-            return e1.elapsedUs < e2.elapsedUs;
+            if (e1.elapsedUs.WithoutValue) return -1;
+            if (e2.elapsedUs.WithoutValue) return 1;
+            return e1.elapsedUs.Value.CompareTo(e2.elapsedUs.Value);
         }
 
         public override void Render(in SessionContext context)

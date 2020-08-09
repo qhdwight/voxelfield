@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using LiteNetLib;
 using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions;
@@ -59,7 +60,7 @@ namespace Voxelfield.Session
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
-            SetCommand("host", arguments => StartHost());
+            SetCommand("host", arguments => StartHost(GetEndPoint(arguments)));
             SetCommand("edit", arguments => StartEdit(arguments));
             SetCommand("save", arguments =>
             {
@@ -76,28 +77,19 @@ namespace Voxelfield.Session
                     if (voxel.form != VoxelVolumeForm.Single)
                         changes.Append(voxel);
             });
-            SetCommand("serve", arguments => StartServer(DefaultEndPoint));
+            SetCommand("serve", arguments =>
+            {
+                Server server = StartServer(GetEndPoint(arguments));
+                Debug.Log($"Started server at {server.IpEndPoint}");
+            });
             SetCommand("connect", arguments =>
             {
-                try
-                {
-                    string[] colonSplit = arguments.Length > 1 ? arguments[1].Split(IpSeparator, StringSplitOptions.RemoveEmptyEntries) : null;
-                    if (colonSplit?.Length == 2) arguments = arguments.Take(1).Concat(colonSplit).ToArray();
-                    IPAddress address = arguments.Length > 1 ? IPAddress.Parse(arguments[1]) : DefaultAddress;
-                    int port = arguments.Length > 2 ? int.Parse(arguments[2]) : DefaultPort;
-                    var endPoint = new IPEndPoint(address, port);
-
-                    Client client = StartClient(endPoint);
-                    Debug.Log($"Started client at {client.IpEndPoint}");
-                }
-                catch (Exception)
-                {
-                    Debug.LogError("Could not start client with given parameters");
-                }
+                Client client = StartClient(GetEndPoint(arguments));
+                Debug.Log($"Started client at {client.IpEndPoint}");
             });
 #if ENABLE_MONO
             SetCommand("wsl_connect",
-                       arguments => ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I")}"));
+                       arguments => ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I").TrimEnd('\n')}"));
 #endif
             SetCommand("online_quick_play", arguments => QuickPlayGameLift());
             SetCommand("disconnect", arguments => DisconnectAll());
@@ -109,24 +101,36 @@ namespace Voxelfield.Session
                 foreach (Chunk chunk in ChunkManager.Singleton.Chunks.Values)
                     chunk.UpdateAndApply();
             });
+
             SetCommand("switch_teams", arguments =>
             {
                 if (arguments.Length > 1 && byte.TryParse(arguments[1], out byte team))
                     SessionBase.SessionEnumerable.First().GetLocalCommands().Require<WantedTeamProperty>().Value = team;
             });
-
             SetCommand("rollback_override", arguments => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(arguments[1]));
             SetCommand("open_log", arguments => Application.OpenURL($"file://{Application.consoleLogPath}"));
-
             SetCommand("steam_status", arguments =>
             {
                 if (!SteamClient.IsValid) SteamClientBehavior.TryInitialize();
                 if (SteamClient.IsValid) Debug.Log($"Logged in as {SteamClient.Name}, ID: {SteamClient.SteamId}");
                 else Debug.LogWarning("Not connected to steam");
             });
-
             Debug.Log($"[{GetType().Name}] Started session manager");
             AnalysisLogger.Reset(string.Empty);
+        }
+
+        private static IPEndPoint GetEndPoint(string[] arguments)
+        {
+            IPAddress address;
+            if (arguments[1] == "-l") address = IPAddress.Parse(NetUtils.GetLocalIp(LocalAddrType.IPv4));
+            else
+            {
+                string[] colonSplit = arguments.Length > 1 ? arguments[1].Split(IpSeparator, StringSplitOptions.RemoveEmptyEntries) : null;
+                if (colonSplit?.Length == 2) arguments = arguments.Take(1).Concat(colonSplit).ToArray();
+                address = arguments.Length > 1 ? IPAddress.Parse(arguments[1]) : DefaultAddress;
+            }
+            int port = arguments.Length > 2 ? int.Parse(arguments[2]) : DefaultPort;
+            return new IPEndPoint(address, port);
         }
 
 #if UNITY_EDITOR
@@ -147,17 +151,15 @@ namespace Voxelfield.Session
         private static Host StartEdit(IReadOnlyList<string> arguments)
         {
             var edit = new Host(VoxelfieldComponents.SessionElements, DefaultEndPoint, new ServerInjector());
-
             var config = (ConfigManager) ConfigManagerBase.Active;
             if (arguments.Count > 1) config.mapName.SetTo(arguments[1]);
             config.modeId.Value = ModeIdProperty.Designer;
-
             return StartSession(edit);
         }
 
-        private static Host StartHost()
+        private static Host StartHost(IPEndPoint ipEndPoint)
         {
-            var host = new Host(VoxelfieldComponents.SessionElements, DefaultEndPoint, new ServerInjector());
+            var host = new Host(VoxelfieldComponents.SessionElements, ipEndPoint, new ServerInjector());
             return StartSession(host);
         }
 
@@ -210,7 +212,6 @@ namespace Voxelfield.Session
             SessionBase.HandleCursorLockState();
             Application.targetFrameRate = ConfigManagerBase.Active.targetFps;
             AudioListener.volume = ConfigManagerBase.Active.volume;
-
 #if VOXELFIELD_RELEASE_SERVER
             if (GameLiftReady)
             {
@@ -258,7 +259,6 @@ namespace Voxelfield.Session
                 }
             }
 #endif
-
             try
             {
                 foreach (SessionBase session in SessionBase.SessionEnumerable)
@@ -273,7 +273,7 @@ namespace Voxelfield.Session
             if (SessionBase.InterruptingInterface) return;
             if (Input.GetKeyDown(KeyCode.H))
             {
-                StartHost();
+                StartHost(DefaultEndPoint);
             }
             if (Input.GetKeyDown(KeyCode.Y))
             {
@@ -320,23 +320,23 @@ namespace Voxelfield.Session
         public static void SaveCustomMap()
         {
             var models = new ModelsProperty();
-            // void AddSpawn(Position3Int position, byte team) =>
-            //     models.Add(position, new Container(new ModelIdProperty(ModelsProperty.Spawn), new TeamProperty(team), new ModeIdProperty(ModeIdProperty.Showdown)));
-            // AddSpawn(new Position3Int {x = -10, y = 2}, 0);
-            // AddSpawn(new Position3Int {y = 5}, 1);
-            // AddSpawn(new Position3Int {x = 10, y = 5}, 2);
-            // AddSpawn(new Position3Int {x = 20, y = 5}, 3);
-            // for (byte i = 0; i < 9; i++)
-            //     models.Add(new Position3Int(i * 2 + 5, 5, 5),
-            //                new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(ModeIdProperty.Showdown)));
-            // models.Set(new Position3Int(32, 5, 32),
-            //            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            // models.Set(new Position3Int(32, 5, -32),
-            //            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            // models.Set(new Position3Int(-32, 5, 32),
-            //            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
-            // models.Set(new Position3Int(-32, 5, -32),
-            //            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+// void AddSpawn(Position3Int position, byte team) =>
+//     models.Add(position, new Container(new ModelIdProperty(ModelsProperty.Spawn), new TeamProperty(team), new ModeIdProperty(ModeIdProperty.Showdown)));
+// AddSpawn(new Position3Int {x = -10, y = 2}, 0);
+// AddSpawn(new Position3Int {y = 5}, 1);
+// AddSpawn(new Position3Int {x = 10, y = 5}, 2);
+// AddSpawn(new Position3Int {x = 20, y = 5}, 3);
+// for (byte i = 0; i < 9; i++)
+//     models.Add(new Position3Int(i * 2 + 5, 5, 5),
+//                new Container(new ModelIdProperty(ModelsProperty.Cure), new IdProperty(i), new ModeIdProperty(ModeIdProperty.Showdown)));
+// models.Set(new Position3Int(32, 5, 32),
+//            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+// models.Set(new Position3Int(32, 5, -32),
+//            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.BlueTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+// models.Set(new Position3Int(-32, 5, 32),
+//            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
+// models.Set(new Position3Int(-32, 5, -32),
+//            new Container(new ModelIdProperty(ModelsProperty.Flag), new TeamProperty(CtfMode.RedTeam), new ModeIdProperty(ModeIdProperty.Ctf)));
             var testMap = new MapContainer
             {
                 name = new StringProperty("Fort"),
@@ -377,19 +377,25 @@ namespace Voxelfield.Session
         public static void BuildLinuxMonoServer()
             => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Debug Linux Mono Server", true);
 
-        // [MenuItem("Build/Release Windows Player")]
-        // private static void BuildWindowsRelease()
-        //     => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneWindows64, "Release Windows Mono Player", defines: new[] {"VOXELFIELD_RELEASE_CLIENT"});
+// [MenuItem("Build/Release Windows Player")]
+// private static void BuildWindowsRelease()
+//     => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneWindows64, "Release Windows Mono Player", defines: new[] {"VOXELFIELD_RELEASE_CLIENT"});
 
         [MenuItem("Build/Release Windows Player", priority = 200)]
         private static void BuildWindowsRelease()
             => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Release Windows IL2CPP Player",
-                     defines: new[] {"VOXELFIELD_RELEASE_CLIENT", "VOXELFIELD_RELEASE"});
+                     defines: new[]
+                     {
+                         "VOXELFIELD_RELEASE_CLIENT", "VOXELFIELD_RELEASE"
+                     });
 
         [MenuItem("Build/Release Server", priority = 200)]
         private static void BuildReleaseServer()
             => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Release Linux Mono Server", true,
-                     new[] {"VOXELFIELD_RELEASE_SERVER", "VOXELFIELD_RELEASE"});
+                     new[]
+                     {
+                         "VOXELFIELD_RELEASE_SERVER", "VOXELFIELD_RELEASE"
+                     });
 
         [MenuItem("Build/Release All", priority = 200)]
         public static void BuildRelease()
@@ -411,6 +417,7 @@ namespace Voxelfield.Session
                     executablePath = Path.ChangeExtension(executablePath, "app");
                     break;
             }
+
             PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Standalone,
                                                     scripting == ScriptingImplementation.Mono2x ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.Low);
             var buildPlayerOptions = new BuildPlayerOptions
@@ -421,10 +428,8 @@ namespace Voxelfield.Session
                 options = isServer ? BuildOptions.EnableHeadlessMode : BuildOptions.AutoRunPlayer
             };
             if (defines != null) buildPlayerOptions.extraScriptingDefines = defines;
-
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;
-
             switch (summary.result)
             {
                 case BuildResult.Succeeded:

@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Amazon;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
@@ -51,12 +53,12 @@ namespace Voxelfield.Editor
 
             IpPermission CreateIpPermission(IpProtocol protocol) => new IpPermission
             {
-                FromPort = SessionManager.DefaultPort, IpRange = "0.0.0.0/0", Protocol = protocol, ToPort = SessionManager.DefaultPort
+                FromPort = SessionManager.DefaultPort, IpRange = "0.0.0.0/0", Protocol = protocol, ToPort = SessionManager.DefaultPort + 1
             };
             var fleetRequest = new CreateFleetRequest
             {
                 Name = $"voxelfield_{build.Version}",
-                FleetType = FleetType.ON_DEMAND,
+                FleetType = FleetType.SPOT,
                 CertificateConfiguration = new CertificateConfiguration {CertificateType = CertificateType.DISABLED},
                 BuildId = buildId,
                 EC2InboundPermissions = new List<IpPermission> {CreateIpPermission(IpProtocol.TCP), CreateIpPermission(IpProtocol.UDP)},
@@ -76,16 +78,16 @@ namespace Voxelfield.Editor
             /* Request scaling down event to zero instances if no game sessions are present */
             var sleep = new PutScalingPolicyRequest
             {
-                Name = "sleep", Threshold = 1, ComparisonOperator = ComparisonOperatorType.LessThanThreshold, EvaluationPeriods = 10, FleetId = fleetId,
+                Name = "sleep", Threshold = 1, ComparisonOperator = ComparisonOperatorType.LessThanThreshold, EvaluationPeriods = 5, FleetId = fleetId,
                 MetricName = MetricName.ActiveGameSessions, PolicyType = PolicyType.RuleBased, ScalingAdjustment = 0, ScalingAdjustmentType = ScalingAdjustmentType.ExactCapacity
             };
-            var scale = new PutScalingPolicyRequest
-            {
-                Name = "scale", Threshold = 0, ComparisonOperator = ComparisonOperatorType.GreaterThanThreshold, EvaluationPeriods = 1, FleetId = fleetId,
-                MetricName = MetricName.QueueDepth, PolicyType = PolicyType.RuleBased, ScalingAdjustment = 1, ScalingAdjustmentType = ScalingAdjustmentType.ChangeInCapacity
-            };
+            // var scale = new PutScalingPolicyRequest
+            // {
+            //     Name = "scale", Threshold = 0, ComparisonOperator = ComparisonOperatorType.GreaterThanThreshold, EvaluationPeriods = 1, FleetId = fleetId,
+            //     MetricName = MetricName.QueueDepth, PolicyType = PolicyType.RuleBased, ScalingAdjustment = 1, ScalingAdjustmentType = ScalingAdjustmentType.ChangeInCapacity
+            // };
             await client.PutScalingPolicyAsync(sleep);
-            await client.PutScalingPolicyAsync(scale);
+            // await client.PutScalingPolicyAsync(scale);
             Debug.Log("Created policy");
 
             /* Update fleet alias to point to new fleet */
@@ -99,16 +101,19 @@ namespace Voxelfield.Editor
         [MenuItem("Build/Put Custom Scaling Policies", priority = 301)]
         private static async void PutCustomScalingPolicies()
         {
-            const string fleetId = "fleet-f323faca-4254-4548-9003-3f32af88e81d";
             var config = new AmazonGameLiftConfig {RegionEndpoint = RegionEndpoint.USWest1};
             var client = new AmazonGameLiftClient(Credentials, config);
+            string fleetId = (await client.ListFleetsAsync(new ListFleetsRequest {Limit = 1})).FleetIds.First();
             await client.DeleteScalingPolicyAsync(new DeleteScalingPolicyRequest {FleetId = fleetId, Name = "sleep"});
             await client.DeleteScalingPolicyAsync(new DeleteScalingPolicyRequest {FleetId = fleetId, Name = "scale"});
             Debug.Log("Deleted existing policies");
+            
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            
             var sleep = new PutScalingPolicyRequest
             {
-                Name = "sleep", Threshold = 1, ComparisonOperator = ComparisonOperatorType.LessThanThreshold, EvaluationPeriods = 10, FleetId = fleetId,
-                MetricName = MetricName.ActiveGameSessions, PolicyType = PolicyType.RuleBased, ScalingAdjustment = 0, ScalingAdjustmentType = ScalingAdjustmentType.ExactCapacity
+                Name = "sleep", Threshold = 1, ComparisonOperator = ComparisonOperatorType.LessThanThreshold, EvaluationPeriods = 5, FleetId = fleetId,
+                MetricName = MetricName.ActiveGameSessions, PolicyType = PolicyType.RuleBased, ScalingAdjustment = -1, ScalingAdjustmentType = ScalingAdjustmentType.ChangeInCapacity
             };
             var scale = new PutScalingPolicyRequest
             {

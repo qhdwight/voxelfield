@@ -3,14 +3,17 @@
 // #undef UNITY_EDITOR
 #endif
 
-using UnityEngine;
 #if UNITY_EDITOR
 
 #endif
+using UnityEngine;
 #if VOXELFIELD_RELEASE_SERVER
+using System.Collections.Generic;
+using System.Linq;
 using GameSession = Aws.GameLift.Server.Model.GameSession;
 using Aws.GameLift;
 using Aws.GameLift.Server;
+using Voxelfield.Session;
 
 #endif
 

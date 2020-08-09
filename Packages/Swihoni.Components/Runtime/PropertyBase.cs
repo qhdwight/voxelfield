@@ -87,7 +87,7 @@ namespace Swihoni.Components
         public virtual void ParseValue(string stringValue)
             => throw new NotSupportedException($"Parsing this property is not supported. Override {GetType().Name}.{nameof(ParseValue)} if this is not intentional.");
 
-        public virtual bool TryParse(string propertyString)
+        public virtual bool TryParseValue(string propertyString)
         {
             try
             {
@@ -300,9 +300,11 @@ namespace Swihoni.Components
         }
 
         /// <exception cref="WithoutValueException">If without value.</exception>
-        public abstract void SerializeValue(NetDataWriter writer);
+        public virtual void SerializeValue(NetDataWriter writer)
+            => throw new NotSupportedException($"Serializing this property is not supported. Override {GetType().Name}.{nameof(SerializeValue)} if this is not intentional");
 
         /// <exception cref="WithoutValueException">If without value.</exception>
-        public abstract void DeserializeValue(NetDataReader reader);
+        public virtual void DeserializeValue(NetDataReader reader)
+            => throw new NotSupportedException($"Deserializing this property is not supported. Override {GetType().Name}.{nameof(DeserializeValue)} if this is not intentional");
     }
 }

@@ -3,6 +3,8 @@
 #endif
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Amazon.GameLift;
@@ -41,14 +43,49 @@ namespace Voxelfield
 
         public static string PlayerSessionId { get; private set; } = string.Empty;
 
-        public static async Task<Client> QuickPlayAsync() => await StartClientAsync(EnterQueueAsync);
+        public static async Task<Client> QuickPlayAsync()
+        {
+#if VOXELFIELD_RELEASE_CLIENT
+            if (!SteamClient.IsValid || !SteamClient.IsLoggedOn) throw new AuthenticationException("You need to be connected to Steam to play an online game.");
+#endif
+            var searchRequest = new SearchGameSessionsRequest
+            {
+                Limit = 1,
+                AliasId = FleetAlias,
+                FilterExpression = "hasAvailablePlayerSessions=true",
+                SortExpression = "creationTimeMillis ASC"
+            };
+            Debug.Log("Searching for existing game sessions...");
+            SearchGameSessionsResponse existing = await Client.SearchGameSessionsAsync(searchRequest);
+            if (existing.GameSessions.Count > 0)
+            {
+                Debug.Log("Found existing game session!");
+                GameSession session = existing.GameSessions.First();
+                return await StartClient(session.GameSessionId);
+            }
+            return await StartClientAsync(EnterQueueAsync);
+        }
+
+        private static async Task<Client> StartClient(string gameSessionId)
+        {
+            Debug.Log("Creating player session request...");
+            var playerRequest = new CreatePlayerSessionRequest {GameSessionId = gameSessionId, PlayerId = GetPlayerId()};
+            CreatePlayerSessionResponse playerResponse = await Client.CreatePlayerSessionAsync(playerRequest);
+            PlayerSession playerSession = playerResponse.PlayerSession;
+            IPEndPoint endPoint = NetUtils.MakeEndPoint(playerSession.IpAddress, playerSession.Port);
+            Debug.Log($"Connecting to server endpoint: {endPoint}");
+
+            PlayerSessionId = playerSession.PlayerSessionId;
+            return SessionManager.StartClient(endPoint);
+        }
 
         private static async Task<GameSessionPlacement> EnterQueueAsync(string _)
         {
             var request = new StartGameSessionPlacementRequest
             {
                 GameSessionQueueName = "us-west-1", PlacementId = Guid.NewGuid().ToString(),
-                MaximumPlayerSessionCount = SessionBase.MaxPlayers
+                MaximumPlayerSessionCount = SessionBase.MaxPlayers,
+                DesiredPlayerSessions = new List<DesiredPlayerSession> {new DesiredPlayerSession { }}
             };
             Debug.Log("[Match Finder] Entering queue");
             StartGameSessionPlacementResponse response = await Client.StartGameSessionPlacementAsync(request);
@@ -59,12 +96,9 @@ namespace Voxelfield
         {
             try
             {
-#if VOXELFIELD_RELEASE_CLIENT
-                if (!SteamClient.IsValid || !SteamClient.IsLoggedOn) throw new AuthenticationException("You need to be connected to Steam to play an online game.");
-#endif
                 string playerId = GetPlayerId();
                 GameSessionPlacement gameSession = await sessionGetter(playerId);
-                return await StartClientForGameSessionAsync(gameSession, playerId);
+                return await StartClientForGameSessionPlacementAsync(gameSession, playerId);
             }
             catch (Exception exception)
             {
@@ -73,7 +107,7 @@ namespace Voxelfield
             }
         }
 
-        private static async Task<Client> StartClientForGameSessionAsync(GameSessionPlacement gameSession, string playerId)
+        private static async Task<Client> StartClientForGameSessionPlacementAsync(GameSessionPlacement gameSession, string playerId)
         {
             var delay = 2.0;
             do
@@ -83,18 +117,12 @@ namespace Voxelfield
                 DescribeGameSessionPlacementResponse checkResponse = await Client.DescribeGameSessionPlacementAsync(checkRequest);
                 gameSession = checkResponse.GameSessionPlacement;
                 delay = Math.Min(delay + 2.0, 30.0);
+                Debug.Log(gameSession.Status);
             } while (gameSession.Status == GameSessionPlacementState.PENDING);
 
             if (gameSession.Status != GameSessionPlacementState.FULFILLED) throw new Exception($"Error waiting in queue: {gameSession.Status}");
-            Debug.Log("Creating player session request...");
-            var playerRequest = new CreatePlayerSessionRequest {GameSessionId = gameSession.GameSessionId, PlayerId = playerId};
-            CreatePlayerSessionResponse playerResponse = await Client.CreatePlayerSessionAsync(playerRequest);
-            PlayerSession playerSession = playerResponse.PlayerSession;
-            IPEndPoint endPoint = NetUtils.MakeEndPoint(playerSession.IpAddress, playerSession.Port);
-            Debug.Log($"Connecting to server endpoint: {endPoint}");
 
-            PlayerSessionId = playerSession.PlayerSessionId;
-            return SessionManager.StartClient(endPoint);
+            return await StartClient(gameSession.GameSessionId);
         }
 
         private static string GetPlayerId() => SteamClient.IsValid && SteamClient.IsLoggedOn

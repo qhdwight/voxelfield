@@ -16,6 +16,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
 using Swihoni.Util.Interface;
+using TMPro;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using UnityObject = UnityEngine.Object;
@@ -99,7 +100,7 @@ namespace Swihoni.Sessions
 
     public abstract class SessionBase : IDisposable
     {
-        public const int MaxPlayers = 6;
+        public const int MaxPlayers = 10;
 
         private static List<SessionBase> _sessions, _sessionList;
         private static InterfaceBehaviorBase[] _interfaces;
@@ -409,11 +410,10 @@ namespace Swihoni.Sessions
             }
         }
 
-        protected void RenderVerified(Container session)
+        protected static void RenderVerified(in SessionContext context)
         {
-            _session = this;
-            _container = session;
-            ForEachSessionInterface(@interface => @interface.OnMostRecent(_session, _container));
+            _context = context;
+            ForEachSessionInterface(@interface => @interface.RenderVerified(_context));
         }
     }
 

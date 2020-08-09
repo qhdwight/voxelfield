@@ -281,7 +281,7 @@ namespace Swihoni.Sessions
                     Profiler.EndSample();
 
                     m_Injector.OnClientReceive(serverSession);
-                    RenderVerified(serverSession);
+                    RenderVerified(new SessionContext(this, serverSession));
 
                     if (!isMostRecent)
                     {

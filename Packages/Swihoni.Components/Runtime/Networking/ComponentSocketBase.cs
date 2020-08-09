@@ -4,6 +4,7 @@ using LiteNetLib;
 using LiteNetLib.Layers;
 using LiteNetLib.Utils;
 using Swihoni.Collections;
+using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Components.Networking
@@ -79,7 +80,7 @@ namespace Swihoni.Components.Networking
             return code;
         }
 
-        public bool Send(ElementBase element, NetPeer peer, DeliveryMethod deliveryMethod, Action<ElementBase, NetDataWriter> serializeAction = null)
+        public void Send(ElementBase element, NetPeer peer, DeliveryMethod deliveryMethod, Action<ElementBase, NetDataWriter> serializeAction = null)
         {
             try
             {
@@ -89,18 +90,15 @@ namespace Swihoni.Components.Networking
                 if (serializeAction == null) element.Serialize(m_Writer);
                 else serializeAction(element, m_Writer);
                 peer.Send(m_Writer, m_CodeToChannel[code], deliveryMethod);
-                return true;
             }
-            catch (KeyNotFoundException keyNotFoundException)
+            catch (KeyNotFoundException)
             {
-                throw new Exception("Type has not been registered to send across socket!", keyNotFoundException);
+                throw new Exception("Type has not been registered to send across socket!");
             }
             catch (Exception exception)
             {
-#if !VOXELFIELD_RELEASE
-                Debug.LogError(exception);
-#endif
-                return false;
+                ExceptionLogger.Log(exception, "Failed to send");
+                throw;
             }
         }
 
