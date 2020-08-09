@@ -39,20 +39,26 @@ namespace Swihoni.Sessions.Interfaces
                 GameObject instance = Instantiate(m_EntryPrefab, m_EntryHolder);
                 var entry = instance.GetComponent<TEntry>();
                 return entry;
-            }).ToArray());
+            }).Reverse().ToArray());
         }
         
         protected abstract int Compare(TElement e1, TElement e2);
 
+        private static readonly List<TElement> Sorted = new List<TElement>();
+        
         public override void Render(in SessionContext context)
         {
             if (context.sessionContainer.Without(out TArray array)) return;
 
             TEntry[] entries = GetEntries(array);
 
-            var i = 0;
-            foreach (TElement element in array.ToImmutableSortedSet(m_Comparer))
-                entries[array.Length - ++i].Render(context, element);
+            Sorted.Clear();
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (var i = 0; i < array.Length; i++)
+                Sorted.Add(array[i]);
+            Sorted.Sort(m_Comparer);
+            for (var i = 0; i < Sorted.Count; i++)
+                entries[i].Render(context, Sorted[i]);
         }
 
         private void Cleanup() => m_Entries = null;
