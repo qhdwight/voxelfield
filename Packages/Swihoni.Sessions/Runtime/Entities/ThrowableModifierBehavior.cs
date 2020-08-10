@@ -33,7 +33,6 @@ namespace Swihoni.Sessions.Entities
 
         public string Name { get; set; }
         public Rigidbody Rigidbody { get; private set; }
-        public int ThrowerId { get; set; }
         public bool PopQueued { get; set; }
         public bool CanQueuePop => m_PopTimeUs == uint.MaxValue;
         public float Radius => m_Radius;
@@ -102,7 +101,7 @@ namespace Swihoni.Sessions.Entities
                 bool justPopped = m_LastElapsedUs < throwable.popTimeUs;
 
                 if (m_Damage > 0 && (m_Interval > 0u || justPopped))
-                    HurtNearby(context, justPopped);
+                    HurtNearby(context, throwable, justPopped);
             }
             else
             {
@@ -111,20 +110,21 @@ namespace Swihoni.Sessions.Entities
                 if (collisionType != CollisionType.None)
                 {
                     var resetContact = true;
-                    if (m_ExplodeOnContact)
+                    if (m_ExplodeOnContact && (collisionType == CollisionType.World
+                                            || collision.collider.TryGetComponent(out PlayerTrigger trigger) && trigger.PlayerId != throwable.throwerId))
                     {
                         throwable.popTimeUs.Value = throwable.thrownElapsedUs;
                         resetContact = false;
-                        if (m_Damage > 0) HurtNearby(context, true);
+                        if (m_Damage > 0) HurtNearby(context, throwable, true);
                     }
                     if (collisionType == CollisionType.World && !m_ExplodeOnContact)
                     {
                         if (m_IsSticky)
                         {
                             ResetRigidbody(false);
-                            Vector3 surfaceNormal = GetSurfaceNormal(collision);
-                            Rigidbody.transform.SetPositionAndRotation(collision.contacts[0].point,
-                                                                       Quaternion.FromToRotation(Rigidbody.transform.up, surfaceNormal) * Rigidbody.rotation);
+                            Vector3 surfaceNormal = GetSurfaceNormal(collision), position = collision.contacts[0].point;
+                            Quaternion rotation = Quaternion.FromToRotation(Rigidbody.transform.up, surfaceNormal) * Rigidbody.rotation;
+                            Rigidbody.transform.SetPositionAndRotation(position, rotation);
                             m_IsFrozen = true;
                         }
                         else
@@ -146,7 +146,7 @@ namespace Swihoni.Sessions.Entities
                 entity.Clear();
         }
 
-        private void HurtNearby(in SessionContext context, bool justPopped)
+        private void HurtNearby(in SessionContext context, ThrowableComponent throwable, bool justPopped)
         {
             int count = Physics.OverlapSphereNonAlloc(transform.position, m_Radius, m_OverlappingColliders, m_Mask);
             for (var i = 0; i < count; i++)
@@ -158,7 +158,7 @@ namespace Swihoni.Sessions.Entities
                 if (hitPlayer.WithPropertyWithValue(out HealthProperty health) && health.IsAlive)
                 {
                     byte damage = CalculateDamage(new SessionContext(player: hitPlayer, durationUs: context.durationUs));
-                    int inflictingPlayerId = ThrowerId;
+                    int inflictingPlayerId = throwable.throwerId;
                     Container inflictingPlayer = context.GetModifyingPlayer(inflictingPlayerId);
                     var playerContext = new SessionContext(existing: context, playerId: inflictingPlayerId, player: inflictingPlayer);
                     var damageContext = new DamageContext(playerContext, hitPlayerId, hitPlayer, damage, Name);

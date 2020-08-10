@@ -313,7 +313,7 @@ namespace Voxelfield.Session.Mode
             }
             catch (Exception)
             {
-                return GetRandomSpawn();
+                return GetRandomPosition();
             }
         }
 
@@ -357,10 +357,10 @@ namespace Voxelfield.Session.Mode
                 siteBehaviors[siteIndex].Render(secureArea.sites[siteIndex]);
         }
 
-        public override bool CanSpectate(Container session, Container player)
+        public override bool IsSpectating(Container session, Container actualLocalPlayer)
         {
-            if (session.Require<SecureAreaComponent>().roundTime.WithoutValue) return base.CanSpectate(session, player);
-            return player.Require<HealthProperty>().IsDead && player.Require<RespawnTimerProperty>().Value < ConfigManagerBase.Active.respawnDuration / 2;
+            if (session.Require<SecureAreaComponent>().roundTime.WithoutValue) return base.IsSpectating(session, actualLocalPlayer);
+            return actualLocalPlayer.Require<HealthProperty>().IsDead && actualLocalPlayer.Require<RespawnTimerProperty>().Value < ConfigManagerBase.Active.respawnDuration / 2;
         }
 
         protected override float CalculateWeaponDamage(in PlayerHitContext context)

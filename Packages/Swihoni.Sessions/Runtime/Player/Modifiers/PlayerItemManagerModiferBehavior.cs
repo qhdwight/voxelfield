@@ -17,6 +17,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         [SerializeField] private LayerMask m_ItemEntityMask = default;
 
         private static readonly RaycastHit[] CachedHits = new RaycastHit[1];
+        private static readonly Collider[] CachedColliders = new Collider[1];
 
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("give_item");
@@ -60,23 +61,37 @@ namespace Swihoni.Sessions.Player.Modifiers
                 SetItemAtIndex(inventory, null, inventory.equippedIndex);
         }
 
-        private void TryPickupItemEntity(in SessionContext context, InventoryComponent inventory)
+        private void TryPickupItemEntity(SessionContext context, InventoryComponent inventory)
         {
-            if (context.player.Without<ServerTag>() || !context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)) return;
-
-            Ray ray = context.player.GetRayForPlayer();
-            int count = Physics.RaycastNonAlloc(ray, CachedHits, m_MaxPickupDistance, m_ItemEntityMask);
-            if (count > 0 && CachedHits[0].collider.TryGetComponent(out ItemEntityModifierBehavior itemEntity)
-                          && AddItem(inventory, checked((byte) (itemEntity.id - 100))) is byte index)
+            void TryPickupItemFromCollider(Component itemCollider, bool fromNearby)
             {
-                ItemComponent item = inventory[index];
-                EntityContainer entity = context.sessionContainer.Require<EntityArrayElement>()[itemEntity.Index];
+                if (!itemCollider.TryGetComponent(out ItemEntityModifierBehavior itemEntityModifier)) return;
+
+                EntityContainer entity = context.sessionContainer.Require<EntityArrayElement>()[itemEntityModifier.Index];
+                var throwable = entity.Require<ThrowableComponent>();
+                if (fromNearby && throwable.throwerId == context.playerId && throwable.thrownElapsedUs < 2_000_000u) return;
+
+                if (!(TryAddItem(inventory, checked((byte) (itemEntityModifier.id - 100))) is byte index)) return;
+
                 var itemOnEntity = entity.Require<ItemComponent>();
+                ItemComponent item = inventory[index];
                 item.ammoInMag.SetTo(itemOnEntity.ammoInMag);
                 item.ammoInReserve.SetTo(itemOnEntity.ammoInReserve);
                 entity.Clear();
-                itemEntity.SetActive(false, itemEntity.Index); // Force update of behavior
+                itemEntityModifier.SetActive(false, itemEntityModifier.Index); // Force update of behavior
             }
+
+            if (context.player.Without<ServerTag>()) return;
+
+            Vector3 move = context.player.Require<MoveComponent>();
+            int nearbyCount = Physics.OverlapSphereNonAlloc(move, 3.0f, CachedColliders, m_ItemEntityMask);
+            if (nearbyCount > 0) TryPickupItemFromCollider(CachedColliders[0], true);
+
+            if (!context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)) return;
+
+            Ray ray = context.player.GetRayForPlayer();
+            int count = Physics.RaycastNonAlloc(ray, CachedHits, m_MaxPickupDistance, m_ItemEntityMask);
+            if (count > 0) TryPickupItemFromCollider(CachedHits[0].collider, false);
         }
 
         private void ThrowActiveItem(in SessionContext context, ItemComponent item, InventoryComponent inventory)
@@ -91,9 +106,17 @@ namespace Swihoni.Sessions.Player.Modifiers
                     var itemOnEntity = entity.Require<ItemComponent>();
                     itemOnEntity.ammoInMag.SetTo(item.ammoInMag);
                     itemOnEntity.ammoInReserve.SetTo(item.ammoInReserve);
-                    modifier.transform.SetPositionAndRotation(ray.origin + ray.direction * 1.1f, Quaternion.LookRotation(ray.direction));
+
+                    var throwable = entity.Require<ThrowableComponent>();
+                    throwable.throwerId.Value = (byte) context.playerId;
+                    Vector3 position = ray.origin + ray.direction * 1.2f;
+                    Quaternion rotation = Quaternion.LookRotation(ray.direction);
+                    throwable.position.Value = position;
+                    throwable.rotation.Value = rotation;
+
                     Vector3 force = ray.direction * m_DropItemForce;
                     if (player.With(out MoveComponent move)) force += move.velocity.Value * 0.1f;
+                    modifier.transform.SetPositionAndRotation(position, rotation);
                     itemEntityModifier.Rigidbody.AddForce(force, ForceMode.Impulse);
                 }
             }
@@ -111,7 +134,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                     if (arguments.Length > 1 && (byte.TryParse(arguments[1], out byte itemId) || ItemId.Names.TryGetReverse(arguments[1], out itemId)))
                     {
                         ushort count = arguments.Length > 2 && ushort.TryParse(arguments[2], out ushort parsedCount) ? parsedCount : (ushort) 1;
-                        AddItem(context.player.Require<InventoryComponent>(), itemId, count);
+                        TryAddItem(context.player.Require<InventoryComponent>(), itemId, count);
                     }
                 }
         }
@@ -219,8 +242,28 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             var inventory = session.GetLocalPlayer().Require<InventoryComponent>();
             float wheel = InputProvider.GetMouseScrollWheel();
+            byte Wrap(int index)
+            {
+                while (index >= InventoryComponent.ItemsCount) index -= InventoryComponent.ItemsCount;
+                while (index < 0) index += InventoryComponent.ItemsCount;
+                return (byte) index;
+            }
             if (Mathf.Abs(wheel) > Mathf.Epsilon)
-                wantedItemIndex.Value = (byte) Clamp(inventory.equippedIndex.Else(wantedItemIndex) + (wheel > 0.0f ? 1 : -1), 0, InventoryComponent.ItemsCount - 1);
+            {
+                byte current = wantedItemIndex.Value = inventory.equippedIndex.Else(wantedItemIndex);
+                if (wheel > 0)
+                {
+                    for (int i = current + 1; i < current + InventoryComponent.ItemsCount; i++)
+                        if (inventory[Wrap(i)].id.WithValue)
+                            wantedItemIndex.Value = Wrap(i);
+                }
+                else
+                {
+                    for (int i = current - 1; i > current - InventoryComponent.ItemsCount; i--)
+                        if (inventory[Wrap(i)].id.WithValue)
+                            wantedItemIndex.Value = Wrap(i);
+                }
+            }
             else if (InputProvider.GetInput(PlayerInput.ItemOne)) wantedItemIndex.Value = 0;
             else if (InputProvider.GetInput(PlayerInput.ItemTwo)) wantedItemIndex.Value = 1;
             else if (InputProvider.GetInput(PlayerInput.ItemThree)) wantedItemIndex.Value = 2;
@@ -257,7 +300,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             return inventory.previousEquippedIndex;
         }
 
-        public static byte? AddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
+        public static byte? TryAddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
         {
             byte? _openIndex;
             if (ItemAssetLink.GetModifier(itemId) is ThrowableItemModifierBase

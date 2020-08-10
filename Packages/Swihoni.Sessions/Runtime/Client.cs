@@ -172,37 +172,66 @@ namespace Swihoni.Sessions
 
         internal static bool IsSpectating(Container renderSession, PlayerContainerArrayElement renderPlayers, int actualLocalPlayerId, out SpectatingPlayerId spectatingPlayerId)
         {
-            bool isSpectating = ModeManager.GetMode(renderSession).CanSpectate(renderSession, renderPlayers[actualLocalPlayerId]);
+            bool isSpectating = ModeManager.GetMode(renderSession).IsSpectating(renderSession, renderPlayers[actualLocalPlayerId]);
             spectatingPlayerId = renderSession.Require<SpectatingPlayerId>();
             if (isSpectating)
             {
                 Container localPlayer = renderPlayers[actualLocalPlayerId];
+                bool CanSpectate(int index)
+                {
+                    if (index == actualLocalPlayerId) return false;
+                    Container spectateCandidate = renderPlayers[index];
+                    return spectateCandidate.Require<HealthProperty>().IsActiveAndAlive && spectateCandidate.Require<TeamProperty>() == localPlayer.Require<TeamProperty>();
+                }
+                // Clear if currently spectated player can no longer be spectated
                 if (spectatingPlayerId.WithValue)
                 {
-                    Container currentPlayer = renderPlayers[spectatingPlayerId];
-                    if (currentPlayer.Require<HealthProperty>().IsInactiveOrDead || currentPlayer.Require<TeamProperty>() != localPlayer.Require<TeamProperty>())
+                    if (!CanSpectate(spectatingPlayerId))
                         spectatingPlayerId.Clear();
                 }
+                // Determine open player to spectate
                 if (spectatingPlayerId.WithoutValue)
                 {
                     for (byte playerId = 0; playerId < renderPlayers.Length; playerId++)
                     {
-                        if (playerId == actualLocalPlayerId) continue;
-                        Container renderPlayer = renderPlayers[playerId];
-                        if (renderPlayer.Require<HealthProperty>().IsInactiveOrDead) continue;
-                        if (renderPlayer.Require<TeamProperty>() == localPlayer.Require<TeamProperty>())
+                        if (CanSpectate(playerId))
                         {
                             spectatingPlayerId.Value = playerId;
                             break;
                         }
                     }
                 }
-                if (spectatingPlayerId.WithoutValue) isSpectating = false;
+                // Handle switching
+                if (spectatingPlayerId.WithValue)
+                {
+                    byte Wrap(int index)
+                    {
+                        while (index >= MaxPlayers) index -= MaxPlayers;
+                        while (index < 0) index += MaxPlayers;
+                        return (byte) index;
+                    }
+                    if (InputProvider.GetInputDown(InputType.NextSpectating))
+                    {
+                        for (int i = spectatingPlayerId + 1; i < spectatingPlayerId + MaxPlayers; i++)
+                            if (CanSpectate(Wrap(i)))
+                            {
+                                spectatingPlayerId.Value = Wrap(i);
+                                break;
+                            }
+                    }
+                    else if (InputProvider.GetInputDown(InputType.PreviousSpectating))
+                    {
+                        for (int i = spectatingPlayerId - 1; i > spectatingPlayerId - MaxPlayers; i--)
+                            if (CanSpectate(Wrap(i)))
+                            {
+                                spectatingPlayerId.Value = Wrap(i);
+                                break;
+                            }
+                    }
+                }
+                else isSpectating = false;
             }
-            if (!isSpectating)
-            {
-                spectatingPlayerId.Clear();
-            }
+            if (!isSpectating) spectatingPlayerId.Clear();
             return isSpectating;
         }
 

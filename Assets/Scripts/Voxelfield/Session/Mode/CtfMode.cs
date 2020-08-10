@@ -4,6 +4,8 @@ using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Config;
+using Swihoni.Sessions.Entities;
+using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
@@ -27,7 +29,8 @@ namespace Voxelfield.Session.Mode
         [SerializeField] private float m_CaptureRadius = 3.0f;
         [SerializeField] private Color m_BlueColor = new Color(0.1764705882f, 0.5098039216f, 0.8509803922f),
                                        m_RedColor = new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
-
+        [SerializeField] private ItemModifierBase[] m_PickupItemIds = default;
+        
         // private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
         private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
         private FlagBehavior[][] m_FlagBehaviors;
@@ -77,11 +80,40 @@ namespace Voxelfield.Session.Mode
                 HandlePlayersNearFlag(context, flag, flagTeam, flagId, ctf, context.sessionContainer.Require<DualScoresComponent>());
                 if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += context.durationUs;
             }
+
+            var count = 0;
+            var entities = context.sessionContainer.Require<EntityArrayElement>();
+            for (var i = 0; i < entities.Length; i++)
+            {
+                EntityContainer entity = entities[i];
+                var throwable = entity.Require<ThrowableComponent>();
+                if (throwable.isFrozen.WithValueEqualTo(true))
+                {
+                    count++;
+                }
+            }
+            if (count == 0)
+            {
+                byte itemId = m_PickupItemIds[Random.Range(0, m_PickupItemIds.Length)].id,
+                     entityId = (byte) (itemId + 100);
+                (ModifierBehaviorBase modifier, Container entity) = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, entityId);
+                var throwable = entity.Require<ThrowableComponent>();
+                Vector3 position = DeathmatchMode.GetRandomPosition() + new Vector3{y = 1.0f};
+                throwable.position.Value = position;
+                throwable.isFrozen.Value = true;
+                modifier.transform.SetPositionAndRotation(position, Quaternion.identity);
+                var item = entity.Require<ItemComponent>();
+                if (ItemAssetLink.GetModifier(itemId) is GunModifierBase gunModifier)
+                {
+                    item.ammoInMag.Value = gunModifier.MagSize;
+                    item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
+                }
+            }
         }
 
         public override void ModifyPlayer(in SessionContext context)
         {
-            base.ModifyPlayer(in context);
+            base.ModifyPlayer(context);
 
             context.player.Require<FrozenProperty>().Value = context.sessionContainer.Require<DualScoresComponent>().Any(score => score >= 3);
 
@@ -134,7 +166,7 @@ namespace Voxelfield.Session.Mode
             }
             catch (Exception)
             {
-                return DeathmatchMode.GetRandomSpawn();
+                return DeathmatchMode.GetRandomPosition();
             }
         }
 

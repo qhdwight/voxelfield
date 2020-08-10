@@ -24,11 +24,14 @@ namespace Voxelfield.Interface
                                                                                       {
                                                                                           bool hasComponent = button;
                                                                                           if (hasComponent)
+                                                                                          {
+                                                                                              if (!button.gameObject.activeInHierarchy) return false;
                                                                                               button.OnClick.AddListener(() =>
                                                                                               {
                                                                                                   var index = (byte) slotIndex;
                                                                                                   WantedItems[index].SetToNullable(button.IsChecked ? (byte?) null : button.ItemId);
                                                                                               });
+                                                                                          }
                                                                                           return hasComponent;
                                                                                       }).ToArray()).ToArray();
         }

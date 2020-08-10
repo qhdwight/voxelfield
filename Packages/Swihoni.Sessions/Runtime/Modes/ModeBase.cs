@@ -120,7 +120,7 @@ namespace Swihoni.Sessions.Modes
             }
         }
 
-        public virtual bool CanSpectate(Container session, Container player) => false;
+        public virtual bool IsSpectating(Container session, Container actualLocalPlayer) => false;
 
         protected virtual Vector3 GetSpawnPosition(in SessionContext context) => new Vector3 {y = 8.0f};
 
@@ -181,7 +181,7 @@ namespace Swihoni.Sessions.Modes
                     InflictDamage(new DamageContext(context, context.playerId, context.player, health.Value, "Void"));
             }
 
-            if (context.commands.WithPropertyWithValue(out WantedTeamProperty wantedTeam) && wantedTeam != context.player.Require<TeamProperty>() && AllowTeamSwap(context))
+            if (context.commands.WithPropertyWithValue(out WantedTeamProperty wantedTeam) && wantedTeam != context.player.Require<TeamProperty>() && AllowTeamSwitch(context))
             {
                 context.player.Require<TeamProperty>().Value = wantedTeam;
                 SpawnPlayer(context);
@@ -196,7 +196,7 @@ namespace Swihoni.Sessions.Modes
                 }
         }
 
-        public virtual bool AllowTeamSwap(in SessionContext context) => true;
+        public virtual bool AllowTeamSwitch(in SessionContext context) => true;
 
         public virtual void Modify(in SessionContext context)
         {

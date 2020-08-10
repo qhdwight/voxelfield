@@ -17,4 +17,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 65536
   m_CaptureRadius: 3
-  m_TakeFlagDurationUs: 2000000
+  m_BlueColor: {r: 0.1764706, g: 0.50980395, b: 0.8509804, a: 1}
+  m_RedColor: {r: 0.81960785, g: 0.21568628, b: 0.19607843, a: 1}
+  m_PickupItemIds:
+  - {fileID: 11400000, guid: 00f5709d4527fd6489092c7162237e0a, type: 2}
+  - {fileID: 11400000, guid: 3cdb08166fb864c558e8daf05fff47f4, type: 2}

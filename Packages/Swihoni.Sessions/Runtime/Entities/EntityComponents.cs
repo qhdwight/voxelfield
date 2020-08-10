@@ -27,6 +27,8 @@ namespace Swihoni.Sessions.Entities
         [InterpolateRange(5.0f)] public VectorProperty position;
         public QuaternionProperty rotation;
         public ElapsedUsProperty thrownElapsedUs, contactElapsedUs, popTimeUs;
+        public BoolProperty isFrozen;
+        public ByteProperty throwerId;
 
         public override void CustomInterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)
         {

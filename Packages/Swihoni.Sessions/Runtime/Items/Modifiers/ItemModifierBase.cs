@@ -43,7 +43,8 @@ namespace Swihoni.Sessions.Items.Modifiers
                           Smg = 14,
                           SuperPickaxe = 15,
                           ImpactGrenade = 16,
-                          SandBomb = 17;
+                          SandBomb = 17,
+                          Boomstick = 18;
 
         public static DualDictionary<byte, string> Names { get; } = typeof(ItemId).GetNameMap<byte>();
     }

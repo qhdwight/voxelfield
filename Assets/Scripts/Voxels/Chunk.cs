@@ -128,6 +128,8 @@ namespace Voxels
             VoxelChange baseChange = isStone
                 ? map.terrainGeneration.stoneVoxel.Else(new VoxelChange {texture = VoxelTexture.Checkered, color = Voxel.Stone})
                 : map.terrainGeneration.grassVoxel.Else(new VoxelChange {texture = VoxelTexture.Solid, color = Voxel.Grass});
+            if (map.terrainGeneration.upperBreakableHeight.TryWithValue(out int upperBreakableHeight) && voxelPosition.y + m_Position.y * m_ChunkSize > upperBreakableHeight)
+                breakable = false;
             baseChange.Merge(new VoxelChange
             {
                 hasBlock = false, density = density, isBreakable = breakable, orientation = Orientation.None, natural = true, form = VoxelVolumeForm.Single

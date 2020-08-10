@@ -217,7 +217,7 @@ namespace Voxelfield.Session.Mode
             return baseDamage * ratio;
         }
 
-        public override bool AllowTeamSwap(in SessionContext context) => InWarmup(context.sessionContainer);
+        public override bool AllowTeamSwitch(in SessionContext context) => InWarmup(context.sessionContainer);
 
         public override void Render(in SessionContext context)
         {

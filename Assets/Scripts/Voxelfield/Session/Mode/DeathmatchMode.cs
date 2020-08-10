@@ -16,9 +16,9 @@ namespace Voxelfield.Session.Mode
             return ShowdownMode.CalculateDamageWithMovement(context, baseDamage);
         }
 
-        protected override Vector3 GetSpawnPosition(in SessionContext context) => GetRandomSpawn();
+        protected override Vector3 GetSpawnPosition(in SessionContext context) => GetRandomPosition();
 
-        public static Vector3 GetRandomSpawn()
+        public static Vector3 GetRandomPosition()
         {
             int chunkSize = ChunkManager.Singleton.ChunkSize;
             DimensionComponent dimension = MapManager.Singleton.Map.dimension;

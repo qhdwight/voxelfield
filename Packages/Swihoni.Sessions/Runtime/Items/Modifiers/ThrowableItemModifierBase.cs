@@ -51,11 +51,11 @@ namespace Swihoni.Sessions.Items.Modifiers
             for (var index = 0; index < entities.Length; index++)
             {
                 EntityContainer entity = entities[index];
-                if (context.session.EntityManager.UnsafeModifiers[index] is ThrowableModifierBehavior throwableModifier
-                 && throwableModifier.CanQueuePop && throwableModifier.ThrowerId == context.playerId
-                )
+                if (!(context.session.EntityManager.UnsafeModifiers[index] is ThrowableModifierBehavior throwableModifier)) continue;
+                
+                var throwable = entity.Require<ThrowableComponent>();
+                if (throwableModifier.CanQueuePop && throwable.throwerId == context.playerId)
                 {
-                    var throwable = entity.Require<ThrowableComponent>();
                     if (throwable.popTimeUs > throwable.thrownElapsedUs)
                         throwableModifier.PopQueued = true;
                 }
@@ -81,9 +81,9 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (modifier is ThrowableModifierBehavior throwableModifier && entity.With(out ThrowableComponent throwable))
             {
                 throwableModifier.Name = itemName;
-                throwableModifier.ThrowerId = context.playerId;
+                throwable.throwerId.Value = (byte) context.playerId;
 
-                Vector3 position = ray.origin + ray.direction * 1.1f;
+                Vector3 position = ray.origin + ray.direction * 1.2f;
                 Quaternion rotation = Quaternion.LookRotation(ray.direction);
                 modifier.transform.SetPositionAndRotation(position, rotation);
                 throwable.position.Value = position;

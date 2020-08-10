@@ -48,9 +48,12 @@ namespace Swihoni.Sessions.Config
                           PreviousConsoleCommand = 105,
                           NextConsoleCommand = 106,
                           OpenContext = 107,
+                          SwitchTeams = 108,
                           Buy = 109,
                           TogglePauseMenu = 110,
-                          ToggleChat = 111;
+                          ToggleChat = 111,
+                          NextSpectating = 112,
+                          PreviousSpectating = 113;
 
         public static DualDictionary<byte, string> Names { get; } = new DualDictionary<byte, string>();
 
@@ -148,6 +151,7 @@ namespace Swihoni.Sessions.Config
                 [PlayerInput.Ads] = KeyCode.Mouse1,
                 [InputType.ToggleConsole] = KeyCode.BackQuote,
                 [InputType.ConsoleCommand] = KeyCode.Slash,
+                [InputType.SwitchTeams] = KeyCode.Period,
                 [InputType.OpenScoreboard] = KeyCode.Tab,
                 [InputType.AutocompleteConsole] = KeyCode.Tab,
                 [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
@@ -158,7 +162,9 @@ namespace Swihoni.Sessions.Config
                 [InputType.OpenContext] = KeyCode.V,
                 [InputType.TogglePauseMenu] = KeyCode.Escape,
                 [InputType.ToggleChat] = KeyCode.T,
-                [PlayerInput.Respawn] = KeyCode.Return
+                [PlayerInput.Respawn] = KeyCode.Return,
+                [InputType.NextSpectating] = KeyCode.Mouse1,
+                [InputType.PreviousSpectating] = KeyCode.Mouse0
             };
             m_Map = new Dictionary<ByteProperty, KeyCodeProperty>();
             foreach (KeyValuePair<byte, KeyCode> pair in defaultMap)

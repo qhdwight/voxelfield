@@ -27,7 +27,7 @@ namespace Voxelfield.Session.Mode
                     if (cost <= money)
                     {
                         var inventory = player.Require<InventoryComponent>();
-                        if (PlayerItemManagerModiferBehavior.AddItem(inventory, wantedBuyItemId).HasValue)
+                        if (PlayerItemManagerModiferBehavior.TryAddItem(inventory, wantedBuyItemId).HasValue)
                             money.Value -= cost;
                     }
                 }

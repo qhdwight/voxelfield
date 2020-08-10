@@ -14,6 +14,7 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
+using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
 using Voxels.Map;
@@ -69,13 +70,27 @@ namespace Voxelfield.Session
                     SessionBase.SessionEnumerable.First().GetLatestSession().Require<VoxelMapNameProperty>().SetTo(newFile);
                 MapManager.Singleton.SaveCurrentMap(newFile);
             });
-            SetCommand("map_remove_singles", arguments =>
+            SetCommand("map_apply_custom", arguments =>
             {
-                OrderedVoxelChangesProperty changes = MapManager.Singleton.Map.voxelChanges, clone = changes.Clone();
-                changes.Clear();
-                foreach (VoxelChange voxel in clone.List)
-                    if (voxel.form != VoxelVolumeForm.Single)
-                        changes.Append(voxel);
+                // OrderedVoxelChangesProperty c = MapManager.Singleton.Map.voxelChanges, clone = c.Clone();
+                // c.Clear();
+                
+                // foreach (VoxelChange voxel in clone.List) 
+                //     if (voxel.form != VoxelVolumeForm.Single)
+                //         changes.Append(voxel);
+                
+                // foreach (VoxelChange change in clone.List)
+                // {
+                //     VoxelChange v = change;
+                //     if (v.form.Value == VoxelVolumeForm.Prism && v.texture.GetValueOrDefault(VoxelTexture.Solid) == VoxelTexture.Solid && v.hasBlock.GetValueOrDefault())
+                //     {
+                //         if (v.upperBound.Value.y > v.position.Value.y)
+                //             v.upperBound = v.upperBound.Value + new Position3Int(0, 5, 0);
+                //         else
+                //             v.position = v.position.Value + new Position3Int(0, 5, 0);
+                //     }
+                //     c.Append(v);
+                // }
             });
             SetCommand("serve", arguments =>
             {
@@ -157,20 +172,23 @@ namespace Voxelfield.Session
             return StartSession(edit);
         }
 
-        private static Host StartHost(IPEndPoint ipEndPoint)
+        public static Host StartHost(IPEndPoint ipEndPoint = null)
         {
+            if (ipEndPoint == null) ipEndPoint = DefaultEndPoint;
             var host = new Host(VoxelfieldComponents.SessionElements, ipEndPoint, new ServerInjector());
             return StartSession(host);
         }
 
-        public static Server StartServer(IPEndPoint ipEndPoint)
+        public static Server StartServer(IPEndPoint ipEndPoint = null)
         {
+            if (ipEndPoint == null) ipEndPoint = DefaultEndPoint;
             var server = new Server(VoxelfieldComponents.SessionElements, ipEndPoint, new ServerInjector());
             return StartSession(server);
         }
 
-        public static Client StartClient(IPEndPoint ipEndPoint)
+        public static Client StartClient(IPEndPoint ipEndPoint = null)
         {
+            if (ipEndPoint == null) ipEndPoint = DefaultEndPoint;
             var client = new Client(VoxelfieldComponents.SessionElements, ipEndPoint, new ClientInjector());
             return StartSession(client);
         }
@@ -273,11 +291,11 @@ namespace Voxelfield.Session
             if (SessionBase.InterruptingInterface) return;
             if (Input.GetKeyDown(KeyCode.H))
             {
-                StartHost(DefaultEndPoint);
+                StartHost();
             }
             if (Input.GetKeyDown(KeyCode.Y))
             {
-                StartServer(DefaultEndPoint);
+                StartServer();
             }
             if (Input.GetKeyDown(KeyCode.J))
             {
@@ -285,7 +303,7 @@ namespace Voxelfield.Session
             }
             if (Input.GetKeyDown(KeyCode.L))
             {
-                StartClient(DefaultEndPoint);
+                StartClient();
             }
             if (Input.GetKeyDown(KeyCode.K))
             {

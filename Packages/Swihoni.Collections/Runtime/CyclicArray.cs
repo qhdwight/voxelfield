@@ -69,7 +69,7 @@ namespace Swihoni.Collections
         /// </summary>
         /// <param name="offset">Relative offset to element from pointer</param>
         /// <returns>Element at the relative offset from the pointer</returns>
-        public ref TElement Get(int offset) { return ref m_InternalArray[GetAbsoluteFromRelativeOffset(offset)]; }
+        public ref TElement Get(int offset) => ref m_InternalArray[GetAbsoluteFromRelativeOffset(offset)];
 
         public ref TElement GetWithPredicate(GetPredicate predicate)
         {
@@ -87,7 +87,7 @@ namespace Swihoni.Collections
         /// </summary>
         /// <param name="offset">Relative offset to element from pointer</param>
         /// <param name="newElement">New element to put at the given offset</param>
-        public void Set(int offset, in TElement newElement) { m_InternalArray[GetAbsoluteFromRelativeOffset(offset)] = newElement; }
+        public void Set(int offset, in TElement newElement) => m_InternalArray[GetAbsoluteFromRelativeOffset(offset)] = newElement;
 
         /// <summary>
         /// Given the size, a chunk of elements can be imagined including the current one pointed at by the current pointer.
@@ -98,7 +98,7 @@ namespace Swihoni.Collections
         /// <param name="size">Size of the chunk</param>
         /// <param name="index">Index in the chunk</param>
         /// <returns></returns>
-        public TElement GetInHistoryChunk(int size, int index) { return Get(index - size + 1); }
+        public TElement GetInHistoryChunk(int size, int index) => Get(index - size + 1);
 
         /// <summary>    
         /// Negative indices or ones that are the internal arrays size or more need to be wrapped around
@@ -117,7 +117,7 @@ namespace Swihoni.Collections
         /// Get the element currently reference by the pointer
         /// </summary>
         /// <returns>Element at index of current pointer</returns>
-        public ref TElement Peek() { return ref Get(0); }
+        public ref TElement Peek() => ref Get(0);
 
         public IEnumerator<TElement> GetEnumerator() => ((IEnumerable<TElement>) m_InternalArray).GetEnumerator();
 
