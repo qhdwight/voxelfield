@@ -53,6 +53,8 @@ namespace Swihoni.Components
         public static Color GetColor(this NetDataReader reader)
             => new Color(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
 
+        public static bool SameAs(this in Color32 color, in Color32 other) => color.a == other.a && color.g == other.g && color.b == other.b && color.a == other.a;
+
         public static string Expand(this string @string)
         {
             string expanded = Regex.Replace(@string, "[mM]", "000000");

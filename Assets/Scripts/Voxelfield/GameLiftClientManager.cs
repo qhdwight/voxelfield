@@ -84,8 +84,7 @@ namespace Voxelfield
             var request = new StartGameSessionPlacementRequest
             {
                 GameSessionQueueName = "us-west-1", PlacementId = Guid.NewGuid().ToString(),
-                MaximumPlayerSessionCount = SessionBase.MaxPlayers,
-                DesiredPlayerSessions = new List<DesiredPlayerSession> {new DesiredPlayerSession { }}
+                MaximumPlayerSessionCount = SessionBase.MaxPlayers
             };
             Debug.Log("[Match Finder] Entering queue");
             StartGameSessionPlacementResponse response = await Client.StartGameSessionPlacementAsync(request);

@@ -14,7 +14,6 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
-using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
 using Voxels.Map;
@@ -228,7 +227,16 @@ namespace Voxelfield.Session
             }
 
             SessionBase.HandleCursorLockState();
-            Application.targetFrameRate = ConfigManagerBase.Active.targetFps;
+            if (SessionBase.SessionCount == 0)
+            {
+                Application.targetFrameRate = Screen.currentResolution.refreshRate;
+            }
+            else
+            {
+                int targetFps = ConfigManagerBase.Active.targetFps;
+                if (targetFps > 0 && targetFps < 10) targetFps = 10;
+                Application.targetFrameRate = targetFps;   
+            }
             AudioListener.volume = ConfigManagerBase.Active.volume;
 #if VOXELFIELD_RELEASE_SERVER
             if (GameLiftReady)

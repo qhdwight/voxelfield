@@ -250,6 +250,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 239dc345a95142de88864668c1d082c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_DropItemForce: 1
+  m_MaxPickupDistance: 1.5
+  m_ItemEntityMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &8433576033080419281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -259,11 +264,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 8433576033080418991}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83731b47134d40aeb6b76561838c7d02, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ad2cebad1da411299712ecabb5ac67b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Head: {fileID: 5281320597144982131}
-  m_FpvRenders: []
+  m_TpvRenders: []
   m_StatusVisualProperties:
   - clip: {fileID: 7400000, guid: d758aa32307fd8147a7680f5f51e8464, type: 2}
   - clip: {fileID: 7400000, guid: 533156bd8f27a1b43a8c9f830bbca24c, type: 2}
@@ -272,9 +277,10 @@ MonoBehaviour:
   - clip: {fileID: 7400000, guid: 5738b143c9af5854584d965920979aa7, type: 2}
   - clip: {fileID: 7400000, guid: f7350c27255b37b4c91d1a9f40b85f87, type: 2}
   m_FootstepSource: {fileID: 0}
-  m_BrushClips: []
+  m_FootstepClips: []
   m_Animator: {fileID: 8433811891809281972}
   m_IsHitbox: 1
+  m_NaturalClips: []
 --- !u!136 &8433576033080418844
 CapsuleCollider:
   m_ObjectHideFlags: 0

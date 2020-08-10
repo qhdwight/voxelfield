@@ -35,7 +35,7 @@ namespace Swihoni.Sessions.Config
             }
         }
 
-        public static float GetMouseScrollWheel() => Input.GetAxisRaw("Mouse ScrollWheel");
+        public static float GetMouseScrollWheel() => Input.GetAxisRaw("Mouse ScrollWheel") * (ConfigManagerBase.Active.invertScrollWheel ? -1.0f : 1.0f);
     }
 
     public static class InputType

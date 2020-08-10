@@ -146,7 +146,8 @@ namespace Voxels.Map
             if (m_TruncateDimension) map.dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-1, 0, -1), upperBound = new Position3IntProperty(0, 0, 0)};
 #endif
 
-            map.terrainGeneration.upperBreakableHeight.Value = 16;
+            // map.terrainGeneration.grassVoxel.Value = new VoxelChange {texture = VoxelTexture.Solid, color = Voxel.Grass};
+            // map.terrainGeneration.upperBreakableHeight.Value = 16;
 
             yield return ChunkManager.Singleton.LoadMap(map);
 

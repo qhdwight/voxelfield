@@ -51,45 +51,13 @@ namespace Voxelfield.Interface
 
         private void RenderLocalPlayer(in SessionContext context, CtfComponent ctf)
         {
-            bool localTaking = false, localHasFlag = false, isRespawnVisible = false, isNotificationVisible = false;
-            if (context.IsValidLocalPlayer(out Container localPlayer, out byte localPlayerId, false))
+            bool localTaking = false, localHasFlag = false, isRespawnVisible = false;
+            StringBuilder notificationBuilder = m_NotificationText.Builder.Clear();
+            
+            bool isValidLocalPlayer = context.IsValidLocalPlayer(out Container localPlayer, out byte localPlayerId, false);
+            if (isValidLocalPlayer)
             {
-                if (localPlayer.Require<HealthProperty>().IsAlive)
-                {
-                    ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
-                    for (var flagTeam = 0; flagTeam < flags.Length; flagTeam++)
-                    {
-                        for (var flagIndex = 0; flagIndex < flags[flagTeam].Length; flagIndex++)
-                        {
-                            FlagComponent flag = flags[flagTeam][flagIndex];
-                            ElapsedUsProperty captureTimeUs = flag.captureElapsedTimeUs;
-                            if (flag.capturingPlayerId.TryWithValue(out byte capturingPlayerId))
-                            {
-                                bool isTaking = captureTimeUs < CtfMode.TakeFlagDurationUs;
-                                if (capturingPlayerId == localPlayerId)
-                                {
-                                    if (isTaking)
-                                    {
-                                        localTaking = true;
-                                        m_TakeProgress.Set(captureTimeUs, CtfMode.TakeFlagDurationUs);
-                                    }
-                                    else localHasFlag = true;
-                                }
-                                isNotificationVisible = true;
-                                StringBuilder builder = m_NotificationText.StartBuild();
-                                m_CtfMode.AppendUsername(builder, context.GetPlayer(capturingPlayerId))
-                                         .Append(isTaking ? " is taking a flag" : " has a flag")
-                                         .Commit(m_NotificationText);
-                            }
-                            int flatIndex = flagTeam * flags.Length + flagIndex;
-                            if (m_LastFlagCaptureTimesUs[flatIndex] is uint lt && captureTimeUs.TryWithValue(out uint ct)
-                                                                               && lt < CtfMode.TakeFlagDurationUs && ct > CtfMode.TakeFlagDurationUs)
-                                m_TakeFlagAudioSource.Play();
-                            m_LastFlagCaptureTimesUs[flatIndex] = captureTimeUs.AsNullable;
-                        }
-                    }
-                }
-                else
+                if (localPlayer.Require<HealthProperty>().IsDead)
                 {
                     m_LoadOutInterface.Render(localPlayer.Require<InventoryComponent>());
                     isRespawnVisible = true;
@@ -101,10 +69,42 @@ namespace Voxelfield.Interface
                 }
             }
             else m_LoadOutInterface.SetInterfaceActive(false);
+
+            ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
+            for (var flagTeam = 0; flagTeam < flags.Length; flagTeam++)
+            {
+                for (var flagIndex = 0; flagIndex < flags[flagTeam].Length; flagIndex++)
+                {
+                    FlagComponent flag = flags[flagTeam][flagIndex];
+                    ElapsedUsProperty captureTimeUs = flag.captureElapsedTimeUs;
+                    if (flag.capturingPlayerId.TryWithValue(out byte capturingPlayerId))
+                    {
+                        bool isTaking = captureTimeUs < CtfMode.TakeFlagDurationUs;
+                        if (isValidLocalPlayer && capturingPlayerId == localPlayerId)
+                        {
+                            if (isTaking)
+                            {
+                                localTaking = true;
+                                m_TakeProgress.Set(captureTimeUs, CtfMode.TakeFlagDurationUs);
+                            }
+                            else localHasFlag = true;
+                        }
+                        if (notificationBuilder.Length > 0) notificationBuilder.Append("\n");
+                        m_CtfMode.AppendUsername(notificationBuilder, context.GetPlayer(capturingPlayerId))
+                                 .Append(isTaking ? " is taking a flag" : " has a flag");
+                    }
+                    int flatIndex = flagTeam * flags.Length + flagIndex;
+                    if (m_LastFlagCaptureTimesUs[flatIndex] is uint lt && captureTimeUs.TryWithValue(out uint ct)
+                                                                       && lt < CtfMode.TakeFlagDurationUs && ct > CtfMode.TakeFlagDurationUs)
+                        m_TakeFlagAudioSource.Play();
+                    m_LastFlagCaptureTimesUs[flatIndex] = captureTimeUs.AsNullable;
+                }
+            }
+
             m_HasFlagSprite.enabled = localHasFlag;
             m_TakeProgress.SetInterfaceActive(localTaking);
             m_RespawnText.enabled = isRespawnVisible;
-            m_NotificationText.enabled = isNotificationVisible;
+            m_NotificationText.SetText(notificationBuilder);
         }
     }
 }

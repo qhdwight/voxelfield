@@ -621,7 +621,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4224837671832740950}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83731b47134d40aeb6b76561838c7d02, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ad2cebad1da411299712ecabb5ac67b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Head: {fileID: 3247370586931425501}
@@ -635,13 +635,18 @@ MonoBehaviour:
   - clip: {fileID: 7400000, guid: 5738b143c9af5854584d965920979aa7, type: 2}
   - clip: {fileID: 7400000, guid: f7350c27255b37b4c91d1a9f40b85f87, type: 2}
   m_FootstepSource: {fileID: 4162590889218798339}
-  m_BrushClips:
+  m_FootstepClips:
+  - {fileID: 8300000, guid: 973dce1047f8c584690c810a4336057e, type: 3}
+  - {fileID: 8300000, guid: 11f758f439f16e54dac07bdebf8e2b77, type: 3}
+  - {fileID: 8300000, guid: 6cfb54f4d4853e442861d8c08eebec50, type: 3}
+  - {fileID: 8300000, guid: ad67787e3545e7c47b765e619954546a, type: 3}
+  m_Animator: {fileID: 1247801065309422874}
+  m_IsHitbox: 0
+  m_NaturalClips:
   - {fileID: 8300000, guid: b06700587e472894aa95aa7683c38223, type: 3}
   - {fileID: 8300000, guid: ccfc59d595578d3448244554d4fc038f, type: 3}
   - {fileID: 8300000, guid: 061e83f2ff273bb4a871ae8470b9bef0, type: 3}
   - {fileID: 8300000, guid: 9c3754f559486774084652b7f70b411c, type: 3}
-  m_Animator: {fileID: 1247801065309422874}
-  m_IsHitbox: 0
 --- !u!114 &7817373600448210542
 MonoBehaviour:
   m_ObjectHideFlags: 0

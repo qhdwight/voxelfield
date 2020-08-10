@@ -78,11 +78,12 @@ namespace Swihoni.Sessions.Config
         [Config] public FloatProperty adsMultiplier = new FloatProperty(1.0f);
         [Config] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
         [Config] public InputBindingProperty inputBindings = new InputBindingProperty();
+        [Config] public BoolProperty invertScrollWheel = new BoolProperty(false);
         [Config] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
         [Config] public BoolProperty logPredictionErrors = new BoolProperty();
         [Config] public ListProperty<StringProperty> consoleHistory = new ListProperty<StringProperty>(32);
+        
         [Config] public IntProperty qualityLevel = new IntProperty();
-
         [Config] public ResolutionProperty resolution = new ResolutionProperty();
         [Config] public BoxedEnumProperty<FullScreenMode> fullScreenMode = new BoxedEnumProperty<FullScreenMode>();
 
@@ -192,7 +193,7 @@ namespace Swihoni.Sessions.Config
         }
 
         [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        private void OnConfigUpdated(PropertyBase property, ConfigAttribute attribute, bool write = true)
+        protected virtual void OnConfigUpdated(PropertyBase property, ConfigAttribute attribute, bool write = true)
         {
             if (!Application.isBatchMode && !Application.isEditor)
             {
@@ -202,9 +203,11 @@ namespace Swihoni.Sessions.Config
                     Screen.fullScreenMode = mode;
             }
             if (ReferenceEquals(property, qualityLevel) && qualityLevel.TryWithValue(out int level))
-                QualitySettings.SetQualityLevel(level);
+                SetQualityLevel(level);
             if (write) WriteActive();
         }
+
+        protected virtual void SetQualityLevel(int level) => QualitySettings.SetQualityLevel(level);
 
         public static void UpdateSessionConfig(ComponentBase session)
         {

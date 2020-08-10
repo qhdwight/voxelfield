@@ -10,6 +10,6 @@ namespace Voxels
         public ByteProperty octaves;
         public FloatProperty lateralScale, verticalScale, persistence, lacunarity;
         public VoxelChangeProperty grassVoxel, stoneVoxel;
-        [NoSerialization(exceptWrite: true)] public IntProperty lowerBreakableHeight, upperBreakableHeight;
+        public IntProperty lowerBreakableHeight, upperBreakableHeight;
     }
 }

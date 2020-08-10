@@ -58,11 +58,11 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 200
       value: 0.1
-      inSlope: -0.0026675079
+      inSlope: -0.0010703725
       outSlope: 0
       tangentMode: 1
       weightedMode: 3
-      inWeight: 0.657048
+      inWeight: 0.68544596
       outWeight: 0.46777794
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -79,5 +79,5 @@ MonoBehaviour:
     isPersistent: 0
   - durationUs: 100000
     isPersistent: 0
-  m_RaycastThickness: 0.2
+  m_RaycastThickness: 0.25
   isPrimary: 1

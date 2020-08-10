@@ -19,7 +19,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
     public abstract class GunModifierBase : WeaponModifierBase
     {
-        private const int MaxRaycastDetections = 8;
+        private const int MaxRaycastDetections = 24;
 
         protected static readonly RaycastHit[] RaycastHits = new RaycastHit[MaxRaycastDetections];
 
@@ -85,7 +85,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         {
             if (m_RaycastThickness > Mathf.Epsilon)
             {
-                return Physics.BoxCastNonAlloc(ray.GetPoint(m_RaycastThickness),
+                return Physics.BoxCastNonAlloc(ray.origin,
                                                new Vector3(m_RaycastThickness, m_RaycastThickness, m_RaycastThickness),
                                                ray.direction, RaycastHits, Quaternion.identity, float.PositiveInfinity, m_RaycastMask);
             }
@@ -117,7 +117,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             HitPlayers.Clear();
 
             inventory.tracerStart.Value = ray.origin;
-            inventory.tracerEnd.Value = hitCount > 0 ? RaycastHits[0].point : ray.GetPoint(300.0f);
+            inventory.tracerEnd.Value = hitCount > 0 ? RaycastHits[hitCount - 1].point : ray.GetPoint(300.0f);
             inventory.tracerTimeUs.Value = 1_000_000u;
         }
 

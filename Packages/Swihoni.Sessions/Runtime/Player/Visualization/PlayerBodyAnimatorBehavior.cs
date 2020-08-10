@@ -25,7 +25,7 @@ namespace Swihoni.Sessions.Player.Visualization
         [SerializeField] private Renderer[] m_TpvRenders = default;
         [SerializeField] private PlayerVisualBodyState[] m_StatusVisualProperties = default;
         [SerializeField] private AudioSource m_FootstepSource = default;
-        [SerializeField] private AudioClip[] m_BrushClips = default;
+        [SerializeField] private AudioClip[] m_FootstepClips = default;
         [SerializeField] private Animator m_Animator = default;
         [SerializeField] private bool m_IsHitbox = default;
         private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
@@ -198,11 +198,13 @@ namespace Swihoni.Sessions.Player.Visualization
                                                         1.0f, m_PrefabPlayerMovement.GroundMask);
                     m_FootstepSource.pitch = Random.Range(0.95f, 1.05f);
                     if (count >= 1)
-                        m_FootstepSource.PlayOneShot(m_BrushClips[Random.Range(0, m_BrushClips.Length)], normalizedSpeed);
+                        m_FootstepSource.PlayOneShot(GetFootstepAudioClip(move), normalizedSpeed);
                 }
             }
             m_LastNormalizedTime = move.normalizedMove;
         }
+
+        protected virtual AudioClip GetFootstepAudioClip(MoveComponent move) => m_FootstepClips[Random.Range(0, m_FootstepClips.Length)];
 
         public override void Dispose()
         {
