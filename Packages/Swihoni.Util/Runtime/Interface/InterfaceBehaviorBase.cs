@@ -7,7 +7,7 @@ namespace Swihoni.Util.Interface
     {
         private const float InvisibleAlpha = 0.0f, OpaqueAlpha = 1.0f;
 
-        [SerializeField] private bool m_NeedsCursor = default, m_InterruptsCommands = default;
+        [SerializeField] protected bool m_NeedsCursor, m_InterruptsCommands;
 
         private CanvasGroup m_CanvasGroup;
 

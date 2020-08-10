@@ -10,7 +10,18 @@ namespace Swihoni.Sessions.Interfaces
     {
         public override void Render(in SessionContext context)
         {
-            SetInterfaceActive(!SessionBase.InterruptingInterface && InputProvider.GetInput(InputType.OpenScoreboard));
+            if (context.Mode.ShowScoreboard(context))
+            {
+                m_InterruptsCommands = true;
+                m_NeedsCursor = true;
+                SetInterfaceActive(true);
+            }
+            else
+            {
+                m_InterruptsCommands = false;
+                m_NeedsCursor = false;
+                SetInterfaceActive(!SessionBase.InterruptingInterface && InputProvider.GetInput(InputType.OpenScoreboard));
+            }
             base.Render(context);
         }
 

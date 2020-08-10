@@ -8,6 +8,7 @@ using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
+using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels.Map;
@@ -84,7 +85,7 @@ namespace Voxelfield.Session.Mode
         {
             Ray ray = player.GetRayForPlayer();
             int count = Physics.RaycastNonAlloc(ray, CachedHits, 2.0f, m_ModelMask);
-            if (count > 0 && CachedHits[0].collider.TryGetComponent(out behavior))
+            if (CachedHits.TryClosest(count, out RaycastHit hit) && hit.collider.TryGetComponent(out behavior))
                 return true;
             behavior = default;
             return false;

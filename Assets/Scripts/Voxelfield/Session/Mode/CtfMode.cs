@@ -30,7 +30,7 @@ namespace Voxelfield.Session.Mode
         [SerializeField] private Color m_BlueColor = new Color(0.1764705882f, 0.5098039216f, 0.8509803922f),
                                        m_RedColor = new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
         [SerializeField] private ItemModifierBase[] m_PickupItemIds = default;
-        
+
         // private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
         private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
         private FlagBehavior[][] m_FlagBehaviors;
@@ -81,7 +81,7 @@ namespace Voxelfield.Session.Mode
                 if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += context.durationUs;
             }
 
-            var count = 0;
+            var pickupCount = 0;
             var entities = context.sessionContainer.Require<EntityArrayElement>();
             for (var i = 0; i < entities.Length; i++)
             {
@@ -89,16 +89,16 @@ namespace Voxelfield.Session.Mode
                 var throwable = entity.Require<ThrowableComponent>();
                 if (throwable.isFrozen.WithValueEqualTo(true))
                 {
-                    count++;
+                    pickupCount++;
                 }
             }
-            if (count == 0)
+            if (pickupCount == 0)
             {
                 byte itemId = m_PickupItemIds[Random.Range(0, m_PickupItemIds.Length)].id,
                      entityId = (byte) (itemId + 100);
                 (ModifierBehaviorBase modifier, Container entity) = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, entityId);
                 var throwable = entity.Require<ThrowableComponent>();
-                Vector3 position = DeathmatchMode.GetRandomPosition() + new Vector3{y = 1.0f};
+                Vector3 position = DeathmatchMode.GetRandomPosition() + new Vector3 {y = 1.0f};
                 throwable.position.Value = position;
                 throwable.isFrozen.Value = true;
                 modifier.transform.SetPositionAndRotation(position, Quaternion.identity);
@@ -111,11 +111,14 @@ namespace Voxelfield.Session.Mode
             }
         }
 
+        public override bool ShowScoreboard(in SessionContext context)
+            => context.sessionContainer.Require<DualScoresComponent>().Any(score => score >= 3);
+
         public override void ModifyPlayer(in SessionContext context)
         {
             base.ModifyPlayer(context);
 
-            context.player.Require<FrozenProperty>().Value = context.sessionContainer.Require<DualScoresComponent>().Any(score => score >= 3);
+            context.player.Require<FrozenProperty>().Value = ShowScoreboard(context);
 
             if (context.player.Require<HealthProperty>().IsAlive) return;
 

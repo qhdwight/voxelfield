@@ -3,7 +3,6 @@
 #endif
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -86,7 +85,7 @@ namespace Voxelfield
                 GameSessionQueueName = "us-west-1", PlacementId = Guid.NewGuid().ToString(),
                 MaximumPlayerSessionCount = SessionBase.MaxPlayers
             };
-            Debug.Log("[Match Finder] Entering queue");
+            Debug.Log("[Queue] Starting placement");
             StartGameSessionPlacementResponse response = await Client.StartGameSessionPlacementAsync(request);
             return response.GameSessionPlacement;
         }
@@ -97,7 +96,7 @@ namespace Voxelfield
             {
                 string playerId = GetPlayerId();
                 GameSessionPlacement gameSession = await sessionGetter(playerId);
-                return await StartClientForGameSessionPlacementAsync(gameSession, playerId);
+                return await StartClientForGameSessionPlacementAsync(gameSession);
             }
             catch (Exception exception)
             {
@@ -106,7 +105,7 @@ namespace Voxelfield
             }
         }
 
-        private static async Task<Client> StartClientForGameSessionPlacementAsync(GameSessionPlacement gameSession, string playerId)
+        private static async Task<Client> StartClientForGameSessionPlacementAsync(GameSessionPlacement gameSession)
         {
             var delay = 2.0;
             do
@@ -116,7 +115,7 @@ namespace Voxelfield
                 DescribeGameSessionPlacementResponse checkResponse = await Client.DescribeGameSessionPlacementAsync(checkRequest);
                 gameSession = checkResponse.GameSessionPlacement;
                 delay = Math.Min(delay + 2.0, 30.0);
-                Debug.Log(gameSession.Status);
+                Debug.Log($"[Queue] Status: {gameSession.Status.Value.ToLower()}");
             } while (gameSession.Status == GameSessionPlacementState.PENDING);
 
             if (gameSession.Status != GameSessionPlacementState.FULFILLED) throw new Exception($"Error waiting in queue: {gameSession.Status}");
@@ -128,7 +127,7 @@ namespace Voxelfield
             ? SteamClient.SteamId.ToString()
             : Guid.NewGuid().ToString();
 
-        //         private static async Task<GameSession> GetQuickPlayGameSessionAsync(string playerId)
+//         private static async Task<GameSession> GetQuickPlayGameSessionAsync(string playerId)
 //         {
 // #if VOXELFIELD_RELEASE_CLIENT
 //             try

@@ -16,7 +16,6 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
 using Swihoni.Util.Interface;
-using TMPro;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using UnityObject = UnityEngine.Object;

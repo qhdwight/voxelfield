@@ -41,9 +41,9 @@ namespace Swihoni.Sessions
             for (var i = 0; i < arguments.Length; i++)
                 if (arguments[i] == "-c")
                     m_AutoCommand = arguments[i + 1];
-            
+
             if (string.IsNullOrEmpty(m_AutoCommand)) return;
-            
+
             ConsoleCommandExecutor.ExecuteCommand(m_AutoCommand);
         }
 

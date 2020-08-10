@@ -299,5 +299,7 @@ namespace Swihoni.Sessions.Modes
         public virtual void Initialize() { }
 
         public virtual uint ItemEntityLifespanUs => 20_000_000u;
+
+        public virtual bool ShowScoreboard(in SessionContext context) => false;
     }
 }

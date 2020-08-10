@@ -82,7 +82,7 @@ namespace Swihoni.Sessions.Config
         [Config] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
         [Config] public BoolProperty logPredictionErrors = new BoolProperty();
         [Config] public ListProperty<StringProperty> consoleHistory = new ListProperty<StringProperty>(32);
-        
+
         [Config] public IntProperty qualityLevel = new IntProperty();
         [Config] public ResolutionProperty resolution = new ResolutionProperty();
         [Config] public BoxedEnumProperty<FullScreenMode> fullScreenMode = new BoxedEnumProperty<FullScreenMode>();
@@ -260,7 +260,7 @@ namespace Swihoni.Sessions.Config
                     {
                         string[] cells = line.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
                         if (cells.Length == 0) continue;
-                        
+
                         string configName = cells[0], stringValue = cells.Length == 1 ? string.Empty : cells[1].Trim();
                         if (Active.m_NameToConfig.TryGetValue(configName, out (PropertyBase, ConfigAttribute) tuple))
                         {

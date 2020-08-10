@@ -58,7 +58,7 @@ namespace Voxelfield.Editor
             var fleetRequest = new CreateFleetRequest
             {
                 Name = $"voxelfield_{build.Version}",
-                FleetType = FleetType.SPOT,
+                FleetType = FleetType.ON_DEMAND,
                 CertificateConfiguration = new CertificateConfiguration {CertificateType = CertificateType.DISABLED},
                 BuildId = buildId,
                 EC2InboundPermissions = new List<IpPermission> {CreateIpPermission(IpProtocol.TCP), CreateIpPermission(IpProtocol.UDP)},
@@ -107,13 +107,14 @@ namespace Voxelfield.Editor
             await client.DeleteScalingPolicyAsync(new DeleteScalingPolicyRequest {FleetId = fleetId, Name = "sleep"});
             await client.DeleteScalingPolicyAsync(new DeleteScalingPolicyRequest {FleetId = fleetId, Name = "scale"});
             Debug.Log("Deleted existing policies");
-            
+
             await Task.Delay(TimeSpan.FromSeconds(2));
-            
+
             var sleep = new PutScalingPolicyRequest
             {
                 Name = "sleep", Threshold = 1, ComparisonOperator = ComparisonOperatorType.LessThanThreshold, EvaluationPeriods = 5, FleetId = fleetId,
-                MetricName = MetricName.ActiveGameSessions, PolicyType = PolicyType.RuleBased, ScalingAdjustment = -1, ScalingAdjustmentType = ScalingAdjustmentType.ChangeInCapacity
+                MetricName = MetricName.ActiveGameSessions, PolicyType = PolicyType.RuleBased, ScalingAdjustment = -1,
+                ScalingAdjustmentType = ScalingAdjustmentType.ChangeInCapacity
             };
             var scale = new PutScalingPolicyRequest
             {

@@ -1,6 +1,7 @@
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Items.Modifiers
@@ -21,9 +22,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             Ray ray = session.GetRayForPlayerId(playerId);
             session.RollbackHitboxesFor(context);
             int count = Physics.RaycastNonAlloc(ray, RaycastHits, m_Distance, m_RaycastMask);
-            if (count == 0) return;
-
-            RaycastHit hit = RaycastHits[0];
+            if (!RaycastHits.TryClosest(count, out RaycastHit hit)) return;
             if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId) return;
 
             var hitContext = new PlayerHitContext(context, hitbox, this, hit);

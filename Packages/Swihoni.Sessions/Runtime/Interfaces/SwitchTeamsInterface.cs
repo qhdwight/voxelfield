@@ -8,17 +8,14 @@ namespace Swihoni.Sessions.Interfaces
     {
         private byte? m_WantedTeam;
 
-        public override void Render(in SessionContext context)
-        {
-            SetInterfaceActive(NoInterrupting && InputProvider.GetInput(InputType.SwitchTeams));
-        }
+        public override void Render(in SessionContext context) { SetInterfaceActive(NoInterrupting && InputProvider.GetInput(InputType.SwitchTeams)); }
 
         public void WantedTeamButton(int wantedTeam) => m_WantedTeam = (byte) wantedTeam;
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
             if (!(m_WantedTeam is byte wantedTeam)) return;
-            
+
             commands.Require<WantedTeamProperty>().Value = wantedTeam;
             m_WantedTeam = null;
         }

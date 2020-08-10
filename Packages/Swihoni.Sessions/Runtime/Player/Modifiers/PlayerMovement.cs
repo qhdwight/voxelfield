@@ -1,3 +1,4 @@
+using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
@@ -180,7 +181,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             int capsuleCastCount = OverlapGround(position);
             int downwardCastCount = Physics.RaycastNonAlloc(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
                                                             float.PositiveInfinity, m_GroundMask);
-            float floorDistance = m_CachedGroundHits[0].distance,
+            m_CachedGroundHits.SortByDistance(downwardCastCount);
+            float floorDistance = m_CachedGroundHits.First().distance,
                   slopeAngle = Vector3.Angle(Hit.normal, Vector3.up);
             bool isGrounded = m_Controller.isGrounded || capsuleCastCount == 2, // Always have 1 due to ourselves. 2 means we are touching something else
                  withinAngleLimit = isGrounded && slopeAngle < m_Controller.slopeLimit,

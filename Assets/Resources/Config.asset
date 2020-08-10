@@ -47,6 +47,9 @@ MonoBehaviour:
     m_Value: 1
   inputBindings:
     m_Flags: 1
+  invertScrollWheel:
+    m_Flags: 1
+    m_Value: 0
   fpsUpdateRate:
     m_Flags: 1
     m_Value: 0.4
@@ -57,15 +60,11 @@ MonoBehaviour:
     m_Flags: 1
     m_List: []
     m_MaxSize: 32
-  resolutionWidth:
+  qualityLevel:
+    m_Flags: 1
+    m_Value: 2
+  resolution:
     m_Flags: 0
-    m_Value: 0
-  resolutionHeight:
-    m_Flags: 0
-    m_Value: 0
-  refreshRate:
-    m_Flags: 0
-    m_Value: 0
   fullScreenMode:
     m_Flags: 0
     m_Value: 0

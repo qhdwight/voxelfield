@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using LiteNetLib;
@@ -19,12 +20,22 @@ namespace Swihoni.Sessions
 {
     public sealed partial class Client : NetworkedSessionBase, IReceiver
     {
+        private const int DemoWriteSize = 1 << 18, DemoTickRate = 20;
         private readonly CyclicArray<ClientCommandsContainer> m_CommandHistory;
         private readonly CyclicArray<Container> m_PlayerPredictionHistory;
         private ComponentClientSocket m_Socket;
+        private readonly NetDataWriter m_DemoWriter = new NetDataWriter(true, DemoWriteSize);
 
         public int PredictionErrors { get; private set; }
         public override ComponentSocketBase Socket => m_Socket;
+        public bool WriteDemo { get; set; }
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void Initialize()
+        {
+            ConsoleCommandExecutor.SetCommand("start_demo", args => SessionEnumerable.OfType<Client>().First().WriteDemo = true);
+            ConsoleCommandExecutor.SetCommand("end_demo", args => SessionEnumerable.OfType<Client>().First().WriteDemo = false);
+        }
 
         public Client(SessionElements elements, IPEndPoint ipEndPoint, SessionInjectorBase injector)
             : base(elements, ipEndPoint, injector)
@@ -251,6 +262,16 @@ namespace Swihoni.Sessions
                     }
                     Profiler.EndSample();
 
+                    try
+                    {
+                        if (WriteDemo) OnDemoCandidate(serverSession);
+                        else if (m_DemoWriter.Length > 0) FlushDemo();
+                    }
+                    catch (Exception exception)
+                    {
+                        ExceptionLogger.Log(exception, "Error putting demo session");
+                    }
+
                     ElementExtensions.NavigateZipped((_server, _command) =>
                     {
                         if (_server is PropertyBase serverProperty && serverProperty.IsOverride && _command is PropertyBase commandProperty)
@@ -263,6 +284,42 @@ namespace Swihoni.Sessions
                     break;
                 }
             }
+        }
+
+        public static string GetDemoFile()
+        {
+            string parentFolder = Directory.GetParent(Application.dataPath).FullName;
+            if (Application.platform == RuntimePlatform.OSXPlayer) parentFolder = Directory.GetParent(parentFolder).FullName;
+            return Path.ChangeExtension(Path.Combine(parentFolder, "Demo"), "vfd");
+        }
+
+        private void OnDemoCandidate(Container session)
+        {
+            string demoFile = GetDemoFile();
+            if (!File.Exists(demoFile))
+            {
+                m_DemoWriter.Reset();
+                m_DemoWriter.Put(Application.version);
+                using (new FileStream(demoFile, FileMode.Create))
+                {
+                }
+            }
+            if (session.Require<ServerStampComponent>().tick % (session.Require<TickRateProperty>().Value / DemoTickRate) != 0) return;
+            session.Serialize(m_DemoWriter);
+            if (m_DemoWriter.Length > DemoWriteSize)
+                FlushDemo();
+        }
+
+        private void FlushDemo()
+        {
+            using (var stream = new FileStream(GetDemoFile(), FileMode.Append))
+            {
+                stream.Write(m_DemoWriter.Data, 0, m_DemoWriter.Length);
+#if UNITY_EDITOR
+                Debug.Log("Wrote demo section");
+#endif
+            }
+            m_DemoWriter.Reset();
         }
 
         public static void ClearSingleTicks(ElementBase commands) => commands.Navigate(_element =>

@@ -7,7 +7,7 @@ namespace Swihoni.Sessions.Entities
     public class ItemEntityModifierBehavior : EntityModifierBehavior
     {
         public Rigidbody Rigidbody { get; private set; }
-        
+
         private void Awake() => Rigidbody = GetComponent<Rigidbody>();
 
         public override void SetActive(bool isActive, int index)

@@ -1,4 +1,3 @@
-using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -7,6 +6,7 @@ using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Voxelfield.Item;
@@ -36,9 +36,10 @@ namespace Voxelfield.Interface.Designer
             }
             if (isVisible)
             {
-                if (Physics.RaycastNonAlloc(localPlayer.GetRayForPlayer(), m_CachedHits, m_SculptingItem.EditDistance, m_SculptingItem.ChunkMask) > 0)
+                int count = Physics.RaycastNonAlloc(localPlayer.GetRayForPlayer(), m_CachedHits, m_SculptingItem.EditDistance, m_SculptingItem.ChunkMask);
+                if (m_CachedHits.TryClosest(count, out RaycastHit hit))
                 {
-                    Matrix4x4 matrix = Matrix4x4.TRS(m_CachedHits.First().point, Quaternion.identity, Vector3.one * editRadius * 1.5f);
+                    Matrix4x4 matrix = Matrix4x4.TRS(hit.point, Quaternion.identity, Vector3.one * editRadius * 1.5f);
                     Graphics.DrawMesh(m_SphereMesh, matrix, m_Material, 0, SessionBase.ActiveCamera, 0, null, ShadowCastingMode.Off, false);
                 }
             }

@@ -7,11 +7,11 @@ using Voxelfield.Session;
 using Voxelfield.Session.Mode;
 
 namespace Voxelfield
-{ 
+{
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
     public class ConfigManager : ConfigManagerBase
     {
-        private static readonly Lazy<PostProcessVolume> Volume = new Lazy<PostProcessVolume>(FindObjectOfType<PostProcessVolume>);
+        private static Lazy<PostProcessVolume> _volume;
 
         [Config(ConfigType.Session)] public VoxelMapNameProperty mapName = new VoxelMapNameProperty("Fort");
 
@@ -21,6 +21,9 @@ namespace Voxelfield
         public SecureAreaConfig secureAreaConfig = new SecureAreaConfig();
 
         public new static ConfigManager Active => (ConfigManager) ConfigManagerBase.Active;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void PreInitialize() => _volume = new Lazy<PostProcessVolume>(FindObjectOfType<PostProcessVolume>);
 
         [RuntimeInitializeOnLoadMethod]
         private static void Initialize()
@@ -32,7 +35,7 @@ namespace Voxelfield
         protected override void SetQualityLevel(int level)
         {
             base.SetQualityLevel(level);
-            Volume.Value.enabled = level > 0;
+            _volume.Value.enabled = level > 0;
         }
     }
 }

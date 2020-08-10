@@ -7,6 +7,7 @@ using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Player.Modifiers
@@ -91,7 +92,8 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             Ray ray = context.player.GetRayForPlayer();
             int count = Physics.RaycastNonAlloc(ray, CachedHits, m_MaxPickupDistance, m_ItemEntityMask);
-            if (count > 0) TryPickupItemFromCollider(CachedHits[0].collider, false);
+            if (CachedHits.TryClosest(count, out RaycastHit hit))
+                TryPickupItemFromCollider(hit.collider, false);
         }
 
         private void ThrowActiveItem(in SessionContext context, ItemComponent item, InventoryComponent inventory)

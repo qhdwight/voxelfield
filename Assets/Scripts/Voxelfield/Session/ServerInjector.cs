@@ -13,6 +13,7 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
@@ -340,10 +341,9 @@ namespace Voxelfield.Session
             Physics.queriesHitBackfaces = true;
             {
                 int count = Physics.RaycastNonAlloc(move + new Vector3 {y = 0.1f}, Vector3.up, CachedHits, float.PositiveInfinity, 1 << 15);
-                bool isOnBackface = count != 0 && CachedHits[0].normal.y > 0.0f;
-                if (isOnBackface)
+                if (CachedHits.TryClosest(count, out RaycastHit hit) && hit.normal.y > Mathf.Epsilon)
                 {
-                    float distance = CachedHits[0].distance;
+                    float distance = hit.distance;
                     // if (distance > 4.0f)
                     // {
                     //     var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");

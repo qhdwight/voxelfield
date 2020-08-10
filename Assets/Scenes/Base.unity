@@ -9952,7 +9952,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 044713a4e3724f92a3387283784e9c8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_NeedsCursor: 1
+  m_NeedsCursor: 0
   m_InterruptsCommands: 0
   m_IsDuringGame: 1
   m_EntryPrefab: {fileID: 2854537126906588115, guid: 8b56527bd8750c7a29a4b921f116c721,

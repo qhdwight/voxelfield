@@ -52,7 +52,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             {
                 EntityContainer entity = entities[index];
                 if (!(context.session.EntityManager.UnsafeModifiers[index] is ThrowableModifierBehavior throwableModifier)) continue;
-                
+
                 var throwable = entity.Require<ThrowableComponent>();
                 if (throwableModifier.CanQueuePop && throwable.throwerId == context.playerId)
                 {

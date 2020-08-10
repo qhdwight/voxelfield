@@ -24,7 +24,6 @@ using UnityEditor;
 using UnityEditor.Build.Reporting;
 
 #else
-using LiteNetLib;
 #endif
 #if VOXELFIELD_RELEASE_SERVER
 using Aws.GameLift;
@@ -73,11 +72,11 @@ namespace Voxelfield.Session
             {
                 // OrderedVoxelChangesProperty c = MapManager.Singleton.Map.voxelChanges, clone = c.Clone();
                 // c.Clear();
-                
+
                 // foreach (VoxelChange voxel in clone.List) 
                 //     if (voxel.form != VoxelVolumeForm.Single)
                 //         changes.Append(voxel);
-                
+
                 // foreach (VoxelChange change in clone.List)
                 // {
                 //     VoxelChange v = change;
@@ -235,7 +234,7 @@ namespace Voxelfield.Session
             {
                 int targetFps = ConfigManagerBase.Active.targetFps;
                 if (targetFps > 0 && targetFps < 10) targetFps = 10;
-                Application.targetFrameRate = targetFps;   
+                Application.targetFrameRate = targetFps;
             }
             AudioListener.volume = ConfigManagerBase.Active.volume;
 #if VOXELFIELD_RELEASE_SERVER

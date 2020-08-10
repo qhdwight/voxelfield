@@ -342,6 +342,9 @@ namespace Voxelfield.Session.Mode
             context.sessionContainer.Require<EntityArrayElement>().Clear();
         }
 
+        public override bool ShowScoreboard(in SessionContext context)
+            => AtMaxRounds(context.sessionContainer.Require<SecureAreaComponent>(), context.sessionContainer.Require<DualScoresComponent>());
+
         private bool AtMaxRounds(SecureAreaComponent secureArea, DualScoresComponent scores)
             => secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_Config.maxRounds;
 

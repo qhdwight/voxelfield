@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Swihoni.Components;
 using Swihoni.Util.Interface;
@@ -23,7 +22,7 @@ namespace Swihoni.Sessions.Interfaces
 
         private TEntry[] m_Entries;
         private readonly Comparer<TElement> m_Comparer;
-        
+
         protected ArrayViewerInterfaceBase() => m_Comparer = Comparer<TElement>.Create(Compare);
 
         protected override void Awake()
@@ -41,11 +40,11 @@ namespace Swihoni.Sessions.Interfaces
                 return entry;
             }).Reverse().ToArray());
         }
-        
+
         protected abstract int Compare(TElement e1, TElement e2);
 
         private static readonly List<TElement> Sorted = new List<TElement>();
-        
+
         public override void Render(in SessionContext context)
         {
             if (context.sessionContainer.Without(out TArray array)) return;

@@ -53,7 +53,7 @@ namespace Voxelfield.Interface
         {
             bool localTaking = false, localHasFlag = false, isRespawnVisible = false;
             StringBuilder notificationBuilder = m_NotificationText.Builder.Clear();
-            
+
             bool isValidLocalPlayer = context.IsValidLocalPlayer(out Container localPlayer, out byte localPlayerId, false);
             if (isValidLocalPlayer)
             {

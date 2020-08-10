@@ -3,6 +3,7 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player.Components;
+using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxelfield.Session;
@@ -61,9 +62,8 @@ namespace Voxelfield.Item
         protected bool WithoutHit(in SessionContext context, float distance, out RaycastHit hit)
         {
             Ray ray = context.session.GetRayForPlayerId(context.playerId);
-            bool withoutHit = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask) == 0;
-            hit = RaycastHits[0];
-            return withoutHit;
+            int count = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask);
+            return !RaycastHits.TryClosest(count, out hit);
         }
 
         public bool WithoutClientHit(in SessionContext context, float distance, out RaycastHit hit)
@@ -75,9 +75,8 @@ namespace Voxelfield.Item
                 return true;
             }
             Ray ray = context.session.GetRayForPlayerId(context.playerId);
-            bool withoutHit = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask) == 0;
-            hit = RaycastHits[0];
-            return withoutHit;
+            int count = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask);
+            return !RaycastHits.TryClosest(count, out hit);
         }
 
         protected void PickVoxel(in SessionContext context)
