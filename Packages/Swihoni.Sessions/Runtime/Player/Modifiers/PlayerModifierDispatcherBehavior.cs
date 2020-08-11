@@ -48,7 +48,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             if (PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> stringCommands))
                 foreach (string[] stringCommand in stringCommands)
-                    ConfigManagerBase.TryHandleArguments(stringCommand);
+                    DefaultConfig.TryHandleArguments(stringCommand);
 
             if (isOnServer && context.sessionContainer.With(out ChatListElement chats)
                            && context.commands.WithPropertyWithValue(out ChatEntryProperty chat))

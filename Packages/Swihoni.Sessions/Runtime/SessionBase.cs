@@ -161,7 +161,7 @@ namespace Swihoni.Sessions
         {
             if (SessionCount == 0)
             {
-                ConfigManagerBase.TryHandleArguments(arguments);
+                DefaultConfig.TryHandleArguments(arguments);
                 return;
             }
             foreach (SessionBase session in SessionEnumerable)
@@ -405,7 +405,7 @@ namespace Swihoni.Sessions
             }
             catch (Exception)
             {
-                ConfigManagerBase.TryHandleArguments(arguments);
+                DefaultConfig.TryHandleArguments(arguments);
             }
         }
 

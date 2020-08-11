@@ -46,7 +46,7 @@ namespace Swihoni.Sessions.Config
 
         public static void ExecuteCommand(string fullCommand)
         {
-            ConfigManagerBase.OnCommand(fullCommand);
+            DefaultConfig.OnCommand(fullCommand);
             foreach (string[] arguments in fullCommand.GetArguments())
             {
                 string commandName = arguments.First().Replace("?", string.Empty);

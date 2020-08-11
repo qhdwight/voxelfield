@@ -15,7 +15,7 @@ namespace Swihoni.Sessions.Interfaces
         {
             base.Awake();
             m_FramerateText = GetComponent<BufferedTextGui>();
-            m_UpdateFramerateAction = new IntervalAction(ConfigManagerBase.Active.fpsUpdateRate, UpdateFramerate);
+            m_UpdateFramerateAction = new IntervalAction(DefaultConfig.Active.fpsUpdateRate, UpdateFramerate);
         }
 
         private void Update() => m_UpdateFramerateAction.Update(Time.deltaTime);

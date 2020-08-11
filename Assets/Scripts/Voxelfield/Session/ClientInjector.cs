@@ -6,6 +6,7 @@ using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using UnityEngine;
+using Voxelfield.Integration;
 using Voxels;
 
 namespace Voxelfield.Session

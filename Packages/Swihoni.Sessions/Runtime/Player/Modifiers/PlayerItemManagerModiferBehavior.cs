@@ -131,7 +131,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             if (!WithServerStringCommands(context, out IEnumerable<string[]> commands)) return;
             foreach (string[] arguments in commands)
-                if (arguments[0] == "give_item" && ConfigManagerBase.Active.allowCheats)
+                if (arguments[0] == "give_item" && DefaultConfig.Active.allowCheats)
                 {
                     if (arguments.Length > 1 && (byte.TryParse(arguments[1], out byte itemId) || ItemId.Names.TryGetReverse(arguments[1], out itemId)))
                     {

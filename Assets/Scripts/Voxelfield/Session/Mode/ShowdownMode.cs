@@ -141,7 +141,7 @@ namespace Voxelfield.Session.Mode
             move.position.Value = position;
             player.ZeroIfWith<CameraComponent>();
             player.Require<MoneyComponent>().count.Value = ushort.MaxValue;
-            if (player.With(out HealthProperty health)) health.Value = ConfigManagerBase.Active.respawnHealth;
+            if (player.With(out HealthProperty health)) health.Value = DefaultConfig.Active.respawnHealth;
             if (player.With(out InventoryComponent inventory))
             {
                 PlayerItemManagerModiferBehavior.ResetEquipStatus(inventory);

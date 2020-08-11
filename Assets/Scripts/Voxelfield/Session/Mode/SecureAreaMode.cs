@@ -56,7 +56,7 @@ namespace Voxelfield.Session.Mode
         public override void Initialize()
         {
             m_LastMapName = new VoxelMapNameProperty();
-            m_Config = ConfigManager.Active.secureAreaConfig;
+            m_Config = Config.Active.secureAreaConfig;
             SessionBase.RegisterSessionCommand("give_money");
         }
 
@@ -237,7 +237,7 @@ namespace Voxelfield.Session.Mode
                 foreach (string[] arguments in stringCommands)
                     switch (arguments[0])
                     {
-                        case "give_money" when arguments.Length > 1 && ConfigManagerBase.Active.allowCheats && ushort.TryParse(arguments[1].Expand(), out ushort bonus):
+                        case "give_money" when arguments.Length > 1 && DefaultConfig.Active.allowCheats && ushort.TryParse(arguments[1].Expand(), out ushort bonus):
                         {
                             player.Require<MoneyComponent>().count.Value += bonus;
                             break;
@@ -363,7 +363,7 @@ namespace Voxelfield.Session.Mode
         public override bool IsSpectating(Container session, Container actualLocalPlayer)
         {
             if (session.Require<SecureAreaComponent>().roundTime.WithoutValue) return base.IsSpectating(session, actualLocalPlayer);
-            return actualLocalPlayer.Require<HealthProperty>().IsDead && actualLocalPlayer.Require<RespawnTimerProperty>().Value < ConfigManagerBase.Active.respawnDuration / 2;
+            return actualLocalPlayer.Require<HealthProperty>().IsDead && actualLocalPlayer.Require<RespawnTimerProperty>().Value < DefaultConfig.Active.respawnDuration / 2;
         }
 
         protected override float CalculateWeaponDamage(in PlayerHitContext context)

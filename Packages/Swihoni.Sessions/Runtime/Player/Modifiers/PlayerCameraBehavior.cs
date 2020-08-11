@@ -19,10 +19,10 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             var inventory = verifiedPlayer.Require<InventoryComponent>();
             bool isAds = inventory.HasItemEquipped && inventory.adsStatus.id == AdsStatusId.Ads;
-            float multiplier = isAds ? ItemAssetLink.GetVisualPrefab(inventory.EquippedItemComponent.id).FovMultiplier * ConfigManagerBase.Active.adsMultiplier : 1.0f;
+            float multiplier = isAds ? ItemAssetLink.GetVisualPrefab(inventory.EquippedItemComponent.id).FovMultiplier * DefaultConfig.Active.adsMultiplier : 1.0f;
 
-            playerCamera.yaw.Value = Mathf.Repeat(playerCamera.yaw + mouse.mouseDeltaX * ConfigManagerBase.Active.sensitivity * multiplier, 360.0f);
-            playerCamera.pitch.Value = Mathf.Clamp(playerCamera.pitch - mouse.mouseDeltaY * ConfigManagerBase.Active.sensitivity * multiplier, -90.0f, 90.0f);
+            playerCamera.yaw.Value = Mathf.Repeat(playerCamera.yaw + mouse.mouseDeltaX * DefaultConfig.Active.sensitivity * multiplier, 360.0f);
+            playerCamera.pitch.Value = Mathf.Clamp(playerCamera.pitch - mouse.mouseDeltaY * DefaultConfig.Active.sensitivity * multiplier, -90.0f, 90.0f);
         }
 
         public override void ModifyCommands(SessionBase session, Container commands, int playerId)

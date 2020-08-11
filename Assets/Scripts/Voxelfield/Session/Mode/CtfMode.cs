@@ -252,7 +252,7 @@ namespace Voxelfield.Session.Mode
             if (begin) player.ZeroIfWith<StatsComponent>();
             player.Require<ByteIdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health)) health.Value = begin ? (byte) 0 : ConfigManagerBase.Active.respawnHealth;
+            if (player.With(out HealthProperty health)) health.Value = begin ? (byte) 0 : DefaultConfig.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
             if (player.With(out InventoryComponent inventory))
             {

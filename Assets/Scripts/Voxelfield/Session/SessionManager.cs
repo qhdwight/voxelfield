@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using LiteNetLib;
-using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
@@ -15,6 +14,7 @@ using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using UnityEngine;
+using Voxelfield.Integration;
 using Voxels;
 using Voxels.Map;
 using static Swihoni.Sessions.Config.ConsoleCommandExecutor;
@@ -122,12 +122,6 @@ namespace Voxelfield.Session
             });
             SetCommand("rollback_override", arguments => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(arguments[1]));
             SetCommand("open_log", arguments => Application.OpenURL($"file://{Application.consoleLogPath}"));
-            SetCommand("steam_status", arguments =>
-            {
-                if (!SteamClient.IsValid) SteamClientBehavior.TryInitialize();
-                if (SteamClient.IsValid) Debug.Log($"Logged in as {SteamClient.Name}, ID: {SteamClient.SteamId}");
-                else Debug.LogWarning("Not connected to steam");
-            });
             Debug.Log($"[{GetType().Name}] Started session manager");
             AnalysisLogger.Reset(string.Empty);
         }
@@ -164,7 +158,7 @@ namespace Voxelfield.Session
         private static Host StartEdit(IReadOnlyList<string> arguments)
         {
             var edit = new Host(VoxelfieldComponents.SessionElements, DefaultEndPoint, new ServerInjector());
-            var config = (ConfigManager) ConfigManagerBase.Active;
+            Config config = Config.Active;
             if (arguments.Count > 1) config.mapName.SetTo(arguments[1]);
             config.modeId.Value = ModeIdProperty.Designer;
             return StartSession(edit);
@@ -232,11 +226,11 @@ namespace Voxelfield.Session
             }
             else
             {
-                int targetFps = ConfigManagerBase.Active.targetFps;
+                int targetFps = DefaultConfig.Active.targetFps;
                 if (targetFps > 0 && targetFps < 10) targetFps = 10;
                 Application.targetFrameRate = targetFps;
             }
-            AudioListener.volume = ConfigManagerBase.Active.volume;
+            AudioListener.volume = DefaultConfig.Active.volume;
 #if VOXELFIELD_RELEASE_SERVER
             if (GameLiftReady)
             {

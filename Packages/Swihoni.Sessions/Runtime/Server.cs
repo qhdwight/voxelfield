@@ -91,7 +91,7 @@ namespace Swihoni.Sessions
                       serverSession = m_SessionHistory.ClaimNext();
             CopyFromPreviousSession(previousServerSession, serverSession);
 
-            ConfigManagerBase.UpdateSessionConfig(serverSession);
+            DefaultConfig.UpdateSessionConfig(serverSession);
             base.Tick(tick, timeUs, durationUs);
 
             var serverStamp = serverSession.Require<ServerStampComponent>();

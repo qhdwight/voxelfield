@@ -19,7 +19,7 @@ namespace Voxelfield.Interface
 
         public override void Render(in SessionContext context)
         {
-            bool isVisible = ((ConfigManager) ConfigManagerBase.Active).enableMiniMap;
+            bool isVisible = Config.Active.enableMiniMap;
             if (isVisible && context.IsValidLocalPlayer(out Container localPlayer, out byte _)
                           && localPlayer.With(out MoveComponent move) && localPlayer.With(out CameraComponent cam))
             {
