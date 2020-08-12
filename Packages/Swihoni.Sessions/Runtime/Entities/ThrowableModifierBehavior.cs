@@ -100,8 +100,8 @@ namespace Swihoni.Sessions.Entities
 
                 bool justPopped = m_LastElapsedUs < throwable.popTimeUs;
 
-                if (m_Damage > 0 && (m_Interval > 0u || justPopped))
-                    HurtNearby(context, throwable, justPopped);
+                if (m_Interval > 0u || justPopped)
+                    JustPopped(context, throwable);
             }
             else
             {
@@ -115,7 +115,8 @@ namespace Swihoni.Sessions.Entities
                     {
                         throwable.popTimeUs.Value = throwable.thrownElapsedUs;
                         resetContact = false;
-                        if (m_Damage > 0) HurtNearby(context, throwable, true);
+                        JustPopped(context, throwable);
+                        
                     }
                     if (collisionType == CollisionType.World && !m_ExplodeOnContact)
                     {
@@ -146,7 +147,7 @@ namespace Swihoni.Sessions.Entities
                 entity.Clear();
         }
 
-        private void HurtNearby(in SessionContext context, ThrowableComponent throwable, bool justPopped)
+        private void HurtNearby(in SessionContext context, ThrowableComponent throwable)
         {
             int count = Physics.OverlapSphereNonAlloc(transform.position, m_Radius, m_OverlappingColliders, m_Mask);
             for (var i = 0; i < count; i++)
@@ -165,10 +166,13 @@ namespace Swihoni.Sessions.Entities
                     context.session.GetModifyingMode().InflictDamage(damageContext);
                 }
             }
-            if (justPopped) JustPopped(context);
         }
 
-        protected virtual void JustPopped(in SessionContext context) => context.session.Injector.OnThrowablePopped(this);
+        protected virtual void JustPopped(in SessionContext context, ThrowableComponent throwable)
+        {
+            HurtNearby(context, throwable);
+            context.session.Injector.OnThrowablePopped(this);
+        }
 
         private byte CalculateDamage(in SessionContext context)
         {

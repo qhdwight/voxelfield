@@ -210,6 +210,13 @@ namespace Swihoni.Components
             return false;
         }
 
+        public bool CompareSet(PropertyBase<T> other)
+        {
+            if (this == other) return false;
+            other.SetTo(this);
+            return true;
+        }
+
         public bool TryWithValue(out T value)
         {
             if (WithValue)

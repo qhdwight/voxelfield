@@ -69,9 +69,7 @@ namespace Voxelfield.Interface
             isActive = isActive && m_PlayerWantsVisible;
 
             if (isActive && localPlayer.With(out MoneyComponent money) && money.count.WithValue)
-            {
                 m_MoneyText.StartBuild().Append("$").Append(money.count).Commit(m_MoneyText);
-            }
             SetInterfaceActive(isActive);
         }
 

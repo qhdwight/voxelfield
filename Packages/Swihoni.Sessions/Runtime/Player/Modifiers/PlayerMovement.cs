@@ -15,9 +15,10 @@ namespace Swihoni.Sessions.Player.Modifiers
         private const float DefaultDownSpeed = -0.01f, RaycastOffset = 0.1f;
 
         public const byte Upright = 0, Crouched = 1;
+        private const int NoDetectionLayer = 2, PlayerModifierLayer = 9;
 
         private readonly RaycastHit[] m_CachedGroundHits = new RaycastHit[1];
-        private readonly Collider[] m_CachedContactColliders = new Collider[2];
+        private readonly Collider[] m_CachedContactColliders = new Collider[1];
 
         [SerializeField] private Transform m_MoveTransform = default;
 
@@ -44,6 +45,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         [SerializeField] private LayerMask m_GroundMask = default;
 
         private CharacterController m_Controller;
+        private GameObject m_ControllerGameObject;
         private CharacterControllerListener m_ControllerListener;
         private float m_ControllerHeight;
         private Vector3 m_ControllerCenter;
@@ -58,7 +60,8 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             m_Controller = m_MoveTransform.GetComponent<CharacterController>();
             m_ControllerListener = m_MoveTransform.GetComponent<CharacterControllerListener>();
-            m_Controller.gameObject.SetActive(false);
+            m_ControllerGameObject = m_Controller.gameObject;
+            m_ControllerGameObject.SetActive(false);
             m_ControllerHeight = m_Controller.height;
             m_ControllerCenter = m_Controller.center;
         }
@@ -148,7 +151,15 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         private void ModifyStatus(MoveComponent move, InputFlagProperty inputs, float duration)
         {
-            if (inputs.GetInput(PlayerInput.Crouch))
+            bool UprightBlocked()
+            {
+                m_ControllerGameObject.layer = NoDetectionLayer;
+                int count = Physics.RaycastNonAlloc(move.position.Value + new Vector3 {y = RaycastOffset}, Vector3.up,
+                                                    m_CachedGroundHits, m_ControllerHeight - RaycastOffset * 2, m_GroundMask);
+                m_ControllerGameObject.layer = PlayerModifierLayer;
+                return count > 0;
+            }
+            if (inputs.GetInput(PlayerInput.Crouch) || UprightBlocked())
             {
                 move.normalizedCrouch.Value += duration / m_CrouchDuration;
                 if (move.normalizedCrouch > 1.0f) move.normalizedCrouch.Value = 1.0f;
@@ -179,12 +190,13 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             Vector3 position = m_MoveTransform.position;
             int capsuleCastCount = OverlapGround(position);
+            m_ControllerGameObject.layer = NoDetectionLayer;
             int downwardCastCount = Physics.RaycastNonAlloc(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
                                                             float.PositiveInfinity, m_GroundMask);
-            m_CachedGroundHits.SortByDistance(downwardCastCount);
+            m_ControllerGameObject.layer = PlayerModifierLayer;
             float floorDistance = m_CachedGroundHits.First().distance,
                   slopeAngle = Vector3.Angle(Hit.normal, Vector3.up);
-            bool isGrounded = m_Controller.isGrounded || capsuleCastCount == 2, // Always have 1 due to ourselves. 2 means we are touching something else
+            bool isGrounded = m_Controller.isGrounded || capsuleCastCount > 0, // Always have 1 due to ourselves. 2 means we are touching something else
                  withinAngleLimit = isGrounded && slopeAngle < m_Controller.slopeLimit,
                  applyStick = endingVelocity.y < 0.0f && withinAngleLimit; // Only on way down, if done on way up it negates jump
 
@@ -228,9 +240,11 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
 
             // Prevent sticking to ceiling
+            m_ControllerGameObject.layer = NoDetectionLayer;
             if (!isGrounded && endingVelocity.y > 0.0f && Physics.RaycastNonAlloc(position + new Vector3 {y = m_Controller.height},
                                                                                   Vector3.up, m_CachedGroundHits, RaycastOffset, m_GroundMask) > 0)
                 endingVelocity.y = 0.0f;
+            m_ControllerGameObject.layer = PlayerModifierLayer;
 
             Vector3 motion = (initialVelocity + endingVelocity) / 2.0f * duration;
 
@@ -238,7 +252,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (inputs.GetInput(PlayerInput.Crouch) && !inputs.GetInput(PlayerInput.Jump) && isGrounded)
             {
                 int projectedCount = OverlapGround(position + motion);
-                if (projectedCount == 1)
+                if (projectedCount == 0)
                 {
                     move.position.Value = position;
                     move.velocity.Value = Vector3.zero;
@@ -262,9 +276,12 @@ namespace Swihoni.Sessions.Player.Modifiers
         private int OverlapGround(in Vector3 position)
         {
             float radius = m_Controller.radius - 0.01f;
-            return Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance},
-                                                  position + new Vector3 {y = m_Controller.height / 2.0f},
-                                                  radius, m_CachedContactColliders, m_GroundMask);
+            m_ControllerGameObject.layer = NoDetectionLayer;
+            int count = Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance},
+                                                       position + new Vector3 {y = m_Controller.height / 2.0f},
+                                                       radius, m_CachedContactColliders, m_GroundMask);
+            m_ControllerGameObject.layer = PlayerModifierLayer;
+            return count;
         }
 
         private float CalculateMaxSpeed(Container player, InputFlagProperty inputs, float slopeAngle)

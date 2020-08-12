@@ -11,7 +11,7 @@ namespace Voxelfield.Item
     {
         private static readonly Color32 Sand = new Color32(253, 255, 224, 255);
 
-        protected override void JustPopped(in SessionContext context)
+        protected override void JustPopped(in SessionContext context, ThrowableComponent throwable)
         {
             var server = (ServerInjector) context.session.Injector;
 
@@ -19,7 +19,7 @@ namespace Voxelfield.Item
             var change = new VoxelChange
             {
                 position = center, form = VoxelVolumeForm.Cylindrical,
-                color = Sand, magnitude = m_Radius, texture = VoxelTexture.Speckled, natural = false
+                color = Sand, magnitude = m_Radius, texture = VoxelTexture.Speckled, natural = false, isBreathable = true
             };
             server.ApplyVoxelChanges(change);
         }

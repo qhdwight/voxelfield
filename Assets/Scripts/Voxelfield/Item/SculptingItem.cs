@@ -131,11 +131,12 @@ namespace Voxelfield.Item
 
         private bool NoSolution(Container player, in Position3Int position, float radius = 0.9f)
         {
-            if (!m_PreventPlacingOnSelf) return false;
-
-            var move = player.Require<MoveComponent>();
-            Vector3 eyePosition = move.GetPlayerEyePosition();
-            return ExtraMath.SquareDistance(eyePosition, position) < radius * radius;
+            return false;
+            // if (!m_PreventPlacingOnSelf) return false;
+            //
+            // var move = player.Require<MoveComponent>();
+            // Vector3 eyePosition = move.GetPlayerEyePosition();
+            // return ExtraMath.SquareDistance(eyePosition, position) < radius * radius;
 
             // var playerCollider = session.GetPlayerModifier(player, playerId).GetComponentInChildren<PlayerTrigger>().GetComponent<Collider>();
             // Chunk chunk = ChunkManager.Singleton.GetChunkFromWorldPosition((Position3Int) playerCollider.transform.position);

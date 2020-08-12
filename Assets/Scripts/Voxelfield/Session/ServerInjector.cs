@@ -11,12 +11,15 @@ using Steamworks;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Entities;
+using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
+using Voxels.Map;
 
 #if VOXELFIELD_RELEASE_SERVER
 using Swihoni.Sessions.Modes;
@@ -318,10 +321,10 @@ namespace Voxelfield.Session
 
         protected override void OnMapChange() => m_MasterChanges.Zero();
 
-        protected override void OnSettingsTick(Container session)
+        protected override void OnPreTick(Container session)
         {
             if (m_UseSteam) SteamServer.RunCallbacks();
-            base.OnSettingsTick(session);
+            base.OnPreTick(session);
         }
 
         public override bool ShouldSetupPlayer(Container serverPlayer) => base.ShouldSetupPlayer(serverPlayer)
@@ -331,6 +334,12 @@ namespace Voxelfield.Session
 
         private static readonly RaycastHit[] CachedHits = new RaycastHit[2];
 
+        private static void Suffocate(in SessionContext context, byte damage = 1)
+        {
+            var damageContext = new DamageContext(context, context.playerId, context.player, damage, "Suffocation");
+            context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
+        }
+        
         public override void OnServerMove(in SessionContext context, MoveComponent move)
         {
             if (context.player.Require<HealthProperty>().IsDead) return;
@@ -340,20 +349,27 @@ namespace Voxelfield.Session
             /* If the normal of the contact (of the upwards raycast) is aligned with the upward vector, it is a backface and we are in the terrain */
             Physics.queriesHitBackfaces = true;
             {
-                int count = Physics.RaycastNonAlloc(move + new Vector3 {y = 0.1f}, Vector3.up, CachedHits, float.PositiveInfinity, 1 << 15);
-                if (CachedHits.TryClosest(count, out RaycastHit hit) && hit.normal.y > Mathf.Epsilon)
+                for (var f = 0.1f; f < move.GetPlayerHeight(); f++)
                 {
-                    float distance = hit.distance;
-                    // if (distance > 4.0f)
-                    // {
-                    //     var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");
-                    //     context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
-                    // }
-                    // else
-                    move.position.Value += new Vector3 {y = distance + 0.05f};
+                    Vector3 origin = move + new Vector3 {y = f};
+                    int count = Physics.RaycastNonAlloc(origin, Vector3.up, CachedHits, float.PositiveInfinity, 1 << 15);
+                    if (CachedHits.TryClosest(count, out RaycastHit hit) && hit.normal.y > Mathf.Epsilon)
+                    {
+                        float distance = hit.distance;
+                        move.position.Value += new Vector3 {y = distance + 0.05f};
+                        if (f > 1.0f && ChunkManager.Singleton.GetVoxel((Position3Int) origin) is Voxel voxel && !voxel.IsBreathable)
+                            Suffocate(context, 75);
+                        break;
+                    }
                 }
             }
             Physics.queriesHitBackfaces = false;
+            
+            if (MapManager.Singleton.Map.terrainGeneration.upperBreakableHeight.TryWithValue(out int upperLimit)
+             && context.sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.SecureArea
+             && context.sessionContainer.Require<SecureAreaComponent>().roundTime.WithValue
+             && move.position.Value.y > upperLimit + 3) Suffocate(context);
+            
             // Vector3 normal = context.session.GetPlayerModifier(context.player, context.playerId).Movement.Hit.
             // Debug.Log(normal);
             // if (Vector3.Dot(normal, Vector3.down) > 0.0f)

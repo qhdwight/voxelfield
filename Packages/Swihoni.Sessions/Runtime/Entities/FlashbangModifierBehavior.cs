@@ -7,7 +7,7 @@ namespace Swihoni.Sessions.Entities
     {
         [SerializeField] private AnimationCurve m_DistanceCurve = AnimationCurve.Linear(0.0f, 1.0f, 200.0f, 0.0f);
 
-        protected override void JustPopped(in SessionContext context)
+        protected override void JustPopped(in SessionContext context, ThrowableComponent throwable)
         {
             Vector3 center = transform.position;
             context.ForEachActivePlayer((in SessionContext playerContext) =>

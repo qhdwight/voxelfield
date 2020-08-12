@@ -72,11 +72,7 @@ namespace Voxelfield.Session
             {
                 // OrderedVoxelChangesProperty c = MapManager.Singleton.Map.voxelChanges, clone = c.Clone();
                 // c.Clear();
-
-                // foreach (VoxelChange voxel in clone.List) 
-                //     if (voxel.form != VoxelVolumeForm.Single)
-                //         changes.Append(voxel);
-
+                
                 // foreach (VoxelChange change in clone.List)
                 // {
                 //     VoxelChange v = change;
@@ -90,6 +86,16 @@ namespace Voxelfield.Session
                 //     c.Append(v);
                 // }
             });
+            SetCommand("map_remove_singles", arguments =>
+            {
+                OrderedVoxelChangesProperty c = MapManager.Singleton.Map.voxelChanges, clone = c.Clone();
+                c.Clear();
+
+                foreach (VoxelChange voxel in clone.List) 
+                    if (voxel.form != VoxelVolumeForm.Single)
+                        c.Append(voxel);
+            });
+            
             SetCommand("serve", arguments =>
             {
                 Server server = StartServer(GetEndPoint(arguments));

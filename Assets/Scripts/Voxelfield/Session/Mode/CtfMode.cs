@@ -159,13 +159,7 @@ namespace Voxelfield.Session.Mode
                 byte team = context.player.Require<TeamProperty>();
                 KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
                 int spawnIndex = Random.Range(0, teamSpawns.Length);
-                Vector3 spawnPosition = teamSpawns[spawnIndex].Key;
-                for (var _ = 0; _ < 16; _++, spawnPosition += new Vector3 {y = 3.0f})
-                {
-                    if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
-                        return hit.point + new Vector3 {y = 0.1f};
-                }
-                throw new Exception("No non-obstructed spawn points");
+                return AdjustSpawn(teamSpawns[spawnIndex].Key);
             }
             catch (Exception)
             {

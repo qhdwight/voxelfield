@@ -64,13 +64,18 @@ namespace Swihoni.Components
         public static string ToSnakeCase(this string @string)
             => string.Concat(@string.Select((c, i) => i > 0 && (char.IsUpper(c) || char.IsNumber(c)) ? $"_{c}" : $"{c}")).ToLower();
 
-        public static DualDictionary<T, string> GetNameMap<T>(this Type type)
+        public static string ToDisplayCase(this string @string)
+            => string.Concat(@string.Select((c, i) => i > 0 && (char.IsUpper(c) || char.IsNumber(c)) ? $" {c}" : $"{c}"));
+
+        public static DualDictionary<T, string> GetNameMap<T>(this Type type) => GetNameMap<T>(type, ToSnakeCase);
+
+        public static DualDictionary<T, string> GetNameMap<T>(this Type type, Func<string, string> func)
             => new DualDictionary<T, string>(type.IsEnum
                                                  ? Enum.GetValues(type).OfType<T>().Distinct()
                                                        .ToDictionary(@enum => @enum,
-                                                                     @enum => @enum.ToString().ToSnakeCase())
+                                                                     @enum => func(@enum.ToString()))
                                                  : type.GetFields(BindingFlags.Static | BindingFlags.Public)
                                                        .ToDictionary(field => (T) field.GetValue(null),
-                                                                     field => field.Name.ToSnakeCase()));
+                                                                     field => func(field.Name)));
     }
 }

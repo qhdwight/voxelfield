@@ -79,9 +79,9 @@ namespace Swihoni.Sessions.Player.Visualization
 
             bool withHealth = player.With(out HealthProperty health),
                  withMove = player.With(out MoveComponent move),
-                 isVisible = !withHealth || health.WithValue;
+                 isVisible = (!withHealth || health.WithValue) && (!withMove || move.position.WithValue);
 
-            bool isInFpv = isLocalPlayer && (!withHealth || health.IsActiveAndAlive);
+            bool isInFpv = isLocalPlayer && (!withHealth || health.IsAlive);
 
             foreach (Renderer render in m_TpvRenders)
             {
@@ -89,13 +89,8 @@ namespace Swihoni.Sessions.Player.Visualization
                 render.shadowCastingMode = isInFpv ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             }
 
-            bool isAnimatorEnabled = false, isRagdollEnabled = false;
-            CameraComponent playerCamera = default;
-            if (isVisible)
-            {
-                isAnimatorEnabled = health.IsAlive && player.With(out playerCamera) && withMove && move.position.WithValue;
-                isRagdollEnabled = health.IsDead && withMove && move.position.WithValue;
-            }
+            bool isAnimatorEnabled = player.With(out CameraComponent playerCamera) && isVisible && health.IsAlive,
+                 isRagdollEnabled = isVisible && health.IsDead;
 
             if (m_RagdollRigidbodies != null) SetRagdollEnabled(isRagdollEnabled);
             m_Animator.enabled = isAnimatorEnabled;

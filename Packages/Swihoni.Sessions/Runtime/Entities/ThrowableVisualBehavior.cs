@@ -16,15 +16,14 @@ namespace Swihoni.Sessions.Entities
             base.Setup(manager);
             m_Particles = GetComponentsInChildren<ParticleSystem>();
             m_Modifier = (ThrowableModifierBehavior) m_Manager.GetModifierPrefab(id);
-            foreach (ParticleSystem particle in m_Particles) particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
 
         public override void SetActive(bool isActive)
         {
-            if (isActive)
-            {
-                m_LastContactElapsedUs = 0u;
-            }
+            m_LastContactElapsedUs = 0u;
+            m_LastThrownElapsedUs = uint.MaxValue;
+            foreach (ParticleSystem particle in m_Particles)
+                particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
             if (m_ContinuousPopAudioSource) m_ContinuousPopAudioSource.Stop();
         }
 

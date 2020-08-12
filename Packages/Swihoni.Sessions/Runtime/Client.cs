@@ -112,7 +112,7 @@ namespace Swihoni.Sessions
             Container latestSession = GetLatestSession();
             if (GetLocalPlayerId(latestSession, out int localPlayerId))
             {
-                m_Injector.OnSettingsTick(latestSession);
+                m_Injector.OnPreTick(latestSession);
                 Predict(tick, timeUs, localPlayerId); // Advances commands
             }
             Profiler.EndSample();

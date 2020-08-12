@@ -82,13 +82,13 @@ MonoBehaviour:
       m_Value: 7000000
     roundDurationUs:
       m_Flags: 1
-      m_Value: 240000000
+      m_Value: 120000000
     buyDurationUs:
       m_Flags: 1
-      m_Value: 10000000
+      m_Value: 20000000
     secureDurationUs:
       m_Flags: 1
-      m_Value: 20000000
+      m_Value: 25000000
     playerCount:
       m_Flags: 1
       m_Value: 4

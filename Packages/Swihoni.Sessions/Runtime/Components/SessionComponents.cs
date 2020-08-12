@@ -159,6 +159,7 @@ namespace Swihoni.Sessions.Components
     {
         public const byte Deathmatch = 0, Showdown = 1, Ctf = 2, SecureArea = 3, Designer = 4;
         public static DualDictionary<byte, string> Names { get; } = typeof(ModeIdProperty).GetNameMap<byte>();
+        public static DualDictionary<byte, string> DisplayNames { get; } = typeof(ModeIdProperty).GetNameMap<byte>(ComponentExtensions.ToDisplayCase);
 
         public ModeIdProperty(byte value) : base(value) { }
         public ModeIdProperty() { }

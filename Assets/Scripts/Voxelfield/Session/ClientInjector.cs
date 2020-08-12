@@ -50,7 +50,7 @@ namespace Voxelfield.Session
             if (!shouldApply) return;
 
             ApplyStoredChanges();
-            if (tickSkipped) Debug.LogError($"Did not receive voxel changes for {m_Pointer}");
+            if (tickSkipped) Debug.LogError($"Did not receive voxel changes for {m_Pointer.Value}");
             m_Pointer.Value = serverTick;
         }
 

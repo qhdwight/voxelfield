@@ -17,7 +17,7 @@ namespace Voxels
     {
         public Position3Int? position;
         public byte? texture, density, orientation;
-        public bool? hasBlock, isBreakable, natural, replace, modifiesBlocks, noRandom, revert;
+        public bool? hasBlock, isBreakable, natural, replace, modifiesBlocks, noRandom, revert, isBreathable;
         public Color32? color;
         public float? magnitude, yaw;
         public VoxelVolumeForm? form;
@@ -39,6 +39,7 @@ namespace Voxels
             if (change.replace.HasValue) replace = change.replace.Value;
             if (change.modifiesBlocks.HasValue) modifiesBlocks = change.modifiesBlocks.Value;
             if (change.revert.HasValue) revert = change.revert.Value;
+            if (change.isBreathable.HasValue) isBreathable = change.isBreathable.Value;
             if (change.noRandom.HasValue) noRandom = change.noRandom.Value;
             if (change.color.HasValue) color = change.color.Value;
             if (change.magnitude.HasValue) magnitude = change.magnitude.Value;

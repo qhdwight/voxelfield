@@ -32,6 +32,7 @@ namespace Voxels
         Block = 1,
         Breakable = 2,
         Natural = 4,
+        Breathable = 8
     }
 
     public struct Voxel
@@ -73,6 +74,8 @@ namespace Voxels
                 else flags &= ~VoxelFlags.Breakable;
             }
         }
+        
+        public bool IsUnbreakable => !IsBreakable;
 
         public bool IsNatural
         {
@@ -83,9 +86,17 @@ namespace Voxels
                 else flags &= ~VoxelFlags.Natural;
             }
         }
-
-        public bool IsUnbreakable => !IsBreakable;
-
+        
+        public bool IsBreathable
+        {
+            get => (flags & VoxelFlags.Breathable) == VoxelFlags.Breathable;
+            private set
+            {
+                if (value) flags |= VoxelFlags.Breathable;
+                else flags &= ~VoxelFlags.Breathable;
+            }
+        }
+        
         public void SetVoxelData(in VoxelChange change)
         {
             if (change.texture.HasValue) texture = change.texture.Value;
@@ -94,6 +105,7 @@ namespace Voxels
             if (change.isBreakable.HasValue) IsBreakable = change.isBreakable.Value;
             if (change.orientation.HasValue) orientation = change.orientation.Value;
             if (change.natural.HasValue) IsNatural = change.natural.Value;
+            if (change.isBreathable.HasValue) IsBreathable = change.isBreathable.Value;
             if (change.color.HasValue) color = change.color.Value;
         }
 

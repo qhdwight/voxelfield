@@ -7,13 +7,30 @@ using DiscordClient = Discord.Discord;
 
 namespace Voxelfield.Integration
 {
+    public delegate void ModifyActivity(ref Activity activity);
+
     public class DiscordManager : SingletonBehavior<DiscordManager>
     {
         public const long ClientId = 742661586484854824;
 
         public static DiscordClient Client { get; private set; }
         public static ActivityManager ActivityManager => Client?.GetActivityManager();
-        
+
+        public static void SetActivity(ModifyActivity modify)
+        {
+            if (ActivityManager == null) return;
+            var activity = new Activity
+            {
+                Type = ActivityType.Playing,
+                Timestamps = new ActivityTimestamps {Start = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()},
+                Assets = new ActivityAssets {LargeImage = "logo"}
+            };
+            modify(ref activity);
+            ActivityManager.UpdateActivity(activity, result => Debug.Log($"[Discord] Setting status to: {activity.State} result: {result}"));
+        }
+
+        public static void SetActivity(string state) => SetActivity((ref Activity activity) => activity.State = state);
+
         protected override void Awake()
         {
             base.Awake();

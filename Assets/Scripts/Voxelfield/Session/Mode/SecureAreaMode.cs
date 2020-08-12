@@ -217,12 +217,6 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        private void FirstRound(in SessionContext context, SecureAreaComponent secureArea)
-        {
-            NextRound(context, secureArea);
-            context.sessionContainer.Require<DualScoresComponent>().Zero();
-        }
-
         public override void ModifyPlayer(in SessionContext context)
         {
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
@@ -260,7 +254,6 @@ namespace Voxelfield.Session.Mode
             if (begin) player.Require<TeamProperty>().Value = (byte) ((context.playerId + 1) % 2);
             if (secureArea.roundTime.WithValue)
             {
-                player.ZeroIfWith<StatsComponent>();
                 var health = player.Require<HealthProperty>();
                 var money = player.Require<MoneyComponent>();
                 var inventory = player.Require<InventoryComponent>();
@@ -309,7 +302,7 @@ namespace Voxelfield.Session.Mode
                 int spawnIndex = RandomIndices[index];
                 RandomIndices.RemoveAt(index);
 
-                return teamSpawns[spawnIndex].Key;
+                return AdjustSpawn(teamSpawns[spawnIndex].Key);
             }
             catch (Exception)
             {
@@ -317,10 +310,13 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        private void NextRound(in SessionContext context, SecureAreaComponent secureArea)
+        private void FirstRound(in SessionContext context, SecureAreaComponent secureArea) => NextRound(context, secureArea, true);
+
+        private void NextRound(in SessionContext context, SecureAreaComponent secureArea, bool isFirstRound = false)
         {
             var scores = context.sessionContainer.Require<DualScoresComponent>();
-            if (AtMaxRounds(secureArea, scores)) return;
+            if (isFirstRound) scores.Zero();
+            else if (AtMaxRounds(secureArea, scores)) return;
 
             secureArea.roundTime.Value = m_Config.roundEndDurationUs + m_Config.roundDurationUs + m_Config.buyDurationUs;
             foreach (SiteComponent site in secureArea.sites)
@@ -331,6 +327,7 @@ namespace Voxelfield.Session.Mode
             context.ForEachActivePlayer((in SessionContext playerModifyContext) =>
             {
                 SpawnPlayer(playerModifyContext);
+                if (isFirstRound) playerModifyContext.player.ZeroIfWith<StatsComponent>();
                 if (secureArea.lastWinningTeam.WithValue)
                 {
                     Container player = playerModifyContext.player;
@@ -345,8 +342,13 @@ namespace Voxelfield.Session.Mode
         public override bool ShowScoreboard(in SessionContext context)
             => AtMaxRounds(context.sessionContainer.Require<SecureAreaComponent>(), context.sessionContainer.Require<DualScoresComponent>());
 
+        private static int _int;
+
         private bool AtMaxRounds(SecureAreaComponent secureArea, DualScoresComponent scores)
-            => secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == m_Config.maxRounds;
+        {
+            _int = m_Config.maxRounds;
+            return secureArea.roundTime.WithValue && scores.Any(score => score == _int);
+        }
 
         public override void Render(in SessionContext context)
         {

@@ -34,7 +34,7 @@ namespace Voxelfield.Interface
         private void BuildProgress(SecureAreaComponent secureArea)
         {
             var isProgressVisible = false;
-            if (secureArea.roundTime.WithValue && secureArea.RedInside(out SiteComponent site))
+            if (secureArea.roundTime.WithValue && secureArea.roundTime > m_SecureAreaMode.RoundEndDurationUs && secureArea.RedInside(out SiteComponent site))
             {
                 if (site.timeUs < m_SecureAreaMode.SecureDurationUs && site.timeUs > 0u)
                 {

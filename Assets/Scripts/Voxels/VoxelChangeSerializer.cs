@@ -145,6 +145,11 @@ namespace Voxels
 
             if (change.isUndo) FlagUtil.SetFlag(ref flags, 12);
             /* Flags */
+            if (change.isBreathable is bool isBreathable)
+            {
+                FlagUtil.SetFlag(ref flags, 16);
+                if (isBreathable) FlagUtil.SetFlag(ref flags, 17);
+            }
             if (change.revert is bool revert)
             {
                 FlagUtil.SetFlag(ref flags, 18);
@@ -225,6 +230,7 @@ namespace Voxels
             // if (FlagUtil.HasFlag(flags, 12)) change.isBreakable = FlagUtil.HasFlag(flags, 13);
             // if (FlagUtil.HasFlag(flags, 14)) change.natural = FlagUtil.HasFlag(flags, 15);
             change.isUndo = FlagUtil.HasFlag(flags, 12);
+            if (FlagUtil.HasFlag(flags, 16)) change.isBreathable = FlagUtil.HasFlag(flags, 17);
             if (FlagUtil.HasFlag(flags, 18)) change.revert = FlagUtil.HasFlag(flags, 19);
             if (FlagUtil.HasFlag(flags, 20)) change.noRandom = FlagUtil.HasFlag(flags, 21);
             if (FlagUtil.HasFlag(flags, 22)) change.modifiesBlocks = FlagUtil.HasFlag(flags, 23);

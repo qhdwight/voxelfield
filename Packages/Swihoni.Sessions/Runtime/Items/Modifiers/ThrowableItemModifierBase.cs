@@ -28,7 +28,15 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (item.status.id == ItemStatusId.PrimaryUsing)
             {
                 Release(context, item);
-                if (item.ammoInReserve == 0 && item.id != ItemId.C4) return ItemStatusId.RequestRemoval;
+                if (item.ammoInReserve == 0)
+                {
+                    if (item.id != ItemId.C4) return ItemStatusId.RequestRemoval;
+                }
+                else
+                {
+                    inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
+                    inventory.equipStatus.elapsedUs.Value = 0u;
+                }
             }
             else if (item.status.id == ItemStatusId.SecondaryUsing && item.id == ItemId.C4 && item.ammoInReserve == 0)
                 return ItemStatusId.RequestRemoval;

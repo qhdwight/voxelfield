@@ -32,7 +32,18 @@ namespace Swihoni.Sessions.Player.Modifiers
         public override void ModifyChecked(in SessionContext context)
         {
             Container player = context.player;
-            if (player.Without(out InventoryComponent inventory) || player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
+            if (player.Without(out InventoryComponent inventory)) return;
+
+            if (inventory.tracerTimeUs.WithValue)
+                if (inventory.tracerTimeUs > context.durationUs) inventory.tracerTimeUs.Value -= context.durationUs;
+                else
+                {
+                    inventory.tracerTimeUs.Clear();
+                    inventory.tracerStart.Clear();
+                    inventory.tracerEnd.Clear();
+                }
+
+            if (player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
             TryExecuteCommands(context);
 
@@ -304,18 +315,18 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         public static byte? TryAddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
         {
-            byte? _openIndex;
+            byte? openIndex;
             if (ItemAssetLink.GetModifier(itemId) is ThrowableItemModifierBase
-             && (_openIndex = FindItem(inventory, item => item.id.WithoutValue || item.id == itemId)) is byte existingIndex) // Try to stack throwables if possible
+             && (openIndex = FindItem(inventory, item => item.id.WithoutValue || item.id == itemId)) is byte existingIndex) // Try to stack throwables if possible
             {
                 ItemComponent itemInIndex = inventory[existingIndex];
-                bool addingToExisting = itemInIndex.id.WithValue && itemInIndex.id == itemId;
+                bool addingToExisting = itemInIndex.id.WithValue && itemInIndex.id == itemId && itemInIndex.ammoInReserve <= 1;
                 if (addingToExisting) count += itemInIndex.ammoInReserve;
             }
-            else _openIndex = FindEmpty(inventory);
-            if (_openIndex is byte openIndex)
-                SetItemAtIndex(inventory, itemId, openIndex, count);
-            return _openIndex;
+            else openIndex = FindEmpty(inventory);
+            if (openIndex is byte itemIndex)
+                SetItemAtIndex(inventory, itemId, itemIndex, count);
+            return openIndex;
         }
 
         public static void RefillAllAmmo(InventoryComponent inventory)
@@ -352,17 +363,22 @@ namespace Swihoni.Sessions.Player.Modifiers
                 }
                 return;
             }
+            bool keepStatus = inventory.equippedIndex.WithValueEqualTo((byte) index) && item.id.WithValueEqualTo(itemId);
+            ItemModifierBase itemModifier = ItemAssetLink.GetModifier(itemId);
+            switch (itemModifier)
+            {
+                case GunModifierBase gunModifier:
+                    item.ammoInMag.Value = gunModifier.MagSize;
+                    item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
+                    break;
+                case ThrowableItemModifierBase _:
+                    item.ammoInReserve.Value = count;
+                    break;
+            }
+            if (keepStatus) return;
             item.id.Value = itemId;
             item.status.id.Value = ItemStatusId.Idle;
             item.status.elapsedUs.Value = 0u;
-            ItemModifierBase itemModifier = ItemAssetLink.GetModifier(itemId);
-            if (itemModifier is GunModifierBase gunModifier)
-            {
-                item.ammoInMag.Value = gunModifier.MagSize;
-                item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
-            }
-            if (itemModifier is ThrowableItemModifierBase)
-                item.ammoInReserve.Value = count;
             if (inventory.HasNoItemEquipped)
             {
                 inventory.equippedIndex.SetToNullable(FindReplacement(inventory));

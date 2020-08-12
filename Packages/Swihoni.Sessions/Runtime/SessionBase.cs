@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -53,7 +54,7 @@ namespace Swihoni.Sessions
     {
         protected internal SessionBase Session { get; set; }
 
-        protected internal virtual void OnSettingsTick(Container session) { }
+        protected internal virtual void OnPreTick(Container session) { }
 
         protected internal virtual void OnClientReceive(ServerSessionContainer serverSession) { }
 
@@ -472,8 +473,13 @@ namespace Swihoni.Sessions
             return ray;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetPlayerHeight(this MoveComponent move)
+            => Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 GetPlayerEyePosition(this MoveComponent move)
-            => move.position + new Vector3 {y = Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch)};
+            => move.position + new Vector3 {y = move.GetPlayerHeight()};
 
         public static StringBuilder AppendRealizedUsername(this StringBuilder builder, Container player)
             => player.WithPropertyWithValue(out SteamIdProperty steamId)

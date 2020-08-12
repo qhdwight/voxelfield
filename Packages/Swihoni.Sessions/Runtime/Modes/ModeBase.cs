@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -301,5 +302,15 @@ namespace Swihoni.Sessions.Modes
         public virtual uint ItemEntityLifespanUs => 20_000_000u;
 
         public virtual bool ShowScoreboard(in SessionContext context) => false;
+
+        protected static Vector3 AdjustSpawn(Vector3 spawn)
+        {
+            for (var _ = 0; _ < 16; _++, spawn.y += 3.0f)
+            {
+                if (Physics.Raycast(spawn, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
+                    return hit.point + new Vector3 {y = 0.1f};
+            }
+            throw new Exception("No non-obstructed spawn points");
+        }
     }
 }

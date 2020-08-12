@@ -100,7 +100,7 @@ namespace Swihoni.Sessions
             serverStamp.durationUs.Value = durationUs;
             Profiler.EndSample();
 
-            m_Injector.OnSettingsTick(serverSession);
+            m_Injector.OnPreTick(serverSession);
 
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
@@ -348,7 +348,9 @@ namespace Swihoni.Sessions
                         }
                         MergeTrustedFromCommands(serverPlayer, receivedClientCommands);
                     }
+#if !VOXELFIELD_RELEASE_SERVER
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
+#endif
 
                     var context = new SessionContext(this, serverSession, receivedClientCommands, clientId, serverPlayer,
                                                      durationUs: clientStamp.durationUs, tickDelta: tickDelta);

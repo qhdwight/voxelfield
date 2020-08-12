@@ -7,7 +7,9 @@ using LiteNetLib.Utils;
 using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions;
+using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using Voxelfield.Integration;
 using Voxels;
 using Voxels.Map;
 
@@ -30,6 +32,7 @@ namespace Voxelfield.Session
         protected AuthTicket m_SteamAuthenticationTicket;
 
         private bool m_IsLoading = true;
+        private readonly ModeIdProperty m_PreviousMode = new ModeIdProperty();
 
         protected bool TryGetSteamAuthTicket()
         {
@@ -59,20 +62,25 @@ namespace Voxelfield.Session
 
         protected virtual void OnMapChange() { }
 
-        protected override void OnSettingsTick(Container session)
+        protected override void OnPreTick(Container session)
         {
             var mapName = session.Require<VoxelMapNameProperty>();
             if (MapManager.Singleton.SetNamedMap(mapName)) OnMapChange();
+
+            if (session.Require<ModeIdProperty>().CompareSet(m_PreviousMode)) OnModeChange(session);
 
             MapLoadingStage stage = ChunkManager.Singleton.ProgressInfo.stage;
             if (stage == MapLoadingStage.Failed) throw new Exception("Map failed to load");
 
             m_IsLoading = mapName != MapManager.Singleton.Map.name || stage != MapLoadingStage.Completed;
-
-            if (!m_IsLoading)
-                foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
-                    modelBehavior.SetInMode(session);
+            if (m_IsLoading) return;
+            
+            foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
+                modelBehavior.SetInMode(session);
         }
+
+        private static void OnModeChange(Container session)
+            => DiscordManager.SetActivity($"In Match - {ModeIdProperty.DisplayNames.GetForward(session.Require<ModeIdProperty>())}");
 
         public override bool IsLoading(in SessionContext context) => m_IsLoading;
     }
