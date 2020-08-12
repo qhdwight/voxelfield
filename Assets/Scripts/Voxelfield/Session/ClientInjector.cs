@@ -52,6 +52,8 @@ namespace Voxelfield.Session
             ApplyStoredChanges();
             if (tickSkipped) Debug.LogError($"Did not receive voxel changes for {m_Pointer.Value}");
             m_Pointer.Value = serverTick;
+            
+            HandleMapReload(serverSession);
         }
 
         private void ApplyStoredChanges()

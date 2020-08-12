@@ -106,4 +106,4 @@ MonoBehaviour:
       m_Value: 800
     maxRounds:
       m_Flags: 1
-      m_Value: 10
+      m_Value: 9

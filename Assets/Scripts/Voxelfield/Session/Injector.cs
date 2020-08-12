@@ -82,7 +82,12 @@ namespace Voxelfield.Session
                 modelBehavior.SetInMode(session);
         }
 
-        public override void OnPostTick(Container session)
+        private static void OnModeChange(Container session)
+            => DiscordManager.SetActivity($"In Match - {ModeIdProperty.DisplayNames.GetForward(session.Require<ModeIdProperty>())}");
+
+        public override bool IsLoading(in SessionContext context) => m_IsLoading;
+
+        protected static void HandleMapReload(Container session)
         {
             var reload = session.Require<ReloadMapProperty>();
             if (reload.WithValueEqualTo(true))
@@ -91,10 +96,5 @@ namespace Voxelfield.Session
                 reload.Clear();
             }
         }
-
-        private static void OnModeChange(Container session)
-            => DiscordManager.SetActivity($"In Match - {ModeIdProperty.DisplayNames.GetForward(session.Require<ModeIdProperty>())}");
-
-        public override bool IsLoading(in SessionContext context) => m_IsLoading;
     }
 }

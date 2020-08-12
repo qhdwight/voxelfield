@@ -22,7 +22,6 @@ using Voxels;
 using Voxels.Map;
 
 #if VOXELFIELD_RELEASE_SERVER
-using Swihoni.Sessions.Modes;
 using Amazon;
 using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2;
@@ -383,6 +382,8 @@ namespace Voxelfield.Session
             // var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");
             // context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
         }
+        
+        public override void OnPostTick(Container session) => HandleMapReload(session);
 
         public override void ModifyPlayer(in SessionContext context)
         {

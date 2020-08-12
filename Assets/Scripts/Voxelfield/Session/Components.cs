@@ -30,6 +30,13 @@ namespace Voxelfield.Session
     public class DualScoresComponent : ArrayElement<ByteProperty>
     {
         public DualScoresComponent() : base(2) { }
+
+        public void Swap()
+        {
+            byte first = this[0];
+            this[0].Value = this[1];
+            this[1].Value = first;
+        }
     }
 
     /* Capture the flag */

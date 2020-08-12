@@ -267,7 +267,7 @@ namespace Voxelfield.Session.Mode
             var scores = context.sessionContainer.Require<DualScoresComponent>();
             Container player = context.player;
             if (begin) player.Require<TeamProperty>().Value = (byte) ((context.playerId + 1) % 2);
-            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds / 2)) player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
+            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds)) player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
             if (secureArea.roundTime.WithValue)
             {
                 HealthProperty health = player.H();
@@ -334,7 +334,7 @@ namespace Voxelfield.Session.Mode
             var isFirstRoundOfSecondHalf = false;
             var scores = context.sessionContainer.Require<DualScoresComponent>();
             if (isFirstRound) scores.Zero();
-            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds / 2)) isFirstRoundOfSecondHalf = true;
+            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds)) isFirstRoundOfSecondHalf = true;
             else if (AtRoundCount(secureArea, scores, m_Config.maxRounds)) return;
 
             secureArea.roundTime.Value = m_Config.roundEndDurationUs + m_Config.roundDurationUs + m_Config.buyDurationUs;
@@ -361,8 +361,12 @@ namespace Voxelfield.Session.Mode
                 }
             });
             context.sessionContainer.Require<EntityArrayElement>().Clear();
-            
-            if (isFirstRoundOfSecondHalf) context.sessionContainer.Require<ReloadMapProperty>().Set();
+
+            if (isFirstRoundOfSecondHalf)
+            {
+                scores.Swap();
+                context.sessionContainer.Require<ReloadMapProperty>().Set();
+            }
         }
 
         public override bool ShowScoreboard(in SessionContext context)
@@ -372,7 +376,7 @@ namespace Voxelfield.Session.Mode
 
         private bool AtPauseTime(SecureAreaComponent secureArea, DualScoresComponent scores)
             => AtRoundCount(secureArea, scores, m_Config.maxRounds)
-            || AtRoundSum(secureArea, scores, m_Config.maxRounds / 2) && secureArea.roundTime < m_Config.roundEndDurationUs;
+            || AtRoundSum(secureArea, scores, m_Config.maxRounds) && secureArea.roundTime < m_Config.roundEndDurationUs;
 
         private static bool AtRoundCount(SecureAreaComponent secureArea, DualScoresComponent scores, int count)
         {

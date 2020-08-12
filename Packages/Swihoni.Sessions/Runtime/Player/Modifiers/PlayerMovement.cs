@@ -174,7 +174,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             else
             {
                 float stateDuration = m_WalkStateDuration;
-                if (inputs.GetInput(PlayerInput.Crouch)) stateDuration /= m_CrouchSpeed / m_RunSpeed;
+                if (move.normalizedCrouch > Mathf.Epsilon) stateDuration /= m_CrouchSpeed / m_RunSpeed;
                 if (inputs.GetInput(PlayerInput.Walk)) stateDuration /= m_WalkMultiplier;
                 if (inputs.GetInput(PlayerInput.Sprint)) stateDuration /= m_SprintMultiplier;
                 move.normalizedMove.Value += duration / stateDuration;
@@ -206,7 +206,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             float wishSpeed = wishDirection.magnitude;
             wishDirection.Normalize();
 
-            float maxSpeed = CalculateMaxSpeed(player, inputs, slopeAngle);
+            float maxSpeed = CalculateMaxSpeed(player, move, inputs, slopeAngle);
 
             if (wishSpeed > maxSpeed) wishSpeed = maxSpeed;
             if (isGrounded && withinAngleLimit)
@@ -249,7 +249,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             Vector3 motion = (initialVelocity + endingVelocity) / 2.0f * duration;
 
             // Prevent player from walking off the side when crouching
-            if (inputs.GetInput(PlayerInput.Crouch) && !inputs.GetInput(PlayerInput.Jump) && isGrounded)
+            if (move.normalizedCrouch > Mathf.Epsilon && !inputs.GetInput(PlayerInput.Jump) && isGrounded)
             {
                 int projectedCount = OverlapGround(position + motion);
                 if (projectedCount == 0)
@@ -284,9 +284,9 @@ namespace Swihoni.Sessions.Player.Modifiers
             return count;
         }
 
-        private float CalculateMaxSpeed(Container player, InputFlagProperty inputs, float slopeAngle)
+        private float CalculateMaxSpeed(Container player, MoveComponent move, InputFlagProperty inputs, float slopeAngle)
         {
-            float maxSpeed = inputs.GetInput(PlayerInput.Crouch) ? m_CrouchSpeed : m_RunSpeed;
+            float maxSpeed = move.normalizedCrouch > Mathf.Epsilon ? m_CrouchSpeed : m_RunSpeed;
             if (inputs.GetInput(PlayerInput.Walk)) maxSpeed *= m_WalkMultiplier;
             if (inputs.GetInput(PlayerInput.Sprint)) maxSpeed *= m_SprintMultiplier;
             if (player.With(out InventoryComponent inventory) && inventory.WithItemEquipped(out ItemComponent equippedItem))
