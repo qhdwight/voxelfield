@@ -228,7 +228,7 @@ namespace Voxelfield.Session
             SessionBase.HandleCursorLockState();
             if (SessionBase.SessionCount == 0)
             {
-                Application.targetFrameRate = Screen.currentResolution.refreshRate;
+                Application.targetFrameRate = Screen.currentResolution.refreshRate + 1;
             }
             else
             {

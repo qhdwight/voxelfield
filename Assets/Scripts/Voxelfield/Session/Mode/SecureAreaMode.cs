@@ -93,8 +93,7 @@ namespace Voxelfield.Session.Mode
             if (damageContext.sessionContext.player.Require<TeamProperty>() != killer.Require<TeamProperty>())
             {
                 UShortProperty money = killer.Require<MoneyComponent>().count;
-                money.Value += m_Config.killMoney;
-                if (money.Value > MaxMoney) money.Value = MaxMoney;
+                money.IncrementCapped(m_Config.killMoney, MaxMoney);
             }
         }
 
@@ -110,7 +109,7 @@ namespace Voxelfield.Session.Mode
             int activePlayerCount = 0, redAlive = 0, blueAlive = 0;
             foreach (Container player in players)
             {
-                var health = player.Require<HealthProperty>();
+                HealthProperty health = player.H();
                 if (health.WithoutValue) continue;
 
                 activePlayerCount++;
@@ -148,19 +147,12 @@ namespace Voxelfield.Session.Mode
                     }
                     else
                     {
-                        if (redAlive == 0)
+                        if (redAlive == 0 && blueAlive == 0)
                         {
                             sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
                             secureArea.lastWinningTeam.Value = BlueTeam;
                             secureArea.roundTime.Value = m_Config.roundEndDurationUs;
 
-                            endedWithKills = true;
-                        }
-                        else if (blueAlive == 0)
-                        {
-                            sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
-                            secureArea.lastWinningTeam.Value = RedTeam;
-                            secureArea.roundTime.Value = m_Config.roundEndDurationUs;
                             endedWithKills = true;
                         }
                     }
@@ -181,7 +173,7 @@ namespace Voxelfield.Session.Mode
                                 if (collider.TryGetComponent(out PlayerTrigger playerTrigger))
                                 {
                                     Container player = context.GetModifyingPlayer(playerTrigger.PlayerId);
-                                    if (player.Require<HealthProperty>().IsInactiveOrDead) continue;
+                                    if (player.H().IsInactiveOrDead) continue;
 
                                     byte team = player.Require<TeamProperty>();
                                     if (team == RedTeam) isRedInside = true;
@@ -245,16 +237,17 @@ namespace Voxelfield.Session.Mode
             bool isBuyTime = roundTime.WithValue && roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
             Container player = context.player;
             if (isBuyTime) BuyingMode.HandleBuying(this, player, context.commands);
-            player.Require<FrozenProperty>().Value = isBuyTime || AtMaxRounds(secureArea, context.sessionContainer.Require<DualScoresComponent>());
+            var score = context.sessionContainer.Require<DualScoresComponent>();
+            player.Require<FrozenProperty>().Value = isBuyTime || AtPauseTime(secureArea, score);
 
-            if (PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> stringCommands))
+            if (context.WithServerStringCommands(out IEnumerable<string[]> stringCommands))
             {
                 foreach (string[] arguments in stringCommands)
                     switch (arguments[0])
                     {
                         case "give_money" when arguments.Length > 1 && DefaultConfig.Active.allowCheats && ushort.TryParse(arguments[1].Expand(), out ushort bonus):
                         {
-                            player.Require<MoneyComponent>().count.Value += bonus;
+                            player.Require<MoneyComponent>().count.IncrementCapped(bonus, MaxMoney);
                             break;
                         }
                         case "force_start":
@@ -271,11 +264,13 @@ namespace Voxelfield.Session.Mode
         protected override void SpawnPlayer(in SessionContext context, bool begin = false)
         {
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
+            var scores = context.sessionContainer.Require<DualScoresComponent>();
             Container player = context.player;
             if (begin) player.Require<TeamProperty>().Value = (byte) ((context.playerId + 1) % 2);
+            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds / 2)) player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
             if (secureArea.roundTime.WithValue)
             {
-                var health = player.Require<HealthProperty>();
+                HealthProperty health = player.H();
                 var money = player.Require<MoneyComponent>();
                 var inventory = player.Require<InventoryComponent>();
                 if (health.IsInactiveOrDead || money.count.WithoutValue)
@@ -336,9 +331,11 @@ namespace Voxelfield.Session.Mode
 
         private void NextRound(in SessionContext context, SecureAreaComponent secureArea, bool isFirstRound = false)
         {
+            var isFirstRoundOfSecondHalf = false;
             var scores = context.sessionContainer.Require<DualScoresComponent>();
             if (isFirstRound) scores.Zero();
-            else if (AtMaxRounds(secureArea, scores)) return;
+            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds / 2)) isFirstRoundOfSecondHalf = true;
+            else if (AtRoundCount(secureArea, scores, m_Config.maxRounds)) return;
 
             secureArea.roundTime.Value = m_Config.roundEndDurationUs + m_Config.roundDurationUs + m_Config.buyDurationUs;
             foreach (SiteComponent site in secureArea.sites)
@@ -348,6 +345,11 @@ namespace Voxelfield.Session.Mode
             }
             context.ForEachActivePlayer((in SessionContext playerModifyContext) =>
             {
+                if (isFirstRoundOfSecondHalf)
+                {
+                    playerModifyContext.player.ClearIfWith<MoneyComponent>();
+                    secureArea.lastWinningTeam.Clear();
+                }
                 SpawnPlayer(playerModifyContext);
                 if (isFirstRound) playerModifyContext.player.ZeroIfWith<StatsComponent>();
                 if (secureArea.lastWinningTeam.WithValue)
@@ -359,18 +361,27 @@ namespace Voxelfield.Session.Mode
                 }
             });
             context.sessionContainer.Require<EntityArrayElement>().Clear();
+            
+            if (isFirstRoundOfSecondHalf) context.sessionContainer.Require<ReloadMapProperty>().Set();
         }
 
         public override bool ShowScoreboard(in SessionContext context)
-            => AtMaxRounds(context.sessionContainer.Require<SecureAreaComponent>(), context.sessionContainer.Require<DualScoresComponent>());
+            => AtPauseTime(context.sessionContainer.Require<SecureAreaComponent>(), context.sessionContainer.Require<DualScoresComponent>());
 
         private static int _int;
 
-        private bool AtMaxRounds(SecureAreaComponent secureArea, DualScoresComponent scores)
+        private bool AtPauseTime(SecureAreaComponent secureArea, DualScoresComponent scores)
+            => AtRoundCount(secureArea, scores, m_Config.maxRounds)
+            || AtRoundSum(secureArea, scores, m_Config.maxRounds / 2) && secureArea.roundTime < m_Config.roundEndDurationUs;
+
+        private static bool AtRoundCount(SecureAreaComponent secureArea, DualScoresComponent scores, int count)
         {
-            _int = m_Config.maxRounds;
+            _int = count;
             return secureArea.roundTime.WithValue && scores.Any(score => score == _int);
         }
+        
+        private static bool AtRoundSum(SecureAreaComponent secureArea, DualScoresComponent scores, int sum)
+            => secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == sum;
 
         public override void Render(in SessionContext context)
         {
@@ -387,7 +398,7 @@ namespace Voxelfield.Session.Mode
         public override bool IsSpectating(Container session, Container actualLocalPlayer)
         {
             if (session.Require<SecureAreaComponent>().roundTime.WithoutValue) return base.IsSpectating(session, actualLocalPlayer);
-            return actualLocalPlayer.Require<HealthProperty>().IsDead && actualLocalPlayer.Require<RespawnTimerProperty>().Value < DefaultConfig.Active.respawnDuration / 2;
+            return actualLocalPlayer.H().IsDead && actualLocalPlayer.Require<RespawnTimerProperty>().Value < DefaultConfig.Active.respawnDuration / 2;
         }
 
         protected override float CalculateWeaponDamage(in PlayerHitContext context)
@@ -398,7 +409,7 @@ namespace Voxelfield.Session.Mode
 
         public bool CanBuy(in SessionContext context, Container sessionLocalPlayer)
         {
-            if (sessionLocalPlayer.Require<HealthProperty>().IsInactiveOrDead) return false;
+            if (sessionLocalPlayer.H().IsInactiveOrDead) return false;
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             return secureArea.roundTime.WithValue && secureArea.roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
         }

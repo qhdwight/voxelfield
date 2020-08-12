@@ -9,6 +9,7 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
+using UnityEngine;
 using Voxelfield.Integration;
 using Voxels;
 using Voxels.Map;
@@ -34,23 +35,25 @@ namespace Voxelfield.Session
         private bool m_IsLoading = true;
         private readonly ModeIdProperty m_PreviousMode = new ModeIdProperty();
 
+        [RuntimeInitializeOnLoadMethod]
+        private static void Initialize() => SessionBase.RegisterSessionCommand("reload_map");
+
         protected bool TryGetSteamAuthTicket()
         {
             if (m_SteamAuthenticationTicket != null) throw new Exception("Authentication ticket has already been obtained");
-            if (SteamClient.IsValid && SteamClient.IsLoggedOn)
-            {
-                m_SteamAuthenticationTicket = SteamUser.GetAuthSessionTicket();
-                return true;
-            }
-            return false;
+            if (!SteamClient.IsValid || !SteamClient.IsLoggedOn) return false;
+
+            m_SteamAuthenticationTicket = SteamUser.GetAuthSessionTicket();
+            return true;
         }
 
         protected override void OnRenderMode(in SessionContext context)
         {
             base.OnRenderMode(in context);
-            if (!IsLoading(context))
-                foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
-                    modelBehavior.RenderContainer();
+            if (IsLoading(context)) return;
+
+            foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
+                modelBehavior.RenderContainer();
         }
 
         protected override void OnDispose() => MapManager.Singleton.SetMapToUnloaded();
@@ -67,16 +70,26 @@ namespace Voxelfield.Session
             var mapName = session.Require<VoxelMapNameProperty>();
             if (MapManager.Singleton.SetNamedMap(mapName)) OnMapChange();
 
-            if (session.Require<ModeIdProperty>().CompareSet(m_PreviousMode)) OnModeChange(session);
+            if (session.Require<ModeIdProperty>().CompareUpdate(m_PreviousMode)) OnModeChange(session);
 
             MapLoadingStage stage = ChunkManager.Singleton.ProgressInfo.stage;
             if (stage == MapLoadingStage.Failed) throw new Exception("Map failed to load");
 
             m_IsLoading = mapName != MapManager.Singleton.Map.name || stage != MapLoadingStage.Completed;
             if (m_IsLoading) return;
-            
+
             foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
                 modelBehavior.SetInMode(session);
+        }
+
+        public override void OnPostTick(Container session)
+        {
+            var reload = session.Require<ReloadMapProperty>();
+            if (reload.WithValueEqualTo(true))
+            {
+                MapManager.ReloadMap();
+                reload.Clear();
+            }
         }
 
         private static void OnModeChange(Container session)

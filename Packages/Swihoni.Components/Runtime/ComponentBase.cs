@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -25,8 +26,9 @@ namespace Swihoni.Components
             if (ReferenceEquals(this, other)) return true;
             return other.GetType() == GetType() && Equals((ElementBase) other);
         }
-
-        public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
+        
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
+        public override int GetHashCode() => Field != null ? Field.GetHashCode() : 0;
 
         public bool WithAttribute<T>() where T : Attribute => TryAttribute(out T _);
 

@@ -214,11 +214,14 @@ namespace Voxels.Map
         //     }
         // }
 
+        public static void ReloadMap() => ChunkManager.Singleton.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Waiting};
+
         public bool SetNamedMap(StringProperty mapName)
         {
             if (m_WantedMapName == mapName) return false;
-            ChunkManager.Singleton.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Waiting};
+            
             m_WantedMapName = mapName;
+            ReloadMap();
             return true;
         }
 

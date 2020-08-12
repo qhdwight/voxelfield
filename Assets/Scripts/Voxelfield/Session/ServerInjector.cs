@@ -171,7 +171,7 @@ namespace Voxelfield.Session
                 }
                 catch (Exception exception)
                 {
-                    Debug.LogError($"Exception rejecting graciously: {exception}");
+                    Debug.LogError($"Exception rejecting graciously: {exception.Message}");
                     socketRequest.RejectForce();
                 }
             }
@@ -339,10 +339,10 @@ namespace Voxelfield.Session
             var damageContext = new DamageContext(context, context.playerId, context.player, damage, "Suffocation");
             context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
         }
-        
+
         public override void OnServerMove(in SessionContext context, MoveComponent move)
         {
-            if (context.player.Require<HealthProperty>().IsDead) return;
+            if (context.player.H().IsDead) return;
 
             if (move.position.WithoutValue || move.type == MoveType.Flying) return;
 
@@ -364,12 +364,12 @@ namespace Voxelfield.Session
                 }
             }
             Physics.queriesHitBackfaces = false;
-            
+
             if (MapManager.Singleton.Map.terrainGeneration.upperBreakableHeight.TryWithValue(out int upperLimit)
              && context.sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.SecureArea
              && context.sessionContainer.Require<SecureAreaComponent>().roundTime.WithValue
-             && move.position.Value.y > upperLimit + 3) Suffocate(context);
-            
+             && move.position.Value.y > upperLimit + 5) Suffocate(context);
+
             // Vector3 normal = context.session.GetPlayerModifier(context.player, context.playerId).Movement.Hit.
             // Debug.Log(normal);
             // if (Vector3.Dot(normal, Vector3.down) > 0.0f)
@@ -382,6 +382,20 @@ namespace Voxelfield.Session
             //
             // var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");
             // context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
+        }
+
+        public override void ModifyPlayer(in SessionContext context)
+        {
+            if (!context.WithServerStringCommands(out IEnumerable<string[]> commands)) return;
+            foreach (string[] arguments in commands)
+            {
+                switch (arguments.First())
+                {
+                    case "reload_map":
+                        context.sessionContainer.Require<ReloadMapProperty>().Set();
+                        break;
+                }
+            }
         }
 
         public override void OnStop()

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using Swihoni.Sessions.Interfaces;
+using Swihoni.Util;
 using UnityEngine;
 
 namespace Swihoni.Sessions.Config
@@ -55,10 +57,9 @@ namespace Swihoni.Sessions.Config
                     {
                         Commands[commandName](arguments);
                     }
-                    catch (Exception)
+                    catch (Exception exception)
                     {
-                        Debug.Log($"Exception running command: {arguments[0]}");
-                        throw;
+                        ExceptionLogger.Log(exception, $"Exception running command: {arguments[0]}");
                     }
                 }
                 else Debug.LogWarning($"Command \"{arguments[0]}\" not found!");

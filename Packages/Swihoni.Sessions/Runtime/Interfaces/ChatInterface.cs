@@ -15,8 +15,11 @@ namespace Swihoni.Sessions.Interfaces
         public const string ChatNameSeparator = ">";
 
         [SerializeField] private BufferedTextGui m_Text = default;
+        [SerializeField] private CanvasGroup m_ChatCanvasGroup = default;
+        [SerializeField] private float m_ShowChatLength = 4.0f;
         private TMP_InputField m_Input;
         private string m_WantedInput;
+        private float m_TimeSinceLastChat;
 
         private readonly Queue<string> m_Chats = new Queue<string>();
 
@@ -43,6 +46,8 @@ namespace Swihoni.Sessions.Interfaces
         {
             if (NoInterrupting && InputProvider.GetInputDown(InputType.ToggleChat) && !m_Input.isFocused)
                 ToggleInterfaceActive();
+            m_ChatCanvasGroup.ignoreParentGroups = m_TimeSinceLastChat < m_ShowChatLength;
+            m_TimeSinceLastChat += Time.deltaTime;
         }
 
         public override void SetInterfaceActive(bool isActive)
@@ -59,6 +64,7 @@ namespace Swihoni.Sessions.Interfaces
                 m_Input.DeactivateInputField();
                 m_Input.enabled = false;
             }
+            m_TimeSinceLastChat = float.PositiveInfinity;
         }
 
         public override void SessionStateChange(bool isActive)
@@ -78,6 +84,7 @@ namespace Swihoni.Sessions.Interfaces
                 {
                     m_Chats.Enqueue(chat.AsNewString());
                     RenderChats(context);
+                    m_TimeSinceLastChat = 0.0f;
                 }
         }
 

@@ -104,6 +104,7 @@ namespace Swihoni.Components
         public override bool ValueEquals(in ushort value) => value == Value;
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
         public override void ParseValue(string stringValue) => Value = ushort.Parse(stringValue);
+        public void IncrementCapped(ushort amount = 1, ushort max = ushort.MaxValue) => Value = Value + amount >= max ? max : (ushort) (Value + amount);
     }
 
     [Serializable]
@@ -139,8 +140,8 @@ namespace Swihoni.Components
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetByte();
         public override bool ValueEquals(in byte value) => value == Value;
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
-        public override int GetHashCode() => Value.GetHashCode();
         public override void ParseValue(string stringValue) => Value = byte.Parse(stringValue);
+        public void SafeIncrement(byte amount = 1, byte max = byte.MaxValue) => Value = Value + amount >= max ? max : (byte) (Value + amount);
     }
 
     [Serializable]
@@ -173,6 +174,7 @@ namespace Swihoni.Components
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetBool();
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value ? "true" : "false");
         public override void ParseValue(string stringValue) => Value = bool.Parse(stringValue);
+        public void Set() => Value = true;
     }
 
     [Serializable]

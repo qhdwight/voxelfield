@@ -100,7 +100,7 @@ namespace Voxelfield.Session.Mode
                 var throwable = entity.Require<ThrowableComponent>();
                 Vector3 position = DeathmatchMode.GetRandomPosition() + new Vector3 {y = 1.0f};
                 throwable.position.Value = position;
-                throwable.isFrozen.Value = true;
+                throwable.isFrozen.Set();
                 modifier.transform.SetPositionAndRotation(position, Quaternion.identity);
                 var item = entity.Require<ItemComponent>();
                 if (ItemAssetLink.GetModifier(itemId) is GunModifierBase gunModifier)
@@ -120,7 +120,7 @@ namespace Voxelfield.Session.Mode
 
             context.player.Require<FrozenProperty>().Value = ShowScoreboard(context);
 
-            if (context.player.Require<HealthProperty>().IsAlive) return;
+            if (context.player.H().IsAlive) return;
 
             var wantedItems = context.commands.Require<WantedItemIdsComponent>();
             var inventory = context.player.Require<InventoryComponent>();
@@ -209,7 +209,7 @@ namespace Voxelfield.Session.Mode
                 // Flag is taken, but the capturing player is outside the radius of taking
                 enemyTaking = context.GetModifyingPlayer(flag.capturingPlayerId);
                 // Return flag if capturing player disconnects / dies or if they have not fully taken
-                if (enemyTaking.Require<HealthProperty>().IsInactiveOrDead || flag.captureElapsedTimeUs < TakeFlagDurationUs) enemyTaking = null;
+                if (enemyTaking.H().IsInactiveOrDead || flag.captureElapsedTimeUs < TakeFlagDurationUs) enemyTaking = null;
             }
             else enemyTaking = enemyTakingIn;
             if (enemyTaking is null)

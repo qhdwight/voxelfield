@@ -288,7 +288,6 @@ namespace Voxels
                                 {
                                     if (newDensity < currentDensity) evaluatedChange.density = newDensity;
                                 }
-                                if (voxel.HasBlock && !change.modifiesBlocks.GetValueOrDefault()) continue;
 
                                 bool isInside = GetDistance(form, worldPosition, voxelWorldPosition + new Vector3(0.5f, 0.5f, 0.5f)) < absoluteRadius * 1.5f;
 

@@ -190,7 +190,7 @@ namespace Voxelfield.Session.Mode
             choseFrom.RemoveAt(Random.Range(0, choseFrom.Count));
             foreach (int index in choseFrom)
             {
-                stage.curePackages[index].isActive.Value = true;
+                stage.curePackages[index].isActive.Set();
             }
         }
 
@@ -245,7 +245,7 @@ namespace Voxelfield.Session.Mode
         // }
 
         public bool CanBuy(in SessionContext context, Container sessionLocalPlayer)
-            => sessionLocalPlayer.Require<HealthProperty>().IsAlive && context.sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
+            => sessionLocalPlayer.H().IsAlive && context.sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
 
         public ushort GetCost(int itemId) => throw new NotImplementedException();
     }

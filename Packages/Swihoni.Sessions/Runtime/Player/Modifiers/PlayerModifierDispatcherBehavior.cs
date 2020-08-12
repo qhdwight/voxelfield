@@ -46,7 +46,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (isOnServer && context.player.WithPropertyWithValue(out FlashProperty flash))
                 flash.Value -= context.durationUs / 2_000_000f;
 
-            if (PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> stringCommands))
+            if (context.WithServerStringCommands(out IEnumerable<string[]> stringCommands))
                 foreach (string[] stringCommand in stringCommands)
                     DefaultConfig.TryHandleArguments(stringCommand);
 
@@ -97,17 +97,6 @@ namespace Swihoni.Sessions.Player.Modifiers
         ///     Called in FixedUpdate() based on game tick rate
         /// </summary>
         public virtual void ModifyChecked(in SessionContext context) => SynchronizeBehavior(context);
-
-        public static bool WithServerStringCommands(in SessionContext context, out IEnumerable<string[]> commands)
-        {
-            if (context.player.Without<ServerTag>() || context.commands.Without(out StringCommandProperty command) || !command.AsNewString(out string stringCommand))
-            {
-                commands = default;
-                return false;
-            }
-            commands = stringCommand.GetArguments();
-            return true;
-        }
 
         /// <summary>
         ///     Called in Update() right after inputs are sampled

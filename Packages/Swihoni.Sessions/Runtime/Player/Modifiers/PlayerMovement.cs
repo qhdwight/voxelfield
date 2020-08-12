@@ -223,7 +223,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                     initialVelocity.y = m_JumpSpeed;
                     endingVelocity.y = initialVelocity.y - m_GravityFactor * duration;
                 }
-                if (move.groundTick < byte.MaxValue) move.groundTick.Value++;
+                move.groundTick.SafeIncrement();
             }
             else
             {

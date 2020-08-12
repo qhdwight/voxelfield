@@ -64,7 +64,7 @@ namespace Voxelfield.Item
         {
             base.ModifyChecked(context, item, inventory, inputs);
 
-            if (!PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> commands)) return;
+            if (!context.WithServerStringCommands(out IEnumerable<string[]> commands)) return;
 
             SessionBase session = context.session;
             foreach (string[] arguments in commands)

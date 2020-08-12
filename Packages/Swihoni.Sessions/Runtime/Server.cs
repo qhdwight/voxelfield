@@ -78,9 +78,9 @@ namespace Swihoni.Sessions
             }
         }
 
-        protected virtual void PreTick(Container tickSession) { }
+        protected virtual void PreTick(Container tickSession) => m_Injector.OnPreTick(tickSession);
 
-        protected virtual void PostTick(Container tickSession) { }
+        protected virtual void PostTick(Container tickSession) => m_Injector.OnPostTick(tickSession);
 
         protected override void Render(uint renderTimeUs) { }
 
@@ -99,8 +99,6 @@ namespace Swihoni.Sessions
             serverStamp.timeUs.Value = timeUs;
             serverStamp.durationUs.Value = durationUs;
             Profiler.EndSample();
-
-            m_Injector.OnPreTick(serverSession);
 
             Profiler.BeginSample("Server Tick");
             PreTick(serverSession);
@@ -224,7 +222,7 @@ namespace Swihoni.Sessions
                 }
                 catch (Exception exception)
                 {
-                    Debug.LogError($"Exception modifying non-player: {exception}");
+                    ExceptionLogger.Log(exception, "Exception modifying session");
                 }
             }
 
@@ -245,7 +243,7 @@ namespace Swihoni.Sessions
             int playerId = GetPeerPlayerId(peer);
             Container player = GetModifyingPlayerFromId(playerId, serverSession);
 
-            if (player.Require<HealthProperty>().WithValue)
+            if (player.H().WithValue)
             {
                 var localPlayerProperty = serverSession.Require<LocalPlayerId>();
                 localPlayerProperty.Value = (byte) playerId;
@@ -267,7 +265,7 @@ namespace Swihoni.Sessions
                     if (!hasSentInitialData)
                     {
                         m_Injector.OnSendInitialData(peer, serverSession, m_SendSession);
-                        hasSentInitialData.Value = true;
+                        hasSentInitialData.Set();
                     }
                 }
 
@@ -358,6 +356,7 @@ namespace Swihoni.Sessions
                     {
                         GetPlayerModifier(serverPlayer, clientId).ModifyChecked(context);
                         mode.ModifyPlayer(context);
+                        m_Injector.ModifyPlayer(context);
                     }
                     catch (Exception exception)
                     {
@@ -365,10 +364,7 @@ namespace Swihoni.Sessions
                     }
                 }
             }
-            else
-            {
-                serverPlayerTimeUs.Value = serverStamp.timeUs;
-            }
+            else serverPlayerTimeUs.Value = serverStamp.timeUs;
         }
 
         private static void MergeTrustedFromCommands(ElementBase serverPlayer, ElementBase receivedClientCommands)

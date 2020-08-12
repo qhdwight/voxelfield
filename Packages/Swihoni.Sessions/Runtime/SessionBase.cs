@@ -56,6 +56,8 @@ namespace Swihoni.Sessions
 
         protected internal virtual void OnPreTick(Container session) { }
 
+        public virtual void OnPostTick(Container session) { }
+
         protected internal virtual void OnClientReceive(ServerSessionContainer serverSession) { }
 
         protected internal virtual void OnRenderMode(in SessionContext context) { }
@@ -93,9 +95,11 @@ namespace Swihoni.Sessions
 
         public virtual void OnStop() { }
 
-        public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.Require<HealthProperty>().WithoutValue;
+        public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.H().WithoutValue;
 
         public virtual void OnServerMove(in SessionContext context, MoveComponent move) { }
+
+        public virtual void ModifyPlayer(in SessionContext context) { }
     }
 
     public abstract class SessionBase : IDisposable
@@ -298,11 +302,9 @@ namespace Swihoni.Sessions
                           toComponent = getInHistory(historyIndex);
                 UIntProperty toTimeUs = getTimeInHistory(historyIndex).timeUs,
                              fromTimeUs = getTimeInHistory(historyIndex + 1).timeUs;
-                var tooRecent = false;
-                if (!toTimeUs.WithValue || !fromTimeUs.WithValue || (tooRecent = historyIndex == 0 && toTimeUs < renderTimeUs))
+                if (!toTimeUs.WithValue || !fromTimeUs.WithValue || historyIndex == 0 && toTimeUs < renderTimeUs)
                 {
                     renderContainer.SetTo(getInHistory(0));
-                    // if (tooRecent) Debug.LogWarning("Not enough recent");
                     return;
                 }
                 if (renderTimeUs >= fromTimeUs && renderTimeUs <= toTimeUs)
@@ -322,11 +324,6 @@ namespace Swihoni.Sessions
         }
 
         protected static Func<int, Container> _getInHistory;
-
-        protected interface IHistory
-        {
-            Container Get(int index);
-        }
 
         protected static void RenderInterpolatedPlayer<TStampComponent>(uint renderTimeUs, Container renderContainer, int maxRollback,
                                                                         Func<int, Container> getInHistory)
@@ -419,7 +416,11 @@ namespace Swihoni.Sessions
 
     public static class SessionExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static HealthProperty H(this Container player) => player.Require<HealthProperty>();
 
         public static string ExecuteProcess(string command, string workingDirectory = null)
         {
@@ -452,11 +453,10 @@ namespace Swihoni.Sessions
             for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
             {
                 Container player = context.GetModifyingPlayer(playerId);
-                if (player.Require<HealthProperty>().WithValue)
-                {
-                    var playerModifyContext = new SessionContext(existing: context, player: player, playerId: playerId);
-                    action(playerModifyContext);
-                }
+                if (player.H().WithoutValue) continue;
+
+                var playerModifyContext = new SessionContext(existing: context, player: player, playerId: playerId);
+                action(playerModifyContext);
             }
         }
 

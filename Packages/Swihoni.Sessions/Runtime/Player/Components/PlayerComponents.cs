@@ -68,8 +68,8 @@ namespace Swihoni.Sessions.Player.Components
     [Serializable, ModeElement, OnlyServerTrusted]
     public class StatsComponent : ComponentBase
     {
-        public ByteProperty kills, deaths, damage;
-        public UShortProperty ping;
+        public ByteProperty kills, deaths;
+        public UShortProperty damage, ping;
     }
 
     [Serializable, ModeElement, OnlyServerTrusted]

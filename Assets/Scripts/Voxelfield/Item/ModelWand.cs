@@ -69,7 +69,7 @@ namespace Voxelfield.Item
         {
             base.ModifyChecked(context, item, inventory, inputs);
 
-            if (!PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> commands)) return;
+            if (!context.WithServerStringCommands(out IEnumerable<string[]> commands)) return;
             foreach (string[] arguments in commands)
             {
                 switch (arguments[0])

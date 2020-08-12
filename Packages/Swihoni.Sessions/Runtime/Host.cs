@@ -7,6 +7,7 @@ using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
+using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -45,7 +46,7 @@ namespace Swihoni.Sessions
             if (!IsLoading)
             {
                 Container hostPlayer = GetModifyingPlayerFromId(HostPlayerId, session);
-                if (hostPlayer.Require<HealthProperty>().WithValue)
+                if (hostPlayer.H().WithValue)
                 {
                     PlayerModifierDispatcherBehavior hostModifier = GetPlayerModifier(hostPlayer, HostPlayerId);
                     var hostContext = new SessionContext(this, session, m_HostCommands, HostPlayerId, m_HostCommands, durationUs: durationUs, tickDelta: 1);
@@ -62,10 +63,11 @@ namespace Swihoni.Sessions
                             hostModifier.ModifyChecked(hostContext);
                         }
                         GetModifyingMode(session).ModifyPlayer(hostContext);
+                        m_Injector.ModifyPlayer(hostContext);
                     }
                     catch (Exception exception)
                     {
-                        Debug.LogError($"Exception modifying checked host: {exception}");
+                        ExceptionLogger.Log(exception, "Exception modifying checked host");
                     }
                 }
             }
@@ -82,7 +84,7 @@ namespace Swihoni.Sessions
                 Profiler.BeginSample("Host Render Setup");
                 if (IsLoading || m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
                               || m_RenderSession.Without(out LocalPlayerId renderLocalPlayerId)
-                              || m_HostCommands.Require<HealthProperty>().WithoutValue)
+                              || m_HostCommands.H().WithoutValue)
                 {
                     Profiler.EndSample();
                     return;
@@ -146,10 +148,10 @@ namespace Swihoni.Sessions
 
         protected override void PreTick(Container tickSession)
         {
-            // Set up new player component data
+            base.PreTick(tickSession);
             if (IsLoading) return;
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
-            if (hostPlayer.Require<HealthProperty>().WithValue)
+            if (hostPlayer.H().WithValue)
             {
                 // Inject our current player component before normal update cycle
                 hostPlayer.SetTo(m_HostCommands);
@@ -161,7 +163,7 @@ namespace Swihoni.Sessions
             if (IsLoading) return;
 
             Container hostPlayer = tickSession.GetPlayer(HostPlayerId);
-            if (hostPlayer.Require<HealthProperty>().WithoutValue)
+            if (hostPlayer.H().WithoutValue)
             {
                 var context = new SessionContext(this, tickSession, playerId: HostPlayerId, player: hostPlayer);
                 m_Injector.OnSetupHost(context);

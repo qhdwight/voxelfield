@@ -101,7 +101,7 @@ namespace Swihoni.Sessions.Entities
                 bool justPopped = m_LastElapsedUs < throwable.popTimeUs;
 
                 if (m_Interval > 0u || justPopped)
-                    JustPopped(context, throwable);
+                    HurtNearby(context, throwable, justPopped);
             }
             else
             {
@@ -115,8 +115,7 @@ namespace Swihoni.Sessions.Entities
                     {
                         throwable.popTimeUs.Value = throwable.thrownElapsedUs;
                         resetContact = false;
-                        JustPopped(context, throwable);
-                        
+                        HurtNearby(context, throwable, true);
                     }
                     if (collisionType == CollisionType.World && !m_ExplodeOnContact)
                     {
@@ -147,8 +146,10 @@ namespace Swihoni.Sessions.Entities
                 entity.Clear();
         }
 
-        private void HurtNearby(in SessionContext context, ThrowableComponent throwable)
+        private void HurtNearby(in SessionContext context, ThrowableComponent throwable, bool justPopped)
         {
+            if (justPopped) JustPopped(context, throwable);
+            if (m_Damage < Mathf.Epsilon) return;
             int count = Physics.OverlapSphereNonAlloc(transform.position, m_Radius, m_OverlappingColliders, m_Mask);
             for (var i = 0; i < count; i++)
             {
@@ -168,12 +169,8 @@ namespace Swihoni.Sessions.Entities
             }
         }
 
-        protected virtual void JustPopped(in SessionContext context, ThrowableComponent throwable)
-        {
-            HurtNearby(context, throwable);
-            context.session.Injector.OnThrowablePopped(this);
-        }
-
+        protected virtual void JustPopped(in SessionContext context, ThrowableComponent throwable) => context.session.Injector.OnThrowablePopped(this);
+        
         private byte CalculateDamage(in SessionContext context)
         {
             float distance = Vector3.Distance(context.player.Require<MoveComponent>(), transform.position);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
@@ -16,6 +17,7 @@ namespace Swihoni.Sessions.Player.Modifiers
     {
         [SerializeField] private float m_DropItemForce = 1.0f, m_MaxPickupDistance = 1.5f;
         [SerializeField] private LayerMask m_ItemEntityMask = default;
+        [SerializeField] private float m_PickupRadius = 2.25f;
 
         private static readonly RaycastHit[] CachedHits = new RaycastHit[1];
         private static readonly Collider[] CachedColliders = new Collider[1];
@@ -96,8 +98,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (context.player.Without<ServerTag>()) return;
 
             Vector3 move = context.player.Require<MoveComponent>();
-            int nearbyCount = Physics.OverlapSphereNonAlloc(move, 3.0f, CachedColliders, m_ItemEntityMask);
-            if (nearbyCount > 0) TryPickupItemFromCollider(CachedColliders[0], true);
+            int nearbyCount = Physics.OverlapSphereNonAlloc(move, m_PickupRadius, CachedColliders, m_ItemEntityMask);
+            if (nearbyCount > 0) TryPickupItemFromCollider(CachedColliders.First(), true);
 
             if (!context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)) return;
 
@@ -140,9 +142,9 @@ namespace Swihoni.Sessions.Player.Modifiers
 
         private static void TryExecuteCommands(in SessionContext context)
         {
-            if (!WithServerStringCommands(context, out IEnumerable<string[]> commands)) return;
+            if (!context.WithServerStringCommands(out IEnumerable<string[]> commands)) return;
             foreach (string[] arguments in commands)
-                if (arguments[0] == "give_item" && DefaultConfig.Active.allowCheats)
+                if (arguments.First() == "give_item" && DefaultConfig.Active.allowCheats)
                 {
                     if (arguments.Length > 1 && (byte.TryParse(arguments[1], out byte itemId) || ItemId.Names.TryGetReverse(arguments[1], out itemId)))
                     {

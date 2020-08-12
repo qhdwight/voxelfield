@@ -54,6 +54,7 @@ namespace Swihoni.Sessions.Config
         public static DefaultConfig Active { get; private set; }
 
         private static readonly Lazy<DefaultConfig> Default = new Lazy<DefaultConfig>(LoadDefault);
+        private static string _logTag;
 
         private static DefaultConfig LoadDefault()
         {
@@ -83,6 +84,7 @@ namespace Swihoni.Sessions.Config
         [Config] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
         [Config] public BoolProperty logPredictionErrors = new BoolProperty();
         [Config] public ListProperty<StringProperty> consoleHistory = new ListProperty<StringProperty>(32);
+        [Config] public BoolProperty showDebugInterface = new BoolProperty(true);
 
         [Config] public IntProperty qualityLevel = new IntProperty();
         [Config] public ResolutionProperty resolution = new ResolutionProperty();
@@ -91,6 +93,8 @@ namespace Swihoni.Sessions.Config
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
+            _logTag = Default.Value.GetType().Name;
+
             Active = ((DefaultConfig) CreateInstance(Default.Value.GetType())).Introspect();
 // #if UNITY_EDITOR
 //             SetActiveToDefault();
@@ -140,7 +144,7 @@ namespace Swihoni.Sessions.Config
                             {
                                 if (config.Type == ConfigType.Session)
                                     m_TypeToConfig.Add(property.GetType(), (property, config));
-                                ConsoleCommandExecutor.SetCommand(fullName, SessionBase.IssueSessionCommand);
+                                SessionBase.RegisterSessionCommand(fullName);
                             }
                             break;
                     }
@@ -175,18 +179,18 @@ namespace Swihoni.Sessions.Config
                         if (split[1] == "none")
                         {
                             property.Clear();
-                            Debug.Log($"Cleared {split[0]}");
+                            Debug.Log($"[{_logTag}] Cleared {split[0]}");
                         }
                         else
                         {
                             property.TryParseValue(split[1]);
-                            Debug.Log($"Set {split[0]} to {split[1]}");
+                            Debug.Log($"[{_logTag}] Set {split[0]} to {split[1]}");
                         }
                         Active.OnConfigUpdated(property, attribute);
                         break;
                     case 1 when property is BoolProperty boolProperty:
-                        boolProperty.Value = true;
-                        Debug.Log($"Set {split[0]}");
+                        boolProperty.Set();
+                        Debug.Log($"[{_logTag}] Set {split[0]}");
                         Active.OnConfigUpdated(property, attribute);
                         break;
                 }
@@ -245,7 +249,7 @@ namespace Swihoni.Sessions.Config
             string configPath = GetConfigFile();
             File.WriteAllText(configPath, builder.ToString());
 #if UNITY_EDITOR
-            Debug.Log($"Wrote config to {configPath}");
+            Debug.Log($"[{_logTag}] Wrote config to {configPath}");
 #endif
         }
 
@@ -268,26 +272,26 @@ namespace Swihoni.Sessions.Config
                             (PropertyBase property, ConfigAttribute attribute) = tuple;
                             if (stringValue == "none") property.Clear();
                             else if (property.TryParseValue(stringValue)) Active.OnConfigUpdated(property, attribute, false);
-                            else Debug.LogWarning($"Failed to parse config {configName} with value: {stringValue}");
+                            else Debug.LogWarning($"[{_logTag}] Failed to parse config {configName} with value: {stringValue}");
                         }
-                        else Debug.LogWarning($"Unrecognized config with name: {configName}");
+                        else Debug.LogWarning($"[{_logTag}] Unrecognized config with name: {configName}");
                     }
                     OnActiveLoaded();
                 }
                 else
                 {
                     WriteDefaults();
-                    Debug.LogWarning($"[{Default.Value.GetType().Name}] Config file was not found so a default one was written");
+                    Debug.LogWarning($"[{_logTag}] Config file was not found so a default one was written");
                     SetActiveToDefault();
                 }
 #if UNITY_EDITOR
-                Debug.Log($"[{Default.Value.GetType().Name}] Read config from {configPath}");
+                Debug.Log($"[{_logTag}] Read config from {configPath}");
 #endif
             }
             catch (Exception exception)
             {
                 SetActiveToDefault();
-                ExceptionLogger.Log(exception, $"[{Default.Value.GetType().Name}] Failed to parse config. Using defaults. Check permissions?");
+                ExceptionLogger.Log(exception, $"[{_logTag}] Failed to parse config. Using defaults. Check permissions?");
             }
         }
 

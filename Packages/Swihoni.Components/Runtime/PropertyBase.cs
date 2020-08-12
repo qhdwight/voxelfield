@@ -1,5 +1,5 @@
 using System;
-using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using LiteNetLib.Utils;
 using Swihoni.Collections;
@@ -71,6 +71,15 @@ namespace Swihoni.Components
             {
                 if (value) m_Flags |= ElementFlags.DontSerialize;
                 else m_Flags &= ~ElementFlags.DontSerialize;
+            }
+        }
+
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (base.GetHashCode() * 397) ^ (int) m_Flags;
             }
         }
 
@@ -188,16 +197,22 @@ namespace Swihoni.Components
 
         protected PropertyBase(T value) => Value = value;
 
-        public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (base.GetHashCode() * 397) ^ m_Value.GetHashCode();
+            }
+        }
 
         public override bool Equals(object other) => this == (PropertyBase<T>) other;
 
         public static implicit operator T(PropertyBase<T> property) => property.Value;
 
-        // ReSharper disable PossibleNullReferenceException - Properties should not be null
+        [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public static bool operator ==(PropertyBase<T> p1, PropertyBase<T> p2) => p1.WithValue && p2.WithValue && p1.ValueEquals(p2)
                                                                                || p1.WithoutValue && p2.WithoutValue;
-        // ReSharper restore PossibleNullReferenceException
 
         public static bool operator !=(PropertyBase<T> p1, PropertyBase<T> p2) => !(p1 == p2);
 
@@ -211,7 +226,7 @@ namespace Swihoni.Components
             return false;
         }
 
-        public bool CompareSet(PropertyBase<T> other)
+        public bool CompareUpdate(PropertyBase<T> other)
         {
             if (this == other) return false;
             other.SetTo(this);

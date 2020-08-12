@@ -151,7 +151,7 @@ namespace Swihoni.Sessions.Modes
             Container player = context.hitPlayer;
             player.ZeroIfWith<HealthProperty>();
             player.ClearIfWith<HitMarkerComponent>();
-            if (player.With(out StatsComponent stats)) stats.deaths.Value++;
+            if (player.With(out StatsComponent stats)) stats.deaths.SafeIncrement();
             if (player.With(out InventoryComponent inventory))
             {
                 for (var i = 0; i < inventory.Count; i++)
@@ -188,12 +188,14 @@ namespace Swihoni.Sessions.Modes
                 SpawnPlayer(context);
             }
 
-            if (!PlayerModifierBehaviorBase.WithServerStringCommands(context, out IEnumerable<string[]> commands)) return;
+            if (!context.WithServerStringCommands(out IEnumerable<string[]> commands)) return;
             foreach (string[] arguments in commands)
-                if (arguments[0] == "restart_mode")
+                switch (arguments[0])
                 {
-                    EndModify(context);
-                    BeginModify(context);
+                    case "restart_mode":
+                        EndModify(context);
+                        BeginModify(context);
+                        break;
                 }
         }
 
@@ -234,16 +236,20 @@ namespace Swihoni.Sessions.Modes
                      usesHitMarker = damageContext.InflictingPlayer.With(out HitMarkerComponent hitMarker) && !isSelfInflicting,
                      usesNotifier = damageContext.hitPlayer.With(out DamageNotifierComponent damageNotifier);
 
-                var health = damageContext.hitPlayer.Require<HealthProperty>();
+                bool usesStats = damageContext.InflictingPlayer.With(out StatsComponent inflictingStats);
+                if (!isSelfInflicting && usesStats)
+                    inflictingStats.damage.IncrementCapped(damageContext.damage);
+                
+                HealthProperty health = damageContext.hitPlayer.H();
                 bool isKilling = damageContext.damage >= health;
                 if (isKilling)
                 {
                     KillPlayer(damageContext);
 
-                    if (!isSelfInflicting && damageContext.InflictingPlayer.With(out StatsComponent stats))
-                        stats.kills.Value++;
+                    if (!isSelfInflicting && usesStats)
+                        inflictingStats.kills.SafeIncrement();
 
-                    if (usesHitMarker) hitMarker.isKill.Value = true;
+                    if (usesHitMarker) hitMarker.isKill.Set();
 
                     if (damageContext.sessionContext.sessionContainer.Without(out KillFeedElement killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)
@@ -283,9 +289,10 @@ namespace Swihoni.Sessions.Modes
 
         // public virtual bool RestrictMovement(Vector3 prePosition, Vector3 postPosition) => false;
 
-        public virtual StringBuilder AppendUsername(StringBuilder builder, Container player)
+        public virtual StringBuilder AppendUsername(StringBuilder builder, Container player, bool grayOutDead = false)
         {
             Color color = GetTeamColor(player.Require<TeamProperty>());
+            if (grayOutDead && player.H().IsDead) color *= 0.6f;
             string hex = GetHexColor(color);
             return builder.Append("<color=#").Append(hex).Append(">").AppendRealizedUsername(player).Append("</color>");
         }
@@ -295,7 +302,7 @@ namespace Swihoni.Sessions.Modes
         public virtual Color GetTeamColor(TeamProperty team) => GetTeamColor(team.AsNullable);
 
         protected static int GetActivePlayerCount(Container session)
-            => session.Require<PlayerContainerArrayElement>().Count(player => player.Require<HealthProperty>().WithValue);
+            => session.Require<PlayerContainerArrayElement>().Count(player => player.H().WithValue);
 
         public virtual void Initialize() { }
 
@@ -305,7 +312,7 @@ namespace Swihoni.Sessions.Modes
 
         protected static Vector3 AdjustSpawn(Vector3 spawn)
         {
-            for (var _ = 0; _ < 16; _++, spawn.y += 3.0f)
+            for (var _ = 0; _ < 16; _++, spawn.y += 2.0f)
             {
                 if (Physics.Raycast(spawn, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
                     return hit.point + new Vector3 {y = 0.1f};

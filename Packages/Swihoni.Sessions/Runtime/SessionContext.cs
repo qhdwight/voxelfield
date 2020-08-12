@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
@@ -67,8 +69,19 @@ namespace Swihoni.Sessions
             }
             localPlayerId = localPlayerIdProperty;
             localPlayer = GetModifyingPlayer(localPlayerId);
-            var health = localPlayer.Require<HealthProperty>();
+            HealthProperty health = localPlayer.H();
             return health.WithValue && (!needsToBeAlive || health.IsAlive);
+        }
+
+        public bool WithServerStringCommands(out IEnumerable<string[]> stringCommands)
+        {
+            if (player.Without<ServerTag>() || commands.Without(out StringCommandProperty command) || !command.AsNewString(out string stringCommand))
+            {
+                stringCommands = default;
+                return false;
+            }
+            stringCommands = stringCommand.GetArguments();
+            return true;
         }
     }
 }

@@ -148,6 +148,11 @@ namespace Voxelfield.Session
         public ExtentsProperty(float x, float y, float z) : base(x, y, z) { }
     }
 
+    [Serializable]
+    public class ReloadMapProperty : BoolProperty
+    {
+    }
+
     public static class VoxelfieldComponents
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -163,7 +168,7 @@ namespace Voxelfield.Session
             SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent),
                                                      typeof(BrokeVoxelTickProperty), typeof(SteamIdProperty));
             SessionElements.commandElements.AppendAll(typeof(WantedItemComponent), typeof(WantedItemIdsComponent));
-            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(OrderedVoxelChangesProperty),
+            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(OrderedVoxelChangesProperty), typeof(ReloadMapProperty),
                                                typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent), typeof(DualScoresComponent));
         }
     }

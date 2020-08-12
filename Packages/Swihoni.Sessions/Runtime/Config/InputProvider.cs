@@ -85,6 +85,58 @@ namespace Swihoni.Sessions.Config
         private const string Separator = ";";
 
         private static ByteProperty _lookupProperty = new ByteProperty();
+        private static Dictionary<byte, KeyCode> _defaultMap = new Dictionary<byte, KeyCode>
+        {
+            [PlayerInput.Forward] = KeyCode.W,
+            [PlayerInput.Backward] = KeyCode.S,
+            [PlayerInput.Left] = KeyCode.A,
+            [PlayerInput.Right] = KeyCode.D,
+            [PlayerInput.Jump] = KeyCode.Space,
+            [PlayerInput.Crouch] = KeyCode.LeftControl,
+            [PlayerInput.Sprint] = KeyCode.LeftShift,
+            [PlayerInput.Walk] = KeyCode.LeftAlt,
+            [PlayerInput.Suicide] = KeyCode.End,
+            [PlayerInput.Interact] = KeyCode.E,
+            [InputType.Map] = KeyCode.M,
+            [PlayerInput.UseOne] = KeyCode.Mouse0,
+            [PlayerInput.UseTwo] = KeyCode.Mouse1,
+#if UNITY_EDITOR_OSX
+            [PlayerInput.UseThree] = KeyCode.C,
+#else
+            [PlayerInput.UseThree] = KeyCode.Mouse2,
+#endif
+            [PlayerInput.UseFour] = KeyCode.Mouse3,
+            [PlayerInput.Reload] = KeyCode.R,
+            [PlayerInput.ItemOne] = KeyCode.Alpha1,
+            [PlayerInput.ItemTwo] = KeyCode.Alpha2,
+            [PlayerInput.ItemThree] = KeyCode.Alpha3,
+            [PlayerInput.ItemFour] = KeyCode.Alpha4,
+            [PlayerInput.ItemFive] = KeyCode.Alpha5,
+            [PlayerInput.ItemSix] = KeyCode.Alpha6,
+            [PlayerInput.ItemSeven] = KeyCode.Alpha7,
+            [PlayerInput.ItemEight] = KeyCode.Alpha8,
+            [PlayerInput.ItemNine] = KeyCode.Alpha9,
+            [PlayerInput.ItemTen] = KeyCode.Alpha0,
+            [PlayerInput.ItemLast] = KeyCode.Q,
+            [PlayerInput.DropItem] = KeyCode.G,
+            [PlayerInput.Ads] = KeyCode.Mouse1,
+            [InputType.ToggleConsole] = KeyCode.BackQuote,
+            [InputType.ConsoleCommand] = KeyCode.Slash,
+            [InputType.SwitchTeams] = KeyCode.Period,
+            [InputType.OpenScoreboard] = KeyCode.Tab,
+            [InputType.AutocompleteConsole] = KeyCode.Tab,
+            [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
+            [InputType.NextConsoleCommand] = KeyCode.DownArrow,
+            [PlayerInput.Fly] = KeyCode.F,
+            [InputType.Buy] = KeyCode.B,
+            [PlayerInput.Throw] = KeyCode.G,
+            [InputType.OpenContext] = KeyCode.V,
+            [InputType.TogglePauseMenu] = KeyCode.Escape,
+            [InputType.ToggleChat] = KeyCode.T,
+            [PlayerInput.Respawn] = KeyCode.Return,
+            [InputType.NextSpectating] = KeyCode.Mouse1,
+            [InputType.PreviousSpectating] = KeyCode.Mouse0
+        };
 
         public KeyCode GetKeyCode(byte @byte)
         {
@@ -110,72 +162,29 @@ namespace Swihoni.Sessions.Config
             string[] pairs = stringValue.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
             foreach (string pair in pairs)
             {
-                var keyProperty = Activator.CreateInstance<ByteProperty>();
-                var valueProperty = Activator.CreateInstance<KeyCodeProperty>();
+                var keyProperty = new ByteProperty();
+                var valueProperty = new KeyCodeProperty();
                 string[] keyAndValue = pair.Split(new[] {"="}, StringSplitOptions.RemoveEmptyEntries);
                 string key = keyAndValue[0].Trim(), value = keyAndValue[1];
                 keyProperty.Value = InputType.Names.GetReverse(key);
                 valueProperty.ParseValue(value);
                 Set(keyProperty, valueProperty);
             }
+            foreach (KeyValuePair<byte, KeyCode> pair in _defaultMap)
+            {
+                var input = new ByteProperty(pair.Key);
+                if (!m_Map.ContainsKey(input))
+                {
+                    Set(input, new KeyCodeProperty(pair.Value));
+                    Debug.LogWarning($"Had to add default input for {InputType.Names.GetForward(pair.Key)}");
+                }
+            }
         }
 
         public InputBindingProperty()
         {
-            var defaultMap = new Dictionary<byte, KeyCode>
-            {
-                [PlayerInput.Forward] = KeyCode.W,
-                [PlayerInput.Backward] = KeyCode.S,
-                [PlayerInput.Left] = KeyCode.A,
-                [PlayerInput.Right] = KeyCode.D,
-                [PlayerInput.Jump] = KeyCode.Space,
-                [PlayerInput.Crouch] = KeyCode.LeftControl,
-                [PlayerInput.Sprint] = KeyCode.LeftShift,
-                [PlayerInput.Walk] = KeyCode.LeftAlt,
-                [PlayerInput.Suicide] = KeyCode.End,
-                [PlayerInput.Interact] = KeyCode.E,
-                [InputType.Map] = KeyCode.M,
-                [PlayerInput.UseOne] = KeyCode.Mouse0,
-                [PlayerInput.UseTwo] = KeyCode.Mouse1,
-#if UNITY_EDITOR_OSX
-                [PlayerInput.UseThree] = KeyCode.C,
-#else
-                [PlayerInput.UseThree] = KeyCode.Mouse2,
-#endif
-                [PlayerInput.UseFour] = KeyCode.Mouse3,
-                [PlayerInput.Reload] = KeyCode.R,
-                [PlayerInput.ItemOne] = KeyCode.Alpha1,
-                [PlayerInput.ItemTwo] = KeyCode.Alpha2,
-                [PlayerInput.ItemThree] = KeyCode.Alpha3,
-                [PlayerInput.ItemFour] = KeyCode.Alpha4,
-                [PlayerInput.ItemFive] = KeyCode.Alpha5,
-                [PlayerInput.ItemSix] = KeyCode.Alpha6,
-                [PlayerInput.ItemSeven] = KeyCode.Alpha7,
-                [PlayerInput.ItemEight] = KeyCode.Alpha8,
-                [PlayerInput.ItemNine] = KeyCode.Alpha9,
-                [PlayerInput.ItemTen] = KeyCode.Alpha0,
-                [PlayerInput.ItemLast] = KeyCode.Q,
-                [PlayerInput.DropItem] = KeyCode.G,
-                [PlayerInput.Ads] = KeyCode.Mouse1,
-                [InputType.ToggleConsole] = KeyCode.BackQuote,
-                [InputType.ConsoleCommand] = KeyCode.Slash,
-                [InputType.SwitchTeams] = KeyCode.Period,
-                [InputType.OpenScoreboard] = KeyCode.Tab,
-                [InputType.AutocompleteConsole] = KeyCode.Tab,
-                [InputType.PreviousConsoleCommand] = KeyCode.UpArrow,
-                [InputType.NextConsoleCommand] = KeyCode.DownArrow,
-                [PlayerInput.Fly] = KeyCode.F,
-                [InputType.Buy] = KeyCode.B,
-                [PlayerInput.Throw] = KeyCode.G,
-                [InputType.OpenContext] = KeyCode.V,
-                [InputType.TogglePauseMenu] = KeyCode.Escape,
-                [InputType.ToggleChat] = KeyCode.T,
-                [PlayerInput.Respawn] = KeyCode.Return,
-                [InputType.NextSpectating] = KeyCode.Mouse1,
-                [InputType.PreviousSpectating] = KeyCode.Mouse0
-            };
             m_Map = new Dictionary<ByteProperty, KeyCodeProperty>();
-            foreach (KeyValuePair<byte, KeyCode> pair in defaultMap)
+            foreach (KeyValuePair<byte, KeyCode> pair in _defaultMap)
                 m_Map.Add(new ByteProperty(pair.Key), new KeyCodeProperty(pair.Value));
             WithValue = true;
         }
