@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Entities
             throwable.thrownElapsedUs.Value += context.durationUs;
 
             RigidbodyConstraints constraints;
-            if (throwable.isFrozen.WithValueEqualTo(true))
+            if (throwable.flags.IsFloating)
             {
                 constraints = RigidbodyConstraints.FreezeAll;
                 transform.rotation = Quaternion.AngleAxis(Mathf.Repeat(context.timeUs / 10_000f, 360.0f), Vector3.up);
@@ -37,7 +37,7 @@ namespace Swihoni.Sessions.Entities
             }
             Rigidbody.constraints = constraints;
 
-            if (!throwable.isFrozen && throwable.thrownElapsedUs > context.Mode.ItemEntityLifespanUs)
+            if (!throwable.flags.IsPersistent && throwable.thrownElapsedUs > context.Mode.ItemEntityLifespanUs)
                 context.entity.Clear();
         }
     }

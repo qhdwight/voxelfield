@@ -173,7 +173,7 @@ namespace Voxelfield.Session
         {
             SessionElements = SessionElements.NewStandardSessionElements();
             SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent),
-                                                     typeof(BrokeVoxelTickProperty), typeof(SteamIdProperty));
+                                                     typeof(BrokeVoxelTickProperty), typeof(SteamIdProperty), typeof(FlashProperty));
             SessionElements.commandElements.AppendAll(typeof(WantedItemComponent), typeof(WantedItemIdsComponent));
             SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(OrderedVoxelChangesProperty), typeof(ReloadMapProperty),
                                                typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent), typeof(DualScoresComponent));

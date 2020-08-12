@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Discord;
 using Swihoni.Sessions.Config;
 using Swihoni.Util;
@@ -34,12 +35,14 @@ namespace Voxelfield.Integration
         protected override void Awake()
         {
             base.Awake();
-            ConsoleCommandExecutor.SetCommand("discord_status", args =>
+            ConsoleCommandExecutor.SetCommand("discord_status", async args =>
             {
                 if (Client == null) Debug.LogWarning("Not connected to Discord");
                 else
                 {
-                    User currentUser = Client.GetUserManager().GetCurrentUser();
+                    UserManager manager = Client.GetUserManager();
+                    await Task.Delay(250);
+                    User currentUser = manager.GetCurrentUser();
                     Debug.Log($"Logged in as: {currentUser.Username}#{currentUser.Discriminator} with ID: {currentUser.Id}");
                 }
             });

@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Items.Visuals
     [SelectionBase, DisallowMultipleComponent]
     public class ItemVisualBehavior : MonoBehaviour
     {
-        [SerializeField] private byte m_Id = default;
+        [SerializeField] private byte m_Id = default, m_SkinId = default;
         [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default, m_EquipStatusVisualProperties = default;
         [SerializeField] private Transform m_IkL = default, m_IkR = default;
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;
@@ -167,6 +167,7 @@ namespace Swihoni.Sessions.Items.Visuals
 
         protected virtual bool IsMeshVisible(Renderer meshRenderer, bool isItemVisible /* from component only */, ItemComponent item)
         {
+            if (m_Id == ItemId.C4 && item.ammoInReserve == 0 && meshRenderer.name == "Item") return false;
             if (isItemVisible && !meshRenderer.enabled) return false; // Override from animator
             return isItemVisible;
         }

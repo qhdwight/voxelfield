@@ -5,6 +5,8 @@ using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Config;
+using Swihoni.Sessions.Entities;
+using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
@@ -154,11 +156,10 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out StatsComponent stats)) stats.deaths.SafeIncrement();
             if (player.With(out InventoryComponent inventory))
             {
+                if (inventory.WithItemEquipped(out ItemComponent equipped) && inventory.equippedIndex > 0)
+                    CreateItemEntity(context.sessionContext, player.Require<MoveComponent>(), equipped.id, equipped, ThrowableComponent.Flags.Floating);
                 for (var i = 0; i < inventory.Count; i++)
-                {
-                    ItemComponent item = inventory[i];
-                    item.status.Zero();
-                }
+                    inventory[i].status.Zero();
                 inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
                 inventory.equipStatus.elapsedUs.Value = 0u;
             }
@@ -239,7 +240,7 @@ namespace Swihoni.Sessions.Modes
                 bool usesStats = damageContext.InflictingPlayer.With(out StatsComponent inflictingStats);
                 if (!isSelfInflicting && usesStats)
                     inflictingStats.damage.IncrementCapped(damageContext.damage);
-                
+
                 HealthProperty health = damageContext.hitPlayer.H();
                 bool isKilling = damageContext.damage >= health;
                 if (isKilling)
@@ -318,6 +319,33 @@ namespace Swihoni.Sessions.Modes
                     return hit.point + new Vector3 {y = 0.1f};
             }
             throw new Exception("No non-obstructed spawn points");
+        }
+
+        public static (ModifierBehaviorBase, Container) CreateItemEntity(in SessionContext context, in Vector3 position, byte itemId,
+                                                                         ItemComponent ammo = null, ThrowableComponent.Flags? flags = ThrowableComponent.Flags.None)
+        {
+            var entityId = (byte) (itemId + 100);
+            (ModifierBehaviorBase, Container) tuple = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, entityId);
+            (ModifierBehaviorBase modifier, Container entity) = tuple;
+            var throwable = entity.Require<ThrowableComponent>();
+            throwable.position.Value = position;
+            throwable.flags.SetToNullable(flags);
+            modifier.transform.SetPositionAndRotation(position, Quaternion.identity);
+            var item = entity.Require<ItemComponent>();
+            if (ammo == null)
+            {
+                if (ItemAssetLink.GetModifier(itemId) is GunModifierBase gunModifier)
+                {
+                    item.ammoInMag.Value = gunModifier.MagSize;
+                    item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
+                }
+            }
+            else
+            {
+                item.ammoInMag.SetTo(ammo.ammoInMag);
+                item.ammoInReserve.SetTo(ammo.ammoInReserve);
+            }
+            return tuple;
         }
     }
 }

@@ -13,33 +13,35 @@ namespace Swihoni.Sessions.Items
 {
     public static class ItemAssetLink
     {
-        private static ItemModifierBase[] _itemModifiers;
-        private static Pool<ItemVisualBehavior>[] _itemVisualPools;
-        private static ItemVisualBehavior[] _itemVisualPrefabs;
+        private static Dictionary<byte, ItemModifierBase> _itemModifiers;
+        private static Dictionary<byte, Pool<ItemVisualBehavior>> _itemVisualPools;
+        private static Dictionary<byte, ItemVisualBehavior> _itemVisualPrefabs;
 
-        public static IReadOnlyList<ItemModifierBase> ItemVisualPrefabs => _itemModifiers;
+        public static IEnumerable<ItemModifierBase> ItemVisualPrefabs => _itemModifiers.Values;
 
         [RuntimeInitializeOnLoadMethod]
         public static void Initialize()
         {
             _itemModifiers = Resources.LoadAll<ItemModifierBase>("Items")
-                                      .OrderBy(modifier => modifier.id).ToArray();
+                                      .ToDictionary(modifier => modifier.id, modifier => modifier);
             _itemVisualPrefabs = Resources.LoadAll<GameObject>("Items")
                                           .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
                                           .Where(visuals => visuals != null && visuals.Id > 0)
-                                          .OrderBy(visuals => visuals.Id).ToArray();
-            _itemVisualPools = _itemVisualPrefabs
-                              .Select(visualPrefab => new Pool<ItemVisualBehavior>(0, () =>
-                               {
-                                   ItemVisualBehavior visualsInstance = Object.Instantiate(visualPrefab);
-                                   visualsInstance.name = "Visual";
-                                   return visualsInstance;
-                               })).ToArray();
+                                          .ToDictionary(visuals => visuals.Id, visual => visual);
+            _itemVisualPools = _itemVisualPrefabs.Select(pair => new
+            {
+                id = pair.Key, pool = new Pool<ItemVisualBehavior>(0, () =>
+                {
+                    ItemVisualBehavior visualsInstance = Object.Instantiate(pair.Value);
+                    visualsInstance.name = "Visual";
+                    return visualsInstance;
+                })
+            }).ToDictionary(pair => pair.id, pair => pair.pool);
         }
 
         public static ItemVisualBehavior ObtainVisuals(byte itemId, PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {
-            Pool<ItemVisualBehavior> pool = _itemVisualPools[itemId - 1];
+            Pool<ItemVisualBehavior> pool = _itemVisualPools[itemId];
             ItemVisualBehavior visual = pool.Obtain();
             visual.SetupForPlayerAnimation(playerItemAnimator, playerGraph);
             return visual;
@@ -47,7 +49,7 @@ namespace Swihoni.Sessions.Items
 
         public static void ReturnVisuals(ItemVisualBehavior visual)
         {
-            Pool<ItemVisualBehavior> pool = _itemVisualPools[visual.Id - 1];
+            Pool<ItemVisualBehavior> pool = _itemVisualPools[visual.Id];
             visual.Cleanup();
             visual.SetActive(false);
             visual.transform.SetParent(null, true);
@@ -58,7 +60,7 @@ namespace Swihoni.Sessions.Items
         {
             try
             {
-                return _itemModifiers[itemId - 1];
+                return _itemModifiers[itemId];
             }
             catch (Exception)
             {
@@ -70,6 +72,6 @@ namespace Swihoni.Sessions.Items
             }
         }
 
-        public static ItemVisualBehavior GetVisualPrefab(byte itemId) => _itemVisualPrefabs[itemId - 1];
+        public static ItemVisualBehavior GetVisualPrefab(byte itemId) => _itemVisualPrefabs[itemId];
     }
 }

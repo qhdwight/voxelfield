@@ -15,7 +15,7 @@ namespace Swihoni.Sessions.Interfaces
     public class DefaultPlayerHud : SessionInterfaceBehavior
     {
         [SerializeField] private BufferedTextGui m_HealthText = default, m_AmmoText = default;
-        [SerializeField] private Image m_Crosshair = default, m_HitMarker = default;
+        [SerializeField] private Image m_Crosshair = default, m_HitMarker = default, m_FlashOverlayImage = default;
         [SerializeField] private Image[] m_DamageNotifiers = default;
         [SerializeField] private Color m_KillHitMarkerColor = Color.red;
         [SerializeField] private BufferedTextGui m_InventoryText = default;
@@ -130,7 +130,16 @@ namespace Swihoni.Sessions.Interfaces
                     }
                 }
             }
+            Color c = Color.white;
+            c.a = isActive && localPlayer.Require<FlashProperty>().TryWithValue(out float flash) ? flash : 0.0f;
+            m_FlashOverlayImage.color = c;
             SetInterfaceActive(isActive);
+        }
+
+        public override void SetInterfaceActive(bool isActive)
+        {
+            base.SetInterfaceActive(isActive);
+            m_FlashOverlayImage.enabled = isActive;
         }
     }
 }

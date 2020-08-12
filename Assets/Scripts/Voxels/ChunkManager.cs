@@ -291,17 +291,20 @@ namespace Voxels
 
                                 bool isInside = GetDistance(form, worldPosition, voxelWorldPosition + new Vector3(0.5f, 0.5f, 0.5f)) < absoluteRadius * 1.5f;
 
-                                if (isInside)
+                                if (change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
                                 {
-                                    if (!isAdditive && change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
-                                        evaluatedChange.hasBlock = false;
-                                    if (change.color is Color32 color)
-                                        evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
-                                    if (change.texture is byte texture)
-                                        evaluatedChange.texture = texture;
+                                    if (isInside)
+                                    {
+                                        if (!isAdditive)
+                                            evaluatedChange.hasBlock = false;
+                                        if (change.color is Color32 color)
+                                            evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
+                                        if (change.texture is byte texture)
+                                            evaluatedChange.texture = texture;
+                                    }
+                                    evaluatedChange.natural = false;
+                                    evaluatedChange.form = VoxelVolumeForm.Single;   
                                 }
-                                evaluatedChange.natural = false;
-                                evaluatedChange.form = VoxelVolumeForm.Single;
                                 SetEvaluatedVoxel(change, evaluatedChange, chunk, voxelChunkPosition);
                             }
                             break;

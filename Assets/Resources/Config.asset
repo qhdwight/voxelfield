@@ -91,7 +91,7 @@ MonoBehaviour:
       m_Value: 20000000
     secureDurationUs:
       m_Flags: 1
-      m_Value: 25000000
+      m_Value: 30000000
     playerCount:
       m_Flags: 1
       m_Value: 4

@@ -266,8 +266,9 @@ namespace Voxelfield.Session.Mode
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             var scores = context.sessionContainer.Require<DualScoresComponent>();
             Container player = context.player;
-            if (begin) player.Require<TeamProperty>().Value = (byte) ((context.playerId + 1) % 2);
-            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds)) player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
+            var teamProperty = player.Require<TeamProperty>();
+            if (begin) teamProperty.Value = (byte) ((context.playerId + 1) % 2);
+            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds) && teamProperty.TryWithValue(out byte team)) teamProperty.Value = (byte) ((team + 1) % 2);
             if (secureArea.roundTime.WithValue)
             {
                 HealthProperty health = player.H();
@@ -383,7 +384,7 @@ namespace Voxelfield.Session.Mode
             _int = count;
             return secureArea.roundTime.WithValue && scores.Any(score => score == _int);
         }
-        
+
         private static bool AtRoundSum(SecureAreaComponent secureArea, DualScoresComponent scores, int sum)
             => secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == sum;
 

@@ -5,7 +5,6 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Entities;
-using Swihoni.Sessions.Items;
 using Swihoni.Sessions.Items.Modifiers;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
@@ -87,27 +86,16 @@ namespace Voxelfield.Session.Mode
             {
                 EntityContainer entity = entities[i];
                 var throwable = entity.Require<ThrowableComponent>();
-                if (throwable.isFrozen.WithValueEqualTo(true))
+                if (throwable.flags.IsFloating && throwable.flags.IsPersistent)
                 {
                     pickupCount++;
                 }
             }
             if (pickupCount == 0)
             {
-                byte itemId = m_PickupItemIds[Random.Range(0, m_PickupItemIds.Length)].id,
-                     entityId = (byte) (itemId + 100);
-                (ModifierBehaviorBase modifier, Container entity) = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, entityId);
-                var throwable = entity.Require<ThrowableComponent>();
-                Vector3 position = DeathmatchMode.GetRandomPosition() + new Vector3 {y = 1.0f};
-                throwable.position.Value = position;
-                throwable.isFrozen.Set();
-                modifier.transform.SetPositionAndRotation(position, Quaternion.identity);
-                var item = entity.Require<ItemComponent>();
-                if (ItemAssetLink.GetModifier(itemId) is GunModifierBase gunModifier)
-                {
-                    item.ammoInMag.Value = gunModifier.MagSize;
-                    item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
-                }
+                byte pickupItemId = m_PickupItemIds[Random.Range(0, m_PickupItemIds.Length)].id;
+                CreateItemEntity(context, DeathmatchMode.GetRandomPosition() + new Vector3 {y = 0.1f}, pickupItemId,
+                                 flags: ThrowableComponent.Flags.Floating | ThrowableComponent.Flags.Persistent);
             }
         }
 

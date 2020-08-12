@@ -4834,7 +4834,6 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: baab0b8b60c355c4099899fa65ad740d, type: 2}
-  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9705,7 +9704,6 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: d430d780013b2374ca1a84abc7dc98a4, type: 2}
-  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10101,6 +10099,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 1
   m_PopAudioSource: {fileID: 1016618236123321489}
+  m_ContinuousPopAudioSource: {fileID: 0}
   m_ContactAudioSource: {fileID: 958595023506831895}
 --- !u!1001 &6165556720783937118
 PrefabInstance:
