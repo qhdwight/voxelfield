@@ -58,6 +58,7 @@ namespace Voxelfield.Session.Mode
             m_LastMapName = new VoxelMapNameProperty();
             m_Config = Config.Active.secureAreaConfig;
             SessionBase.RegisterSessionCommand("give_money");
+            _randomIndices = Enumerable.Range(0, 2).Select(_ => new List<int>()).ToArray();
         }
 
         private SiteBehavior[] GetSiteBehaviors()
@@ -140,9 +141,29 @@ namespace Voxelfield.Session.Mode
                             secureArea.lastWinningTeam.Value = RedTeam;
                         }
                         if (redAlive == 0 || blueAlive == 0)
+                        {
                             secureArea.roundTime.Value = m_Config.roundEndDurationUs;
+                            endedWithKills = true;
+                        }
                     }
-                    if (redAlive == 0 || blueAlive == 0) endedWithKills = true;
+                    else
+                    {
+                        if (redAlive == 0)
+                        {
+                            sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
+                            secureArea.lastWinningTeam.Value = BlueTeam;
+                            secureArea.roundTime.Value = m_Config.roundEndDurationUs;
+
+                            endedWithKills = true;
+                        }
+                        else if (blueAlive == 0)
+                        {
+                            sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
+                            secureArea.lastWinningTeam.Value = RedTeam;
+                            secureArea.roundTime.Value = m_Config.roundEndDurationUs;
+                            endedWithKills = true;
+                        }
+                    }
 
                     if (!endedWithKills)
                     {
@@ -276,7 +297,7 @@ namespace Voxelfield.Session.Mode
             else base.SpawnPlayer(in context, begin);
         }
 
-        private static readonly List<int> RandomIndices = new List<int>();
+        private static List<int>[] _randomIndices;
 
         protected override Vector3 GetSpawnPosition(in SessionContext context)
         {
@@ -292,15 +313,16 @@ namespace Voxelfield.Session.Mode
                 byte team = context.player.Require<TeamProperty>();
                 KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
 
-                if (RandomIndices.Count == 0)
+                List<int> indices = _randomIndices[team];
+                if (indices.Count == 0)
                 {
-                    RandomIndices.Capacity = teamSpawns.Length;
+                    indices.Capacity = teamSpawns.Length;
                     for (var i = 0; i < teamSpawns.Length; i++)
-                        RandomIndices.Add(i);
+                        indices.Add(i);
                 }
-                int index = Random.Range(0, RandomIndices.Count);
-                int spawnIndex = RandomIndices[index];
-                RandomIndices.RemoveAt(index);
+                int index = Random.Range(0, indices.Count);
+                int spawnIndex = indices[index];
+                indices.RemoveAt(index);
 
                 return AdjustSpawn(teamSpawns[spawnIndex].Key);
             }

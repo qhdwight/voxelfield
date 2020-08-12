@@ -2,6 +2,7 @@ using System.Text;
 using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Interfaces;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
@@ -63,7 +64,9 @@ namespace Voxelfield.Interface
                     isRespawnVisible = true;
                     var respawn = localPlayer.Require<RespawnTimerProperty>();
                     if (respawn == 0u)
-                        m_RespawnText.StartBuild().Append("Press [Enter] to respawn or [B] to change load out").Commit(m_RespawnText);
+                        m_RespawnText.StartBuild().Append("Press [").AppendInputKey(PlayerInput.Respawn)
+                                     .Append("] to respawn or [")
+                                     .AppendInputKey(InputType.Buy).Append("] to change load out").Commit(m_RespawnText);
                     else
                         m_RespawnText.StartBuild().Append("Time until respawn: ").AppendTime(respawn).Commit(m_RespawnText);
                 }

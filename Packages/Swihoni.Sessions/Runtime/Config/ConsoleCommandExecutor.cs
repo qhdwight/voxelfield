@@ -46,7 +46,6 @@ namespace Swihoni.Sessions.Config
 
         public static void ExecuteCommand(string fullCommand)
         {
-            DefaultConfig.OnCommand(fullCommand);
             foreach (string[] arguments in fullCommand.GetArguments())
             {
                 string commandName = arguments.First().Replace("?", string.Empty);
@@ -64,6 +63,7 @@ namespace Swihoni.Sessions.Config
                 }
                 else Debug.LogWarning($"Command \"{arguments[0]}\" not found!");
             }
+            DefaultConfig.OnCommand(fullCommand);
         }
 
         public static IEnumerable<string[]> GetArguments(this string fullCommand)

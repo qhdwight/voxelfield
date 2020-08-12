@@ -96,7 +96,7 @@ namespace Swihoni.Sessions.Interfaces
                         if (realizedIndex++ != 0) builder.Append("  ");
                         string itemName = ItemAssetLink.GetModifier(item.id).itemName;
                         // TODO:feature show key bind instead
-                        builder.Append("[").Append(index + 1).Append("] ").Append(itemName);
+                        builder.Append("[").AppendInputKey((byte) (PlayerInput.ItemOne + index)).Append("] ").Append(itemName);
                     }
                     m_InventoryText.SetText(builder);
                 }

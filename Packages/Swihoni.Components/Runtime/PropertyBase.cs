@@ -121,6 +121,7 @@ namespace Swihoni.Components
     public class BoxedEnumProperty<TEnum> : PropertyBase<TEnum> where TEnum : struct, Enum
     {
         public static DualDictionary<TEnum, string> Names { get; } = typeof(TEnum).GetNameMap<TEnum>();
+        public static DualDictionary<TEnum, string> DisplayNames { get; } = typeof(TEnum).GetNameMap<TEnum>(s => s.Replace("Alpha", string.Empty).ToDisplayCase());
 
         public BoxedEnumProperty() { }
         public BoxedEnumProperty(TEnum value) : base(value) { }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Swihoni.Collections;
 using Swihoni.Components;
@@ -12,7 +13,11 @@ namespace Swihoni.Sessions.Config
 {
     public static class InputProvider
     {
-        public static bool GetInput(byte type) => Input.GetKey(DefaultConfig.Active.inputBindings.GetKeyCode(type));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool GetInput(byte type) => Input.GetKey(GetKeyCode(type));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static KeyCode GetKeyCode(byte type) => DefaultConfig.Active.inputBindings.GetKeyCode(type);
 
         /// <summary>
         /// Should be called in normal Unity Update() methods
@@ -62,6 +67,9 @@ namespace Swihoni.Sessions.Config
             foreach (FieldInfo field in new[] {typeof(InputType), typeof(PlayerInput)}.SelectMany(t => t.GetFields(BindingFlags.Static | BindingFlags.Public)))
                 Names.Add((byte) field.GetValue(null), field.Name.ToSnakeCase());
         }
+
+        public static StringBuilder AppendInputKey(this StringBuilder builder, byte input)
+            => builder.Append(KeyCodeProperty.DisplayNames.GetForward(InputProvider.GetKeyCode(input)));
     }
 
     [Serializable]

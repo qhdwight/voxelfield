@@ -17,20 +17,18 @@ namespace Voxelfield.Session.Mode
     {
         public static void HandleBuying(ModeBase mode, Container player, Container commands)
         {
-            if (mode is IModeWithBuying buyingMode)
+            if (!(mode is IModeWithBuying buyingMode)) return;
+            
+            ByteProperty wantedBuyItemId = commands.Require<WantedItemComponent>().id;
+            if (wantedBuyItemId.WithoutValue) return;
+            
+            UShortProperty money = player.Require<MoneyComponent>().count;
+            ushort cost = buyingMode.GetCost(wantedBuyItemId);
+            if (cost <= money)
             {
-                ByteProperty wantedBuyItemId = commands.Require<WantedItemComponent>().id;
-                if (wantedBuyItemId.WithValue)
-                {
-                    UShortProperty money = player.Require<MoneyComponent>().count;
-                    ushort cost = buyingMode.GetCost(wantedBuyItemId);
-                    if (cost <= money)
-                    {
-                        var inventory = player.Require<InventoryComponent>();
-                        if (PlayerItemManagerModiferBehavior.TryAddItem(inventory, wantedBuyItemId).HasValue)
-                            money.Value -= cost;
-                    }
-                }
+                var inventory = player.Require<InventoryComponent>();
+                if (PlayerItemManagerModiferBehavior.TryAddItem(inventory, wantedBuyItemId, 1, 2).HasValue)
+                    money.Value -= cost;
             }
         }
     }

@@ -313,15 +313,20 @@ namespace Swihoni.Sessions.Player.Modifiers
             return inventory.previousEquippedIndex;
         }
 
-        public static byte? TryAddItem(InventoryComponent inventory, byte itemId, ushort count = 1)
+        public static byte? TryAddItem(InventoryComponent inventory, byte itemId, ushort count = 1, ushort limit = ushort.MaxValue)
         {
             byte? openIndex;
             if (ItemAssetLink.GetModifier(itemId) is ThrowableItemModifierBase
              && (openIndex = FindItem(inventory, item => item.id.WithoutValue || item.id == itemId)) is byte existingIndex) // Try to stack throwables if possible
             {
                 ItemComponent itemInIndex = inventory[existingIndex];
-                bool addingToExisting = itemInIndex.id.WithValue && itemInIndex.id == itemId && itemInIndex.ammoInReserve <= 1;
-                if (addingToExisting) count += itemInIndex.ammoInReserve;
+                bool addingToExisting = itemInIndex.id.WithValue && itemInIndex.id == itemId;
+                if (addingToExisting)
+                {
+                    var combined = (ushort) (itemInIndex.ammoInReserve + count);
+                    if (combined > limit) return null;
+                    count = combined;
+                }
             }
             else openIndex = FindEmpty(inventory);
             if (openIndex is byte itemIndex)
