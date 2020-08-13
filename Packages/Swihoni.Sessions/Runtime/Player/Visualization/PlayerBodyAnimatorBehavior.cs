@@ -92,7 +92,7 @@ namespace Swihoni.Sessions.Player.Visualization
             bool isAnimatorEnabled = player.With(out CameraComponent playerCamera) && isVisible && health.IsAlive,
                  isRagdollEnabled = isVisible && health.IsDead;
 
-            if (m_RagdollRigidbodies != null) SetRagdollEnabled(isRagdollEnabled);
+            if (m_RagdollRigidbodies != null) SetRagdollEnabled(isRagdollEnabled, move.velocity);
             m_Animator.enabled = isAnimatorEnabled;
             if (isAnimatorEnabled)
             {
@@ -117,12 +117,14 @@ namespace Swihoni.Sessions.Player.Visualization
             foreach (Renderer render in m_TpvRenders) render.enabled = false;
         }
 
-        private void SetRagdollEnabled(bool isActive)
+        private void SetRagdollEnabled(bool isActive, VectorProperty velocity)
         {
             for (var i = 0; i < m_RagdollRigidbodies.Length; i++)
             {
                 Rigidbody part = m_RagdollRigidbodies[i];
+                bool justSwitched = part.isKinematic && isActive;
                 part.isKinematic = !isActive;
+                if (justSwitched) part.AddForce(velocity, ForceMode.VelocityChange);
                 if (isActive) continue;
                 Transform partTransform = part.transform;
                 partTransform.localPosition = m_RagdollInitialTransforms[i].position;

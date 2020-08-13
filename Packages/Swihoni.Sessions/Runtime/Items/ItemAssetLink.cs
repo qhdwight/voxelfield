@@ -13,16 +13,15 @@ namespace Swihoni.Sessions.Items
 {
     public static class ItemAssetLink
     {
-        private static Dictionary<byte, ItemModifierBase> _itemModifiers;
         private static Dictionary<byte, Pool<ItemVisualBehavior>> _itemVisualPools;
         private static Dictionary<byte, ItemVisualBehavior> _itemVisualPrefabs;
 
-        public static IEnumerable<ItemModifierBase> ItemVisualPrefabs => _itemModifiers.Values;
+        public static Dictionary<byte, ItemModifierBase> ItemVisualPrefabs { get; private set; }
 
         [RuntimeInitializeOnLoadMethod]
         public static void Initialize()
         {
-            _itemModifiers = Resources.LoadAll<ItemModifierBase>("Items")
+            ItemVisualPrefabs = Resources.LoadAll<ItemModifierBase>("Items")
                                       .ToDictionary(modifier => modifier.id, modifier => modifier);
             _itemVisualPrefabs = Resources.LoadAll<GameObject>("Items")
                                           .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
@@ -60,7 +59,7 @@ namespace Swihoni.Sessions.Items
         {
             try
             {
-                return _itemModifiers[itemId];
+                return ItemVisualPrefabs[itemId];
             }
             catch (Exception)
             {

@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Items.Visuals
     [SelectionBase, DisallowMultipleComponent]
     public class ItemVisualBehavior : MonoBehaviour
     {
-        [SerializeField] private byte m_Id = default, m_SkinId = default;
+        [SerializeField] private byte m_Id = default; /* , m_SkinId = default; */
         [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default, m_EquipStatusVisualProperties = default;
         [SerializeField] private Transform m_IkL = default, m_IkR = default;
         [SerializeField] private Vector3 m_FpvOffset = default, m_TpvOffset = default;

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &7596273761322766592
+--- !u!1001 &1490709239120078062
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,32 +10,37 @@ PrefabInstance:
     - target: {fileID: 5575573772687058528, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}
       propertyPath: id
-      value: 110
+      value: 119
       objectReference: {fileID: 0}
     - target: {fileID: 5575573772687058529, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}
       propertyPath: m_Size.x
-      value: 0.049999997
+      value: 0.060070876
       objectReference: {fileID: 0}
     - target: {fileID: 5575573772687058529, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}
       propertyPath: m_Size.y
-      value: 0.52500004
+      value: 0.16275549
       objectReference: {fileID: 0}
     - target: {fileID: 5575573772687058529, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}
       propertyPath: m_Size.z
-      value: 0.05000002
+      value: 0.08740919
+      objectReference: {fileID: 0}
+    - target: {fileID: 5575573772687058529, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
+        type: 3}
+      propertyPath: m_Center.x
+      value: -0.0000000018626451
       objectReference: {fileID: 0}
     - target: {fileID: 5575573772687058529, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}
       propertyPath: m_Center.y
-      value: 0.26250002
+      value: 0.018877752
       objectReference: {fileID: 0}
     - target: {fileID: 5575573772687058529, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}
       propertyPath: m_Center.z
-      value: -0.0000000121071935
+      value: -0.0125184655
       objectReference: {fileID: 0}
     - target: {fileID: 5575573772687058530, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}
@@ -95,7 +100,7 @@ PrefabInstance:
     - target: {fileID: 5575573772687058531, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}
       propertyPath: m_Name
-      value: Model Wand Entity Modifier Variant
+      value: Flashbang Entity Modifier Variant
       objectReference: {fileID: 0}
     - target: {fileID: 5575573772687058531, guid: e1cf082ace0bd624d8f13cc7a9ee96fa,
         type: 3}

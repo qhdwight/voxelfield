@@ -21,10 +21,11 @@ namespace Swihoni.Sessions.Entities
         [SerializeField] protected float m_Radius = default;
         [SerializeField] private float m_Damage = default, m_Interval = default;
         [SerializeField] private LayerMask m_Mask = default;
-        [SerializeField] private float m_MinimumDamageRatio = 0.2f;
         [SerializeField] private float m_CollisionVelocityMultiplier = 0.5f;
         [SerializeField] protected bool m_IsSticky, m_ExplodeOnContact;
-
+        [SerializeField] private AnimationCurve m_DamageCurve = default;
+        [SerializeField] private float m_PlayerForce = 2.0f;
+        
         private RigidbodyConstraints m_InitialConstraints;
         private readonly Collider[] m_OverlappingColliders = new Collider[8];
         private uint m_LastElapsedUs;
@@ -162,9 +163,17 @@ namespace Swihoni.Sessions.Entities
                     byte damage = CalculateDamage(new SessionContext(player: hitPlayer, durationUs: context.durationUs));
                     int inflictingPlayerId = throwable.throwerId;
                     Container inflictingPlayer = context.GetModifyingPlayer(inflictingPlayerId);
+                    if (inflictingPlayer.Require<TeamProperty>() == hitPlayer.Require<TeamProperty>()) damage /= 2;
                     var playerContext = new SessionContext(existing: context, playerId: inflictingPlayerId, player: inflictingPlayer);
                     var damageContext = new DamageContext(playerContext, hitPlayerId, hitPlayer, damage, Name);
                     context.ModifyingMode.InflictDamage(damageContext);
+                }
+                if (hitPlayer.With(out MoveComponent move))
+                {
+                    Vector3 direction = hitCollider.transform.position - transform.position;
+                    float magnitude = 1.0f - Mathf.Clamp01(direction.magnitude / m_Radius);
+                    direction.Normalize();
+                    move.velocity.Value += direction * (magnitude * m_PlayerForce);
                 }
             }
         }
@@ -174,9 +183,9 @@ namespace Swihoni.Sessions.Entities
         private byte CalculateDamage(in SessionContext context)
         {
             float distance = Vector3.Distance(context.player.Require<MoveComponent>(), transform.position);
-            float ratio = (m_MinimumDamageRatio - 1.0f) * Mathf.Clamp01(distance / m_Radius) + 1.0f;
+            float ratio = Mathf.Clamp01(distance / m_Radius);
             if (m_Interval > 0u) ratio *= context.durationUs * TimeConversions.MicrosecondToSecond;
-            return checked((byte) Mathf.Max(m_Damage * ratio, 1.0f));
+            return (byte) Mathf.RoundToInt(m_DamageCurve.Evaluate(ratio) * m_Damage);
         }
     }
 }

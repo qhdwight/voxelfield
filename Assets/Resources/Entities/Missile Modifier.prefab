@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 26372125770310049}
   - component: {fileID: 26372125770310051}
   - component: {fileID: 26372125770310048}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 26372127107003134}
   - component: {fileID: 26372127107003135}
   - component: {fileID: 26372127107003132}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Missile Modifier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -152,10 +152,34 @@ MonoBehaviour:
   m_Mask:
     serializedVersion: 2
     m_Bits: 65536
-  m_MinimumDamageRatio: 0.2
   m_CollisionVelocityMultiplier: 0.5
   m_IsSticky: 0
   m_ExplodeOnContact: 1
+  m_DamageCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.2
+      value: 1
+      inSlope: -1
+      outSlope: -1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.8
+      value: 0.4
+      inSlope: -1
+      outSlope: -1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_PlayerForce: 2
 --- !u!136 &26372127107003132
 CapsuleCollider:
   m_ObjectHideFlags: 0

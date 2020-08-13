@@ -1,19 +1,19 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &8971456739437520385
+--- !u!114 &9035333409051971629
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7571529735877476581}
+  m_GameObject: {fileID: 4365079016129868545}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9d92a248ebe24f3eb8b4985ef42d2f74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   id: 111
---- !u!1001 &5035434991676446166
+--- !u!1001 &1180487785926370866
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -97,9 +97,9 @@ PrefabInstance:
     - {fileID: 5421558888622324386, guid: c79e2f2b3dd08124f9cb6714d397f6f5, type: 3}
     - {fileID: 5658017041317720039, guid: c79e2f2b3dd08124f9cb6714d397f6f5, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: c79e2f2b3dd08124f9cb6714d397f6f5, type: 3}
---- !u!1 &7571529735877476581 stripped
+--- !u!1 &4365079016129868545 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3238667986642048307, guid: c79e2f2b3dd08124f9cb6714d397f6f5,
     type: 3}
-  m_PrefabInstance: {fileID: 5035434991676446166}
+  m_PrefabInstance: {fileID: 1180487785926370866}
   m_PrefabAsset: {fileID: 0}
