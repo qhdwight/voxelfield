@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Swihoni.Collections;
@@ -14,6 +17,7 @@ using Swihoni.Sessions.Player.Visualization;
 using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Profiling;
+using Debug = UnityEngine.Debug;
 
 namespace Swihoni.Sessions
 {
@@ -121,7 +125,7 @@ namespace Swihoni.Sessions
             Profiler.BeginSample("Client Receive");
             Receive(timeUs);
             Profiler.EndSample();
-            
+
             base.Tick(tick, timeUs, durationUs);
             m_Injector.OnPostTick(latestSession);
 
@@ -135,6 +139,8 @@ namespace Swihoni.Sessions
         }
 
         private static uint _timeUs;
+        
+        private static readonly DurationAverage DurationAverage = new DurationAverage(60);
 
         void IReceiver.OnReceive(NetPeer fromPeer, NetDataReader reader, byte code)
         {
@@ -145,7 +151,12 @@ namespace Swihoni.Sessions
                     Profiler.BeginSample("Client Receive Setup");
                     ServerSessionContainer previousServerSession = m_SessionHistory.Peek();
 
-                    m_EmptyServerSession.Deserialize(reader);
+                    DurationAverage.Start();
+                    m_Injector.DeserializeReceived(m_EmptyServerSession, reader);
+                    // m_EmptyServerSession.Deserialize(reader);
+                    DurationAverage.Stop();
+                    if (m_EmptyServerSession.Require<ServerStampComponent>().tick % 60 == 0) Debug.Log(DurationAverage.Average());
+
                     ServerSessionContainer receivedServerSession = m_EmptyServerSession;
 
                     uint serverTick = receivedServerSession.Require<ServerStampComponent>().tick;
@@ -327,7 +338,7 @@ namespace Swihoni.Sessions
             else _element.Clear();
             return Navigation.SkipDescendents;
         });
-        
+
         private void SendCommand() => m_Socket.SendToServer(m_CommandHistory.Peek(), DeliveryMethod.ReliableUnordered);
 
         private static bool _predictionIsAccurate; // Prevents heap allocation in closure
@@ -347,9 +358,7 @@ namespace Swihoni.Sessions
                         _currentProperty.IsOverride = _receivedProperty.IsOverride;
                     }
                     else
-                    {
                         _currentProperty.SetTo((PropertyBase) _previous);
-                    }
                 }
                 return Navigation.Continue;
             }, previousServerSession, serverSession, receivedServerSession);

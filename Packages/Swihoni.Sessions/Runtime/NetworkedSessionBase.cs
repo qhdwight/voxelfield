@@ -32,6 +32,11 @@ namespace Swihoni.Sessions
         public IPEndPoint IpEndPoint { get; }
         public abstract ComponentSocketBase Socket { get; }
 
+#if UNITY_EDITOR
+        public ServerSessionContainer HistoryServerSession => m_SessionHistory.Peek();
+        public ServerSessionContainer ReceivedServerSession => m_EmptyServerSession;
+#endif
+
         private static bool _isInGame;
         protected static int _indexer;
         protected static CyclicArray<ServerSessionContainer> _serverHistory;

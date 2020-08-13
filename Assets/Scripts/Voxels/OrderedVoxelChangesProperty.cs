@@ -11,6 +11,7 @@ namespace Voxels
         public VoxelChangeProperty(in VoxelChange value) : base(value) { }
         public override void SerializeValue(NetDataWriter writer) => VoxelChangeSerializer.Serialize(Value, writer);
         public override void DeserializeValue(NetDataReader reader) => Value = VoxelChangeSerializer.Deserialize(reader);
+        public override bool ValueEquals(in VoxelChange value) => Value == value;
     }
 
     [Serializable, SingleTick]

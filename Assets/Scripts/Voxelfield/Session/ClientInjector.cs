@@ -11,7 +11,7 @@ using Voxels;
 
 namespace Voxelfield.Session
 {
-    public class ClientInjector : Injector
+    public partial class ClientInjector : Injector
     {
         private readonly Pool<OrderedVoxelChangesProperty> m_ChangesPool = new Pool<OrderedVoxelChangesProperty>(1, () => new OrderedVoxelChangesProperty());
         private readonly UIntProperty m_Pointer = new UIntProperty();

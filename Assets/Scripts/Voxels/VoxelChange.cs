@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Swihoni.Util.Math;
 using UnityEngine;
 
@@ -47,6 +49,45 @@ namespace Voxels
             if (change.form.HasValue) form = change.form.Value;
             if (change.upperBound.HasValue) upperBound = change.upperBound.Value;
         }
+
+        public bool Equals(VoxelChange other)
+            => Nullable.Equals(position, other.position) && texture == other.texture && density == other.density && orientation == other.orientation &&
+               hasBlock == other.hasBlock && isBreakable == other.isBreakable && natural == other.natural && replace == other.replace && modifiesBlocks == other.modifiesBlocks &&
+               noRandom == other.noRandom && revert == other.revert && isBreathable == other.isBreathable && Nullable.Equals(color, other.color) &&
+               Nullable.Equals(magnitude, other.magnitude) && Nullable.Equals(yaw, other.yaw) && form == other.form && Nullable.Equals(upperBound, other.upperBound) &&
+               isUndo == other.isUndo;
+
+        public override bool Equals(object other) => other is VoxelChange otherChange && Equals(otherChange);
+
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = position.GetHashCode();
+                hashCode = (hashCode * 397) ^ texture.GetHashCode();
+                hashCode = (hashCode * 397) ^ density.GetHashCode();
+                hashCode = (hashCode * 397) ^ orientation.GetHashCode();
+                hashCode = (hashCode * 397) ^ hasBlock.GetHashCode();
+                hashCode = (hashCode * 397) ^ isBreakable.GetHashCode();
+                hashCode = (hashCode * 397) ^ natural.GetHashCode();
+                hashCode = (hashCode * 397) ^ replace.GetHashCode();
+                hashCode = (hashCode * 397) ^ modifiesBlocks.GetHashCode();
+                hashCode = (hashCode * 397) ^ noRandom.GetHashCode();
+                hashCode = (hashCode * 397) ^ revert.GetHashCode();
+                hashCode = (hashCode * 397) ^ isBreathable.GetHashCode();
+                hashCode = (hashCode * 397) ^ color.GetHashCode();
+                hashCode = (hashCode * 397) ^ magnitude.GetHashCode();
+                hashCode = (hashCode * 397) ^ yaw.GetHashCode();
+                hashCode = (hashCode * 397) ^ form.GetHashCode();
+                hashCode = (hashCode * 397) ^ upperBound.GetHashCode();
+                hashCode = (hashCode * 397) ^ isUndo.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(VoxelChange left, VoxelChange right) => left.Equals(right);
+        public static bool operator !=(VoxelChange left, VoxelChange right) => !left.Equals(right);
 
         #endregion
     }

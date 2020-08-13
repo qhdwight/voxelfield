@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 6afe4ecb9dc47204c8b313643b96b995
+guid: 1d68daeceb8912e40bb2da9a67bf8dc3
 ModelImporter:
   serializedVersion: 20101
   internalIDToNameTable: []
@@ -7,7 +7,7 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Black Metal
+      name: Metal Black
     second: {fileID: 2100000, guid: 015b5a4aa07b3364daa37a8ae1902a0b, type: 2}
   materials:
     materialImportMode: 1

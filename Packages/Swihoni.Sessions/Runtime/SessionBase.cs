@@ -100,6 +100,8 @@ namespace Swihoni.Sessions
         public virtual void OnServerMove(in SessionContext context, MoveComponent move) { }
 
         public virtual void ModifyPlayer(in SessionContext context) { }
+
+        public virtual void DeserializeReceived(ServerSessionContainer session, NetDataReader reader) => session.Deserialize(reader);
     }
 
     public abstract class SessionBase : IDisposable

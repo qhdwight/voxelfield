@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
 using LiteNetLib.Utils;
 using Swihoni.Collections;
@@ -276,7 +277,13 @@ namespace Swihoni.Components
         {
             if (!(other is PropertyBase<T> otherProperty))
                 throw new ArgumentException("Other property is not of the same type");
-            if (otherProperty.WithValue) Value = otherProperty.Value;
+            SetTo(otherProperty);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetTo(PropertyBase<T> other)
+        {
+            if (other.WithValue) Value = other.Value;
             else Clear();
         }
 
@@ -303,6 +310,7 @@ namespace Swihoni.Components
         /// <exception cref="WithoutValueException">If <see cref="p1"/> or <see cref="p2"/> is without a value.</exception>
         public virtual void ValueInterpolateFrom(PropertyBase<T> p1, PropertyBase<T> p2, float interpolation) => SetFromIfWith(p2);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sealed override void Serialize(NetDataWriter writer)
         {
             if (DontSerialize) return;
@@ -311,6 +319,7 @@ namespace Swihoni.Components
             SerializeValue(writer);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sealed override void Deserialize(NetDataReader reader)
         {
             if (DontSerialize) return;
@@ -320,10 +329,12 @@ namespace Swihoni.Components
         }
 
         /// <exception cref="WithoutValueException">If without value.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void SerializeValue(NetDataWriter writer)
             => throw new NotSupportedException($"Serializing this property is not supported. Override {GetType().Name}.{nameof(SerializeValue)} if this is not intentional");
 
         /// <exception cref="WithoutValueException">If without value.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void DeserializeValue(NetDataReader reader)
             => throw new NotSupportedException($"Deserializing this property is not supported. Override {GetType().Name}.{nameof(DeserializeValue)} if this is not intentional");
     }

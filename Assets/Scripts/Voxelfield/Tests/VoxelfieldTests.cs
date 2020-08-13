@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics;
 using System.Linq;
 using LiteNetLib.Utils;
 using NUnit.Framework;
@@ -6,6 +8,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
 using Voxels.Map;
+using Debug = UnityEngine.Debug;
 
 namespace Voxelfield.Tests
 {
@@ -36,9 +39,7 @@ namespace Voxelfield.Tests
         [Test]
         public static void TestMeme()
         {
-            // var terrain = new TerrainGenerationComponent
-            //     {stoneVoxel = new VoxelChangeProperty(new VoxelChange {texture = VoxelTexture.Checkered, color = new Color32(28, 28, 28, 255)})};
-            var map = new MapContainer
+            var writeMap = new MapContainer
             {
                 name = new StringProperty("Fort"),
                 terrainHeight = new IntProperty(9),
@@ -57,16 +58,66 @@ namespace Voxelfield.Tests
                 models = new ModelsProperty(),
                 breakableEdges = new BoolProperty(false)
             };
-            map.version.SetTo(Application.version);
+            writeMap.version.SetTo(Application.version);
 
             var writer = new NetDataWriter();
-            map.Serialize(writer);
+            writeMap.Serialize(writer);
 
-            var reader = new NetDataReader(writer.Data);
-            var read = new TerrainGenerationComponent();
+            var readMap = new MapContainer();
 
-            read.Deserialize(reader);
-            Assert.AreEqual(0, map.voxelChanges.Count);
+            {
+                var reader = new NetDataReader(writer.Data);
+                var watch = new Stopwatch();
+                watch.Start();
+                readMap.Deserialize(reader);
+                watch.Stop();
+                Debug.Log($"Recursion Elapsed: {watch.ElapsedTicks}");   
+            }
+
+            {
+                var reader = new NetDataReader(writer.Data);
+                var watch = new Stopwatch();
+                watch.Start();
+                MapContainer element = readMap;
+                NetDataReader _reader = reader;
+                ((PropertyBase)element[0]).Deserialize(_reader);
+                ((PropertyBase)element[1]).Deserialize(_reader);
+                ((PropertyBase)element[2]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[3])[0]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[3])[1]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[0]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[1]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[2]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[3]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[4]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[5]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[6]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[7]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[8]).Deserialize(_reader);
+                ((PropertyBase)((ComponentBase)element[4])[9]).Deserialize(_reader);
+                ((PropertyBase)element[5]).Deserialize(_reader);
+                ((PropertyBase)element[6]).Deserialize(_reader);
+                ((PropertyBase)element[7]).Deserialize(_reader);
+                watch.Stop();
+                Debug.Log($"Inline Elapsed: {watch.ElapsedTicks}");   
+            }
+
+            ElementExtensions.NavigateZipped((_write, _read) =>
+            {
+                if (_write is PropertyBase _writeProperty && _read is PropertyBase _readProperty)
+                {
+                    try
+                    {
+                        Assert.IsTrue(_writeProperty.Equals(_readProperty));
+                    }
+                    catch (NotImplementedException)
+                    {
+                        // ignored
+                    }
+                }
+                return Navigation.Continue;
+            }, writeMap, readMap);
+            Assert.AreEqual(0, readMap.voxelChanges.Count);
         }
     }
 }

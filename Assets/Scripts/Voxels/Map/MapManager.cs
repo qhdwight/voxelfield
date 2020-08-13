@@ -21,7 +21,7 @@ namespace Voxels.Map
         private const string MapSaveExtension = "vfm", MapSaveFolder = "Maps";
 
         private static StringProperty _emptyMapName;
-        private static readonly MapContainer EmptyMap = new MapContainer().Zero();
+        private static MapContainer _emptyMap;
         private static Dictionary<string, TextAsset> _defaultMaps;
 
 #if UNITY_EDITOR
@@ -39,6 +39,7 @@ namespace Voxels.Map
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Initialize()
         {
+            _emptyMap = new MapContainer().Zero();
             _emptyMapName = new StringProperty();
             _defaultMaps = Resources.LoadAll<TextAsset>("Maps").ToDictionary(mapAsset => mapAsset.name, m => m);
             ModelPrefabs = Resources.LoadAll<ModelBehaviorBase>("Models")
@@ -139,7 +140,7 @@ namespace Voxels.Map
         private IEnumerator LoadNamedMap(StringProperty mapName)
         {
             bool isEmpty = mapName.WithoutValue;
-            MapContainer map = isEmpty ? EmptyMap : ReadNamedMap(mapName);
+            MapContainer map = isEmpty ? _emptyMap : ReadNamedMap(mapName);
             Debug.Log(isEmpty ? "Unloading map" : $"Starting to load map: {mapName}");
 
 #if UNITY_EDITOR

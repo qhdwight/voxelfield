@@ -146,8 +146,8 @@ namespace Swihoni.Sessions
             ArrayElementBase array = ExtractArray(session);
             for (var index = 0; index < array.Length; index++)
             {
-                var container = (Container) array.GetValue(index);
-                var idProperty = container.Require<ByteIdProperty>();
+                var container = (Container) array[index];
+;                var idProperty = container.Require<ByteIdProperty>();
                 if (idProperty.WithValue && idProperty != None) continue;
                 /* Found empty slot */
                 Setup(container);
@@ -158,7 +158,7 @@ namespace Swihoni.Sessions
             // TODO:refactor better way?
             {
                 ReturnModifierAtIndex(0);
-                var container = (Container) array.GetValue(0);
+                var container = (Container) array[0];
                 Setup(container);
                 container.Require<ByteIdProperty>().Value = (byte) id;
                 return (ObtainModifierAtIndex(container, 0, id), container);
@@ -222,7 +222,7 @@ namespace Swihoni.Sessions
             ArrayElementBase elements = ExtractArray(session);
             for (var index = 0; index < elements.Length; index++)
             {
-                var containerElement = (Container) elements.GetValue(index);
+                var containerElement = (Container) elements[index];
                 var id = containerElement.Require<ByteIdProperty>();
                 if (id.WithValue && id > None)
                     iterate(m_Modifiers[index], index, containerElement);
@@ -245,7 +245,7 @@ namespace Swihoni.Sessions
         {
             for (var index = 0; index < array.Length; index++)
             {
-                var container = (Container) array.GetValue(index);
+                var container = (Container) array[index];
                 var id = container.Require<ByteIdProperty>();
                 if (id.WithoutValue || id == None)
                 {

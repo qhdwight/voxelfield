@@ -13,6 +13,8 @@ namespace Swihoni.Components
         public abstract Type GetElementType { get; }
 
         public abstract ElementBase GetValue(int index);
+        
+        public ElementBase this[int index] => GetValue(index);
     }
 
     [Serializable]
@@ -34,7 +36,7 @@ namespace Swihoni.Components
                 m_Values[i] = constructor();
         }
 
-        public T this[int index]
+        public new T this[int index]
         {
             get => m_Values[index];
             set => m_Values[index] = value;
