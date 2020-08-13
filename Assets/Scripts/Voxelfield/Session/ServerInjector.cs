@@ -253,6 +253,7 @@ namespace Voxelfield.Session
 
         public override void OnStart()
         {
+            base.OnStart();
             if (!(m_UseSteam = Config.Active.authenticateSteam)) return;
             try
             {

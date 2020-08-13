@@ -143,7 +143,7 @@ namespace Voxelfield.Session.Mode
             if (pickupCount == 0)
             {
                 byte pickupItemId = m_PickupItemIds[Random.Range(0, m_PickupItemIds.Length)].id;
-                CreateItemEntity(context, DeathmatchMode.GetRandomPosition() + new Vector3 {y = 0.1f}, pickupItemId,
+                CreateItemEntity(context, DeathmatchMode.GetRandomPosition(), pickupItemId,
                                  flags: ThrowableComponent.Flags.Floating | ThrowableComponent.Flags.Persistent);
             }
         }
@@ -162,8 +162,7 @@ namespace Voxelfield.Session.Mode
             var wantedItems = context.commands.Require<WantedItemIdsComponent>();
             var inventory = context.player.Require<InventoryComponent>();
             // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 1; i < wantedItems.Length; i++)
-            {
+            for (var i = 1; i < wantedItems.Length; i++) {
                 ByteProperty wantedId = wantedItems[i];
                 if (inventory[i].id != wantedId) PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, wantedId.AsNullable, i);
             }

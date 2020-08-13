@@ -66,7 +66,7 @@ namespace Swihoni.Sessions
                 }
                 Profiler.EndSample();
 
-                var context = new SessionContext(this, m_RenderSession);
+                var context = new SessionContext(this, m_RenderSession, timeUs: renderTimeUs);
 
                 Profiler.BeginSample("Client Render Interfaces");
                 RenderInterfaces(context);

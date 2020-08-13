@@ -310,18 +310,19 @@ namespace Swihoni.Sessions.Modes
             for (var _ = 0; _ < 16; _++, spawn.y += 2.0f)
             {
                 if (Physics.Raycast(spawn, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
-                    return hit.point + new Vector3 {y = 0.1f};
+                    return hit.point + new Vector3 {y = 0.05f};
             }
             throw new Exception("No non-obstructed spawn points");
         }
 
-        public static (ModifierBehaviorBase, Container) CreateItemEntity(in SessionContext context, in Vector3 position, byte itemId,
+        public static (ModifierBehaviorBase, Container) CreateItemEntity(in SessionContext context, Vector3 position, byte itemId,
                                                                          ItemComponent ammo = null, ThrowableComponent.Flags? flags = ThrowableComponent.Flags.None)
         {
             var entityId = (byte) (itemId + 100);
             (ModifierBehaviorBase, Container) tuple = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, entityId);
             (ModifierBehaviorBase modifier, Container entity) = tuple;
             var throwable = entity.Require<ThrowableComponent>();
+            position += new Vector3 {y = 0.5f};
             throwable.position.Value = position;
             throwable.flags.SetToNullable(flags);
             modifier.transform.SetPositionAndRotation(position, Quaternion.identity);

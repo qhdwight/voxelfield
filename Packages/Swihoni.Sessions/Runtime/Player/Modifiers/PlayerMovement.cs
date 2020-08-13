@@ -153,6 +153,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             bool UprightBlocked()
             {
+                if (move.type == MoveType.Flying) return false;
                 m_ControllerGameObject.layer = NoDetectionLayer;
                 int count = Physics.RaycastNonAlloc(move.position.Value + new Vector3 {y = RaycastOffset}, Vector3.up,
                                                     m_CachedGroundHits, m_ControllerHeight - RaycastOffset * 2, m_GroundMask);

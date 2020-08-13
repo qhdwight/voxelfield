@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Discord;
+using Swihoni.Sessions;
 using Swihoni.Sessions.Config;
 using Swihoni.Util;
 using UnityEngine;
@@ -23,11 +24,16 @@ namespace Voxelfield.Integration
             var activity = new Activity
             {
                 Type = ActivityType.Playing,
-                Timestamps = new ActivityTimestamps {Start = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()},
+                Timestamps = new ActivityTimestamps {Start = SessionExtensions.UnixNow},
                 Assets = new ActivityAssets {LargeImage = "logo"}
             };
             modify(ref activity);
-            ActivityManager.UpdateActivity(activity, result => Debug.Log($"[Discord] Setting status to: {activity.State} result: {result}"));
+            ActivityManager.UpdateActivity(activity, result =>
+            {
+#if !VOXELFIELD_RELEASE_CLIENT
+                Debug.Log($"[Discord] Setting status to: {activity.State} result: {result}");
+#endif
+            });
         }
 
         public static void SetActivity(string state) => SetActivity((ref Activity activity) => activity.State = state);

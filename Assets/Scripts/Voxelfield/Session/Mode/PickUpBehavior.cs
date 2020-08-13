@@ -11,7 +11,7 @@ namespace Voxelfield.Session.Mode
             Health, Ammo
         }
 
-        [SerializeField] private Type m_Type;
+        [SerializeField] private Type m_Type = default;
 
         public Type T => m_Type;
 

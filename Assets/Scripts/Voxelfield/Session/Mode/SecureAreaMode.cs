@@ -266,7 +266,11 @@ namespace Voxelfield.Session.Mode
             var scores = context.sessionContainer.Require<DualScoresComponent>();
             Container player = context.player;
             var teamProperty = player.Require<TeamProperty>();
-            if (begin) teamProperty.Value = (byte) ((context.playerId + 1) % 2);
+            if (begin)
+            {
+                teamProperty.Value = (byte) ((context.playerId + 1) % 2);
+                player.ZeroIfWith<StatsComponent>();
+            }
             else if (AtRoundSum(secureArea, scores, m_Config.maxRounds) && teamProperty.TryWithValue(out byte team)) teamProperty.Value = (byte) ((team + 1) % 2);
             if (secureArea.roundTime.WithValue)
             {

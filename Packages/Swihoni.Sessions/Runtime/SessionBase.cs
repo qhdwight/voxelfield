@@ -422,6 +422,8 @@ namespace Swihoni.Sessions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static HealthProperty Health(this Container player) => player.Require<HealthProperty>();
 
+        public static long UnixNow => new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+
         public static string ExecuteProcess(string command, string workingDirectory = null)
         {
             int firstSpace = command.IndexOf(" ", StringComparison.Ordinal);

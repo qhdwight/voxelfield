@@ -3,6 +3,8 @@
 #endif
 
 using System;
+using System.Text;
+using Discord;
 using LiteNetLib.Utils;
 using Steamworks;
 using Swihoni.Components;
@@ -27,13 +29,14 @@ namespace Voxelfield.Session
 
     public class Injector : SessionInjectorBase
     {
-        protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
+        private const int DiscordUpdateRate = 10;
 
+        protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
         protected AuthTicket m_SteamAuthenticationTicket;
 
+        private long m_UnixStart;
         private bool m_IsLoading = true;
-        private readonly ModeIdProperty m_PreviousMode = new ModeIdProperty();
 
         [RuntimeInitializeOnLoadMethod]
         private static void Initialize() => SessionBase.RegisterSessionCommand("reload_map");
@@ -58,6 +61,8 @@ namespace Voxelfield.Session
 
         protected override void OnDispose() => MapManager.Singleton.SetMapToUnloaded();
 
+        public override void OnStart() => m_UnixStart = SessionExtensions.UnixNow;
+
         public override void OnStop()
         {
             if (SteamClient.IsValid) m_SteamAuthenticationTicket?.Cancel();
@@ -70,7 +75,7 @@ namespace Voxelfield.Session
             var mapName = session.Require<VoxelMapNameProperty>();
             if (MapManager.Singleton.SetNamedMap(mapName)) OnMapChange();
 
-            if (session.Require<ModeIdProperty>().CompareUpdate(m_PreviousMode)) OnModeChange(session);
+            if (session.Require<ServerStampComponent>().tick % (session.Require<TickRateProperty>() * DiscordUpdateRate) == 0) OnModePeriodic(session);
 
             MapLoadingStage stage = ChunkManager.Singleton.ProgressInfo.stage;
             if (stage == MapLoadingStage.Failed) throw new Exception("Map failed to load");
@@ -82,8 +87,20 @@ namespace Voxelfield.Session
                 modelBehavior.SetInMode(session);
         }
 
-        private static void OnModeChange(Container session)
-            => DiscordManager.SetActivity($"In Match - {ModeIdProperty.DisplayNames.GetForward(session.Require<ModeIdProperty>())}");
+        private void OnModePeriodic(Container session)
+        {
+            var state = new StringBuilder();
+            state.AppendPropertyValue(session.Require<VoxelMapNameProperty>())
+                 .Append(" - ")
+                 .Append(ModeIdProperty.DisplayNames.GetForward(session.Require<ModeIdProperty>()));
+            if (session.With(out DualScoresComponent scores))
+                state.Append(" - ").Append(scores[0].TryWithValue(out byte s1) && scores[1].TryWithValue(out byte s2) ? $"{s1} to {s2}" : "In Warmup");
+            DiscordManager.SetActivity((ref Activity activity) =>
+            {
+                activity.State = state.ToString();
+                activity.Timestamps = new ActivityTimestamps {Start = m_UnixStart};
+            });
+        }
 
         public override bool IsLoading(in SessionContext context) => m_IsLoading;
 
