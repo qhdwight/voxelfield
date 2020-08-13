@@ -153,7 +153,7 @@ namespace Swihoni.Sessions.Modes
             Container player = context.hitPlayer;
             player.ZeroIfWith<HealthProperty>();
             player.ClearIfWith<HitMarkerComponent>();
-            if (player.With(out StatsComponent stats)) stats.deaths.SafeIncrement();
+            if (player.With(out StatsComponent stats)) stats.deaths.Increment();
             if (player.With(out InventoryComponent inventory))
             {
                 if (inventory.WithItemEquipped(out ItemComponent equipped) && inventory.equippedIndex > 0)
@@ -173,12 +173,8 @@ namespace Swihoni.Sessions.Modes
 
             if (context.tickDelta >= 1)
             {
-                if (context.player.With(out HitMarkerComponent hitMarker) && hitMarker.elapsedUs.WithValue)
-                    if (hitMarker.elapsedUs.Value > context.durationUs) hitMarker.elapsedUs.Value -= context.durationUs;
-                    else hitMarker.Clear();
-                if (context.player.With(out DamageNotifierComponent damageNotifier) && damageNotifier.elapsedUs.WithValue)
-                    if (damageNotifier.elapsedUs.Value > context.durationUs) damageNotifier.elapsedUs.Value -= context.durationUs;
-                    else damageNotifier.Clear();
+                if (context.player.With(out HitMarkerComponent hitMarker)) hitMarker.timeUs.Subtract(context.durationUs, true);
+                if (context.player.With(out DamageNotifierComponent damageNotifier)) damageNotifier.timeUs.Subtract(context.durationUs, true);
                 if (context.player.With(out MoveComponent move) && health.IsAlive && move.position.Value.y < -32.0f)
                     InflictDamage(new DamageContext(context, context.playerId, context.player, health.Value, "Void"));
             }
@@ -206,9 +202,7 @@ namespace Swihoni.Sessions.Modes
         {
             if (context.sessionContainer.Without(out KillFeedElement killFeed)) return;
             foreach (KillFeedComponent kill in killFeed)
-                if (kill.elapsedUs.WithValue)
-                    if (kill.elapsedUs > context.durationUs) kill.elapsedUs.Value -= context.durationUs;
-                    else kill.Clear();
+                kill.timeUs.Subtract(context.durationUs, true);
         }
 
         public virtual void PlayerHit(in PlayerHitContext playerHitContext)
@@ -241,23 +235,23 @@ namespace Swihoni.Sessions.Modes
                 if (!isSelfInflicting && usesStats)
                     inflictingStats.damage.IncrementCapped(damageContext.damage);
 
-                HealthProperty health = damageContext.hitPlayer.H();
+                HealthProperty health = damageContext.hitPlayer.Health();
                 bool isKilling = damageContext.damage >= health;
                 if (isKilling)
                 {
                     KillPlayer(damageContext);
 
                     if (!isSelfInflicting && usesStats)
-                        inflictingStats.kills.SafeIncrement();
+                        inflictingStats.kills.Increment();
 
                     if (usesHitMarker) hitMarker.isKill.Set();
 
                     if (damageContext.sessionContext.sessionContainer.Without(out KillFeedElement killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)
                     {
-                        if (kill.elapsedUs.WithValue) continue;
+                        if (kill.timeUs.WithValue) continue;
                         // Empty kill found
-                        kill.elapsedUs.Value = 2_000_000u;
+                        kill.timeUs.Value = 2_000_000u;
                         kill.killingPlayerId.Value = (byte) damageContext.InflictingPlayerId;
                         kill.killedPlayerId.Value = (byte) damageContext.hitPlayerId;
                         kill.isHeadShot.Value = damageContext.isHeadShot;
@@ -274,10 +268,10 @@ namespace Swihoni.Sessions.Modes
                 }
 
                 const uint notifierDuration = 1_000_000u;
-                if (usesHitMarker) hitMarker.elapsedUs.Value = notifierDuration;
+                if (usesHitMarker) hitMarker.timeUs.Value = notifierDuration;
                 if (usesNotifier)
                 {
-                    damageNotifier.elapsedUs.Value = 2_000_000u;
+                    damageNotifier.timeUs.Value = 2_000_000u;
                     damageNotifier.inflictingPlayerId.Value = (byte) damageContext.InflictingPlayerId;
                     damageNotifier.damage.Value = damageContext.damage;
                 }
@@ -293,7 +287,7 @@ namespace Swihoni.Sessions.Modes
         public virtual StringBuilder AppendUsername(StringBuilder builder, Container player, bool grayOutDead = false)
         {
             Color color = GetTeamColor(player.Require<TeamProperty>());
-            if (grayOutDead && player.H().IsDead) color *= 0.6f;
+            if (grayOutDead && player.Health().IsDead) color *= 0.6f;
             string hex = GetHexColor(color);
             return builder.Append("<color=#").Append(hex).Append(">").AppendRealizedUsername(player).Append("</color>");
         }
@@ -303,7 +297,7 @@ namespace Swihoni.Sessions.Modes
         public virtual Color GetTeamColor(TeamProperty team) => GetTeamColor(team.AsNullable);
 
         protected static int GetActivePlayerCount(Container session)
-            => session.Require<PlayerContainerArrayElement>().Count(player => player.H().WithValue);
+            => session.Require<PlayerContainerArrayElement>().Count(player => player.Health().WithValue);
 
         public virtual void Initialize() { }
 

@@ -216,13 +216,10 @@ namespace Swihoni.Components
 
         public static bool operator !=(PropertyBase<T> p1, PropertyBase<T> p2) => !(p1 == p2);
 
-        public bool SetValueIfEmpty(in T value)
+        public bool SetValueIfWithout(T value = default)
         {
-            if (WithoutValue)
-            {
-                Value = value;
-                return true;
-            }
+            if (WithValue) return false;
+            Value = value;
             return false;
         }
 

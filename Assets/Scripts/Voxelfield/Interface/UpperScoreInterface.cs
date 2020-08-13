@@ -58,7 +58,7 @@ namespace Voxelfield.Interface
             for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
             {
                 Container player = require[playerId];
-                if (player.H().IsActiveAndAlive && player.Require<TeamProperty>().TryWithValue(out byte team))
+                if (player.Health().IsActiveAndAlive && player.Require<TeamProperty>().TryWithValue(out byte team))
                 {
                     if (team == LeftTeam) leftAlive++;
                     else if (team == RightTeam) rightAlive++;

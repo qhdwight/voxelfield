@@ -52,6 +52,8 @@ namespace Swihoni.Sessions
 
         public ModeBase Mode => ModeManager.GetMode(sessionContainer.Require<ModeIdProperty>());
 
+        public ModeBase ModifyingMode => session.GetModifyingMode(sessionContainer);
+
         public Container ModifyingPlayer => session.GetModifyingPlayerFromId(playerId, sessionContainer);
 
         public Container GetModifyingPlayer(int otherPlayerId) => session.GetModifyingPlayerFromId(otherPlayerId, sessionContainer);
@@ -69,7 +71,7 @@ namespace Swihoni.Sessions
             }
             localPlayerId = localPlayerIdProperty;
             localPlayer = GetModifyingPlayer(localPlayerId);
-            HealthProperty health = localPlayer.H();
+            HealthProperty health = localPlayer.Health();
             return health.WithValue && (!needsToBeAlive || health.IsAlive);
         }
 

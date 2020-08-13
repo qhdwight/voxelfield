@@ -79,8 +79,7 @@ namespace Voxelfield.Session.Mode
             {
                 // TODO:refactor this snippet is used multiple times
                 if (health.IsAlive || context.player.Without(out RespawnTimerProperty respawn)) return;
-                if (respawn.Value > context.durationUs) respawn.Value -= context.durationUs;
-                else respawn.Value = 0u;
+                respawn.Subtract(context.durationUs);
             }
             else base.HandleAutoRespawn(in context, health);
         }
@@ -109,7 +108,7 @@ namespace Voxelfield.Session.Mode
             int activePlayerCount = 0, redAlive = 0, blueAlive = 0;
             foreach (Container player in players)
             {
-                HealthProperty health = player.H();
+                HealthProperty health = player.Health();
                 if (health.WithoutValue) continue;
 
                 activePlayerCount++;
@@ -173,7 +172,7 @@ namespace Voxelfield.Session.Mode
                                 if (collider.TryGetComponent(out PlayerTrigger playerTrigger))
                                 {
                                     Container player = context.GetModifyingPlayer(playerTrigger.PlayerId);
-                                    if (player.H().IsInactiveOrDead) continue;
+                                    if (player.Health().IsInactiveOrDead) continue;
 
                                     byte team = player.Require<TeamProperty>();
                                     if (team == RedTeam) isRedInside = true;
@@ -271,7 +270,7 @@ namespace Voxelfield.Session.Mode
             else if (AtRoundSum(secureArea, scores, m_Config.maxRounds) && teamProperty.TryWithValue(out byte team)) teamProperty.Value = (byte) ((team + 1) % 2);
             if (secureArea.roundTime.WithValue)
             {
-                HealthProperty health = player.H();
+                HealthProperty health = player.Health();
                 var money = player.Require<MoneyComponent>();
                 var inventory = player.Require<InventoryComponent>();
                 if (health.IsInactiveOrDead || money.count.WithoutValue)
@@ -403,7 +402,7 @@ namespace Voxelfield.Session.Mode
         public override bool IsSpectating(Container session, Container actualLocalPlayer)
         {
             if (session.Require<SecureAreaComponent>().roundTime.WithoutValue) return base.IsSpectating(session, actualLocalPlayer);
-            return actualLocalPlayer.H().IsDead && actualLocalPlayer.Require<RespawnTimerProperty>().Value < DefaultConfig.Active.respawnDuration / 2;
+            return actualLocalPlayer.Health().IsDead && actualLocalPlayer.Require<RespawnTimerProperty>().Value < DefaultConfig.Active.respawnDuration / 2;
         }
 
         protected override float CalculateWeaponDamage(in PlayerHitContext context)
@@ -414,7 +413,7 @@ namespace Voxelfield.Session.Mode
 
         public bool CanBuy(in SessionContext context, Container sessionLocalPlayer)
         {
-            if (sessionLocalPlayer.H().IsInactiveOrDead) return false;
+            if (sessionLocalPlayer.Health().IsInactiveOrDead) return false;
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             return secureArea.roundTime.WithValue && secureArea.roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
         }

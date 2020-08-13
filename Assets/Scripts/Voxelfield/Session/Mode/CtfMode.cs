@@ -10,6 +10,7 @@ using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
+using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels.Map;
@@ -29,29 +30,36 @@ namespace Voxelfield.Session.Mode
         [SerializeField] private Color m_BlueColor = new Color(0.1764705882f, 0.5098039216f, 0.8509803922f),
                                        m_RedColor = new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
         [SerializeField] private ItemModifierBase[] m_PickupItemIds = default;
+        [SerializeField] private byte m_HealthPackBonus = 75;
 
         // private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
         private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
-        private FlagBehavior[][] m_FlagBehaviors;
+        private (PickUpBehavior[], FlagBehavior[][]) m_Behaviors;
         private VoxelMapNameProperty m_LastMapName;
 
         public override void Initialize() => m_LastMapName = new VoxelMapNameProperty();
 
-        private FlagBehavior[][] GetFlagBehaviors()
+        private (PickUpBehavior[], FlagBehavior[][]) GetBehaviors()
         {
             StringProperty mapName = MapManager.Singleton.Map.name;
-            if (m_LastMapName == mapName) return m_FlagBehaviors;
+            if (m_LastMapName == mapName) return m_Behaviors;
             m_LastMapName.SetTo(mapName);
-            return m_FlagBehaviors = MapManager.Singleton.Models.Values
-                                               .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Flag)
-                                               .GroupBy(model => model.Container.Require<TeamProperty>().Value)
-                                               .OrderBy(group => group.Key)
-                                               .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray();
+            return m_Behaviors = (MapManager.Singleton.Models.Values
+                                            .Where(model => model is PickUpBehavior)
+                                            .Cast<PickUpBehavior>()
+                                            .OrderBy(model => model.Position.GetHashCode())
+                                            .ToArray(),
+                                  MapManager.Singleton.Models.Values
+                                            .Where(model => model is FlagBehavior)
+                                            .GroupBy(model => model.Container.Require<TeamProperty>().Value)
+                                            .OrderBy(group => group.Key)
+                                            .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray());
         }
 
         public override void BeginModify(in SessionContext context)
         {
             base.BeginModify(in context);
+            context.sessionContainer.Require<CtfComponent>().pickupFlags.Value = uint.MaxValue;
             context.sessionContainer.Require<DualScoresComponent>().Zero();
         }
 
@@ -59,11 +67,16 @@ namespace Voxelfield.Session.Mode
         {
             base.Render(context);
 
-            FlagBehavior[][] flagBehaviors = GetFlagBehaviors();
-            ArrayElement<FlagArrayElement> flags = context.sessionContainer.Require<CtfComponent>().teamFlags;
+            (PickUpBehavior[] pickUpBehaviors, FlagBehavior[][] flagBehaviors) = GetBehaviors();
+            var ctf = context.sessionContainer.Require<CtfComponent>();
+
+            ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
             for (var flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
                 flagBehaviors[flagTeam][flagId].Render(context, flags[flagTeam][flagId]);
+
+            for (var i = 0; i < pickUpBehaviors.Length; i++)
+                pickUpBehaviors[i].Render(FlagUtil.HasFlag(ctf.pickupFlags, i), context.timeUs);
         }
 
         public override void Modify(in SessionContext context)
@@ -71,13 +84,51 @@ namespace Voxelfield.Session.Mode
             base.Modify(context);
 
             var ctf = context.sessionContainer.Require<CtfComponent>();
-            FlagBehavior[][] flagBehaviors = GetFlagBehaviors();
+            (PickUpBehavior[] pickUpBehaviors, FlagBehavior[][] flagBehaviors) = GetBehaviors();
+
             for (byte flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
             {
                 FlagComponent flag = ctf.teamFlags[flagTeam][flagId];
                 HandlePlayersNearFlag(context, flag, flagTeam, flagId, ctf, context.sessionContainer.Require<DualScoresComponent>());
-                if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Value += context.durationUs;
+                if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Add(context.durationUs);
+            }
+
+            for (var i = 0; i < pickUpBehaviors.Length; i++)
+            {
+                TimeUsProperty cooldown = ctf.pickupCoolDowns[i];
+                if (cooldown.Subtract(context.durationUs, true))
+                    FlagUtil.SetFlag(ref ctf.pickupFlags.DirectValue, i);
+                if (cooldown.WithValue) continue;
+
+                PickUpBehavior pickUpBehavior = pickUpBehaviors[i];
+                int count = Physics.OverlapSphereNonAlloc(pickUpBehavior.Position, 1.25f, m_CachedColliders, m_PlayerMask);
+                for (var j = 0; j < count; j++)
+                {
+                    if (!m_CachedColliders[j].TryGetComponent(out PlayerTrigger playerTrigger)) continue;
+
+                    /* Picked up */
+                    Container player = context.GetModifyingPlayer(playerTrigger.PlayerId);
+                    var success = true;
+                    switch (pickUpBehavior.T)
+                    {
+                        case PickUpBehavior.Type.Health:
+                            if (player.Health() >= Config.Active.respawnHealth) success = false;
+                            else player.Health().Increment(m_HealthPackBonus, Config.Active.respawnHealth);
+                            break;
+                        case PickUpBehavior.Type.Ammo:
+                            PlayerItemManagerModiferBehavior.RefillAllAmmo(player.Require<InventoryComponent>());
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                    if (success)
+                    {
+                        FlagUtil.UnsetFlag(ref ctf.pickupFlags.DirectValue, i);
+                        cooldown.Value = 10_000_000u;
+                        break;
+                    }
+                }
             }
 
             var pickupCount = 0;
@@ -87,9 +138,7 @@ namespace Voxelfield.Session.Mode
                 EntityContainer entity = entities[i];
                 var throwable = entity.Require<ThrowableComponent>();
                 if (throwable.flags.IsFloating && throwable.flags.IsPersistent)
-                {
                     pickupCount++;
-                }
             }
             if (pickupCount == 0)
             {
@@ -108,7 +157,7 @@ namespace Voxelfield.Session.Mode
 
             context.player.Require<FrozenProperty>().Value = ShowScoreboard(context);
 
-            if (context.player.H().IsAlive) return;
+            if (context.player.Health().IsAlive) return;
 
             var wantedItems = context.commands.Require<WantedItemIdsComponent>();
             var inventory = context.player.Require<InventoryComponent>();
@@ -124,13 +173,8 @@ namespace Voxelfield.Session.Mode
         {
             if (health.IsAlive || context.player.Without(out RespawnTimerProperty respawn)) return;
 
-            if (respawn.Value > context.durationUs) respawn.Value -= context.durationUs;
-            else
-            {
-                respawn.Value = 0u;
-                if (context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Respawn))
-                    SpawnPlayer(context);
-            }
+            if (respawn.Subtract(context.durationUs) && context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Respawn))
+                SpawnPlayer(context);
         }
 
         protected override Vector3 GetSpawnPosition(in SessionContext context)
@@ -162,7 +206,8 @@ namespace Voxelfield.Session.Mode
 
         private void HandlePlayersNearFlag(in SessionContext context, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresComponent scores)
         {
-            int count = Physics.OverlapSphereNonAlloc(m_FlagBehaviors[flagTeam][flagId].transform.position, m_CaptureRadius, m_CachedColliders, m_PlayerMask);
+            (_, FlagBehavior[][] flagBehaviors) = GetBehaviors();
+            int count = Physics.OverlapSphereNonAlloc(flagBehaviors[flagTeam][flagId].transform.position, m_CaptureRadius, m_CachedColliders, m_PlayerMask);
             Container enemyTakingIn = null;
             for (var i = 0; i < count; i++)
             {
@@ -197,7 +242,7 @@ namespace Voxelfield.Session.Mode
                 // Flag is taken, but the capturing player is outside the radius of taking
                 enemyTaking = context.GetModifyingPlayer(flag.capturingPlayerId);
                 // Return flag if capturing player disconnects / dies or if they have not fully taken
-                if (enemyTaking.H().IsInactiveOrDead || flag.captureElapsedTimeUs < TakeFlagDurationUs) enemyTaking = null;
+                if (enemyTaking.Health().IsInactiveOrDead || flag.captureElapsedTimeUs < TakeFlagDurationUs) enemyTaking = null;
             }
             else enemyTaking = enemyTakingIn;
             if (enemyTaking is null)
@@ -230,8 +275,11 @@ namespace Voxelfield.Session.Mode
         protected override void SpawnPlayer(in SessionContext context, bool begin = false)
         {
             Container player = context.player;
-            if (begin) player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
-            if (begin) player.ZeroIfWith<StatsComponent>();
+            if (begin)
+            {
+                player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
+                player.ZeroIfWith<StatsComponent>();
+            }
             player.Require<ByteIdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
             if (player.With(out HealthProperty health)) health.Value = begin ? (byte) 0 : DefaultConfig.Active.respawnHealth;

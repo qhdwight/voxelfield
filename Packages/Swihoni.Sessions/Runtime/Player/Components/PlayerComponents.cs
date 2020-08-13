@@ -73,7 +73,7 @@ namespace Swihoni.Sessions.Player.Components
     }
 
     [Serializable, ModeElement, OnlyServerTrusted]
-    public class RespawnTimerProperty : UIntProperty
+    public class RespawnTimerProperty : TimeUsProperty
     {
         public override string ToString() => $"Respawn timer: {base.ToString()}";
     }
@@ -94,7 +94,7 @@ namespace Swihoni.Sessions.Player.Components
     public class ByteStatusComponent : ComponentBase
     {
         public ByteProperty id;
-        public UIntProperty elapsedUs;
+        public ElapsedUsProperty elapsedUs;
 
         /// <summary>
         /// Note: Interpolation must be explicitly called for this type.

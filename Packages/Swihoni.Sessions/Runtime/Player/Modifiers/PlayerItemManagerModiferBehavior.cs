@@ -36,15 +36,12 @@ namespace Swihoni.Sessions.Player.Modifiers
             Container player = context.player;
             if (player.Without(out InventoryComponent inventory)) return;
 
-            if (inventory.tracerTimeUs.WithValue)
-                if (inventory.tracerTimeUs > context.durationUs) inventory.tracerTimeUs.Value -= context.durationUs;
-                else
-                {
-                    inventory.tracerTimeUs.Clear();
-                    inventory.tracerStart.Clear();
-                    inventory.tracerEnd.Clear();
-                }
-
+            if (inventory.tracerTimeUs.Subtract(context.durationUs, true))
+            {
+                inventory.tracerStart.Clear();
+                inventory.tracerEnd.Clear();
+            }
+            
             if (player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
             TryExecuteCommands(context);
@@ -174,7 +171,7 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             if (inventory.HasNoItemEquipped) return;
             // We have a current equipped item
-            equipStatus.elapsedUs.Value += context.durationUs;
+            equipStatus.elapsedUs.Add(context.durationUs);
             ItemModifierBase modifier = ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
 
             // Handle finishing equip status
@@ -228,7 +225,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
 
             ByteStatusComponent adsStatus = inventory.adsStatus;
-            adsStatus.elapsedUs.Value += context.durationUs;
+            adsStatus.elapsedUs.Add(context.durationUs);
 
             ItemStatusModiferProperties modifierProperties;
             while (adsStatus.elapsedUs > (modifierProperties = gunModifier.GetAdsStatusModifierProperties(adsStatus.id)).durationUs)

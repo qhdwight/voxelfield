@@ -95,7 +95,7 @@ namespace Swihoni.Sessions
 
         public virtual void OnStop() { }
 
-        public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.H().WithoutValue;
+        public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.Health().WithoutValue;
 
         public virtual void OnServerMove(in SessionContext context, MoveComponent move) { }
 
@@ -420,7 +420,7 @@ namespace Swihoni.Sessions
         public static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static HealthProperty H(this Container player) => player.Require<HealthProperty>();
+        public static HealthProperty Health(this Container player) => player.Require<HealthProperty>();
 
         public static string ExecuteProcess(string command, string workingDirectory = null)
         {
@@ -453,7 +453,7 @@ namespace Swihoni.Sessions
             for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
             {
                 Container player = context.GetModifyingPlayer(playerId);
-                if (player.H().WithoutValue) continue;
+                if (player.Health().WithoutValue) continue;
 
                 var playerModifyContext = new SessionContext(existing: context, player: player, playerId: playerId);
                 action(playerModifyContext);

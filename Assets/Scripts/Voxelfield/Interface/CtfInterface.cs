@@ -58,7 +58,7 @@ namespace Voxelfield.Interface
             bool isValidLocalPlayer = context.IsValidLocalPlayer(out Container localPlayer, out byte localPlayerId, false);
             if (isValidLocalPlayer)
             {
-                if (localPlayer.H().IsDead)
+                if (localPlayer.Health().IsDead)
                 {
                     m_LoadOutInterface.Render(localPlayer.Require<InventoryComponent>());
                     isRespawnVisible = true;

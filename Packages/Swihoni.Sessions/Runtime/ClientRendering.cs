@@ -97,7 +97,7 @@ namespace Swihoni.Sessions
                 {
                     if (index == actualLocalPlayerId) return false;
                     Container spectateCandidate = renderPlayers[index];
-                    return spectateCandidate.H().IsActiveAndAlive && spectateCandidate.Require<TeamProperty>() == localPlayer.Require<TeamProperty>();
+                    return spectateCandidate.Health().IsActiveAndAlive && spectateCandidate.Require<TeamProperty>() == localPlayer.Require<TeamProperty>();
                 }
                 // Clear if currently spectated player can no longer be spectated
                 if (spectatingPlayerId.WithValue)

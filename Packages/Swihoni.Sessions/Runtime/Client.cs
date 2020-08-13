@@ -219,7 +219,7 @@ namespace Swihoni.Sessions
                     for (var playerId = 0; playerId < serverPlayers.Length; playerId++)
                     {
                         Container serverPlayer = serverPlayers[playerId];
-                        HealthProperty healthProperty = serverPlayer.H();
+                        HealthProperty healthProperty = serverPlayer.Health();
                         UIntProperty localizedServerTimeUs = serverPlayer.Require<LocalizedClientStampComponent>().timeUs;
                         if (healthProperty.WithoutValue)
                             localizedServerTimeUs.Clear(); // Is something a client only has so we have to clear it

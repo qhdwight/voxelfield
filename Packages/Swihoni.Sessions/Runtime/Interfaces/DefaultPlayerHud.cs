@@ -105,25 +105,25 @@ namespace Swihoni.Sessions.Interfaces
                 // TODO:refactor different durations for hit marker and damage notifier
                 if (localPlayer.With(out HitMarkerComponent hitMarker))
                 {
-                    bool isHitMarkerVisible = hitMarker.elapsedUs.WithValue;
+                    bool isHitMarkerVisible = hitMarker.timeUs.WithValue;
                     if (isHitMarkerVisible)
                     {
                         Color color = hitMarker.isKill ? m_KillHitMarkerColor : m_DefaultHitMarkerColor;
                         m_HitMarker.color = color;
-                        float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.elapsedUs / 1_000_000f);
+                        float scale = Mathf.Lerp(0.0f, 1.0f, hitMarker.timeUs / 1_000_000f);
                         m_HitMarker.rectTransform.localScale = new Vector2(scale, scale);
                     }
                     m_HitMarker.enabled = isHitMarkerVisible;
                 }
                 if (localPlayer.With(out DamageNotifierComponent damageNotifier))
                 {
-                    bool isNotifierVisible = damageNotifier.elapsedUs.WithValue;
+                    bool isNotifierVisible = damageNotifier.timeUs.WithValue;
                     foreach (Image notifierImage in m_DamageNotifiers)
                     {
                         if (isNotifierVisible)
                         {
                             Color color = notifierImage.color;
-                            color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 2_000_000f);
+                            color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.timeUs / 2_000_000f);
                             notifierImage.color = color;
                         }
                         notifierImage.enabled = isNotifierVisible;

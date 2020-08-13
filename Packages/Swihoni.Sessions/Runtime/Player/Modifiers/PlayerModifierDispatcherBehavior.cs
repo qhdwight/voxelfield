@@ -44,7 +44,10 @@ namespace Swihoni.Sessions.Player.Modifiers
                 context.session.Injector.OnServerMove(context, move);
 
             if (isOnServer && context.player.WithPropertyWithValue(out FlashProperty flash))
+            {
                 flash.Value -= context.durationUs / 2_000_000f;
+                if (flash < 0.0f) flash.Clear();
+            }
 
             if (context.WithServerStringCommands(out IEnumerable<string[]> stringCommands))
                 foreach (string[] stringCommand in stringCommands)

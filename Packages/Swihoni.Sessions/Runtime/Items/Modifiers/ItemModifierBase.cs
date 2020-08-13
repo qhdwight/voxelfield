@@ -88,7 +88,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         private void ModifyStatus(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)
         {
-            item.status.elapsedUs.Value += context.durationUs;
+            item.status.elapsedUs.Add(context.durationUs);
             StatusTick(context, inventory, item, inputs);
             EndStatus(context, item, inventory, inputs);
         }

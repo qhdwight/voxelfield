@@ -105,7 +105,7 @@ namespace Voxelfield.Session.Mode
             {
                 checked
                 {
-                    showdownPlayer.elapsedSecuringUs.Value += sessionContext.durationUs;
+                    showdownPlayer.elapsedSecuringUs.Add(sessionContext.durationUs);
                     if (showdownPlayer.elapsedSecuringUs > SecureTimeUs)
                     {
                         Secure(showdownPlayer, stage, cure);
@@ -245,7 +245,7 @@ namespace Voxelfield.Session.Mode
         // }
 
         public bool CanBuy(in SessionContext context, Container sessionLocalPlayer)
-            => sessionLocalPlayer.H().IsAlive && context.sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
+            => sessionLocalPlayer.Health().IsAlive && context.sessionContainer.Require<ShowdownSessionComponent>().number.WithValue;
 
         public ushort GetCost(int itemId) => throw new NotImplementedException();
     }

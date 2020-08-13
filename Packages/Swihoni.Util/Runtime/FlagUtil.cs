@@ -20,6 +20,8 @@ namespace Swihoni.Util
 
         public static void SetFlag(ref ulong flags, int index) => flags |= 1ul << index;
 
+        public static void UnsetFlag(ref uint flags, int index) => flags &= ~(1u << index);
+        
         public static void UnsetFlag(ref ulong flags, int index) => flags &= ~(1ul << index);
 
         public static bool HasFlag(uint flags, int index) => (flags & (1u << index)) != 0;

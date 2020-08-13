@@ -60,6 +60,8 @@ namespace Voxelfield.Session
     public class CtfComponent : ComponentBase
     {
         public ArrayElement<FlagArrayElement> teamFlags = new ArrayElement<FlagArrayElement>(2);
+        public UIntProperty pickupFlags;
+        [NonSerialized] public ArrayElement<TimeUsProperty> pickupCoolDowns = new ArrayElement<TimeUsProperty>(sizeof(uint) * 8);
     }
 
     /* Secure area */

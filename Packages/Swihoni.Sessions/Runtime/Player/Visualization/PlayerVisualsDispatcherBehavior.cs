@@ -66,12 +66,12 @@ namespace Swihoni.Sessions.Player.Visualization
                     m_Camera.transform.position = move.position + new Vector3 {y = Mathf.Lerp(m_CrouchedCameraHeight, m_UprightCameraHeight, 1.0f - move.normalizedCrouch)};
 
                 Container localPlayer = sessionContainer.GetPlayer(sessionContainer.Require<LocalPlayerId>());
-                bool withNotifier = player.With(out DamageNotifierComponent damageNotifier) && damageNotifier.elapsedUs.WithValue && health.IsAlive;
+                bool withNotifier = player.With(out DamageNotifierComponent damageNotifier) && damageNotifier.timeUs.WithValue && health.IsAlive;
                 showUsername = !isLocalPlayer && health.IsAlive && localPlayer.Require<TeamProperty>() == player.Require<TeamProperty>();
                 showDamageNotifier = m_DamageText && !isLocalPlayer && health.IsAlive && withNotifier;
 
                 // TODO:refactor remove magic number, relying on internal state of audio source here... BAD!
-                if (withNotifier && damageNotifier.elapsedUs > 1_900_000u)
+                if (withNotifier && damageNotifier.timeUs > 1_900_000u)
                 {
                     if (!m_DamageNotifierSource.isPlaying) m_DamageNotifierSource.Play();
                     // if (m_LastDamageNotifierElapsed < Mathf.Epsilon)
@@ -82,10 +82,10 @@ namespace Swihoni.Sessions.Player.Visualization
                 if (showDamageNotifier)
                 {
                     Color color = Color.Lerp(Color.green, Color.red, damageNotifier.damage / 100f);
-                    color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.elapsedUs / 2_000_000f);
+                    color.a = Mathf.Lerp(0.0f, 1.0f, damageNotifier.timeUs / 2_000_000f);
                     m_DamageText.color = color;
 
-                    if (damageNotifier.elapsedUs > 0u)
+                    if (damageNotifier.timeUs > 0u)
                     {
                         LookAtCamera(m_DamageText, context, new Vector3 {y = 0.2f});
                         m_DamageNotifierBuilder.Clear().Append(damageNotifier.damage.Value).Commit(m_DamageText);

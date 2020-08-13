@@ -44,7 +44,7 @@ namespace Swihoni.Sessions.Entities
                 get => WithValue && (Value & Flags.Floating) == Flags.Floating;
                 protected set
                 {
-                    if (WithoutValue) Value = 0;
+                    SetValueIfWithout();
                     if (value) Value |= Flags.Floating;
                     else Value &= ~Flags.Floating;
                 }
@@ -55,7 +55,7 @@ namespace Swihoni.Sessions.Entities
                 get => WithValue && (Value & Flags.Persistent) == Flags.Persistent;
                 protected set
                 {
-                    if (WithoutValue) Value = 0;
+                    SetValueIfWithout();
                     if (value) Value |= Flags.Persistent;
                     else Value &= ~Flags.Persistent;
                 }

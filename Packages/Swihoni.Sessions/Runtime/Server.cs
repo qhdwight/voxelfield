@@ -243,7 +243,7 @@ namespace Swihoni.Sessions
             int playerId = GetPeerPlayerId(peer);
             Container player = GetModifyingPlayerFromId(playerId, serverSession);
 
-            if (player.H().WithValue)
+            if (player.Health().WithValue)
             {
                 var localPlayerProperty = serverSession.Require<LocalPlayerId>();
                 localPlayerProperty.Value = (byte) playerId;
@@ -382,7 +382,7 @@ namespace Swihoni.Sessions
 
         protected void SetupNewPlayer(in SessionContext context)
         {
-            GetModifyingMode(context.sessionContainer).SetupNewPlayer(context);
+            context.ModifyingMode.SetupNewPlayer(context);
 
             Container player = context.player;
             player.Require<HasSentInitialData>().Zero();
@@ -395,10 +395,11 @@ namespace Swihoni.Sessions
         protected override void RollbackHitboxes(in SessionContext context)
         {
             uint latencyUs = GetModifyingPlayerFromId(context.playerId).Require<ServerPingComponent>().latencyUs;
-            for (var _modifierId = 0; _modifierId < MaxPlayers; _modifierId++)
+            for (var modifierId = 0; modifierId < MaxPlayers; modifierId++)
             {
-                int modifierId = _modifierId; // Copy for use in lambda
-                Container GetPlayerInHistory(int historyIndex) => m_SessionHistory.Get(-historyIndex).GetPlayer(modifierId);
+                _indexer = modifierId;
+                _serverHistory = m_SessionHistory;
+                Container GetPlayerInHistory(int historyIndex) => _serverHistory.Get(-historyIndex).GetPlayer(_indexer);
 
                 Container rollbackPlayer = m_RollbackSession.GetPlayer(modifierId);
                 // UIntProperty timeUs = GetPlayerInHistory(0).Require<ServerStampComponent>().timeUs;

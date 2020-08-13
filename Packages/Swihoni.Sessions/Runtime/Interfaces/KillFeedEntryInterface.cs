@@ -19,7 +19,7 @@ namespace Swihoni.Sessions.Interfaces
 
         public override void Render(in SessionContext context, KillFeedComponent feed)
         {
-            bool isVisible = feed.elapsedUs.WithValue;
+            bool isVisible = feed.timeUs.WithValue;
             if (isVisible)
             {
                 m_Text.StartBuild()

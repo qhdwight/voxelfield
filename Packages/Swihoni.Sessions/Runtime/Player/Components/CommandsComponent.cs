@@ -52,14 +52,14 @@ namespace Swihoni.Sessions.Player.Components
 
         public void SetInput(int input, bool enabled)
         {
-            if (WithoutValue) Value = 0;
+            SetValueIfWithout();
             if (enabled) Value |= (uint) (1 << input);
             else Value &= (uint) ~(1 << input);
         }
 
         public void SetInput(int input)
         {
-            if (WithoutValue) Value = 0;
+            SetValueIfWithout();
             Value |= (uint) (1 << input);
         }
 

@@ -50,22 +50,56 @@ namespace Swihoni.Components
     [Serializable]
     public class ElapsedUsProperty : UIntProperty
     {
+        public ElapsedUsProperty(uint value) : base(value) { }
+        public ElapsedUsProperty() { }
+
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation)
             => Value = p2.Value > p1.Value ? InterpolateUInt(p1.Value, p2.Value, interpolation) : p2.Value;
 
         public override string ToString() => WithValue ? $"Microseconds: {Value}, Seconds: {Value * TimeConversions.MicrosecondToSecond:F3}" : "No Value";
+
+        public void Add(uint durationUs)
+        {
+            try
+            {
+                checked
+                {
+                    Value += durationUs;
+                }
+            }
+            catch (ArithmeticException)
+            {
+                Value = uint.MaxValue;
+            }
+        }
+
+        public bool Add(uint durationUs, uint maxUs)
+        {
+            Add(durationUs);
+            return Value >= maxUs;
+        }
     }
 
     [Serializable]
     public class TimeUsProperty : UIntProperty
     {
+        public TimeUsProperty(uint value) : base(value) { }
+        public TimeUsProperty() { }
+
         public override void ValueInterpolateFrom(PropertyBase<uint> p1, PropertyBase<uint> p2, float interpolation)
             => Value = p2.Value < p1.Value ? InterpolateUInt(p1.Value, p2.Value, interpolation) : p2.Value;
 
-        public void Subtract(uint durationUs)
+        public bool Subtract(uint durationUs, bool clear = false)
         {
-            if (Value > durationUs) Value -= durationUs;
+            if (WithoutValue) return false;
+            if (Value > durationUs)
+            {
+                Value -= durationUs;
+                return false;
+            }
+            if (clear) Clear();
             else Value = 0u;
+            return true;
         }
     }
 
@@ -141,7 +175,17 @@ namespace Swihoni.Components
         public override bool ValueEquals(in byte value) => value == Value;
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
         public override void ParseValue(string stringValue) => Value = byte.Parse(stringValue);
-        public void SafeIncrement(byte amount = 1, byte max = byte.MaxValue) => Value = Value + amount >= max ? max : (byte) (Value + amount);
+
+        public bool Increment(byte amount = 1, byte max = byte.MaxValue)
+        {
+            if (Value + amount >= max)
+            {
+                Value = max;
+                return true;
+            }
+            Value = (byte) (Value + amount);
+            return false;
+        }
     }
 
     [Serializable]

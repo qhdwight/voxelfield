@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId) return;
 
             var hitContext = new PlayerHitContext(context, hitbox, this, hit);
-            session.GetModifyingMode().PlayerHit(hitContext);
+            context.ModifyingMode.PlayerHit(hitContext);
         }
     }
 }

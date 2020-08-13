@@ -94,14 +94,14 @@ namespace Swihoni.Sessions.Components
     [Serializable, OnlyServerTrusted, ModeElement]
     public class HitMarkerComponent : ComponentBase
     {
-        public ElapsedUsProperty elapsedUs;
+        public TimeUsProperty timeUs;
         public BoolProperty isKill;
     }
 
     [Serializable, OnlyServerTrusted, ModeElement]
     public class DamageNotifierComponent : ComponentBase
     {
-        public ElapsedUsProperty elapsedUs;
+        public TimeUsProperty timeUs;
         public ByteProperty damage, inflictingPlayerId;
     }
 
@@ -114,7 +114,7 @@ namespace Swihoni.Sessions.Components
     [Serializable, ModeElement]
     public class KillFeedComponent : ComponentBase
     {
-        public ElapsedUsProperty elapsedUs;
+        public TimeUsProperty timeUs;
         public ByteProperty killingPlayerId, killedPlayerId;
         public BoolProperty isHeadShot;
         public StringProperty weaponName = new StringProperty(32);

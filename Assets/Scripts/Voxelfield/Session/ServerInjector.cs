@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// // #define VOXELFIELD_RELEASE_SERVER
+// #define VOXELFIELD_RELEASE_SERVER
 #endif
 
 using System;
@@ -20,7 +20,6 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
 using Voxels.Map;
-
 #if VOXELFIELD_RELEASE_SERVER
 using Amazon;
 using Amazon.DynamoDBv2.Model;
@@ -46,6 +45,8 @@ namespace Voxelfield.Session
 
     public class ServerInjector : Injector
     {
+        private const int OutsideBoundDamage = 75;
+
 #if VOXELFIELD_RELEASE_SERVER
         private static readonly BasicAWSCredentials DynamoCredentials = new BasicAWSCredentials(@"AKIAWKQVDVRW5MFWZJMG", @"rPxMDaGjpBiaJ9OuT/he5XU4g6rft8ykzXJDgLYP");
         private static readonly AmazonDynamoDBConfig DynamoConfig = new AmazonDynamoDBConfig {RegionEndpoint = RegionEndpoint.USWest1};
@@ -131,29 +132,32 @@ namespace Voxelfield.Session
         }
 
 #if VOXELFIELD_RELEASE_SERVER
-        private static UpdateItemRequest GetAdditionRequest(string key) => new UpdateItemRequest
+        private static UpdateItemRequest GetAdditionRequest(string table, string pkName, string pkValue, string keyName, string keyValue) => new UpdateItemRequest
         {
-            TableName = "Player",
-            Key = new Dictionary<string, AttributeValue> {["SteamId"] = new AttributeValue()},
-            ExpressionAttributeValues = new Dictionary<string, AttributeValue> {[":i"] = new AttributeValue {N = "1"}},
-            UpdateExpression = $"ADD {key} :i"
+            TableName = table,
+            Key = new Dictionary<string, AttributeValue> {[pkName] = new AttributeValue(pkValue)},
+            ExpressionAttributeValues = new Dictionary<string, AttributeValue> {[":n"] = new AttributeValue {N = keyValue}},
+            UpdateExpression = $"ADD {keyValue} :n"
         };
-
-        private readonly UpdateItemRequest m_AddKill = GetAdditionRequest("Kills"), m_AddDeath = GetAdditionRequest("Deaths");
 
         public override void OnKillPlayer(in DamageContext context)
         {
-            if (!context.InflictingPlayer.Require<SteamIdProperty>().TryWithValue(out ulong steamId)) return;
-
-            var steamIdString = steamId.ToString();
-
-            m_AddDeath.Key["SteamId"].N = steamIdString;
-            DynamoClient.UpdateItemAsync(m_AddDeath);
-
-            if (context.IsSelfInflicting) return;
-
-            m_AddKill.Key["SteamId"].N = steamIdString;
-            DynamoClient.UpdateItemAsync(m_AddKill);
+            try
+            {
+                if (context.hitPlayer.Require<SteamIdProperty>().TryWithValue(out ulong hitSteamId))
+                    DynamoClient.UpdateItemAsync(GetAdditionRequest("Player", "SteamId", hitSteamId.ToString(), "Deaths", "1"));
+                if (context.InflictingPlayer.Require<SteamIdProperty>().TryWithValue(out ulong inflictingSteamId) && !context.IsSelfInflicting)
+                {
+                    DynamoClient.UpdateItemAsync(GetAdditionRequest("Player", "SteamId", inflictingSteamId.ToString(), "Kills", "1"));
+                    DynamoClient.UpdateItemAsync(GetAdditionRequest("Player", "SteamId", inflictingSteamId.ToString(), "Damage", context.damage.ToString()));
+                }
+                DynamoClient.UpdateItemAsync(GetAdditionRequest("Weapon", "Name", context.weaponName, "Kills", "1"));
+                DynamoClient.UpdateItemAsync(GetAdditionRequest("Weapon", "Name", context.weaponName, "Damage", context.damage.ToString()));
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"Failed to send kill to database: {exception.Message}");
+            }
         }
 #endif
 
@@ -214,8 +218,8 @@ namespace Voxelfield.Session
                     NetPeer peer = socketRequest.Accept();
                     Container player = Session.GetModifyingPlayerFromId(Session.GetPeerPlayerId(peer));
 #if VOXELFIELD_RELEASE_SERVER
-                // TODO:security what if already exists
-                m_GameLiftPlayerSessionIds.Add(peer, request.gameLiftPlayerSessionId.AsNewString());
+                    // TODO:security what if already exists
+                    m_GameLiftPlayerSessionIds.Add(peer, request.gameLiftPlayerSessionId.AsNewString());
 #endif
                     if (!m_UseSteam) return;
                     // TODO:security handle case where steam player with ID already connected
@@ -224,18 +228,18 @@ namespace Voxelfield.Session
                 }
 
 #if VOXELFIELD_RELEASE_SERVER
-            string playerSessionId = request.gameLiftPlayerSessionId.AsNewString();
-            GenericOutcome outcome = GameLiftServerAPI.AcceptPlayerSession(playerSessionId);
-            if (outcome.Success)
-            {
-                Debug.Log($"Accepted player session request with ID: {playerSessionId}");
-                Accept();
-            }
-            else
-            {
-                Debug.LogError($"Failed to accept player session request with ID: {playerSessionId}, {outcome.Error}");
-                Reject("A player session authentication error occurred");
-            }
+                string playerSessionId = request.gameLiftPlayerSessionId.AsNewString();
+                GenericOutcome outcome = GameLiftServerAPI.AcceptPlayerSession(playerSessionId);
+                if (outcome.Success)
+                {
+                    Debug.Log($"Accepted player session request with ID: {playerSessionId}");
+                    Accept();
+                }
+                else
+                {
+                    Debug.LogError($"Failed to accept player session request with ID: {playerSessionId}, {outcome.Error}");
+                    Reject("A player session authentication error occurred");
+                }
 #else
                 Accept();
 #endif
@@ -336,12 +340,12 @@ namespace Voxelfield.Session
         private static void Suffocate(in SessionContext context, byte damage = 1)
         {
             var damageContext = new DamageContext(context, context.playerId, context.player, damage, "Suffocation");
-            context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
+            context.ModifyingMode.InflictDamage(damageContext);
         }
 
         public override void OnServerMove(in SessionContext context, MoveComponent move)
         {
-            if (context.player.H().IsDead) return;
+            if (context.player.Health().IsDead) return;
 
             if (move.position.WithoutValue || move.type == MoveType.Flying) return;
 
@@ -357,7 +361,7 @@ namespace Voxelfield.Session
                         float distance = hit.distance;
                         move.position.Value += new Vector3 {y = distance + 0.05f};
                         if (f > 1.0f && ChunkManager.Singleton.GetVoxel((Position3Int) origin) is Voxel voxel && !voxel.IsBreathable)
-                            Suffocate(context, 75);
+                            Suffocate(context, OutsideBoundDamage);
                         break;
                     }
                 }
@@ -382,7 +386,7 @@ namespace Voxelfield.Session
             // var damageContext = new DamageContext(context, context.playerId, context.player, 1, "Suffocation");
             // context.session.GetModifyingMode(context.sessionContainer).InflictDamage(damageContext);
         }
-        
+
         public override void OnPostTick(Container session) => HandleMapReload(session);
 
         public override void ModifyPlayer(in SessionContext context)

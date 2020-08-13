@@ -102,7 +102,7 @@ namespace Swihoni.Sessions.Items.Modifiers
                 if (context.player.With<ServerTag>())
                 {
                     var hitContext = new PlayerHitContext(context, hitbox, this, hit);
-                    session.GetModifyingMode().PlayerHit(hitContext);
+                    context.ModifyingMode.PlayerHit(hitContext);
                 }
             }
             HitPlayers.Clear();

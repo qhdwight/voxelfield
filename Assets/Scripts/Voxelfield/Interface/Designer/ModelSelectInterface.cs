@@ -19,7 +19,7 @@ namespace Voxelfield.Interface.Designer
 
         private void Start()
         {
-            for (var modelId = 0; modelId <= ModelsProperty.Last; modelId++)
+            for (var modelId = 0; modelId < MapManager.ModelPrefabs.Length; modelId++)
             {
                 Button button = Instantiate(m_ButtonPrefab, transform);
                 var text = button.GetComponentInChildren<TextMeshProUGUI>();

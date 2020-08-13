@@ -21,8 +21,8 @@ namespace Swihoni.Sessions.Tests
         public void TestItemInterpolation()
         {
             ItemAssetLink.Initialize();
-            var i1 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(0), elapsedUs = new UIntProperty(1870000u)}};
-            var i2 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(1), elapsedUs = new UIntProperty(38000u)}};
+            var i1 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(0), elapsedUs = new ElapsedUsProperty(1870000u)}};
+            var i2 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(1), elapsedUs = new ElapsedUsProperty(38000u)}};
             var id = new ItemComponent();
             const float interpolation = 0.9f;
             Interpolator.InterpolateInto(i1, i2, id, interpolation);

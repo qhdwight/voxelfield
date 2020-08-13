@@ -82,7 +82,7 @@ namespace Swihoni.Sessions.Entities
             Container entity = context.entity;
 
             var throwable = entity.Require<ThrowableComponent>();
-            throwable.thrownElapsedUs.Value += context.durationUs;
+            throwable.thrownElapsedUs.Add(context.durationUs);
 
             bool poppedFromTime = throwable.thrownElapsedUs >= m_PopTimeUs && m_LastElapsedUs < throwable.popTimeUs;
             if (poppedFromTime || PopQueued)
@@ -105,7 +105,7 @@ namespace Swihoni.Sessions.Entities
             }
             else
             {
-                throwable.contactElapsedUs.Value += context.durationUs;
+                throwable.contactElapsedUs.Add(context.durationUs);
                 (CollisionType collisionType, Collision collision) = m_LastCollision;
                 if (collisionType != CollisionType.None)
                 {
@@ -164,7 +164,7 @@ namespace Swihoni.Sessions.Entities
                     Container inflictingPlayer = context.GetModifyingPlayer(inflictingPlayerId);
                     var playerContext = new SessionContext(existing: context, playerId: inflictingPlayerId, player: inflictingPlayer);
                     var damageContext = new DamageContext(playerContext, hitPlayerId, hitPlayer, damage, Name);
-                    context.session.GetModifyingMode().InflictDamage(damageContext);
+                    context.ModifyingMode.InflictDamage(damageContext);
                 }
             }
         }
