@@ -24,8 +24,8 @@ namespace Swihoni.Components
             int count = reader.GetInt();
             for (var _ = 0; _ < count; _++)
             {
-                var key = Activator.CreateInstance<TKey>();
-                var value = Activator.CreateInstance<TValue>();
+                var key = ComponentExtensions.NewElement<TKey>();
+                var value = ComponentExtensions.NewElement<TValue>();
                 key.Deserialize(reader);
                 value.Deserialize(reader);
                 m_Map.Add(key, value);

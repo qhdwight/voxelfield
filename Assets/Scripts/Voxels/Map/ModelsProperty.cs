@@ -55,7 +55,7 @@ namespace Voxels.Map
             for (var _ = 0; _ < typeCount; _++)
             {
                 Type type = SerializationRegistrar.GetType(reader.GetUShort());
-                var element = (ElementBase) Activator.CreateInstance(type);
+                ElementBase element = type.NewElement();
                 element.Deserialize(reader);
                 container.Append(element);
             }

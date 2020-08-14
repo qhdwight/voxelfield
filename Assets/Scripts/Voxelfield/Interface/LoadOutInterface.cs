@@ -13,7 +13,7 @@ namespace Voxelfield.Interface
     {
         private LoadOutButton[][] m_LoadOutButtons;
 
-        public WantedItemIdsComponent WantedItems { get; set; } = new WantedItemIdsComponent();
+        public WantedItemIdArray WantedItems { get; set; } = new WantedItemIdArray();
 
         private void Start()
         {
@@ -57,6 +57,6 @@ namespace Voxelfield.Interface
         public override void Render(in SessionContext context) { }
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
-            => commands.Require<WantedItemIdsComponent>().SetTo(WantedItems);
+            => commands.Require<WantedItemIdArray>().SetTo(WantedItems);
     }
 }

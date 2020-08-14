@@ -78,7 +78,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             {
                 if (!itemCollider.TryGetComponent(out ItemEntityModifierBehavior itemEntityModifier)) return;
 
-                EntityContainer entity = context.sessionContainer.Require<EntityArrayElement>()[itemEntityModifier.Index];
+                EntityContainer entity = context.sessionContainer.Require<EntityArray>()[itemEntityModifier.Index];
                 var throwable = entity.Require<ThrowableComponent>();
                 if (fromNearby && throwable.throwerId == context.playerId && throwable.thrownElapsedUs < 2_000_000u) return;
 
@@ -256,8 +256,8 @@ namespace Swihoni.Sessions.Player.Modifiers
             float wheel = InputProvider.GetMouseScrollWheel();
             byte Wrap(int index)
             {
-                while (index >= InventoryComponent.ItemsCount) index -= InventoryComponent.ItemsCount;
-                while (index < 0) index += InventoryComponent.ItemsCount;
+                while (index >= ItemsArray.ItemsCount) index -= ItemsArray.ItemsCount;
+                while (index < 0) index += ItemsArray.ItemsCount;
                 return (byte) index;
             }
             if (Mathf.Abs(wheel) > Mathf.Epsilon)
@@ -265,13 +265,13 @@ namespace Swihoni.Sessions.Player.Modifiers
                 byte current = wantedItemIndex.Value = inventory.equippedIndex.Else(wantedItemIndex);
                 if (wheel > 0)
                 {
-                    for (int i = current + 1; i < current + InventoryComponent.ItemsCount; i++)
+                    for (int i = current + 1; i < current + ItemsArray.ItemsCount; i++)
                         if (inventory[Wrap(i)].id.WithValue)
                             wantedItemIndex.Value = Wrap(i);
                 }
                 else
                 {
-                    for (int i = current - 1; i > current - InventoryComponent.ItemsCount; i--)
+                    for (int i = current - 1; i > current - ItemsArray.ItemsCount; i--)
                         if (inventory[Wrap(i)].id.WithValue)
                             wantedItemIndex.Value = Wrap(i);
                 }

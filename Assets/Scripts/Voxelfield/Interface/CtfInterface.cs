@@ -25,7 +25,7 @@ namespace Voxelfield.Interface
         [SerializeField] private BufferedTextGui m_NotificationText = default;
         private LoadOutInterface m_LoadOutInterface;
         private CtfMode m_CtfMode;
-        private readonly uint?[] m_LastFlagCaptureTimesUs = new uint?[FlagArrayElement.Count * 2];
+        private readonly uint?[] m_LastFlagCaptureTimesUs = new uint?[FlagArray.Count * TeamFlagArray.Count];
 
         protected override void Awake()
         {
@@ -43,7 +43,7 @@ namespace Voxelfield.Interface
                 var ctf = sessionContainer.Require<CtfComponent>();
                 RenderLocalPlayer(context, ctf);
 
-                var teamScores = sessionContainer.Require<DualScoresComponent>();
+                var teamScores = sessionContainer.Require<DualScoresArray>();
                 m_ScoreInterface.Render(teamScores[CtfMode.BlueTeam], m_CtfMode.GetTeamColor(CtfMode.BlueTeam),
                                         teamScores[CtfMode.RedTeam], m_CtfMode.GetTeamColor(CtfMode.RedTeam));
             }
@@ -73,7 +73,7 @@ namespace Voxelfield.Interface
             }
             else m_LoadOutInterface.SetInterfaceActive(false);
 
-            ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
+            TeamFlagArray flags = ctf.teamFlags;
             for (var flagTeam = 0; flagTeam < flags.Length; flagTeam++)
             {
                 for (var flagIndex = 0; flagIndex < flags[flagTeam].Length; flagIndex++)

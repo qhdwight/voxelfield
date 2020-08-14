@@ -39,7 +39,7 @@ namespace Swihoni.Sessions.Tests
             IEnumerable<Type> playerElements = standardElements.playerElements
                                                                .Concat(standardElements.commandElements)
                                                                .Append(typeof(StampComponent));
-            s1.Require<PlayerContainerArrayElement>().SetAll(() => new Container(playerElements));
+            s1.Require<PlayerArray>().SetContainerTypes(playerElements);
             s1.Zero();
 
             ServerSessionContainer s2 = s1.Clone();
@@ -88,9 +88,9 @@ namespace Swihoni.Sessions.Tests
         {
             var standardElements = SessionElements.NewStandardSessionElements();
             var session = new ServerSessionContainer(standardElements.elements.Append(typeof(ServerStampComponent)));
-            session.Require<PlayerContainerArrayElement>().SetAll(() => new Container(standardElements.playerElements
-                                                                                                      .Append(typeof(ServerStampComponent))
-                                                                                                      .Append(typeof(ClientStampComponent))));
+            session.Require<PlayerArray>().SetContainerTypes(standardElements.playerElements
+                                                                             .Append(typeof(ServerStampComponent))
+                                                                             .Append(typeof(ClientStampComponent)));
             const uint time = 2424124u;
             session.Require<ServerStampComponent>().timeUs.Value = time;
 

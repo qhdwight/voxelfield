@@ -43,15 +43,15 @@ namespace Swihoni.Components.Tests
         }
 
         [Serializable]
-        private class ByteArrayElement : ArrayElement<SimpleComponent>
+        private class ByteArray : ArrayElement<SimpleComponent>
         {
-            public ByteArrayElement() : base(2) { }
+            public ByteArray() : base(2) { }
         }
 
         [Test]
         public void TestNestedArrays()
         {
-            var nested = new ArrayElement<ByteArrayElement>(2);
+            var nested = new ArrayElement<ByteArray>(2);
             nested[0][0].@byte.Value = 1;
             nested[0][1].@byte.Value = 2;
             nested[1][0].@byte.Value = 3;
@@ -61,7 +61,7 @@ namespace Swihoni.Components.Tests
             nested.Serialize(writer);
 
             var reader = new NetDataReader(writer.Data);
-            var deserialized = new ArrayElement<ByteArrayElement>(2);
+            var deserialized = new ArrayElement<ByteArray>(2);
             deserialized.Deserialize(reader);
 
             Assert.AreEqual(1, deserialized[0][0].@byte.Value);

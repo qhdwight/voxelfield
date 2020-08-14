@@ -139,7 +139,7 @@ namespace Swihoni.Sessions.Modes
                 return Navigation.Continue;
             }
             Container session = context.sessionContainer;
-            session.Navigate(_element => _element is PlayerContainerArrayElement ? Navigation.SkipDescendents : ClearModeElements(_element));
+            session.Navigate(_element => _element is PlayerArray ? Navigation.SkipDescendents : ClearModeElements(_element));
             context.ForEachActivePlayer((in SessionContext playerModifyContext) =>
             {
                 playerModifyContext.player.Navigate(ClearModeElements);
@@ -200,7 +200,7 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void Modify(in SessionContext context)
         {
-            if (context.sessionContainer.Without(out KillFeedElement killFeed)) return;
+            if (context.sessionContainer.Without(out KillFeedArray killFeed)) return;
             foreach (KillFeedComponent kill in killFeed)
                 kill.timeUs.Subtract(context.durationUs, true);
         }
@@ -246,7 +246,7 @@ namespace Swihoni.Sessions.Modes
 
                     if (usesHitMarker) hitMarker.isKill.Set();
 
-                    if (damageContext.sessionContext.sessionContainer.Without(out KillFeedElement killFeed)) return;
+                    if (damageContext.sessionContext.sessionContainer.Without(out KillFeedArray killFeed)) return;
                     foreach (KillFeedComponent kill in killFeed)
                     {
                         if (kill.timeUs.WithValue) continue;
@@ -297,7 +297,7 @@ namespace Swihoni.Sessions.Modes
         public virtual Color GetTeamColor(TeamProperty team) => GetTeamColor(team.AsNullable);
 
         protected static int GetActivePlayerCount(Container session)
-            => session.Require<PlayerContainerArrayElement>().Count(player => player.Health().WithValue);
+            => session.Require<PlayerArray>().Count(player => player.Health().WithValue);
 
         public virtual void Initialize() { }
 

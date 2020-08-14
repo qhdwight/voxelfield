@@ -2,7 +2,7 @@ using Swihoni.Sessions.Components;
 
 namespace Swihoni.Sessions.Interfaces
 {
-    public class StandardKillFeedInterface : ArrayViewerInterfaceBase<KillFeedEntryInterface, KillFeedElement, KillFeedComponent>
+    public class StandardKillFeedInterface : ArrayViewerInterfaceBase<KillFeedEntryInterface, KillFeedArray, KillFeedComponent>
     {
         protected override int Compare(KillFeedComponent e1, KillFeedComponent e2)
         {

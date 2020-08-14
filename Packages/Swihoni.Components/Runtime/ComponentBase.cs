@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Swihoni.Components
 {
@@ -46,8 +45,8 @@ namespace Swihoni.Components
     /// </summary>
     public abstract class ComponentBase : ElementBase, IEnumerable<ElementBase>
     {
-        private List<ElementBase> m_Elements;
-
+        public List<ElementBase> m_Elements;
+        
         public IReadOnlyList<ElementBase> Elements
         {
             get
@@ -61,7 +60,7 @@ namespace Swihoni.Components
 
         public int Count => Elements.Count;
 
-        protected void VerifyFieldsRegistered()
+        internal void VerifyFieldsRegistered()
         {
             if (m_Elements != null) return;
 
@@ -74,8 +73,6 @@ namespace Swihoni.Components
             }
         }
 
-        protected void ClearRegistered() => m_Elements = new List<ElementBase>();
-
         protected ComponentBase() => InstantiateFieldElements();
 
         private void InstantiateFieldElements()
@@ -86,9 +83,8 @@ namespace Swihoni.Components
                 bool isElement = fieldType.IsElement();
                 if (!isElement || fieldType.IsAbstract || field.GetValue(this) != null) continue;
 
-                object instance = Activator.CreateInstance(fieldType);
-                if (instance is ElementBase elementInstance) elementInstance.Field = field;
-                field.SetValue(this, instance);
+                ElementBase element = fieldType.NewElement(field);
+                field.SetValue(this, element);
             }
         }
 

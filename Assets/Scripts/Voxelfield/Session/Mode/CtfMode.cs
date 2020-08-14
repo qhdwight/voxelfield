@@ -60,7 +60,7 @@ namespace Voxelfield.Session.Mode
         {
             base.BeginModify(in context);
             context.sessionContainer.Require<CtfComponent>().pickupFlags.Value = uint.MaxValue;
-            context.sessionContainer.Require<DualScoresComponent>().Zero();
+            context.sessionContainer.Require<DualScoresArray>().Zero();
         }
 
         public override void Render(in SessionContext context)
@@ -70,7 +70,7 @@ namespace Voxelfield.Session.Mode
             (PickUpBehavior[] pickUpBehaviors, FlagBehavior[][] flagBehaviors) = GetBehaviors();
             var ctf = context.sessionContainer.Require<CtfComponent>();
 
-            ArrayElement<FlagArrayElement> flags = ctf.teamFlags;
+            TeamFlagArray flags = ctf.teamFlags;
             for (var flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
                 flagBehaviors[flagTeam][flagId].Render(context, flags[flagTeam][flagId]);
@@ -90,7 +90,7 @@ namespace Voxelfield.Session.Mode
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
             {
                 FlagComponent flag = ctf.teamFlags[flagTeam][flagId];
-                HandlePlayersNearFlag(context, flag, flagTeam, flagId, ctf, context.sessionContainer.Require<DualScoresComponent>());
+                HandlePlayersNearFlag(context, flag, flagTeam, flagId, ctf, context.sessionContainer.Require<DualScoresArray>());
                 if (flag.captureElapsedTimeUs.WithValue) flag.captureElapsedTimeUs.Add(context.durationUs);
             }
 
@@ -132,7 +132,7 @@ namespace Voxelfield.Session.Mode
             }
 
             var pickupCount = 0;
-            var entities = context.sessionContainer.Require<EntityArrayElement>();
+            var entities = context.sessionContainer.Require<EntityArray>();
             for (var i = 0; i < entities.Length; i++)
             {
                 EntityContainer entity = entities[i];
@@ -149,7 +149,7 @@ namespace Voxelfield.Session.Mode
         }
 
         public override bool ShowScoreboard(in SessionContext context)
-            => context.sessionContainer.Require<DualScoresComponent>().Any(score => score >= 3);
+            => context.sessionContainer.Require<DualScoresArray>().Any(score => score >= 3);
 
         public override void ModifyPlayer(in SessionContext context)
         {
@@ -159,7 +159,7 @@ namespace Voxelfield.Session.Mode
 
             if (context.player.Health().IsAlive) return;
 
-            var wantedItems = context.commands.Require<WantedItemIdsComponent>();
+            var wantedItems = context.commands.Require<WantedItemIdArray>();
             var inventory = context.player.Require<InventoryComponent>();
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = 1; i < wantedItems.Length; i++) {
@@ -203,7 +203,7 @@ namespace Voxelfield.Session.Mode
                 ? 0.0f
                 : ShowdownMode.CalculateDamageWithMovement(context, base.CalculateWeaponDamage(context));
 
-        private void HandlePlayersNearFlag(in SessionContext context, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresComponent scores)
+        private void HandlePlayersNearFlag(in SessionContext context, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresArray scores)
         {
             (_, FlagBehavior[][] flagBehaviors) = GetBehaviors();
             int count = Physics.OverlapSphereNonAlloc(flagBehaviors[flagTeam][flagId].transform.position, m_CaptureRadius, m_CachedColliders, m_PlayerMask);
@@ -251,12 +251,12 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        private static void TryReturnCapturedFlag(byte playerTeam, DualScoresComponent scores, CtfComponent ctf, PlayerTrigger player)
+        private static void TryReturnCapturedFlag(byte playerTeam, DualScoresArray scores, CtfComponent ctf, PlayerTrigger player)
         {
             for (var flagTeam = 0; flagTeam < ctf.teamFlags.Length; flagTeam++)
             {
                 if (flagTeam == playerTeam) continue; // Continue if friendly flag
-                FlagArrayElement enemyFlags = ctf.teamFlags[flagTeam];
+                FlagArray enemyFlags = ctf.teamFlags[flagTeam];
                 // ReSharper disable once ForCanBeConvertedToForeach - Avoid allocation of getting enumerator
                 for (var i = 0; i < enemyFlags.Length; i++)
                 {

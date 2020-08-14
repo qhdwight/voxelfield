@@ -104,7 +104,7 @@ namespace Voxelfield.Session.Mode
             uint durationUs = context.durationUs;
             var secureArea = sessionContainer.Require<SecureAreaComponent>();
 
-            var players = sessionContainer.Require<PlayerContainerArrayElement>();
+            var players = sessionContainer.Require<PlayerArray>();
             int activePlayerCount = 0, redAlive = 0, blueAlive = 0;
             foreach (Container player in players)
             {
@@ -130,12 +130,12 @@ namespace Voxelfield.Session.Mode
                     {
                         if (redAlive == 0)
                         {
-                            sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
+                            sessionContainer.Require<DualScoresArray>()[BlueTeam].Value++;
                             secureArea.lastWinningTeam.Value = BlueTeam;
                         }
                         if (blueAlive == 0)
                         {
-                            sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
+                            sessionContainer.Require<DualScoresArray>()[RedTeam].Value++;
                             secureArea.lastWinningTeam.Value = RedTeam;
                         }
                         if (redAlive == 0 || blueAlive == 0)
@@ -148,7 +148,7 @@ namespace Voxelfield.Session.Mode
                     {
                         if (redAlive == 0 && blueAlive == 0)
                         {
-                            sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
+                            sessionContainer.Require<DualScoresArray>()[BlueTeam].Value++;
                             secureArea.lastWinningTeam.Value = BlueTeam;
                             secureArea.roundTime.Value = m_Config.roundEndDurationUs;
 
@@ -191,7 +191,7 @@ namespace Voxelfield.Session.Mode
                                     // Round ended, site was secured by red
                                     site.timeUs.Value = 0u;
                                     secureArea.roundTime.Value = m_Config.roundEndDurationUs;
-                                    sessionContainer.Require<DualScoresComponent>()[RedTeam].Value++;
+                                    sessionContainer.Require<DualScoresArray>()[RedTeam].Value++;
                                     secureArea.lastWinningTeam.Value = RedTeam;
                                 }
                                 runTimer = redJustSecured = site.timeUs == 0u;
@@ -209,7 +209,7 @@ namespace Voxelfield.Session.Mode
                             secureArea.roundTime - durationUs < m_Config.roundEndDurationUs)
                         {
                             // Round just ended without contesting
-                            sessionContainer.Require<DualScoresComponent>()[BlueTeam].Value++;
+                            sessionContainer.Require<DualScoresArray>()[BlueTeam].Value++;
                         }
                         secureArea.roundTime.Value -= durationUs;
                     }
@@ -236,7 +236,7 @@ namespace Voxelfield.Session.Mode
             bool isBuyTime = roundTime.WithValue && roundTime > m_Config.roundEndDurationUs + m_Config.roundDurationUs;
             Container player = context.player;
             if (isBuyTime) BuyingMode.HandleBuying(this, player, context.commands);
-            var score = context.sessionContainer.Require<DualScoresComponent>();
+            var score = context.sessionContainer.Require<DualScoresArray>();
             player.Require<FrozenProperty>().Value = isBuyTime || AtPauseTime(secureArea, score);
 
             if (context.WithServerStringCommands(out IEnumerable<string[]> stringCommands))
@@ -263,7 +263,7 @@ namespace Voxelfield.Session.Mode
         protected override void SpawnPlayer(in SessionContext context, bool begin = false)
         {
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
-            var scores = context.sessionContainer.Require<DualScoresComponent>();
+            var scores = context.sessionContainer.Require<DualScoresArray>();
             Container player = context.player;
             var teamProperty = player.Require<TeamProperty>();
             if (begin)
@@ -336,7 +336,7 @@ namespace Voxelfield.Session.Mode
         private void NextRound(in SessionContext context, SecureAreaComponent secureArea, bool isFirstRound = false)
         {
             var isFirstRoundOfSecondHalf = false;
-            var scores = context.sessionContainer.Require<DualScoresComponent>();
+            var scores = context.sessionContainer.Require<DualScoresArray>();
             if (isFirstRound) scores.Zero();
             else if (AtRoundSum(secureArea, scores, m_Config.maxRounds)) isFirstRoundOfSecondHalf = true;
             else if (AtRoundCount(secureArea, scores, m_Config.maxRounds)) return;
@@ -364,7 +364,7 @@ namespace Voxelfield.Session.Mode
                     if (money.Value > MaxMoney) money.Value = MaxMoney;
                 }
             });
-            context.sessionContainer.Require<EntityArrayElement>().Clear();
+            context.sessionContainer.Require<EntityArray>().Clear();
 
             if (isFirstRoundOfSecondHalf)
             {
@@ -374,21 +374,21 @@ namespace Voxelfield.Session.Mode
         }
 
         public override bool ShowScoreboard(in SessionContext context)
-            => AtPauseTime(context.sessionContainer.Require<SecureAreaComponent>(), context.sessionContainer.Require<DualScoresComponent>());
+            => AtPauseTime(context.sessionContainer.Require<SecureAreaComponent>(), context.sessionContainer.Require<DualScoresArray>());
 
         private static int _int;
 
-        private bool AtPauseTime(SecureAreaComponent secureArea, DualScoresComponent scores)
+        private bool AtPauseTime(SecureAreaComponent secureArea, DualScoresArray scores)
             => AtRoundCount(secureArea, scores, m_Config.maxRounds)
             || AtRoundSum(secureArea, scores, m_Config.maxRounds) && secureArea.roundTime < m_Config.roundEndDurationUs;
 
-        private static bool AtRoundCount(SecureAreaComponent secureArea, DualScoresComponent scores, int count)
+        private static bool AtRoundCount(SecureAreaComponent secureArea, DualScoresArray scores, int count)
         {
             _int = count;
             return secureArea.roundTime.WithValue && scores.Any(score => score == _int);
         }
 
-        private static bool AtRoundSum(SecureAreaComponent secureArea, DualScoresComponent scores, int sum)
+        private static bool AtRoundSum(SecureAreaComponent secureArea, DualScoresArray scores, int sum)
             => secureArea.roundTime.WithValue && scores.Sum(score => score.Value) == sum;
 
         public override void Render(in SessionContext context)

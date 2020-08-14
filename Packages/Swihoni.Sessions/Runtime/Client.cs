@@ -49,7 +49,7 @@ namespace Swihoni.Sessions
             foreach (ServerSessionContainer session in m_SessionHistory)
             {
                 session.RegisterAppend(typeof(LocalizedClientStampComponent));
-                foreach (Container player in session.Require<PlayerContainerArrayElement>())
+                foreach (Container player in session.Require<PlayerArray>())
                     player.RegisterAppend(typeof(LocalizedClientStampComponent));
             }
         }
@@ -225,7 +225,7 @@ namespace Swihoni.Sessions
                     }
 
                     Profiler.BeginSample("Client Update Players");
-                    var serverPlayers = serverSession.Require<PlayerContainerArrayElement>();
+                    var serverPlayers = serverSession.Require<PlayerArray>();
                     bool isLocalPlayerOnServer = GetLocalPlayerId(serverSession, out int localPlayerId);
                     for (var playerId = 0; playerId < serverPlayers.Length; playerId++)
                     {
@@ -364,8 +364,8 @@ namespace Swihoni.Sessions
             }, previousServerSession, serverSession, receivedServerSession);
             // TODO:refactor need some sort of zip longest
             serverSession.Require<LocalizedClientStampComponent>().SetTo(previousServerSession.Require<LocalizedClientStampComponent>());
-            var previousArray = previousServerSession.Require<PlayerContainerArrayElement>();
-            var array = serverSession.Require<PlayerContainerArrayElement>();
+            var previousArray = previousServerSession.Require<PlayerArray>();
+            var array = serverSession.Require<PlayerArray>();
             for (var playerIndex = 0; playerIndex < array.Length; playerIndex++)
                 array[playerIndex].Require<LocalizedClientStampComponent>().SetTo(previousArray[playerIndex].Require<LocalizedClientStampComponent>());
         }

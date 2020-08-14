@@ -17,7 +17,7 @@ namespace Swihoni.Sessions
             try
             {
                 Profiler.BeginSample("Client Render Setup");
-                if (IsLoading || m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
+                if (IsLoading || m_RenderSession.Without(out PlayerArray renderPlayers)
                               || m_RenderSession.Without(out LocalPlayerId renderLocalPlayerId)
                               || !GetLocalPlayerId(GetLatestSession(), out int actualLocalPlayerId))
                 {
@@ -57,7 +57,7 @@ namespace Swihoni.Sessions
                         _indexer = playerId;
                         RenderInterpolatedPlayer<LocalizedClientStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size,
                                                                                 historyIndex =>
-                                                                                    _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_indexer]);
+                                                                                    _serverHistory.Get(-historyIndex).Require<PlayerArray>()[_indexer]);
                     }
                     PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                     bool isPossessed = isActualLocalPlayer && !isSpectating || isSpectating && playerId == spectatingPlayerId;
@@ -86,7 +86,7 @@ namespace Swihoni.Sessions
             }
         }
 
-        internal static bool IsSpectating(Container renderSession, PlayerContainerArrayElement renderPlayers, int actualLocalPlayerId, out SpectatingPlayerId spectatingPlayerId)
+        internal static bool IsSpectating(Container renderSession, PlayerArray renderPlayers, int actualLocalPlayerId, out SpectatingPlayerId spectatingPlayerId)
         {
             bool isSpectating = ModeManager.GetMode(renderSession).IsSpectating(renderSession, renderPlayers[actualLocalPlayerId]);
             spectatingPlayerId = renderSession.Require<SpectatingPlayerId>();

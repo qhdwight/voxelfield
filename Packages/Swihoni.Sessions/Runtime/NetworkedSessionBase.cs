@@ -74,9 +74,9 @@ namespace Swihoni.Sessions
         {
             var session = new T();
             session.RegisterAppend(sessionElements);
-            session.Require<PlayerContainerArrayElement>().SetAll(() => new Container(playerElements));
+            session.Require<PlayerArray>().SetContainerTypes(playerElements);
             // TODO:refactor standard entity components
-            session.Require<EntityArrayElement>().SetAll(() => new EntityContainer(typeof(ThrowableComponent), typeof(ItemComponent)));
+            session.Require<EntityArray>().SetContainerTypes(typeof(ThrowableComponent), typeof(ItemComponent));
             return session;
         }
 
@@ -121,13 +121,13 @@ namespace Swihoni.Sessions
         {
             _serverHistory = m_SessionHistory; // Prevent allocation in closure
             uint renderTimeUs = currentRenderTimeUs - rollbackUs;
-            var renderEntities = m_RenderSession.Require<EntityArrayElement>();
+            var renderEntities = m_RenderSession.Require<EntityArray>();
             for (var index = 0; index < renderEntities.Length; index++)
             {
                 _indexer = index;
                 RenderInterpolated(renderTimeUs, renderEntities[_indexer], _serverHistory.Size,
                                    h => _serverHistory.Get(-h).Require<TStampComponent>(),
-                                   h => _serverHistory.Get(-h).Require<EntityArrayElement>()[_indexer]);
+                                   h => _serverHistory.Get(-h).Require<EntityArray>()[_indexer]);
             }
             EntityManager.RenderAll(renderEntities, (visual, entity) => ((EntityVisualBehavior) visual).Render(entity));
         }

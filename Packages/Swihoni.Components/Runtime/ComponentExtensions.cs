@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using LiteNetLib.Utils;
 using Swihoni.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Swihoni.Components
 {
@@ -78,5 +79,15 @@ namespace Swihoni.Components
                                                  : type.GetFields(BindingFlags.Static | BindingFlags.Public)
                                                        .ToDictionary(field => (T) field.GetValue(null),
                                                                      field => func(field.Name)));
+
+        public static TElement NewElement<TElement>() => (TElement) (object) typeof(TElement).NewElement();
+
+        public static ElementBase NewElement(this Type type, FieldInfo field = null)
+        {
+            var element = (ElementBase) Activator.CreateInstance(type);
+            element.Field = field;
+            if (element is ComponentBase component) component.VerifyFieldsRegistered();
+            return element;
+        }
     }
 }

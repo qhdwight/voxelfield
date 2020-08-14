@@ -18,18 +18,23 @@ namespace Voxelfield.Session
         public VoxelMapNameProperty() : base(16) { }
     }
 
+    public class CurePackagesArray : ArrayElement<CurePackageComponent>
+    {
+        public CurePackagesArray() : base(9) { }
+    }
+
     [Serializable, ModeElement]
     public class ShowdownSessionComponent : ComponentBase
     {
         public ByteProperty number;
         public TimeUsProperty remainingUs;
-        public ArrayElement<CurePackageComponent> curePackages = new ArrayElement<CurePackageComponent>(9);
+        public CurePackagesArray curePackages = new CurePackagesArray();
     }
 
     [Serializable, ModeElement]
-    public class DualScoresComponent : ArrayElement<ByteProperty>
+    public class DualScoresArray : ArrayElement<ByteProperty>
     {
-        public DualScoresComponent() : base(2) { }
+        public DualScoresArray() : base(2) { }
 
         public void Swap()
         {
@@ -49,17 +54,25 @@ namespace Voxelfield.Session
     }
 
     [Serializable, ModeElement]
-    public class FlagArrayElement : ArrayElement<FlagComponent>
+    public class TeamFlagArray : ArrayElement<FlagArray>
     {
         public const int Count = 2;
 
-        public FlagArrayElement() : base(Count) { }
+        public TeamFlagArray() : base(Count) { }
     }
 
     [Serializable, ModeElement]
+    public class FlagArray : ArrayElement<FlagComponent>
+    {
+        public const int Count = 2;
+
+        public FlagArray() : base(Count) { }
+    }
+    
+    [Serializable, ModeElement]
     public class CtfComponent : ComponentBase
     {
-        public ArrayElement<FlagArrayElement> teamFlags = new ArrayElement<FlagArrayElement>(2);
+        public TeamFlagArray teamFlags;
         public UIntProperty pickupFlags;
         [NonSerialized] public ArrayElement<TimeUsProperty> pickupCoolDowns = new ArrayElement<TimeUsProperty>(sizeof(uint) * 8);
     }
@@ -74,15 +87,15 @@ namespace Voxelfield.Session
     }
 
     [Serializable, ModeElement]
-    public class SiteElement : ArrayElement<SiteComponent>
+    public class SiteArray : ArrayElement<SiteComponent>
     {
-        public SiteElement() : base(2) { }
+        public SiteArray() : base(2) { }
     }
 
     [Serializable, ModeElement]
     public class SecureAreaComponent : ComponentBase
     {
-        public SiteElement sites = new SiteElement();
+        public SiteArray sites = new SiteArray();
         public TimeUsProperty roundTime;
         [NonSerialized] public ByteProperty lastWinningTeam;
 
@@ -140,9 +153,9 @@ namespace Voxelfield.Session
     }
 
     [Serializable]
-    public class WantedItemIdsComponent : ArrayElement<ByteProperty>
+    public class WantedItemIdArray : ArrayElement<ByteProperty>
     {
-        public WantedItemIdsComponent() : base(InventoryComponent.ItemsCount) { }
+        public WantedItemIdArray() : base(ItemsArray.ItemsCount) { }
     }
 
     [Serializable, OnlyServerTrusted, ModeElement]
@@ -176,9 +189,9 @@ namespace Voxelfield.Session
             SessionElements = SessionElements.NewStandardSessionElements();
             SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent),
                                                      typeof(BrokeVoxelTickProperty), typeof(SteamIdProperty), typeof(FlashProperty));
-            SessionElements.commandElements.AppendAll(typeof(WantedItemComponent), typeof(WantedItemIdsComponent));
+            SessionElements.commandElements.AppendAll(typeof(WantedItemComponent), typeof(WantedItemIdArray));
             SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(OrderedVoxelChangesProperty), typeof(ReloadMapProperty),
-                                               typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent), typeof(DualScoresComponent));
+                                               typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent), typeof(DualScoresArray));
         }
     }
 }

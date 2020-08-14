@@ -53,7 +53,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 foreach (string[] stringCommand in stringCommands)
                     DefaultConfig.TryHandleArguments(stringCommand);
 
-            if (isOnServer && context.sessionContainer.With(out ChatListElement chats)
+            if (isOnServer && context.sessionContainer.With(out ChatList chats)
                            && context.commands.WithPropertyWithValue(out ChatEntryProperty chat))
             {
                 var namedChat = new ChatEntryProperty();

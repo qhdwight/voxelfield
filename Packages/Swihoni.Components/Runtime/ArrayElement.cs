@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using LiteNetLib.Utils;
 using UnityEngine;
 
@@ -13,44 +14,51 @@ namespace Swihoni.Components
         public abstract Type GetElementType { get; }
 
         public abstract ElementBase GetValue(int index);
-        
+
         public ElementBase this[int index] => GetValue(index);
     }
 
     [Serializable]
-    public class ArrayElement<T> : ArrayElementBase, IEnumerable<T> where T : ElementBase, new()
+    public class ArrayElement<TElement> : ArrayElementBase, IEnumerable<TElement> where TElement : ElementBase
     {
-        [CopyField, SerializeField] protected T[] m_Values;
+        [CopyField, SerializeField] public TElement[] m_Elements;
 
-        public ArrayElement(params T[] values) => m_Values = (T[]) values.Clone();
+        public ArrayElement(params TElement[] values) => m_Elements = (TElement[]) values.Clone();
 
         public ArrayElement(int size)
         {
-            m_Values = new T[size];
-            SetAll(() => new T());
+            m_Elements = new TElement[size];
+            for (var i = 0; i < size; i++)
+                m_Elements[i] = ComponentExtensions.NewElement<TElement>();
         }
 
-        public void SetAll(Func<T> constructor)
+        public void SetContainerTypes(params Type[] types) => SetContainerTypes((IEnumerable<Type>) types);
+
+        public void SetContainerTypes(IEnumerable<Type> types)
         {
-            for (var i = 0; i < m_Values.Length; i++)
-                m_Values[i] = constructor();
+            ImmutableArray<Type> typesArray = types.ToImmutableArray();
+            foreach (TElement element in m_Elements)
+            {
+                var container = (Container) (object) element;
+                container.RegisterAppend(typesArray);
+            }
         }
 
-        public new T this[int index]
+        public new TElement this[int index]
         {
-            get => m_Values[index];
-            set => m_Values[index] = value;
+            get => m_Elements[index];
+            set => m_Elements[index] = value;
         }
 
-        public override int Length => m_Values.Length;
+        public override int Length => m_Elements.Length;
 
-        public IEnumerator<T> GetEnumerator() => ((IEnumerable<T>) m_Values).GetEnumerator();
+        public IEnumerator<TElement> GetEnumerator() => ((IEnumerable<TElement>) m_Elements).GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => m_Values.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => m_Elements.GetEnumerator();
 
         public override ElementBase GetValue(int index) => this[index];
 
-        public override Type GetElementType => typeof(T);
+        public override Type GetElementType => typeof(TElement);
     }
 
     [Serializable]

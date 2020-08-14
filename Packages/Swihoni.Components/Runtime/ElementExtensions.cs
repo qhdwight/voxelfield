@@ -84,7 +84,7 @@ namespace Swihoni.Components
         /// </summary>
         public static TElement Clone<TElement>(this TElement element) where TElement : ElementBase
         {
-            var clone = (TElement) Activator.CreateInstance(element.GetType());
+            var clone = (TElement) element.GetType().NewElement();
             NavigateZipped((_e1, _e2) =>
             {
                 if (_e1 is Container p1 && _e2 is Container p2)

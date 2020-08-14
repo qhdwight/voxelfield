@@ -79,7 +79,7 @@ namespace Swihoni.Sessions.Interfaces
 
         public override void RenderVerified(in SessionContext context)
         {
-            if (context.sessionContainer.WithPropertyWithValue(out ChatListElement chats))
+            if (context.sessionContainer.WithPropertyWithValue(out ChatList chats))
                 foreach (ChatEntryProperty chat in chats.List)
                 {
                     m_Chats.Enqueue(chat.AsNewString());

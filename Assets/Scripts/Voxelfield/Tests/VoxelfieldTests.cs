@@ -71,35 +71,42 @@ namespace Voxelfield.Tests
                 watch.Start();
                 readMap.Deserialize(reader);
                 watch.Stop();
-                Debug.Log($"Recursion Elapsed: {watch.ElapsedTicks}");   
+                Debug.Log($"Recursion Elapsed: {watch.ElapsedTicks}");
             }
 
             {
                 var reader = new NetDataReader(writer.Data);
                 var watch = new Stopwatch();
                 watch.Start();
-                MapContainer element = readMap;
-                NetDataReader _reader = reader;
-                ((PropertyBase)element[0]).Deserialize(_reader);
-                ((PropertyBase)element[1]).Deserialize(_reader);
-                ((PropertyBase)element[2]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[3])[0]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[3])[1]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[0]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[1]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[2]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[3]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[4]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[5]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[6]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[7]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[8]).Deserialize(_reader);
-                ((PropertyBase)((ComponentBase)element[4])[9]).Deserialize(_reader);
-                ((PropertyBase)element[5]).Deserialize(_reader);
-                ((PropertyBase)element[6]).Deserialize(_reader);
-                ((PropertyBase)element[7]).Deserialize(_reader);
+
+                #region Generated
+
+                var element0 = readMap;
+                ((StringProperty)element0[0]).Deserialize(reader);
+                ((VersionProperty)element0[1]).Deserialize(reader);
+                ((IntProperty)element0[2]).Deserialize(reader);
+                var element1 = (DimensionComponent) element0[3];
+                ((Position3IntProperty)element1[0]).Deserialize(reader);
+                ((Position3IntProperty)element1[1]).Deserialize(reader);
+                var element2 = (TerrainGenerationComponent) element0[4];
+                ((IntProperty)element2[0]).Deserialize(reader);
+                ((ByteProperty)element2[1]).Deserialize(reader);
+                ((FloatProperty)element2[2]).Deserialize(reader);
+                ((FloatProperty)element2[3]).Deserialize(reader);
+                ((FloatProperty)element2[4]).Deserialize(reader);
+                ((FloatProperty)element2[5]).Deserialize(reader);
+                ((VoxelChangeProperty)element2[6]).Deserialize(reader);
+                ((VoxelChangeProperty)element2[7]).Deserialize(reader);
+                ((IntProperty)element2[8]).Deserialize(reader);
+                ((IntProperty)element2[9]).Deserialize(reader);
+                ((OrderedVoxelChangesProperty)element0[5]).Deserialize(reader);
+                ((ModelsProperty)element0[6]).Deserialize(reader);
+                ((BoolProperty)element0[7]).Deserialize(reader);
+
+                #endregion
+
                 watch.Stop();
-                Debug.Log($"Inline Elapsed: {watch.ElapsedTicks}");   
+                Debug.Log($"Inline Elapsed: {watch.ElapsedTicks}");
             }
 
             ElementExtensions.NavigateZipped((_write, _read) =>

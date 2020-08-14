@@ -23,8 +23,8 @@ namespace Swihoni.Sessions.Entities
             if (!isActive) manager.SetAllInactive();
         }
 
-        private EntityManager() : base(EntityArrayElement.Count, "Entities") { }
+        private EntityManager() : base(EntityArray.Count, "Entities") { }
 
-        public override ArrayElementBase ExtractArray(Container session) => session.Require<EntityArrayElement>();
+        public override ArrayElementBase ExtractArray(Container session) => session.Require<EntityArray>();
     }
 }

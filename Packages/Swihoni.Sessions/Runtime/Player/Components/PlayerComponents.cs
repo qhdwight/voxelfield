@@ -157,14 +157,19 @@ namespace Swihoni.Sessions.Player.Components
         }
     }
 
-    [Serializable, ModeElement, ClientChecked, CustomInterpolation]
-    public class InventoryComponent : ComponentBase
+    public class ItemsArray : ArrayElement<ItemComponent>
     {
         public const int ItemsCount = 10;
 
+        public ItemsArray() : base(ItemsCount) { }
+    }
+
+    [Serializable, ModeElement, ClientChecked, CustomInterpolation]
+    public class InventoryComponent : ComponentBase
+    {
         public ByteProperty equippedIndex, previousEquippedIndex;
         public ByteStatusComponent equipStatus, adsStatus;
-        public ArrayElement<ItemComponent> items = new ArrayElement<ItemComponent>(ItemsCount);
+        public ItemsArray items = new ItemsArray();
 
         [ClientNonChecked] public TimeUsProperty tracerTimeUs;
         [ClientNonChecked] public VectorProperty tracerStart, tracerEnd;

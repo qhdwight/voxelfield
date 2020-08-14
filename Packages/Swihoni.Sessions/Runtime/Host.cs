@@ -82,7 +82,7 @@ namespace Swihoni.Sessions
             try
             {
                 Profiler.BeginSample("Host Render Setup");
-                if (IsLoading || m_RenderSession.Without(out PlayerContainerArrayElement renderPlayers)
+                if (IsLoading || m_RenderSession.Without(out PlayerArray renderPlayers)
                               || m_RenderSession.Without(out LocalPlayerId renderLocalPlayerId)
                               || m_HostCommands.Health().WithoutValue)
                 {
@@ -117,7 +117,7 @@ namespace Swihoni.Sessions
                         _indexer = playerId;
                         _serverHistory = m_SessionHistory;
                         RenderInterpolatedPlayer<ServerStampComponent>(playerRenderTimeUs, renderPlayer, m_SessionHistory.Size,
-                                                                       historyIndex => _serverHistory.Get(-historyIndex).Require<PlayerContainerArrayElement>()[_indexer]);
+                                                                       historyIndex => _serverHistory.Get(-historyIndex).Require<PlayerArray>()[_indexer]);
                     }
                     PlayerVisualsDispatcherBehavior visuals = GetPlayerVisuals(renderPlayer, playerId);
                     bool isPossessed = isActualLocalPlayer && !isSpectating || isSpectating && playerId == spectatingPlayerId;

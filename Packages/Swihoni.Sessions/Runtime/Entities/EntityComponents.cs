@@ -6,11 +6,11 @@ using Swihoni.Sessions.Components;
 namespace Swihoni.Sessions.Entities
 {
     [Serializable, ModeElement]
-    public class EntityArrayElement : ArrayElement<EntityContainer>
+    public class EntityArray : ArrayElement<EntityContainer>
     {
         public const int Count = 16;
 
-        public EntityArrayElement() : base(Count) { }
+        public EntityArray() : base(Count) { }
     }
 
     [Serializable]

@@ -26,7 +26,7 @@ namespace Swihoni.Sessions.Player
 
         public PlayerManager() : base(SessionBase.MaxPlayers, "Players") { }
 
-        public override ArrayElementBase ExtractArray(Container session) => session.Require<PlayerContainerArrayElement>();
+        public override ArrayElementBase ExtractArray(Container session) => session.Require<PlayerArray>();
 
         // public PlayerModifierDispatcherBehavior GetModifier(int playerId) => (PlayerModifierDispatcherBehavior) Modifiers[playerId];
 

@@ -31,7 +31,7 @@ namespace Swihoni.Sessions
             foreach (ServerSessionContainer serverSession in m_SessionHistory)
             {
                 serverSession.RegisterAppend(typeof(ServerTag));
-                foreach (Container player in serverSession.Require<PlayerContainerArrayElement>())
+                foreach (Container player in serverSession.Require<PlayerArray>())
                 {
                     player.RegisterAppend(typeof(ServerTag), typeof(ServerPingComponent), typeof(HasSentInitialData));
                     m_Injector.OnPlayerRegisterAppend(player);

@@ -93,7 +93,7 @@ namespace Voxelfield.Session
             state.AppendPropertyValue(session.Require<VoxelMapNameProperty>())
                  .Append(" - ")
                  .Append(ModeIdProperty.DisplayNames.GetForward(session.Require<ModeIdProperty>()));
-            if (session.With(out DualScoresComponent scores))
+            if (session.With(out DualScoresArray scores))
                 state.Append(" - ").Append(scores[0].TryWithValue(out byte s1) && scores[1].TryWithValue(out byte s2) ? $"{s1} to {s2}" : "In Warmup");
             DiscordManager.SetActivity((ref Activity activity) =>
             {

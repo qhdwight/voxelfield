@@ -7,12 +7,12 @@ using UnityEngine;
 namespace Swihoni.Components
 {
     [Serializable]
-    public abstract class ListPropertyBase<T> : PropertyBase
+    public abstract class ListPropertyBase<TElement> : PropertyBase
     {
-        [SerializeField] protected List<T> m_List = new List<T>();
+        [SerializeField] protected List<TElement> m_List = new List<TElement>();
         [SerializeField] private int m_MaxSize;
 
-        public IReadOnlyList<T> List => m_List;
+        public IReadOnlyList<TElement> List => m_List;
         public int Count => m_List.Count;
 
         public ListPropertyBase() { }
@@ -30,18 +30,18 @@ namespace Swihoni.Components
 
         public override void SetTo(PropertyBase other)
         {
-            if (!(other is ListPropertyBase<T> otherList)) throw new ArgumentException("Other was not same type list");
+            if (!(other is ListPropertyBase<TElement> otherList)) throw new ArgumentException("Other was not same type list");
             Clear();
             AddAllFrom(otherList);
         }
 
-        public void AddAllFrom(ListPropertyBase<T> other)
+        public void AddAllFrom(ListPropertyBase<TElement> other)
         {
             m_List.AddRange(other.m_List);
             WithValue = true;
         }
 
-        public void Append(T element)
+        public void Append(TElement element)
         {
             m_List.Add(element);
             WithValue = true;
@@ -56,7 +56,7 @@ namespace Swihoni.Components
 
         public void RemoveEnd() => m_List.RemoveAt(m_List.Count - 1);
 
-        public bool TryRemoveEnd(out T element)
+        public bool TryRemoveEnd(out TElement element)
         {
             int index = m_List.Count - 1;
             if (index < 0)
@@ -73,7 +73,7 @@ namespace Swihoni.Components
     }
 
     [Serializable]
-    public class ListProperty<T> : ListPropertyBase<T> where T : ElementBase
+    public class ListProperty<TElement> : ListPropertyBase<TElement> where TElement : ElementBase
     {
         private const string Separator = ";";
 
@@ -83,7 +83,7 @@ namespace Swihoni.Components
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(m_List.Count);
-            foreach (T element in m_List)
+            foreach (TElement element in m_List)
                 element.Serialize(writer);
         }
 
@@ -93,7 +93,7 @@ namespace Swihoni.Components
             int count = reader.GetInt();
             for (var _ = 0; _ < count; _++)
             {
-                var element = Activator.CreateInstance<T>();
+                var element = ComponentExtensions.NewElement<TElement>();
                 element.Deserialize(reader);
                 m_List.Add(element);
             }
@@ -103,7 +103,7 @@ namespace Swihoni.Components
         public override StringBuilder AppendValue(StringBuilder builder)
         {
             var afterFirst = false;
-            foreach (T element in m_List)
+            foreach (TElement element in m_List)
             {
                 if (afterFirst) builder.Append(Separator).Append(" ");
                 builder.Stringify(element);
@@ -118,7 +118,7 @@ namespace Swihoni.Components
             string[] elementStrings = stringValue.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
             foreach (string elementString in elementStrings)
             {
-                var element = Activator.CreateInstance<T>();
+                var element = ComponentExtensions.NewElement<TElement>();
                 element.Parse(elementString.Trim());
                 Append(element);
             }

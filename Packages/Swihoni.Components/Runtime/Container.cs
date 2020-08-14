@@ -57,9 +57,14 @@ namespace Swihoni.Components
         /// <exception cref="ArgumentException"></exception>
         private void RegisterAppend(Type type)
         {
-            if (!type.IsElement())
+            try
+            {
+                Append(type.NewElement());
+            }
+            catch (Exception)
+            {
                 throw new ArgumentException("Type must be containable (An element, for example: property or component)");
-            Append((ElementBase) Activator.CreateInstance(type));
+            }
         }
 
         /// <summary><see cref="RegisterAppend(System.Collections.Generic.IEnumerable{System.Type})"/></summary>

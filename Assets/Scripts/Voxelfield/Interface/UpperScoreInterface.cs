@@ -46,14 +46,14 @@ namespace Voxelfield.Interface
 
         public override void Render(in SessionContext context)
         {
-            bool isVisible = context.sessionContainer.With(out DualScoresComponent dualScores) && dualScores[LeftTeam].WithValue && dualScores[RightTeam].WithValue && !context.session.IsLoading;
+            bool isVisible = context.sessionContainer.With(out DualScoresArray dualScores) && dualScores[LeftTeam].WithValue && dualScores[RightTeam].WithValue && !context.session.IsLoading;
             if (isVisible)
             {
                 ModeBase mode = context.Mode;
                 Render(dualScores[LeftTeam], mode.GetTeamColor(LeftTeam), 
                        dualScores[RightTeam], mode.GetTeamColor(RightTeam));
             }
-            var require = context.sessionContainer.Require<PlayerContainerArrayElement>();
+            var require = context.sessionContainer.Require<PlayerArray>();
             int leftAlive = 0, rightAlive = 0;
             for (var playerId = 0; playerId < SessionBase.MaxPlayers; playerId++)
             {

@@ -55,7 +55,7 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         protected override void SecondaryUse(in SessionContext context)
         {
-            var entities = context.sessionContainer.Require<EntityArrayElement>();
+            var entities = context.sessionContainer.Require<EntityArray>();
             for (var index = 0; index < entities.Length; index++)
             {
                 EntityContainer entity = entities[index];

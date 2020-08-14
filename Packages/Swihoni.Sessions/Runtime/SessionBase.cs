@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using LiteNetLib;
@@ -32,8 +33,8 @@ namespace Swihoni.Sessions
             elements = new List<Type>
             {
                 typeof(TickRateProperty), typeof(ModeIdProperty), typeof(AllowCheatsProperty),
-                typeof(PlayerContainerArrayElement), typeof(LocalPlayerId), typeof(EntityArrayElement),
-                typeof(StampComponent), typeof(KillFeedElement), typeof(ChatListElement)
+                typeof(PlayerArray), typeof(LocalPlayerId), typeof(EntityArray),
+                typeof(StampComponent), typeof(KillFeedArray), typeof(ChatList)
             },
             playerElements = new List<Type>
             {
@@ -419,7 +420,7 @@ namespace Swihoni.Sessions
     public static class SessionExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Container GetPlayer(this Container session, int index) => session.Require<PlayerContainerArrayElement>()[index];
+        public static Container GetPlayer(this Container session, int index) => session.Require<PlayerArray>()[index];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static HealthProperty Health(this Container player) => player.Require<HealthProperty>();

@@ -106,9 +106,9 @@ namespace Swihoni.Sessions.Components
     }
 
     [Serializable]
-    public class PlayerContainerArrayElement : ArrayElement<Container>
+    public class PlayerArray : ArrayElement<Container>
     {
-        public PlayerContainerArrayElement() : base(SessionBase.MaxPlayers) { }
+        public PlayerArray() : base(SessionBase.MaxPlayers) { }
     }
 
     [Serializable, ModeElement]
@@ -121,15 +121,15 @@ namespace Swihoni.Sessions.Components
     }
 
     [Serializable, ModeElement]
-    public class KillFeedElement : ArrayElement<KillFeedComponent>
+    public class KillFeedArray : ArrayElement<KillFeedComponent>
     {
-        public KillFeedElement() : base(5) { }
+        public KillFeedArray() : base(5) { }
     }
 
     [Serializable, SingleTick]
-    public class ChatListElement : ListProperty<ChatEntryProperty>
+    public class ChatList : ListProperty<ChatEntryProperty>
     {
-        public ChatListElement() : base(5) { }
+        public ChatList() : base(5) { }
     }
 
     [Serializable]
