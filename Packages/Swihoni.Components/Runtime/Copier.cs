@@ -19,12 +19,12 @@ namespace Swihoni.Components
         /// </summary>
         public static void MergeFrom<T>(this T destination, T source) where T : ElementBase
         {
-            ElementExtensions.NavigateZipped((_destination, _source) =>
+            ElementExtensions.NavigateZipped(destination, source, (_destination, _source) =>
             {
                 if (_destination is PropertyBase destinationProperty && _source is PropertyBase sourceProperty)
                     destinationProperty.SetFromIfWith(sourceProperty);
                 return Navigation.Continue;
-            }, destination, source);
+            });
         }
 
         /// <summary>
@@ -32,12 +32,12 @@ namespace Swihoni.Components
         /// </summary>
         public static void SetTo<T>(this T destination, T source) where T : ElementBase
         {
-            ElementExtensions.NavigateZipped((_destination, _source) =>
+            ElementExtensions.NavigateZipped(destination, source, (_destination, _source) =>
             {
                 if (_destination is PropertyBase destinationProperty && _source is PropertyBase sourceProperty)
                     destinationProperty.SetTo(sourceProperty);
                 return Navigation.Continue;
-            }, destination, source);
+            });
         }
     }
 }

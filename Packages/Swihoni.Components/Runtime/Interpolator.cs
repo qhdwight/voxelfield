@@ -88,7 +88,7 @@ namespace Swihoni.Components
         public static void InterpolateInto<T>(T e1, T e2, T ed, float interpolation) where T : ElementBase
         {
             _interpolation = interpolation; // Prevent closure allocation
-            ElementExtensions.NavigateZipped((_e1, _e2, _ed) =>
+            ElementExtensions.NavigateZipped(e1, e2, ed, (_e1, _e2, _ed) =>
             {
                 switch (_e1)
                 {
@@ -106,7 +106,7 @@ namespace Swihoni.Components
                         break;
                 }
                 return Navigation.Continue;
-            }, e1, e2, ed);
+            });
         }
     }
 }

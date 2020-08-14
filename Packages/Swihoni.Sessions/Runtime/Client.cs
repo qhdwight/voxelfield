@@ -100,12 +100,12 @@ namespace Swihoni.Sessions
 
         private static CyclicArray<Container> _predictionHistory;
 
-        private static void MergeCommandInto(ElementBase element, ElementBase command) => ElementExtensions.NavigateZipped((_element, _command) =>
+        private static void MergeCommandInto(ElementBase element, ElementBase command) => ElementExtensions.NavigateZipped(element, command, (_element, _command) =>
         {
             if (_command.WithoutAttribute<ClientTrustedAttribute>()) return Navigation.Continue;
             _element.SetTo(_command);
             return Navigation.SkipDescendents;
-        }, element, command);
+        });
 
         protected override void Tick(uint tick, uint timeUs, uint durationUs)
         {
@@ -139,8 +139,8 @@ namespace Swihoni.Sessions
         }
 
         private static uint _timeUs;
-        
-        private static readonly DurationAverage DurationAverage = new DurationAverage(60);
+
+        private static readonly DurationAverage DurationAverage = new DurationAverage(60, "Deserialize");
 
         void IReceiver.OnReceive(NetPeer fromPeer, NetDataReader reader, byte code)
         {
@@ -153,13 +153,11 @@ namespace Swihoni.Sessions
 
                     DurationAverage.Start();
                     m_Injector.DeserializeReceived(m_EmptyServerSession, reader);
-                    // m_EmptyServerSession.Deserialize(reader);
-                    DurationAverage.Stop();
-                    if (m_EmptyServerSession.Require<ServerStampComponent>().tick % 60 == 0) Debug.Log(DurationAverage.Average());
-
                     ServerSessionContainer receivedServerSession = m_EmptyServerSession;
-
                     uint serverTick = receivedServerSession.Require<ServerStampComponent>().tick;
+                    bool everySecond = serverTick % 60 == 0;
+                    DurationAverage.Stop(everySecond);
+
                     UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
                     ServerSessionContainer serverSession;
                     var isMostRecent = true;
@@ -281,7 +279,7 @@ namespace Swihoni.Sessions
                         ExceptionLogger.Log(exception, "Error putting demo session");
                     }
 
-                    ElementExtensions.NavigateZipped((_server, _command) =>
+                    ElementExtensions.NavigateZipped(serverSession.GetPlayer(localPlayerId), m_CommandHistory.Peek(), (_server, _command) =>
                     {
                         if (_server is PropertyBase serverProperty && serverProperty.IsOverride && _command is PropertyBase commandProperty)
                         {
@@ -289,7 +287,7 @@ namespace Swihoni.Sessions
                             Debug.Log($"Overriding with server: {serverProperty}");
                         }
                         return Navigation.Continue;
-                    }, serverSession.GetPlayer(localPlayerId), m_CommandHistory.Peek());
+                    });
                     break;
                 }
             }
@@ -347,7 +345,7 @@ namespace Swihoni.Sessions
 
         private static void UpdateCurrentSessionFromReceived(Container previousServerSession, Container serverSession, ElementBase receivedServerSession)
         {
-            ElementExtensions.NavigateZipped((_previous, _current, _received) =>
+            ElementExtensions.NavigateZipped(previousServerSession, serverSession, receivedServerSession, (_previous, _current, _received) =>
             {
                 if (_current is PropertyBase _currentProperty)
                 {
@@ -361,7 +359,7 @@ namespace Swihoni.Sessions
                         _currentProperty.SetTo((PropertyBase) _previous);
                 }
                 return Navigation.Continue;
-            }, previousServerSession, serverSession, receivedServerSession);
+            });
             // TODO:refactor need some sort of zip longest
             serverSession.Require<LocalizedClientStampComponent>().SetTo(previousServerSession.Require<LocalizedClientStampComponent>());
             var previousArray = previousServerSession.Require<PlayerArray>();

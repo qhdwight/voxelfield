@@ -19,77 +19,88 @@ namespace Voxelfield.Editor
         {
             var client = new Client(VoxelfieldComponents.SessionElements, null, new ClientInjector());
             ServerSessionContainer session = client.ReceivedServerSession;
-            Inline(session, "session");
+            Inline(session, "previousServerSession", null, null);
 
             // Inline(new MapContainer(), "readMap");
         }
 
-        private static void Inline(ElementBase element, string rootName)
+        private static void Inline(ElementBase element, string rn1, string rn2, string rn3)
         {
-            var names = new Stack<(string, string, int)>();
-            var builder = new StringBuilder("#region Generated\n\n");
+            var stack = new Stack<(string, string, string, string, int)>();
+            var mb = new StringBuilder("#region Generated\n\n");
             string GetCastString(Type type)
             {
                 string[] generic = type.GetGenericArguments().Select(arg => arg.Name).ToArray();
                 string castString = type.Name;
                 return generic.Length == 0 ? castString : $"{castString.Substring(0, castString.IndexOf("`", StringComparison.Ordinal))}<{string.Join(",", generic)}>";
             }
-            var ni = 0;
-            element.Navigate(_element =>
+            var vi = 0;
+            ElementExtensions.NavigateZipped(element, element, element, (_e1, _e2, _e3) =>
             {
-                if (_element.TryAttribute(out NoSerializationAttribute attribute) && !attribute.ExceptRead) return Navigation.SkipDescendents;
+                // if (_e1.TryAttribute(out NoSerializationAttribute attribute) && !attribute.ExceptRead) return Navigation.SkipDescendents;
                 // names.Push((GetBaseElementType(_element.GetType()).Name, breadthIndex));
-                if (_element is PropertyBase)
+                if (_e1 is PropertyBase)
                 {
-                    (string t, string v, int bi) = names.Pop();
                     var b = new StringBuilder();
-                    b.Append(v).Append(".m_Elements").Append("[").Append(bi).Append("])")
-                     .Insert(0, ")").Insert(0, GetCastString(_element.GetType())).Insert(0, "((").AppendLine(".Deserialize(reader);");
-                    builder.Append(b);
-                    names.Push((t, v, bi + 1));
+                    (string t, string v1, string v2, string v3, int bi) = stack.Pop();
+                    StringBuilder AppendVariable(string v)
+                        => b.Append("((").Append(GetCastString(_e1.GetType())).Append(")").Append(v).Append(".m_Elements").Append("[").Append(bi).Append("])");
+                    if (v2 == null)
+                    {
+                        // One
+                        AppendVariable(v1).AppendLine(".Deserialize(reader);");
+                    }
+                    else if (v3 == null)
+                    {
+                        // Two
+                        AppendVariable(v1).Append(".SetTo(");
+                        AppendVariable(v2).AppendLine(");");
+                    }
+                    else
+                    {
+                        // Three
+                        AppendVariable(v1).Append(".SetTo(");
+                        AppendVariable(v2).AppendLine(");");
+                    }
+                    mb.Append(b);
+                    stack.Push((t, v1, v2, v3, bi + 1));
                 }
                 else
                 {
-                    var varBuilder = new StringBuilder();
-                    (_, string v, int bi) = names.Count == 0 ? ("", rootName, 0) : names.Peek();
-                    var vb = $"element{ni++}";
-                    varBuilder.Append("var ").Append(vb).Append(" = ");
-                    if (v != rootName) varBuilder.Append("(").Append(GetCastString(_element.GetType())).Append(") ");
-                    varBuilder.Append(v);
-                    if (v != rootName) varBuilder.Append(".m_Elements").Append("[").Append(bi).Append("]");
-                    varBuilder.AppendLine(";");
-                    builder.Append(varBuilder);
-                    names.Push((GetCastString(_element.GetType()), vb, 0));
+                    var b = new StringBuilder();
+                    (_, string v1, string v2, string v3, int bi) = stack.Count == 0 ? ("", rn1, rn2, rn3, 0) : stack.Peek();
+                    string BuildVariable(string v, string r, ElementBase e)
+                    {
+                        if (r == null) return null;
+                        var vn = $"element{vi++}";
+                        b.Append("var ").Append(vn).Append(" = ");
+                        if (v != r) b.Append("(").Append(GetCastString(e.GetType())).Append(") ");
+                        b.Append(v1);
+                        if (v != r) b.Append(".m_Elements").Append("[").Append(bi).Append("]");
+                        b.AppendLine(";");
+                        return vn;
+                    }
+                    stack.Push((GetCastString(_e1.GetType()), BuildVariable(v1, rn1, _e1), BuildVariable(v2, rn2, _e2), BuildVariable(v3, rn3, _e3), 0));
+                    mb.Append(b);
                 }
                 return Navigation.Continue;
-            }, _element =>
+            }, (_e1, _e2, _e3) =>
             {
-                if (!(_element is PropertyBase))
+                if (!(_e1 is PropertyBase))
                 {
-                    names.Pop();
-                    if (names.Count > 0)
+                    stack.Pop();
+                    if (stack.Count > 0)
                     {
-                        (string n, string v, int bi) = names.Pop();
-                        names.Push((n, v, bi + 1));
+                        (string n, string v1, string v2, string v3, int bi) = stack.Pop();
+                        stack.Push((n, v1, v2, v3, bi + 1));
                     }
                 }
                 return default;
             });
-            builder.Append("\n#endregion");
+            mb.Append("\n#endregion");
             string parentFolder = Directory.GetParent(Application.dataPath).FullName,
                    fileName = Path.ChangeExtension(Path.Combine(parentFolder, "inline"), "txt");
-            File.WriteAllText(fileName, builder.ToString());
-        }
-
-        private static Type GetBaseElementType(Type t)
-        {
-            Type p = null;
-            while (t != typeof(ElementBase))
-            {
-                p = t;
-                t = t?.BaseType;
-            }
-            return p;
+            File.WriteAllText(fileName, mb.ToString());
         }
     }
 }

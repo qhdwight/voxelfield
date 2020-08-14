@@ -109,7 +109,7 @@ namespace Voxelfield.Tests
                 Debug.Log($"Inline Elapsed: {watch.ElapsedTicks}");
             }
 
-            ElementExtensions.NavigateZipped((_write, _read) =>
+            ElementExtensions.NavigateZipped(writeMap, readMap, (_write, _read) =>
             {
                 if (_write is PropertyBase _writeProperty && _read is PropertyBase _readProperty)
                 {
@@ -123,7 +123,7 @@ namespace Voxelfield.Tests
                     }
                 }
                 return Navigation.Continue;
-            }, writeMap, readMap);
+            });
             Assert.AreEqual(0, readMap.voxelChanges.Count);
         }
     }

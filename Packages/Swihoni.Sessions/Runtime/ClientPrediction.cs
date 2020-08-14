@@ -78,7 +78,7 @@ namespace Swihoni.Sessions
             /* We are checking predicted */
             Container latestPredictedPlayer = m_PlayerPredictionHistory.Peek();
             _predictionIsAccurate = true; // Set by the following navigation
-            ElementExtensions.NavigateZipped(VisitPredictedFunction, basePredictedPlayer, latestPredictedPlayer, serverPlayer);
+            ElementExtensions.NavigateZipped(basePredictedPlayer, latestPredictedPlayer, serverPlayer, VisitPredictedFunction);
             if (_predictionIsAccurate)
                 return;
 

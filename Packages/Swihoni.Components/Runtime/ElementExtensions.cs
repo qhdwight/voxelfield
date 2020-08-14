@@ -85,12 +85,12 @@ namespace Swihoni.Components
         public static TElement Clone<TElement>(this TElement element) where TElement : ElementBase
         {
             var clone = (TElement) element.GetType().NewElement();
-            NavigateZipped((_e1, _e2) =>
+            NavigateZipped(element, clone, (_e1, _e2) =>
             {
                 if (_e1 is Container p1 && _e2 is Container p2)
                     p2.TakeElementTypes(p1);
                 return Navigation.Continue;
-            }, element, clone);
+            });
             clone.MergeFrom(element);
             return clone;
         }
@@ -101,7 +101,7 @@ namespace Swihoni.Components
         public static bool EqualTo<T>(this T e1, T e2) where T : ElementBase
         {
             _areEqual = true;
-            NavigateZipped((_e1, _e2) =>
+            NavigateZipped(e1, e2, (_e1, _e2) =>
             {
                 if (_e1 is PropertyBase p1 && _e2 is PropertyBase p2)
                 {
@@ -111,7 +111,7 @@ namespace Swihoni.Components
                     return Navigation.Exit;
                 }
                 return Navigation.Continue;
-            }, e1, e2);
+            });
             return _areEqual;
         }
 
@@ -132,17 +132,19 @@ namespace Swihoni.Components
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
-        public static void NavigateZipped(Func<ElementBase, ElementBase, Navigation> visit, ElementBase e1, ElementBase e2)
+        public static void NavigateZipped(ElementBase e1, ElementBase e2, Func<ElementBase, ElementBase, Navigation> visit,
+                                          Func<ElementBase, ElementBase, Navigation> endVisit = null)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2};
-            Navigate(new DualVisitFunc {function = visit}, zip, 2);
+            Navigate(new DualVisitFunc {function = visit}, zip, 2, new DualVisitFunc {function = endVisit});
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
-        public static void NavigateZipped(Func<ElementBase, ElementBase, ElementBase, Navigation> visit, ElementBase e1, ElementBase e2, ElementBase e3)
+        public static void NavigateZipped(ElementBase e1, ElementBase e2, ElementBase e3, Func<ElementBase, ElementBase, ElementBase, Navigation> visit,
+                                          Func<ElementBase, ElementBase, ElementBase, Navigation> endVisit = null)
         {
             var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2, [2] = e3};
-            Navigate(new TriVisitFunc {function = visit}, zip, 3);
+            Navigate(new TriVisitFunc {function = visit}, zip, 3, new TriVisitFunc {function = endVisit});
         }
 
         /// <summary>
@@ -165,7 +167,7 @@ namespace Swihoni.Components
                 Navigation navigation = visit.Invoke(_zip);
                 if (navigation == Navigation.Exit) exitAll = true;
                 if (exitAll || navigation == Navigation.SkipDescendents) return;
-                
+
                 switch (_zip[0])
                 {
                     case Container _:
