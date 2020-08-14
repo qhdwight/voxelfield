@@ -59,7 +59,7 @@ namespace Swihoni.Sessions.Config
                     }
                     catch (Exception exception)
                     {
-                        ExceptionLogger.Log(exception, $"Exception running command: {arguments[0]}");
+                        L.Exception(exception, $"Exception running command: {arguments[0]}");
                     }
                 }
                 else Debug.LogWarning($"Command \"{arguments[0]}\" not found!");

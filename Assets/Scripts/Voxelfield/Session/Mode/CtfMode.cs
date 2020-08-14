@@ -144,7 +144,7 @@ namespace Voxelfield.Session.Mode
             {
                 byte pickupItemId = m_PickupItemIds[Random.Range(0, m_PickupItemIds.Length)].id;
                 CreateItemEntity(context, DeathmatchMode.GetRandomPosition(), pickupItemId,
-                                 flags: ThrowableComponent.Flags.Floating | ThrowableComponent.Flags.Persistent);
+                                 flags: ThrowableFlags.Floating | ThrowableFlags.Persistent);
             }
         }
 

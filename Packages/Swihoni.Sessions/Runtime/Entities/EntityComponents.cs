@@ -21,51 +21,53 @@ namespace Swihoni.Sessions.Entities
 
         public ByteIdProperty id;
     }
+    
+    [Flags]
+    public enum ThrowableFlags : byte
+    {
+        None = 0,
+        Floating = 1,
+        Persistent = 2
+    }
+    
+    [Serializable]
+    public class ThrowableFlagsProperty : PropertyBase<ThrowableFlags>
+    {
+        public override void SerializeValue(NetDataWriter writer) => writer.Put((byte) Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = (ThrowableFlags) reader.GetByte();
+        public override bool ValueEquals(in ThrowableFlags value) => value == Value;
+        
+        public bool IsFloating
+        {
+            get => WithValue && (Value & ThrowableFlags.Floating) == ThrowableFlags.Floating;
+            protected set
+            {
+                SetValueIfWithout();
+                if (value) Value |= ThrowableFlags.Floating;
+                else Value &= ~ThrowableFlags.Floating;
+            }
+        }
+        
+        public bool IsPersistent
+        {
+            get => WithValue && (Value & ThrowableFlags.Persistent) == ThrowableFlags.Persistent;
+            protected set
+            {
+                SetValueIfWithout();
+                if (value) Value |= ThrowableFlags.Persistent;
+                else Value &= ~ThrowableFlags.Persistent;
+            }
+        }
+    }
+    
 
     [Serializable, CustomInterpolation]
     public class ThrowableComponent : ComponentBase
     {
-        [Flags]
-        public enum Flags : byte
-        {
-            None = 0,
-            Floating = 1,
-            Persistent = 2
-        }
-        
-        public class FlagsProperty : PropertyBase<Flags>
-        {
-            public override void SerializeValue(NetDataWriter writer) => writer.Put((byte) Value);
-            public override void DeserializeValue(NetDataReader reader) => Value = (Flags) reader.GetByte();
-            public override bool ValueEquals(in Flags value) => value == Value;
-        
-            public bool IsFloating
-            {
-                get => WithValue && (Value & Flags.Floating) == Flags.Floating;
-                protected set
-                {
-                    SetValueIfWithout();
-                    if (value) Value |= Flags.Floating;
-                    else Value &= ~Flags.Floating;
-                }
-            }
-        
-            public bool IsPersistent
-            {
-                get => WithValue && (Value & Flags.Persistent) == Flags.Persistent;
-                protected set
-                {
-                    SetValueIfWithout();
-                    if (value) Value |= Flags.Persistent;
-                    else Value &= ~Flags.Persistent;
-                }
-            }
-        }
-
         [InterpolateRange(5.0f)] public VectorProperty position;
         public QuaternionProperty rotation;
         public ElapsedUsProperty thrownElapsedUs, contactElapsedUs, popTimeUs;
-        public FlagsProperty flags;
+        public ThrowableFlagsProperty flags;
         public ByteProperty throwerId;
 
         public override void CustomInterpolateFrom(ComponentBase c1, ComponentBase c2, float interpolation)

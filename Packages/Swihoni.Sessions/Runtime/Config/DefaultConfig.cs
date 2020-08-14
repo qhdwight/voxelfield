@@ -291,7 +291,7 @@ namespace Swihoni.Sessions.Config
             catch (Exception exception)
             {
                 SetActiveToDefault();
-                ExceptionLogger.Log(exception, $"[{_logTag}] Failed to parse config. Using defaults. Check permissions?");
+                L.Exception(exception, $"[{_logTag}] Failed to parse config. Using defaults. Check permissions?");
             }
         }
 

@@ -1,0 +1,24 @@
+#if ENABLE_IL2CPP
+using LiteNetLib.Utils;
+using Swihoni.Components;
+using Swihoni.Sessions.Components;
+using Swihoni.Sessions.Entities;
+using Swihoni.Sessions.Player.Components;
+using Voxels;
+
+namespace Voxelfield.Session
+{
+    public partial class ClientInjector
+    {
+        public override void DeserializeReceived(ServerSessionContainer session, NetDataReader reader)
+        {
+$1
+        }
+
+        public override void UpdateCurrentSessionFromReceived(Container previousServerSession, Container serverSession, Container receivedServerSession)
+        {
+$2
+        }
+    }
+}
+#endif

@@ -67,7 +67,7 @@ namespace Swihoni.Sessions
                     }
                     catch (Exception exception)
                     {
-                        ExceptionLogger.Log(exception, "Exception modifying checked host");
+                        L.Exception(exception, "Exception modifying checked host");
                     }
                 }
             }

@@ -91,6 +91,12 @@ namespace Swihoni.Components
         public abstract void SetTo(PropertyBase other);
         public abstract void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation);
 
+        public void SetToIncludingOverride(PropertyBase other)
+        {
+            SetTo(other);
+            other.IsOverride = IsOverride;
+        }
+
         public virtual StringBuilder AppendValue(StringBuilder builder)
             => throw new NotSupportedException($"Appending this property is not supported. Override {GetType().Name}.{nameof(AppendValue)} if this is not intentional.");
 

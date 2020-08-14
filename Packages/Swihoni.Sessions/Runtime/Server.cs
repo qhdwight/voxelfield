@@ -222,7 +222,7 @@ namespace Swihoni.Sessions
                 }
                 catch (Exception exception)
                 {
-                    ExceptionLogger.Log(exception, "Exception modifying session");
+                    L.Exception(exception, "Exception modifying session");
                 }
             }
 
@@ -360,7 +360,7 @@ namespace Swihoni.Sessions
                     }
                     catch (Exception exception)
                     {
-                        ExceptionLogger.Log(exception, $"Exception modifying checked player: {context.playerId}");
+                        L.Exception(exception, $"Exception modifying checked player: {context.playerId}");
                     }
                 }
             }

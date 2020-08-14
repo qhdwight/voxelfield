@@ -157,7 +157,7 @@ namespace Swihoni.Sessions.Modes
             if (player.With(out InventoryComponent inventory))
             {
                 if (inventory.WithItemEquipped(out ItemComponent equipped) && inventory.equippedIndex > 0)
-                    CreateItemEntity(context.sessionContext, player.Require<MoveComponent>(), equipped.id, equipped, ThrowableComponent.Flags.Floating);
+                    CreateItemEntity(context.sessionContext, player.Require<MoveComponent>(), equipped.id, equipped, ThrowableFlags.Floating);
                 for (var i = 0; i < inventory.Count; i++)
                     inventory[i].status.Zero();
                 inventory.equipStatus.id.Value = ItemEquipStatusId.Equipping;
@@ -316,7 +316,7 @@ namespace Swihoni.Sessions.Modes
         }
 
         public static (ModifierBehaviorBase, Container) CreateItemEntity(in SessionContext context, Vector3 position, byte itemId,
-                                                                         ItemComponent ammo = null, ThrowableComponent.Flags? flags = ThrowableComponent.Flags.None)
+                                                                         ItemComponent ammo = null, ThrowableFlags? flags = ThrowableFlags.None)
         {
             var entityId = (byte) (itemId + 100);
             (ModifierBehaviorBase, Container) tuple = context.session.EntityManager.ObtainNextModifier(context.sessionContainer, entityId);

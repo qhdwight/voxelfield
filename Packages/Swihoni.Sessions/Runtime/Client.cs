@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Swihoni.Collections;
@@ -17,7 +14,6 @@ using Swihoni.Sessions.Player.Visualization;
 using Swihoni.Util;
 using UnityEngine;
 using UnityEngine.Profiling;
-using Debug = UnityEngine.Debug;
 
 namespace Swihoni.Sessions
 {
@@ -140,7 +136,7 @@ namespace Swihoni.Sessions
 
         private static uint _timeUs;
 
-        private static readonly DurationAverage DurationAverage = new DurationAverage(60, "Deserialize");
+        private static readonly DurationAverage DurationAverage = new DurationAverage(60, "Navigate");
 
         void IReceiver.OnReceive(NetPeer fromPeer, NetDataReader reader, byte code)
         {
@@ -148,15 +144,14 @@ namespace Swihoni.Sessions
             {
                 case ServerSessionCode:
                 {
+                    DurationAverage.Start();
                     Profiler.BeginSample("Client Receive Setup");
                     ServerSessionContainer previousServerSession = m_SessionHistory.Peek();
 
-                    DurationAverage.Start();
                     m_Injector.DeserializeReceived(m_EmptyServerSession, reader);
                     ServerSessionContainer receivedServerSession = m_EmptyServerSession;
                     uint serverTick = receivedServerSession.Require<ServerStampComponent>().tick;
                     bool everySecond = serverTick % 60 == 0;
-                    DurationAverage.Stop(everySecond);
 
                     UIntProperty previousServerTick = previousServerSession.Require<ServerStampComponent>().tick;
                     ServerSessionContainer serverSession;
@@ -170,6 +165,7 @@ namespace Swihoni.Sessions
                             for (var i = 0; i < delta - 1; i++) // We skipped tick(s). Reserve spaces to fill later
                             {
                                 ServerSessionContainer reserved = m_SessionHistory.ClaimNext();
+                                L.Warning($"[{GetType().Name}] Inserting out of order server update");
                                 reserved.SetTo(previousServerSession);
                             }
                             serverSession = m_SessionHistory.ClaimNext();
@@ -178,13 +174,15 @@ namespace Swihoni.Sessions
                         {
                             // We received an old tick. Fill in history
                             serverSession = m_SessionHistory.Get(delta);
-                            Debug.LogWarning($"[{GetType().Name}] Received out of order server update");
+                            L.Warning($"[{GetType().Name}] Received out of order server update");
                             isMostRecent = false;
                         }
                     }
                     else serverSession = m_SessionHistory.ClaimNext();
 
                     UpdateCurrentSessionFromReceived(previousServerSession, serverSession, receivedServerSession);
+                    
+                    DurationAverage.Stop(everySecond);
                     Profiler.EndSample();
 
                     m_Injector.OnClientReceive(serverSession);
@@ -192,7 +190,7 @@ namespace Swihoni.Sessions
 
                     if (!isMostRecent)
                     {
-                        Debug.LogWarning("Is not most recent!");
+                        L.Warning("Is not most recent!");
                         break;
                     }
 
@@ -242,9 +240,7 @@ namespace Swihoni.Sessions
                         {
                             uint previousTimeUs = previousServerSession.GetPlayer(playerId).Require<ServerStampComponent>().timeUs;
                             if (serverTimeUs >= previousTimeUs) localizedServerTimeUs.Value += checked(serverTimeUs - previousTimeUs);
-#if UNITY_EDITOR
-                            else Debug.LogWarning($"Updated server player time was greater. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
-#endif
+                            else L.Warning($"Updated server player time was greater. Current: {serverTimeUs.Value} μs; Previous: {previousTimeUs} μs");
                         }
                         else localizedServerTimeUs.Value = _timeUs;
 
@@ -276,7 +272,7 @@ namespace Swihoni.Sessions
                     }
                     catch (Exception exception)
                     {
-                        ExceptionLogger.Log(exception, "Error putting demo session");
+                        L.Exception(exception, "Error putting demo session");
                     }
 
                     ElementExtensions.NavigateZipped(serverSession.GetPlayer(localPlayerId), m_CommandHistory.Peek(), (_server, _command) =>
@@ -343,23 +339,9 @@ namespace Swihoni.Sessions
 
         private static readonly Func<ElementBase, ElementBase, ElementBase, Navigation> VisitPredictedFunction = VisitPredicted;
 
-        private static void UpdateCurrentSessionFromReceived(Container previousServerSession, Container serverSession, ElementBase receivedServerSession)
+        private void UpdateCurrentSessionFromReceived(Container previousServerSession, Container serverSession, Container receivedServerSession)
         {
-            ElementExtensions.NavigateZipped(previousServerSession, serverSession, receivedServerSession, (_previous, _current, _received) =>
-            {
-                if (_current is PropertyBase _currentProperty)
-                {
-                    var _receivedProperty = (PropertyBase) _received;
-                    if (_current.WithAttribute<SingleTickAttribute>() || !_receivedProperty.WasSame)
-                    {
-                        _currentProperty.SetTo(_receivedProperty);
-                        _currentProperty.IsOverride = _receivedProperty.IsOverride;
-                    }
-                    else
-                        _currentProperty.SetTo((PropertyBase) _previous);
-                }
-                return Navigation.Continue;
-            });
+            m_Injector.UpdateCurrentSessionFromReceived(previousServerSession, serverSession, receivedServerSession);
             // TODO:refactor need some sort of zip longest
             serverSession.Require<LocalizedClientStampComponent>().SetTo(previousServerSession.Require<LocalizedClientStampComponent>());
             var previousArray = previousServerSession.Require<PlayerArray>();

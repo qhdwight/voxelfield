@@ -14,26 +14,39 @@ namespace Voxelfield.Editor
 {
     public static class InlineGenerator
     {
-        [MenuItem("Voxelfield/Inline")]
+        [MenuItem("Voxelfield/Generate Inline")]
         private static void CustomInline()
         {
             var client = new Client(VoxelfieldComponents.SessionElements, null, new ClientInjector());
             ServerSessionContainer session = client.ReceivedServerSession;
-            Inline(session, "previousServerSession", null, null);
-
+            string updateCurrent = Inline(session, "previousServerSession", "serverSession", "receivedServerSession",
+                                          (b, e, bi, v1, v2, v3) => b.AppendVariable(e, bi, v2).Append(".SetToIncludingOverride(").AppendVariable(e, bi, v3).Append(");\n")),
+                   deserialize = Inline(session, "session", null, null,
+                                        (b, e, bi, v1, v2, v3) => b.AppendVariable(e, bi, v1).Append(".Deserialize(reader);\n")),
+                   projectPath = Directory.GetParent(Application.dataPath).FullName,
+                   template = File.ReadAllText(Path.Combine(projectPath, "Assets", "Scripts", "Voxelfield", "Session", "InlineTemplate.cs.txt"));
+            template = template.Replace("$1", deserialize);
+            template = template.Replace("$2", updateCurrent);
+            File.WriteAllText(Path.Combine(projectPath, "Assets", "Scripts", "Voxelfield", "Session", "ClientGenerated.cs"), template);
+            Debug.Log($"Generated {template.Count(c => c == '\n')} lines of inline");
             // Inline(new MapContainer(), "readMap");
         }
 
-        private static void Inline(ElementBase element, string rn1, string rn2, string rn3)
+        private static string GetCastString(Type type)
         {
+            string[] generic = type.GetGenericArguments().Select(arg => arg.Name).ToArray();
+            string castString = type.Name;
+            return generic.Length == 0 ? castString : $"{castString.Substring(0, castString.IndexOf("`", StringComparison.Ordinal))}<{string.Join(",", generic)}>";
+        }
+
+        private static StringBuilder AppendVariable(this StringBuilder b, ElementBase e, int bi, string v)
+            => b.Append("((").Append(GetCastString(e.GetType())).Append(")").Append(v).Append(".m_Elements").Append("[").Append(bi).Append("])");
+
+        private static string Inline(ElementBase element, string rn1, string rn2, string rn3, Action<StringBuilder, ElementBase, int, string, string, string> action)
+        {
+            // Type, Variable Names 1, 2, 3, Breadth
             var stack = new Stack<(string, string, string, string, int)>();
             var mb = new StringBuilder("#region Generated\n\n");
-            string GetCastString(Type type)
-            {
-                string[] generic = type.GetGenericArguments().Select(arg => arg.Name).ToArray();
-                string castString = type.Name;
-                return generic.Length == 0 ? castString : $"{castString.Substring(0, castString.IndexOf("`", StringComparison.Ordinal))}<{string.Join(",", generic)}>";
-            }
             var vi = 0;
             ElementExtensions.NavigateZipped(element, element, element, (_e1, _e2, _e3) =>
             {
@@ -43,25 +56,7 @@ namespace Voxelfield.Editor
                 {
                     var b = new StringBuilder();
                     (string t, string v1, string v2, string v3, int bi) = stack.Pop();
-                    StringBuilder AppendVariable(string v)
-                        => b.Append("((").Append(GetCastString(_e1.GetType())).Append(")").Append(v).Append(".m_Elements").Append("[").Append(bi).Append("])");
-                    if (v2 == null)
-                    {
-                        // One
-                        AppendVariable(v1).AppendLine(".Deserialize(reader);");
-                    }
-                    else if (v3 == null)
-                    {
-                        // Two
-                        AppendVariable(v1).Append(".SetTo(");
-                        AppendVariable(v2).AppendLine(");");
-                    }
-                    else
-                    {
-                        // Three
-                        AppendVariable(v1).Append(".SetTo(");
-                        AppendVariable(v2).AppendLine(");");
-                    }
+                    action(b, _e1, bi, v1, v2, v3);
                     mb.Append(b);
                     stack.Push((t, v1, v2, v3, bi + 1));
                 }
@@ -72,16 +67,16 @@ namespace Voxelfield.Editor
                     string BuildVariable(string v, string r, ElementBase e)
                     {
                         if (r == null) return null;
-                        var vn = $"element{vi++}";
+                        var vn = $"e{vi++}";
                         b.Append("var ").Append(vn).Append(" = ");
                         if (v != r) b.Append("(").Append(GetCastString(e.GetType())).Append(") ");
-                        b.Append(v1);
+                        b.Append(v);
                         if (v != r) b.Append(".m_Elements").Append("[").Append(bi).Append("]");
-                        b.AppendLine(";");
+                        b.Append("; ");
                         return vn;
                     }
                     stack.Push((GetCastString(_e1.GetType()), BuildVariable(v1, rn1, _e1), BuildVariable(v2, rn2, _e2), BuildVariable(v3, rn3, _e3), 0));
-                    mb.Append(b);
+                    mb.Append(b).Append("\n");
                 }
                 return Navigation.Continue;
             }, (_e1, _e2, _e3) =>
@@ -98,9 +93,7 @@ namespace Voxelfield.Editor
                 return default;
             });
             mb.Append("\n#endregion");
-            string parentFolder = Directory.GetParent(Application.dataPath).FullName,
-                   fileName = Path.ChangeExtension(Path.Combine(parentFolder, "inline"), "txt");
-            File.WriteAllText(fileName, mb.ToString());
+            return mb.ToString();
         }
     }
 }

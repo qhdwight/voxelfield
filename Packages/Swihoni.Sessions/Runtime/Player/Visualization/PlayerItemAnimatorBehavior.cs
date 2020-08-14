@@ -164,7 +164,7 @@ namespace Swihoni.Sessions.Player.Visualization
             }
             catch (Exception exception)
             {
-                ExceptionLogger.Log(exception, "Error setting up visual item");
+                L.Exception(exception, "Error setting up visual item");
                 TryReturnActive();
             }
         }

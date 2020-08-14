@@ -201,7 +201,7 @@ namespace Voxelfield.Session
             }
             catch (Exception exception)
             {
-                ExceptionLogger.Log(exception, "Error starting session");
+                L.Exception(exception, "Error starting session");
                 session.Stop();
                 return null;
             }
@@ -291,7 +291,7 @@ namespace Voxelfield.Session
             }
             catch (Exception exception)
             {
-                ExceptionLogger.Log(exception, "Error updating sessions");
+                L.Exception(exception, "Error updating sessions");
                 DisconnectAll();
             }
 
@@ -329,7 +329,7 @@ namespace Voxelfield.Session
             }
             catch (Exception exception)
             {
-                ExceptionLogger.Log(exception, "Error updating sessions (fixed)");
+                L.Exception(exception, "Error updating sessions (fixed)");
                 DisconnectAll();
             }
         }

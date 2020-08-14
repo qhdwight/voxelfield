@@ -97,7 +97,7 @@ namespace Swihoni.Components.Networking
             }
             catch (Exception exception)
             {
-                ExceptionLogger.Log(exception, "Failed to send");
+                L.Exception(exception, "Failed to send");
                 throw;
             }
         }

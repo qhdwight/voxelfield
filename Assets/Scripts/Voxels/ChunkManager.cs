@@ -112,7 +112,7 @@ namespace Voxels
                     }
                     default:
                     {
-                        Debug.LogWarning($"Unrecognized chunk action type {actionType}");
+                        Debug.LogWarning($"Unrecognized chunk action type: {actionType}");
                         break;
                     }
                 }

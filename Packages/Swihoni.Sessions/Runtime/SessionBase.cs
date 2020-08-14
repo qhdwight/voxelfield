@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using LiteNetLib;
@@ -103,6 +102,20 @@ namespace Swihoni.Sessions
         public virtual void ModifyPlayer(in SessionContext context) { }
 
         public virtual void DeserializeReceived(ServerSessionContainer session, NetDataReader reader) => session.Deserialize(reader);
+
+        public virtual void UpdateCurrentSessionFromReceived(Container previousServerSession, Container serverSession, Container receivedServerSession)
+            => ElementExtensions.NavigateZipped(previousServerSession, serverSession, receivedServerSession, (_previous, _current, _received) =>
+            {
+                if (_current is PropertyBase _currentProperty)
+                {
+                    var _receivedProperty = (PropertyBase) _received;
+                    if (_current.WithAttribute<SingleTickAttribute>() || !_receivedProperty.WasSame)
+                        _currentProperty.SetToIncludingOverride(_receivedProperty);
+                    else
+                        _currentProperty.SetTo((PropertyBase) _previous);
+                }
+                return Navigation.Continue;
+            });
     }
 
     public abstract class SessionBase : IDisposable
