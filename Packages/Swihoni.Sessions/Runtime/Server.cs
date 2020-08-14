@@ -107,6 +107,7 @@ namespace Swihoni.Sessions
             // IterateClients(tick, time, duration, serverSession);
             Profiler.EndSample();
 
+            Profiler.BeginSample("Server Clear Single Ticks");
             ElementExtensions.NavigateZipped(previousServerSession, serverSession, (_previous, _current) =>
             {
                 if (_current.WithAttribute<SingleTickAttribute>())
@@ -115,6 +116,7 @@ namespace Swihoni.Sessions
                     _currentProperty.IsOverride = false;
                 return Navigation.Continue;
             });
+            Profiler.EndSample();
         }
 
         private static void CopyFromPreviousSession(ElementBase previous, ElementBase current)
@@ -274,8 +276,7 @@ namespace Swihoni.Sessions
         }
 
         private void CopyToSend(ElementBase serverSession)
-        {
-            ElementExtensions.NavigateZipped(m_SendSession, serverSession, (_send, _server) =>
+            => ElementExtensions.NavigateZipped(m_SendSession, serverSession, (_send, _server) =>
             {
                 if (_send is PropertyBase _sendProperty && _server is PropertyBase _serverProperty)
                 {
@@ -284,12 +285,10 @@ namespace Swihoni.Sessions
                 }
                 return Navigation.Continue;
             });
-        }
 
         // Not working, prediction errors on ground tick and position
         private void CompressSession(ElementBase serverSession, int rollback)
-        {
-            ElementExtensions.NavigateZipped(serverSession, m_SessionHistory.Get(-1), m_SendSession, (_mostRecent, _lastAcknowledged, _send) =>
+            => ElementExtensions.NavigateZipped(serverSession, m_SessionHistory.Get(-1), m_SendSession, (_mostRecent, _lastAcknowledged, _send) =>
             {
                 if (_mostRecent is PropertyBase _mostRecentProperty && _lastAcknowledged is PropertyBase _lastAcknowledgedProperty && _send is PropertyBase _sendProperty)
                 {
@@ -311,7 +310,6 @@ namespace Swihoni.Sessions
                 }
                 return Navigation.Continue;
             });
-        }
 
         private void HandleClientCommand(int clientId, Container receivedClientCommands, Container serverSession, Container serverPlayer)
         {
@@ -368,8 +366,7 @@ namespace Swihoni.Sessions
         }
 
         private static void MergeTrustedFromCommands(ElementBase serverPlayer, ElementBase receivedClientCommands)
-        {
-            ElementExtensions.NavigateZipped(serverPlayer, receivedClientCommands, (_server, _client) =>
+            => ElementExtensions.NavigateZipped(serverPlayer, receivedClientCommands, (_server, _client) =>
             {
                 if (_client.WithAttribute<ClientTrustedAttribute>())
                 {
@@ -378,7 +375,6 @@ namespace Swihoni.Sessions
                 }
                 return Navigation.Continue;
             });
-        }
 
         protected void SetupNewPlayer(in SessionContext context)
         {

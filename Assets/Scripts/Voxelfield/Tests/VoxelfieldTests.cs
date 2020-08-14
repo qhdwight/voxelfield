@@ -37,7 +37,7 @@ namespace Voxelfield.Tests
         }
 
         [Test]
-        public static void TestMeme()
+        public static void TestMapContainerSerialization()
         {
             var writeMap = new MapContainer
             {
@@ -74,40 +74,13 @@ namespace Voxelfield.Tests
                 Debug.Log($"Recursion Elapsed: {watch.ElapsedTicks}");
             }
 
-            {
-                var reader = new NetDataReader(writer.Data);
-                var watch = new Stopwatch();
-                watch.Start();
-
-                #region Generated
-
-                var element0 = readMap;
-                ((StringProperty)element0[0]).Deserialize(reader);
-                ((VersionProperty)element0[1]).Deserialize(reader);
-                ((IntProperty)element0[2]).Deserialize(reader);
-                var element1 = (DimensionComponent) element0[3];
-                ((Position3IntProperty)element1[0]).Deserialize(reader);
-                ((Position3IntProperty)element1[1]).Deserialize(reader);
-                var element2 = (TerrainGenerationComponent) element0[4];
-                ((IntProperty)element2[0]).Deserialize(reader);
-                ((ByteProperty)element2[1]).Deserialize(reader);
-                ((FloatProperty)element2[2]).Deserialize(reader);
-                ((FloatProperty)element2[3]).Deserialize(reader);
-                ((FloatProperty)element2[4]).Deserialize(reader);
-                ((FloatProperty)element2[5]).Deserialize(reader);
-                ((VoxelChangeProperty)element2[6]).Deserialize(reader);
-                ((VoxelChangeProperty)element2[7]).Deserialize(reader);
-                ((IntProperty)element2[8]).Deserialize(reader);
-                ((IntProperty)element2[9]).Deserialize(reader);
-                ((OrderedVoxelChangesProperty)element0[5]).Deserialize(reader);
-                ((ModelsProperty)element0[6]).Deserialize(reader);
-                ((BoolProperty)element0[7]).Deserialize(reader);
-
-                #endregion
-
-                watch.Stop();
-                Debug.Log($"Inline Elapsed: {watch.ElapsedTicks}");
-            }
+            // {
+            //     var reader = new NetDataReader(writer.Data);
+            //     var watch = new Stopwatch();
+            //     watch.Start();
+            //     watch.Stop();
+            //     Debug.Log($"Inline Elapsed: {watch.ElapsedTicks}");
+            // }
 
             ElementExtensions.NavigateZipped(writeMap, readMap, (_write, _read) =>
             {

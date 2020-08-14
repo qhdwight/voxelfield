@@ -12,6 +12,7 @@ using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Visualization;
 using Swihoni.Util;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -22,6 +23,7 @@ namespace Swihoni.Sessions
         private const int DemoWriteSize = 1 << 18, DemoTickRate = 20;
         private ComponentClientSocket m_Socket;
         private readonly NetDataWriter m_DemoWriter = new NetDataWriter(true, DemoWriteSize);
+        private static readonly ProfilerMarker ClientPredictMarker = new ProfilerMarker("Client Prediction");
 
         public override ComponentSocketBase Socket => m_Socket;
         public bool WriteDemo { get; set; }
@@ -29,7 +31,6 @@ namespace Swihoni.Sessions
         [RuntimeInitializeOnLoadMethod]
         private static void Initialize()
         {
-            ConsoleCommandExecutor.SetCommand("bet", args => Debug.Log("Lol"));
             ConsoleCommandExecutor.SetCommand("start_demo", args => SessionEnumerable.OfType<Client>().First().WriteDemo = true);
             ConsoleCommandExecutor.SetCommand("end_demo", args => SessionEnumerable.OfType<Client>().First().WriteDemo = false);
         }
@@ -102,17 +103,18 @@ namespace Swihoni.Sessions
             _element.SetTo(_command);
             return Navigation.SkipDescendents;
         });
-
+        
         protected override void Tick(uint tick, uint timeUs, uint durationUs)
         {
-            Profiler.BeginSample("Client Predict");
             Container latestSession = GetLatestSession();
-            if (GetLocalPlayerId(latestSession, out int localPlayerId))
+            using (ClientPredictMarker.Auto())
             {
-                m_Injector.OnPreTick(latestSession);
-                Predict(tick, timeUs, localPlayerId); // Advances commands
+                if (GetLocalPlayerId(latestSession, out int localPlayerId))
+                {
+                    m_Injector.OnPreTick(latestSession);
+                    Predict(tick, timeUs, localPlayerId); // Advances commands
+                }
             }
-            Profiler.EndSample();
 
             Profiler.BeginSample("Client Send");
             SendCommand();
@@ -125,7 +127,9 @@ namespace Swihoni.Sessions
             base.Tick(tick, timeUs, durationUs);
             m_Injector.OnPostTick(latestSession);
 
+            Profiler.BeginSample("Client End");
             ClearSingleTicks(m_CommandHistory.Peek());
+            Profiler.EndSample();
         }
 
         private void Receive(uint timeUs)
@@ -136,7 +140,7 @@ namespace Swihoni.Sessions
 
         private static uint _timeUs;
 
-        private static readonly DurationAverage DurationAverage = new DurationAverage(60, "Navigate");
+        // private static readonly DurationAverage DurationAverage = new DurationAverage(60, "Navigate");
 
         void IReceiver.OnReceive(NetPeer fromPeer, NetDataReader reader, byte code)
         {
@@ -144,7 +148,6 @@ namespace Swihoni.Sessions
             {
                 case ServerSessionCode:
                 {
-                    DurationAverage.Start();
                     Profiler.BeginSample("Client Receive Setup");
                     ServerSessionContainer previousServerSession = m_SessionHistory.Peek();
 
@@ -182,7 +185,6 @@ namespace Swihoni.Sessions
 
                     UpdateCurrentSessionFromReceived(previousServerSession, serverSession, receivedServerSession);
                     
-                    DurationAverage.Stop(everySecond);
                     Profiler.EndSample();
 
                     m_Injector.OnClientReceive(serverSession);
@@ -265,6 +267,7 @@ namespace Swihoni.Sessions
                     }
                     Profiler.EndSample();
 
+                    Profiler.BeginSample("Write Demo");
                     try
                     {
                         if (WriteDemo) OnDemoCandidate(serverSession);
@@ -274,7 +277,9 @@ namespace Swihoni.Sessions
                     {
                         L.Exception(exception, "Error putting demo session");
                     }
+                    Profiler.EndSample();
 
+                    Profiler.BeginSample("Client Overrides");
                     ElementExtensions.NavigateZipped(serverSession.GetPlayer(localPlayerId), m_CommandHistory.Peek(), (_server, _command) =>
                     {
                         if (_server is PropertyBase serverProperty && serverProperty.IsOverride && _command is PropertyBase commandProperty)
@@ -284,6 +289,7 @@ namespace Swihoni.Sessions
                         }
                         return Navigation.Continue;
                     });
+                    Profiler.EndSample();
                     break;
                 }
             }

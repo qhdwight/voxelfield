@@ -1,4 +1,3 @@
-#if ENABLE_IL2CPP
 using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
@@ -12,8 +11,6 @@ namespace Voxelfield.Session
     {
         public override void DeserializeReceived(ServerSessionContainer session, NetDataReader reader)
         {
-#region Generated
-
 var e0 = session; 
 ((TickRateProperty)e0.m_Elements[0]).Deserialize(reader);
 ((ModeIdProperty)e0.m_Elements[1]).Deserialize(reader);
@@ -151,7 +148,6 @@ var e37 = (SiteComponent) e35.m_Elements[1];
 ((BoolProperty)e37.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e37.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e34.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e34.m_Elements[2]).Deserialize(reader);
 var e38 = (MoneyComponent) e2.m_Elements[15]; 
 ((UShortProperty)e38.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e2.m_Elements[16]).Deserialize(reader);
@@ -298,7 +294,6 @@ var e76 = (SiteComponent) e74.m_Elements[1];
 ((BoolProperty)e76.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e76.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e73.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e73.m_Elements[2]).Deserialize(reader);
 var e77 = (MoneyComponent) e41.m_Elements[15]; 
 ((UShortProperty)e77.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e41.m_Elements[16]).Deserialize(reader);
@@ -445,7 +440,6 @@ var e115 = (SiteComponent) e113.m_Elements[1];
 ((BoolProperty)e115.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e115.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e112.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e112.m_Elements[2]).Deserialize(reader);
 var e116 = (MoneyComponent) e80.m_Elements[15]; 
 ((UShortProperty)e116.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e80.m_Elements[16]).Deserialize(reader);
@@ -592,7 +586,6 @@ var e154 = (SiteComponent) e152.m_Elements[1];
 ((BoolProperty)e154.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e154.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e151.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e151.m_Elements[2]).Deserialize(reader);
 var e155 = (MoneyComponent) e119.m_Elements[15]; 
 ((UShortProperty)e155.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e119.m_Elements[16]).Deserialize(reader);
@@ -739,7 +732,6 @@ var e193 = (SiteComponent) e191.m_Elements[1];
 ((BoolProperty)e193.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e193.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e190.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e190.m_Elements[2]).Deserialize(reader);
 var e194 = (MoneyComponent) e158.m_Elements[15]; 
 ((UShortProperty)e194.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e158.m_Elements[16]).Deserialize(reader);
@@ -886,7 +878,6 @@ var e232 = (SiteComponent) e230.m_Elements[1];
 ((BoolProperty)e232.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e232.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e229.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e229.m_Elements[2]).Deserialize(reader);
 var e233 = (MoneyComponent) e197.m_Elements[15]; 
 ((UShortProperty)e233.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e197.m_Elements[16]).Deserialize(reader);
@@ -1033,7 +1024,6 @@ var e271 = (SiteComponent) e269.m_Elements[1];
 ((BoolProperty)e271.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e271.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e268.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e268.m_Elements[2]).Deserialize(reader);
 var e272 = (MoneyComponent) e236.m_Elements[15]; 
 ((UShortProperty)e272.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e236.m_Elements[16]).Deserialize(reader);
@@ -1180,7 +1170,6 @@ var e310 = (SiteComponent) e308.m_Elements[1];
 ((BoolProperty)e310.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e310.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e307.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e307.m_Elements[2]).Deserialize(reader);
 var e311 = (MoneyComponent) e275.m_Elements[15]; 
 ((UShortProperty)e311.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e275.m_Elements[16]).Deserialize(reader);
@@ -1327,7 +1316,6 @@ var e349 = (SiteComponent) e347.m_Elements[1];
 ((BoolProperty)e349.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e349.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e346.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e346.m_Elements[2]).Deserialize(reader);
 var e350 = (MoneyComponent) e314.m_Elements[15]; 
 ((UShortProperty)e350.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e314.m_Elements[16]).Deserialize(reader);
@@ -1474,7 +1462,6 @@ var e388 = (SiteComponent) e386.m_Elements[1];
 ((BoolProperty)e388.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e388.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e385.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e385.m_Elements[2]).Deserialize(reader);
 var e389 = (MoneyComponent) e353.m_Elements[15]; 
 ((UShortProperty)e389.m_Elements[0]).Deserialize(reader);
 ((BrokeVoxelTickProperty)e353.m_Elements[16]).Deserialize(reader);
@@ -1885,7 +1872,6 @@ var e487 = (SiteComponent) e485.m_Elements[1];
 ((BoolProperty)e487.m_Elements[1]).Deserialize(reader);
 ((BoolProperty)e487.m_Elements[2]).Deserialize(reader);
 ((TimeUsProperty)e484.m_Elements[1]).Deserialize(reader);
-((ByteProperty)e484.m_Elements[2]).Deserialize(reader);
 var e488 = (DualScoresArray) e0.m_Elements[15]; 
 ((ByteProperty)e488.m_Elements[0]).Deserialize(reader);
 ((ByteProperty)e488.m_Elements[1]).Deserialize(reader);
@@ -1894,13 +1880,10 @@ var e489 = (ServerStampComponent) e0.m_Elements[16];
 ((ElapsedUsProperty)e489.m_Elements[1]).Deserialize(reader);
 ((ElapsedUsProperty)e489.m_Elements[2]).Deserialize(reader);
 
-#endregion
         }
 
         public override void UpdateCurrentSessionFromReceived(Container previousServerSession, Container serverSession, Container receivedServerSession)
         {
-#region Generated
-
 var e0 = previousServerSession; var e1 = serverSession; var e2 = receivedServerSession; 
 ((TickRateProperty)e1.m_Elements[0]).SetToIncludingOverride(((TickRateProperty)e2.m_Elements[0]));
 ((ModeIdProperty)e1.m_Elements[1]).SetToIncludingOverride(((ModeIdProperty)e2.m_Elements[1]));
@@ -3781,8 +3764,67 @@ var e1467 = (ServerStampComponent) e0.m_Elements[16]; var e1468 = (ServerStampCo
 ((ElapsedUsProperty)e1468.m_Elements[1]).SetToIncludingOverride(((ElapsedUsProperty)e1469.m_Elements[1]));
 ((ElapsedUsProperty)e1468.m_Elements[2]).SetToIncludingOverride(((ElapsedUsProperty)e1469.m_Elements[2]));
 
-#endregion
+        }
+        
+        public override void InterpolatePlayer(Container p1, Container p2, Container pd, float interpolation)
+        {
+var e0 = p1; var e1 = p2; var e2 = pd; 
+((HealthProperty)e2.m_Elements[0]).InterpolateFrom(((HealthProperty)e0.m_Elements[0]), ((HealthProperty)e1.m_Elements[0]), interpolation);
+((ByteIdProperty)e2.m_Elements[1]).InterpolateFrom(((ByteIdProperty)e0.m_Elements[1]), ((ByteIdProperty)e1.m_Elements[1]), interpolation);
+var e3 = (MoveComponent) e0.m_Elements[2]; var e4 = (MoveComponent) e1.m_Elements[2]; var e5 = (MoveComponent) e2.m_Elements[2]; 
+((MoveType)e5.m_Elements[0]).InterpolateFrom(((MoveType)e3.m_Elements[0]), ((MoveType)e4.m_Elements[0]), interpolation);
+((VectorProperty)e5.m_Elements[1]).InterpolateFrom(((VectorProperty)e3.m_Elements[1]), ((VectorProperty)e4.m_Elements[1]), interpolation);
+((VectorProperty)e5.m_Elements[2]).InterpolateFrom(((VectorProperty)e3.m_Elements[2]), ((VectorProperty)e4.m_Elements[2]), interpolation);
+((ByteProperty)e5.m_Elements[3]).InterpolateFrom(((ByteProperty)e3.m_Elements[3]), ((ByteProperty)e4.m_Elements[3]), interpolation);
+((FloatProperty)e5.m_Elements[4]).InterpolateFrom(((FloatProperty)e3.m_Elements[4]), ((FloatProperty)e4.m_Elements[4]), interpolation);
+((FloatProperty)e5.m_Elements[5]).InterpolateFrom(((FloatProperty)e3.m_Elements[5]), ((FloatProperty)e4.m_Elements[5]), interpolation);
+((FrozenProperty)e2.m_Elements[3]).InterpolateFrom(((FrozenProperty)e0.m_Elements[3]), ((FrozenProperty)e1.m_Elements[3]), interpolation);
+((InventoryComponent)e2.m_Elements[4]).CustomInterpolateFrom(((InventoryComponent)e0.m_Elements[4]), ((InventoryComponent)e1.m_Elements[4]), interpolation);
+var e6 = (CameraComponent) e0.m_Elements[5]; var e7 = (CameraComponent) e1.m_Elements[5]; var e8 = (CameraComponent) e2.m_Elements[5]; 
+((FloatProperty)e8.m_Elements[0]).InterpolateFrom(((FloatProperty)e6.m_Elements[0]), ((FloatProperty)e7.m_Elements[0]), interpolation);
+((FloatProperty)e8.m_Elements[1]).InterpolateFrom(((FloatProperty)e6.m_Elements[1]), ((FloatProperty)e7.m_Elements[1]), interpolation);
+((RespawnTimerProperty)e2.m_Elements[6]).InterpolateFrom(((RespawnTimerProperty)e0.m_Elements[6]), ((RespawnTimerProperty)e1.m_Elements[6]), interpolation);
+((TeamProperty)e2.m_Elements[7]).InterpolateFrom(((TeamProperty)e0.m_Elements[7]), ((TeamProperty)e1.m_Elements[7]), interpolation);
+var e9 = (StatsComponent) e0.m_Elements[8]; var e10 = (StatsComponent) e1.m_Elements[8]; var e11 = (StatsComponent) e2.m_Elements[8]; 
+((ByteProperty)e11.m_Elements[0]).InterpolateFrom(((ByteProperty)e9.m_Elements[0]), ((ByteProperty)e10.m_Elements[0]), interpolation);
+((ByteProperty)e11.m_Elements[1]).InterpolateFrom(((ByteProperty)e9.m_Elements[1]), ((ByteProperty)e10.m_Elements[1]), interpolation);
+((UShortProperty)e11.m_Elements[2]).InterpolateFrom(((UShortProperty)e9.m_Elements[2]), ((UShortProperty)e10.m_Elements[2]), interpolation);
+((UShortProperty)e11.m_Elements[3]).InterpolateFrom(((UShortProperty)e9.m_Elements[3]), ((UShortProperty)e10.m_Elements[3]), interpolation);
+var e12 = (HitMarkerComponent) e0.m_Elements[9]; var e13 = (HitMarkerComponent) e1.m_Elements[9]; var e14 = (HitMarkerComponent) e2.m_Elements[9]; 
+((TimeUsProperty)e14.m_Elements[0]).InterpolateFrom(((TimeUsProperty)e12.m_Elements[0]), ((TimeUsProperty)e13.m_Elements[0]), interpolation);
+((BoolProperty)e14.m_Elements[1]).InterpolateFrom(((BoolProperty)e12.m_Elements[1]), ((BoolProperty)e13.m_Elements[1]), interpolation);
+var e15 = (DamageNotifierComponent) e0.m_Elements[10]; var e16 = (DamageNotifierComponent) e1.m_Elements[10]; var e17 = (DamageNotifierComponent) e2.m_Elements[10]; 
+((TimeUsProperty)e17.m_Elements[0]).InterpolateFrom(((TimeUsProperty)e15.m_Elements[0]), ((TimeUsProperty)e16.m_Elements[0]), interpolation);
+((ByteProperty)e17.m_Elements[1]).InterpolateFrom(((ByteProperty)e15.m_Elements[1]), ((ByteProperty)e16.m_Elements[1]), interpolation);
+((ByteProperty)e17.m_Elements[2]).InterpolateFrom(((ByteProperty)e15.m_Elements[2]), ((ByteProperty)e16.m_Elements[2]), interpolation);
+((UsernameProperty)e2.m_Elements[11]).InterpolateFrom(((UsernameProperty)e0.m_Elements[11]), ((UsernameProperty)e1.m_Elements[11]), interpolation);
+var e18 = (ShowdownPlayerComponent) e0.m_Elements[12]; var e19 = (ShowdownPlayerComponent) e1.m_Elements[12]; var e20 = (ShowdownPlayerComponent) e2.m_Elements[12]; 
+((ByteProperty)e20.m_Elements[0]).InterpolateFrom(((ByteProperty)e18.m_Elements[0]), ((ByteProperty)e19.m_Elements[0]), interpolation);
+((ElapsedUsProperty)e20.m_Elements[1]).InterpolateFrom(((ElapsedUsProperty)e18.m_Elements[1]), ((ElapsedUsProperty)e19.m_Elements[1]), interpolation);
+var e21 = (DesignerPlayerComponent) e0.m_Elements[13]; var e22 = (DesignerPlayerComponent) e1.m_Elements[13]; var e23 = (DesignerPlayerComponent) e2.m_Elements[13]; 
+((Position3IntProperty)e23.m_Elements[0]).InterpolateFrom(((Position3IntProperty)e21.m_Elements[0]), ((Position3IntProperty)e22.m_Elements[0]), interpolation);
+((Position3IntProperty)e23.m_Elements[1]).InterpolateFrom(((Position3IntProperty)e21.m_Elements[1]), ((Position3IntProperty)e22.m_Elements[1]), interpolation);
+((VoxelChangeProperty)e23.m_Elements[2]).InterpolateFrom(((VoxelChangeProperty)e21.m_Elements[2]), ((VoxelChangeProperty)e22.m_Elements[2]), interpolation);
+((UShortProperty)e23.m_Elements[3]).InterpolateFrom(((UShortProperty)e21.m_Elements[3]), ((UShortProperty)e22.m_Elements[3]), interpolation);
+((FloatProperty)e23.m_Elements[4]).InterpolateFrom(((FloatProperty)e21.m_Elements[4]), ((FloatProperty)e22.m_Elements[4]), interpolation);
+var e24 = (SecureAreaComponent) e0.m_Elements[14]; var e25 = (SecureAreaComponent) e1.m_Elements[14]; var e26 = (SecureAreaComponent) e2.m_Elements[14]; 
+var e27 = (SiteArray) e24.m_Elements[0]; var e28 = (SiteArray) e25.m_Elements[0]; var e29 = (SiteArray) e26.m_Elements[0]; 
+var e30 = (SiteComponent) e27.m_Elements[0]; var e31 = (SiteComponent) e28.m_Elements[0]; var e32 = (SiteComponent) e29.m_Elements[0]; 
+((TimeUsProperty)e32.m_Elements[0]).InterpolateFrom(((TimeUsProperty)e30.m_Elements[0]), ((TimeUsProperty)e31.m_Elements[0]), interpolation);
+((BoolProperty)e32.m_Elements[1]).InterpolateFrom(((BoolProperty)e30.m_Elements[1]), ((BoolProperty)e31.m_Elements[1]), interpolation);
+((BoolProperty)e32.m_Elements[2]).InterpolateFrom(((BoolProperty)e30.m_Elements[2]), ((BoolProperty)e31.m_Elements[2]), interpolation);
+var e33 = (SiteComponent) e27.m_Elements[1]; var e34 = (SiteComponent) e28.m_Elements[1]; var e35 = (SiteComponent) e29.m_Elements[1]; 
+((TimeUsProperty)e35.m_Elements[0]).InterpolateFrom(((TimeUsProperty)e33.m_Elements[0]), ((TimeUsProperty)e34.m_Elements[0]), interpolation);
+((BoolProperty)e35.m_Elements[1]).InterpolateFrom(((BoolProperty)e33.m_Elements[1]), ((BoolProperty)e34.m_Elements[1]), interpolation);
+((BoolProperty)e35.m_Elements[2]).InterpolateFrom(((BoolProperty)e33.m_Elements[2]), ((BoolProperty)e34.m_Elements[2]), interpolation);
+((TimeUsProperty)e26.m_Elements[1]).InterpolateFrom(((TimeUsProperty)e24.m_Elements[1]), ((TimeUsProperty)e25.m_Elements[1]), interpolation);
+((ByteProperty)e26.m_Elements[2]).InterpolateFrom(((ByteProperty)e24.m_Elements[2]), ((ByteProperty)e25.m_Elements[2]), interpolation);
+var e36 = (MoneyComponent) e0.m_Elements[15]; var e37 = (MoneyComponent) e1.m_Elements[15]; var e38 = (MoneyComponent) e2.m_Elements[15]; 
+((UShortProperty)e38.m_Elements[0]).InterpolateFrom(((UShortProperty)e36.m_Elements[0]), ((UShortProperty)e37.m_Elements[0]), interpolation);
+((BrokeVoxelTickProperty)e2.m_Elements[16]).InterpolateFrom(((BrokeVoxelTickProperty)e0.m_Elements[16]), ((BrokeVoxelTickProperty)e1.m_Elements[16]), interpolation);
+((SteamIdProperty)e2.m_Elements[17]).InterpolateFrom(((SteamIdProperty)e0.m_Elements[17]), ((SteamIdProperty)e1.m_Elements[17]), interpolation);
+((FlashProperty)e2.m_Elements[18]).InterpolateFrom(((FlashProperty)e0.m_Elements[18]), ((FlashProperty)e1.m_Elements[18]), interpolation);
+
         }
     }
 }
-#endif

@@ -37,5 +37,7 @@ namespace Voxels
                 m_List.Add(VoxelChangeSerializer.Deserialize(reader));
             WithValue = true;
         }
+
+        public override bool Equals(PropertyBase other) => throw new NotImplementedException();
     }
 }

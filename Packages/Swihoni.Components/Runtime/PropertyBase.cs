@@ -89,7 +89,9 @@ namespace Swihoni.Components
         public abstract bool Equals(PropertyBase other);
         public abstract void Zero();
         public abstract void SetTo(PropertyBase other);
-        public abstract void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation);
+
+        public virtual void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation)
+            => throw new NotSupportedException($"Interpolating this property is not supported. Override {GetType().Name}.{nameof(InterpolateFrom)} if this is not intentional.");
 
         public void SetToIncludingOverride(PropertyBase other)
         {
@@ -161,7 +163,7 @@ namespace Swihoni.Components
     [Serializable]
     public abstract class PropertyBase<T> : PropertyBase where T : struct
     {
-        [CopyField, SerializeField] private T m_Value;
+        [CopyField] private T m_Value;
 
         protected const float DefaultFloatTolerance = 1e-5f;
 
@@ -330,8 +332,8 @@ namespace Swihoni.Components
         {
             if (DontSerialize) return;
             RawFlags = reader.GetByte();
-            if (WithoutValue) return;
-            DeserializeValue(reader);
+            if (WithValue) DeserializeValue(reader);
+            else Clear();
         }
 
         /// <exception cref="WithoutValueException">If without value.</exception>

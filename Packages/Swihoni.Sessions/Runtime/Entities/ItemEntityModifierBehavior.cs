@@ -32,7 +32,7 @@ namespace Swihoni.Sessions.Entities
             }
             else Rigidbody.constraints = RigidbodyConstraints.None;
 
-            if (!throwable.flags.IsPersistent && throwable.thrownElapsedUs > context.Mode.ItemEntityLifespanUs)
+            if (!throwable.flags.IsPersistent && throwable.thrownElapsedUs > context.Mode.GetItemEntityLifespanUs(context))
                 context.entity.Clear();
         }
     }

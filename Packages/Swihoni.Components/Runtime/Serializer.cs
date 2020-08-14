@@ -22,7 +22,6 @@ namespace Swihoni.Components
     {
         private static NetDataWriter _writer;
         private static NetDataReader _reader;
-        private static StringBuilder _stringBuilder;
 
         /// <summary>
         /// Serialize element into stream.
@@ -32,8 +31,8 @@ namespace Swihoni.Components
             _writer = writer; // Prevents heap allocation in closure
             element.Navigate(_element =>
             {
-                if (_element.TryAttribute(out NoSerializationAttribute attribute) && !attribute.ExceptWrite) return Navigation.SkipDescendents;
-                if (_element is PropertyBase property) property.Serialize(_writer);
+                if (_element.TryAttribute(out NoSerializationAttribute _attribute) && !_attribute.ExceptWrite) return Navigation.SkipDescendents;
+                if (_element is PropertyBase _property) _property.Serialize(_writer);
                 return Navigation.Continue;
             });
         }
@@ -46,12 +45,8 @@ namespace Swihoni.Components
             _reader = reader;
             element.Navigate(_element =>
             {
-                if (_element.TryAttribute(out NoSerializationAttribute attribute) && !attribute.ExceptRead) return Navigation.SkipDescendents;
-                if (_element is PropertyBase property)
-                {
-                    property.Clear();
-                    property.Deserialize(_reader);
-                }
+                if (_element.TryAttribute(out NoSerializationAttribute _attribute) && !_attribute.ExceptRead) return Navigation.SkipDescendents;
+                if (_element is PropertyBase _property) _property.Deserialize(_reader);
                 return Navigation.Continue;
             });
             return element;

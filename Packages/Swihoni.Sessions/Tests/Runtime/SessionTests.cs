@@ -77,8 +77,7 @@ namespace Swihoni.Sessions.Tests
             {
                 var received = new ServerSessionContainer(serverSession.ElementTypes);
                 received.Deserialize(reader);
-                Assert.AreEqual(serverSession.Require<ServerStampComponent>().timeUs.Value,
-                                received.Require<ServerStampComponent>().timeUs.Value, 1e-6f);
+                Assert.IsTrue(serverSession.EqualTo(received));
                 count++;
             }
         }
@@ -88,9 +87,6 @@ namespace Swihoni.Sessions.Tests
         {
             var standardElements = SessionElements.NewStandardSessionElements();
             var session = new ServerSessionContainer(standardElements.elements.Append(typeof(ServerStampComponent)));
-            session.Require<PlayerArray>().SetContainerTypes(standardElements.playerElements
-                                                                             .Append(typeof(ServerStampComponent))
-                                                                             .Append(typeof(ClientStampComponent)));
             const uint time = 2424124u;
             session.Require<ServerStampComponent>().timeUs.Value = time;
 
@@ -102,15 +98,18 @@ namespace Swihoni.Sessions.Tests
                 server.Register(typeof(ServerSessionContainer), 0, 0);
                 client.Register(typeof(ServerSessionContainer), 0, 0);
 
-                server.PollEvents();
-                client.PollEvents();
-
-                client.SendToServer(session, DeliveryMethod.Unreliable);
+                var receiver = new ServerSessionReceiver {serverSession = session};
+                server.Receiver = receiver;
 
                 Thread.Sleep(100);
 
-                var receiver = new ServerSessionReceiver {serverSession = session};
-                server.Receiver = receiver;
+                server.PollEvents();
+                client.PollEvents();
+
+                client.SendToServer(session, DeliveryMethod.ReliableUnordered);
+
+                Thread.Sleep(100);
+
                 server.PollEvents();
 
                 Assert.AreEqual(1, receiver.count);
@@ -150,18 +149,21 @@ namespace Swihoni.Sessions.Tests
                 server.Register(typeof(ClientCommandsContainer), 0, 0);
                 client.Register(typeof(ClientCommandsContainer), 0, 0);
 
+                var receiver = new CommandReceiver {clientCommands = clientCommands};
+                server.Receiver = receiver;
+
+                Thread.Sleep(100);
+
                 server.PollEvents();
                 client.PollEvents();
 
                 const int send = 120;
 
                 for (var i = 0; i < send; i++)
-                    client.SendToServer(clientCommands, DeliveryMethod.Unreliable);
+                    client.SendToServer(clientCommands, DeliveryMethod.ReliableUnordered);
 
                 Thread.Sleep(100);
 
-                var receiver = new CommandReceiver {clientCommands = clientCommands};
-                server.Receiver = receiver;
                 server.PollEvents();
 
                 Assert.AreEqual(send, receiver.count);

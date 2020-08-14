@@ -17,6 +17,7 @@ using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
 using Swihoni.Util.Interface;
+using Unity.Profiling;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using UnityObject = UnityEngine.Object;
@@ -116,6 +117,9 @@ namespace Swihoni.Sessions
                 }
                 return Navigation.Continue;
             });
+
+        public virtual void InterpolatePlayer(Container p1, Container p2, Container pd, float interpolation)
+            => Interpolator.InterpolateInto(p1, p2, pd, interpolation);
     }
 
     public abstract class SessionBase : IDisposable
@@ -124,6 +128,7 @@ namespace Swihoni.Sessions
 
         private static List<SessionBase> _sessions, _sessionList;
         private static InterfaceBehaviorBase[] _interfaces;
+        private static readonly ProfilerMarker InterpolatePlayerMarker = new ProfilerMarker("Interpolate Player");
 
         public static int SessionCount => _sessions.Count;
 
@@ -308,8 +313,8 @@ namespace Swihoni.Sessions
             Tick(m_Tick++, GetUsFromTicks(clockTicks), GetUsFromTicks(clockTickDelta));
         }
 
-        protected static void RenderInterpolated(uint renderTimeUs, Container renderContainer, int maxRollback,
-                                                 Func<int, StampComponent> getTimeInHistory, Func<int, Container> getInHistory)
+        protected void RenderInterpolated(uint renderTimeUs, Container renderContainer, int maxRollback,
+                                          Func<int, StampComponent> getTimeInHistory, Func<int, Container> getInHistory, bool isPlayer = false)
         {
             // Interpolate all remote players
             for (var historyIndex = 0; historyIndex < maxRollback; historyIndex++)
@@ -326,13 +331,12 @@ namespace Swihoni.Sessions
                 if (renderTimeUs >= fromTimeUs && renderTimeUs <= toTimeUs)
                 {
                     float interpolation = (renderTimeUs - fromTimeUs) / (float) (toTimeUs - fromTimeUs);
-                    Interpolator.InterpolateInto(fromComponent, toComponent, renderContainer, interpolation);
+                    if (isPlayer) m_Injector.InterpolatePlayer(fromComponent, toComponent, renderContainer, interpolation);
+                    else Interpolator.InterpolateInto(fromComponent, toComponent, renderContainer, interpolation);
                     return;
                 }
                 if (historyIndex == maxRollback - 1)
-                {
                     Debug.Log($"{renderTimeUs}, {fromTimeUs}, {toTimeUs}");
-                }
             }
             // Take last if we do not have enough history
             // Debug.LogWarning("Not enough history");
@@ -341,13 +345,16 @@ namespace Swihoni.Sessions
 
         protected static Func<int, Container> _getInHistory;
 
-        protected static void RenderInterpolatedPlayer<TStampComponent>(uint renderTimeUs, Container renderContainer, int maxRollback,
-                                                                        Func<int, Container> getInHistory)
+        protected void RenderInterpolatedPlayer<TStampComponent>(uint renderTimeUs, Container renderContainer, int maxRollback,
+                                                                 Func<int, Container> getInHistory)
             where TStampComponent : StampComponent
         {
-            _getInHistory = getInHistory; // Prevent allocation in closure
-            RenderInterpolated(renderTimeUs, renderContainer, maxRollback,
-                               historyIndex => _getInHistory(historyIndex).Require<TStampComponent>(), _getInHistory);
+            using (InterpolatePlayerMarker.Auto())
+            {
+                _getInHistory = getInHistory; // Prevent allocation in closure
+                RenderInterpolated(renderTimeUs, renderContainer, maxRollback,
+                                   historyIndex => _getInHistory(historyIndex).Require<TStampComponent>(), _getInHistory, true);
+            }
         }
 
         public abstract Ray GetRayForPlayerId(int playerId);

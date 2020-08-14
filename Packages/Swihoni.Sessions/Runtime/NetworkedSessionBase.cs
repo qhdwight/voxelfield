@@ -33,8 +33,8 @@ namespace Swihoni.Sessions
         public abstract ComponentSocketBase Socket { get; }
 
 #if UNITY_EDITOR
-        public ServerSessionContainer HistoryServerSession => m_SessionHistory.Peek();
-        public ServerSessionContainer ReceivedServerSession => m_EmptyServerSession;
+        public ServerSessionContainer ServerSession => m_EmptyServerSession;
+        public Container RenderSession => m_RenderSession;
 #endif
 
         private static bool _isInGame;

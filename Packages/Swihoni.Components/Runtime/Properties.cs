@@ -111,7 +111,6 @@ namespace Swihoni.Components
         public override void SerializeValue(NetDataWriter writer) => writer.Put(Value);
         public override void DeserializeValue(NetDataReader reader) => Value = reader.GetULong();
         public override bool ValueEquals(in ulong value) => value == Value;
-        public override void ValueInterpolateFrom(PropertyBase<ulong> p1, PropertyBase<ulong> p2, float interpolation) => throw new NotImplementedException();
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Value);
         public override void ParseValue(string stringValue) => Value = ulong.Parse(stringValue);
     }

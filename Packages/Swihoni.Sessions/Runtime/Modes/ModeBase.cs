@@ -77,6 +77,8 @@ namespace Swihoni.Sessions.Modes
 
     public abstract class ModeBase : ScriptableObject
     {
+        private const uint DefaultItemEntityLifespanUs = 20_000_000u;
+        
         private static readonly Dictionary<Color, string> CachedHex = new Dictionary<Color, string>();
 
         [RuntimeInitializeOnLoadMethod]
@@ -301,7 +303,7 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void Initialize() { }
 
-        public virtual uint ItemEntityLifespanUs => 20_000_000u;
+        public virtual uint GetItemEntityLifespanUs(in SessionContext context) => DefaultItemEntityLifespanUs;
 
         public virtual bool ShowScoreboard(in SessionContext context) => false;
 

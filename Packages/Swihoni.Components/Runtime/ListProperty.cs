@@ -18,8 +18,6 @@ namespace Swihoni.Components
         public ListPropertyBase() { }
         public ListPropertyBase(int maxSize) => m_MaxSize = maxSize;
 
-        public override bool Equals(PropertyBase other) => throw new NotImplementedException();
-
         public override void Clear()
         {
             Zero();
@@ -68,8 +66,6 @@ namespace Swihoni.Components
             m_List.RemoveAt(index);
             return true;
         }
-
-        public override void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation) => throw new NotImplementedException();
     }
 
     [Serializable]
@@ -98,6 +94,16 @@ namespace Swihoni.Components
                 m_List.Add(element);
             }
             WithValue = true;
+        }
+
+        public override bool Equals(PropertyBase other)
+        {
+            if (!(other is ListProperty<TElement> otherList)) throw new ArgumentException("Other was not same type list");
+            if (otherList.Count != Count) return false;
+            for (var i = 0; i < Count; i++)
+                if (!Equals(m_List[i], otherList.m_List[i]))
+                    return false;
+            return true;
         }
 
         public override StringBuilder AppendValue(StringBuilder builder)

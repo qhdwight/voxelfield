@@ -68,13 +68,13 @@ namespace Voxelfield.Session
 
         public FlagArray() : base(Count) { }
     }
-    
+
     [Serializable, ModeElement]
     public class CtfComponent : ComponentBase
     {
         public TeamFlagArray teamFlags;
         public UIntProperty pickupFlags;
-        [NonSerialized] public ArrayElement<TimeUsProperty> pickupCoolDowns = new ArrayElement<TimeUsProperty>(sizeof(uint) * 8);
+        [NoSerialization] public ArrayElement<TimeUsProperty> pickupCoolDowns = new ArrayElement<TimeUsProperty>(sizeof(uint) * 8);
     }
 
     /* Secure area */
@@ -97,7 +97,7 @@ namespace Voxelfield.Session
     {
         public SiteArray sites = new SiteArray();
         public TimeUsProperty roundTime;
-        [NonSerialized] public ByteProperty lastWinningTeam;
+        [NoSerialization] public ByteProperty lastWinningTeam;
 
         public bool RedInside(out SiteComponent element)
         {
