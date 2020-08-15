@@ -50,10 +50,9 @@ namespace Swihoni.Sessions.Interfaces
             m_AutocompleteColorHex = $"#{ColorUtility.ToHtmlStringRGBA(m_AutocompleteColor)}";
             m_ConsoleInput.onSubmit.AddListener(ConsoleInput);
             m_ConsoleInput.onValueChanged.AddListener(ConsoleInputChange);
+            Application.logMessageReceived += Log;
 //            m_ConsoleInput.onValidateInput += OnValidateInput;
         }
-
-        private void Start() => Application.logMessageReceived += Log;
 
         //        private static char OnValidateInput(string text, int charIndex, char addedChar)
 //        {

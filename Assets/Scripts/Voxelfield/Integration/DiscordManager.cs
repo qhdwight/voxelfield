@@ -30,9 +30,9 @@ namespace Voxelfield.Integration
             modify(ref activity);
             ActivityManager.UpdateActivity(activity, result =>
             {
-#if !VOXELFIELD_RELEASE_CLIENT
-                Debug.Log($"[Discord] Setting status to: {activity.State} result: {result}");
-#endif
+// #if !VOXELFIELD_RELEASE_CLIENT
+//                 Debug.Log($"[Discord] Setting status to: {activity.State} result: {result}");
+// #endif
             });
         }
 

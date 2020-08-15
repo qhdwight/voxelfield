@@ -7,7 +7,7 @@ namespace Swihoni.Util.Interface
     {
         private const float InvisibleAlpha = 0.0f, OpaqueAlpha = 1.0f;
 
-        [SerializeField] protected bool m_NeedsCursor, m_InterruptsCommands;
+        [SerializeField] protected bool m_NeedsCursor, m_InterruptsCommands, m_CanDeactivate;
 
         private CanvasGroup m_CanvasGroup;
 
@@ -29,6 +29,8 @@ namespace Swihoni.Util.Interface
             if (IsActive == isActive) return;
             IsActive = isActive;
             SetCanvasGroupActive(m_CanvasGroup, isActive);
+            if (m_CanDeactivate)
+                m_CanvasGroup.gameObject.SetActive(isActive);
         }
 
         protected static void SetCanvasGroupActive(CanvasGroup group, bool isActive)

@@ -112,7 +112,7 @@ namespace Swihoni.Sessions
             _isInGame = !IsLoading;
             ForEachSessionInterface(sessionInterface =>
             {
-                if (!sessionInterface.IsDuringGame || _isInGame)
+                 if (!sessionInterface.IsDuringGame || _isInGame)
                     sessionInterface.Render(_context);
             });
         }

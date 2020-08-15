@@ -130,13 +130,14 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public override void SetActive(bool isActive)
         {
+            base.SetActive(isActive);
             if (!isActive) SetCameraVisible(false);
-            if (m_Visuals == null) return;
-            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.SetActive(isActive);
             m_UsernameText.enabled = isActive;
             m_DamageText.enabled = isActive;
+            if (m_Visuals == null) return;
+            foreach (PlayerVisualsBehaviorBase visual in m_Visuals) visual.SetActive(isActive);
         }
-
+        
         public void Dispose()
         {
             if (m_Visuals != null)

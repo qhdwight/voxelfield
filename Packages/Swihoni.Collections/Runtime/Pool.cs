@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityObject = UnityEngine.Object;
 
 namespace Swihoni.Collections
 {
     public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     {
-        private readonly Stack<T> m_Pool;
-        protected readonly LinkedList<T> m_InUse;
+        protected readonly LinkedList<T> m_Pool, m_InUse;
         private readonly Func<T> m_Constructor;
         private readonly Action<T, bool> m_UsageChanged;
 
@@ -17,17 +18,27 @@ namespace Swihoni.Collections
         {
             m_Constructor = constructor;
             m_UsageChanged = usageChanged;
-            m_Pool = new Stack<T>(capacity);
+            m_Pool = new LinkedList<T>();
             m_InUse = new LinkedList<T>();
             for (var i = 0; i < capacity; i++)
                 Return(constructor());
+        }
+
+        public T RemoveAndObtain(T existing)
+        {
+            if (m_InUse.Remove(existing))
+            {
+                if (existing is IDisposable disposable) disposable.Dispose();
+                if (existing is Component component) UnityObject.DestroyImmediate(component.transform.root.gameObject);   
+            }
+            return Obtain();
         }
 
         public void Return(T toReturn)
         {
             m_UsageChanged?.Invoke(toReturn, false);
             m_InUse.Remove(toReturn);
-            m_Pool.Push(toReturn);
+            m_Pool.AddLast(toReturn);
         }
 
         public void ReturnAll()
@@ -35,14 +46,27 @@ namespace Swihoni.Collections
             foreach (T item in m_InUse)
             {
                 m_UsageChanged?.Invoke(item, false);
-                m_Pool.Push(item);
+                m_Pool.AddLast(item);
             }
             m_InUse.Clear();
         }
 
+        private T Get()
+        {
+            T last;
+            do
+            {
+                if (m_Pool.Count == 0) return GetItemWhenEmpty();
+                last = m_Pool.Last.Value;
+                if (last == null) Debug.LogWarning("Null object in pool");
+                m_Pool.RemoveLast();
+            } while (last == null);
+            return last;
+        }
+
         public T Obtain()
         {
-            T obtainedItem = m_Pool.Count > 0 ? m_Pool.Pop() : GetItemWhenEmpty();
+            T obtainedItem = Get();
             m_UsageChanged?.Invoke(obtainedItem, true);
             m_InUse.AddLast(obtainedItem);
             return obtainedItem;

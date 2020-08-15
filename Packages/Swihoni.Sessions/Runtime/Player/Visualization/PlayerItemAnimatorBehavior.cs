@@ -223,11 +223,10 @@ namespace Swihoni.Sessions.Player.Visualization
 
         public void SetActive(bool isActive)
         {
-            if (!isActive)
-            {
-                if (m_FpvArmsRenderer) m_FpvArmsRenderer.enabled = false;
-                TryReturnActive();
-            }
+            if (isActive) return;
+
+            TryReturnActive();
+            if (m_FpvArmsRenderer) m_FpvArmsRenderer.enabled = false;
         }
     }
 }

@@ -19,12 +19,20 @@ namespace Swihoni.Sessions
     }
 
     public abstract class VisualBehaviorBase : IdBehavior
-    {
+    { 
+        private const float ExpirationDurationSeconds = 60.0f;
+
         private MeshRenderer[] m_Renders;
+        private float m_SetupTime;
+
+        public bool IsExpired => Time.time - m_SetupTime > ExpirationDurationSeconds;
+
+        protected virtual void Expire() { }
 
         internal override void Setup(IBehaviorManager manager)
         {
             base.Setup(manager);
+            m_SetupTime = Time.time;
             m_Renders = GetComponentsInChildren<MeshRenderer>();
         }
 
@@ -55,8 +63,7 @@ namespace Swihoni.Sessions
 
     public abstract class BehaviorManagerBase : IBehaviorManager, IDisposable
     {
-        private const byte None = 0;
-
+        protected readonly Dictionary<int, VisualBehaviorBase> m_VisualPrefabs;
         protected readonly Dictionary<int, ModifierBehaviorBase> m_ModifierPrefabs;
         private readonly Dictionary<int, Pool<VisualBehaviorBase>> m_VisualsPool;
         private readonly Dictionary<int, Pool<ModifierBehaviorBase>> m_ModifiersPool;
@@ -64,6 +71,7 @@ namespace Swihoni.Sessions
         private readonly ModifierBehaviorBase[] m_Modifiers;
         private SessionBase m_Session;
 
+        // ReSharper disable once ConvertToAutoPropertyWhenPossible
         public ModifierBehaviorBase[] UnsafeModifiers => m_Modifiers;
         public VisualBehaviorBase[] UnsafeVisuals => m_Visuals;
 
@@ -95,21 +103,25 @@ namespace Swihoni.Sessions
                     return modifierInstance;
                 })
             }).ToDictionary(pair => pair.id, pair => pair.pool);
-            m_VisualsPool = Resources.LoadAll<VisualBehaviorBase>(resourceFolder)
-                                     .Where(visual => visual.id >= 0)
-                                     .Select(prefabVisual => new
-                                      {
-                                          prefabVisual.id, pool = new Pool<VisualBehaviorBase>(0, () =>
-                                          {
-                                              VisualBehaviorBase visualsInstance = UnityObject.Instantiate(prefabVisual);
-                                              visualsInstance.Setup(this);
-                                              visualsInstance.name = prefabVisual.name;
-                                              return visualsInstance;
-                                          })
-                                      }).ToDictionary(pair => pair.id, pair => pair.pool);
+            m_VisualPrefabs = Resources.LoadAll<VisualBehaviorBase>(resourceFolder)
+                                       .Where(visual => visual.id >= 0)
+                                       .ToDictionary(visual => visual.id, visual => visual);
+            m_VisualsPool = m_VisualPrefabs.Keys.Select(id => new
+            {
+                id, pool = new Pool<VisualBehaviorBase>(0, () => InstantiateVisual(id))
+            }).ToDictionary(pair => pair.id, pair => pair.pool);
             m_Visuals = new VisualBehaviorBase[count];
             m_Modifiers = new ModifierBehaviorBase[count];
             Debug.Log($"[{GetType().Name}] Registered {m_ModifiersPool.Count} modifiers and {m_VisualsPool.Count} visuals");
+        }
+
+        private VisualBehaviorBase InstantiateVisual(int id)
+        {
+            VisualBehaviorBase prefabVisual = m_VisualPrefabs[id],
+                               visualsInstance = UnityObject.Instantiate(prefabVisual);
+            visualsInstance.Setup(this);
+            visualsInstance.name = prefabVisual.name;
+            return visualsInstance;
         }
 
         public void Setup(SessionBase session) => m_Session = session;
@@ -118,6 +130,14 @@ namespace Swihoni.Sessions
         {
             Pool<VisualBehaviorBase> pool = m_VisualsPool[id];
             VisualBehaviorBase visual = pool.Obtain();
+            if (visual.IsExpired)
+            {
+                visual.SetActive(false);
+                visual = pool.RemoveAndObtain(visual);
+// #if UNITY_EDITOR
+//                 Debug.Log($"Removed expired visual with id: {id}");
+// #endif
+            }
             visual.SetActive(true);
             m_Visuals[index] = visual;
             return visual;
@@ -138,7 +158,7 @@ namespace Swihoni.Sessions
 
         public (ModifierBehaviorBase, Container) ObtainNextModifier(Container session, int id)
         {
-            void Setup(Container container)
+            void SetupModifier(Container container)
             {
                 container.Zero();
                 if (container.With(out ThrowableComponent throwable)) throwable.popTimeUs.Value = uint.MaxValue;
@@ -147,10 +167,10 @@ namespace Swihoni.Sessions
             for (var index = 0; index < array.Length; index++)
             {
                 var container = (Container) array[index];
-;                var idProperty = container.Require<ByteIdProperty>();
-                if (idProperty.WithValue && idProperty != None) continue;
+                var idProperty = container.Require<ByteIdProperty>();
+                if (idProperty.WithValue) continue;
                 /* Found empty slot */
-                Setup(container);
+                SetupModifier(container);
                 idProperty.Value = (byte) id;
                 return (ObtainModifierAtIndex(container, index, id), container);
             }
@@ -159,7 +179,7 @@ namespace Swihoni.Sessions
             {
                 ReturnModifierAtIndex(0);
                 var container = (Container) array[0];
-                Setup(container);
+                SetupModifier(container);
                 container.Require<ByteIdProperty>().Value = (byte) id;
                 return (ObtainModifierAtIndex(container, 0, id), container);
             }
@@ -168,7 +188,7 @@ namespace Swihoni.Sessions
         public ModifierBehaviorBase GetModifierAtIndex(Container container, int index, out bool isNewlyObtained)
         {
             var id = container.Require<ByteIdProperty>();
-            if (id.WithoutValue || id == None)
+            if (id.WithoutValue)
             {
                 ReturnModifierAtIndex(index);
                 isNewlyObtained = false;
@@ -182,14 +202,14 @@ namespace Swihoni.Sessions
         public VisualBehaviorBase GetVisualAtIndex(Container container, int index)
         {
             var id = container.Require<ByteIdProperty>();
-            if (id.WithoutValue || id == None)
+            if (id.WithoutValue)
             {
                 ReturnVisualAtIndex(index);
                 return null;
             }
             VisualBehaviorBase existing = m_Visuals[index];
-            bool needsToObtain = !existing || existing.id != id;
-            return needsToObtain ? ObtainVisualAtIndex(index, id) : existing;
+            bool useExisting = existing && existing.id == id;
+            return useExisting ? existing : ObtainVisualAtIndex(index, id);
         }
 
         public ModifierBehaviorBase ObtainModifierAtIndex(Container container, int index, int id)
@@ -224,10 +244,10 @@ namespace Swihoni.Sessions
             {
                 var containerElement = (Container) elements[index];
                 var id = containerElement.Require<ByteIdProperty>();
-                if (id.WithValue && id > None)
+                if (id.WithValue)
                     iterate(m_Modifiers[index], index, containerElement);
                 // Remove modifier if lifetime has ended
-                if (id.WithoutValue || id == None) ReturnModifierAtIndex(index);
+                if (id.WithoutValue) ReturnModifierAtIndex(index);
             }
         }
 
@@ -247,7 +267,7 @@ namespace Swihoni.Sessions
             {
                 var container = (Container) array[index];
                 var id = container.Require<ByteIdProperty>();
-                if (id.WithoutValue || id == None)
+                if (id.WithoutValue)
                 {
                     ReturnVisualAtIndex(index);
                     continue;

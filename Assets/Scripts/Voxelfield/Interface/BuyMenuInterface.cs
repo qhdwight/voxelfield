@@ -27,7 +27,7 @@ namespace Voxelfield.Interface
             m_AudioSource = GetComponent<AudioSource>();
         }
 
-        private void Start()
+        protected override void Start()
         {
             foreach (BuyMenuButton button in m_BuyButtons)
             {
@@ -38,6 +38,7 @@ namespace Voxelfield.Interface
                 });
                 button.OnEnter.AddListener(() => Play(m_HoverClip));
             }
+            base.Start();
         }
 
         private void Play(AudioClip clip)

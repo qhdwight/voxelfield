@@ -1,3 +1,4 @@
+using System;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
@@ -11,12 +12,8 @@ namespace Swihoni.Sessions.Interfaces
         [SerializeField] private bool m_IsDuringGame = true;
 
         public bool IsDuringGame => m_IsDuringGame;
-
-        protected override void Awake()
-        {
-            base.Awake();
-            SetInterfaceActive(false);
-        }
+        
+        protected virtual void Start() => SetInterfaceActive(false);
 
         public abstract void Render(in SessionContext context);
 

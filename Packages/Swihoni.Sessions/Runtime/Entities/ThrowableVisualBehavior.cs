@@ -20,13 +20,14 @@ namespace Swihoni.Sessions.Entities
 
         public override void SetActive(bool isActive)
         {
+            base.SetActive(isActive);
             m_LastContactElapsedUs = 0u;
             m_LastThrownElapsedUs = uint.MaxValue;
             foreach (ParticleSystem particle in m_Particles)
                 particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
             if (m_ContinuousPopAudioSource) m_ContinuousPopAudioSource.Stop();
         }
-
+        
         public override void Render(Container entity)
         {
             base.Render(entity);

@@ -7,7 +7,7 @@ using Swihoni.Sessions.Items.Visuals;
 using Swihoni.Sessions.Player.Visualization;
 using UnityEngine;
 using UnityEngine.Playables;
-using Object = UnityEngine.Object;
+using UnityObject = UnityEngine.Object;
 
 namespace Swihoni.Sessions.Items
 {
@@ -31,8 +31,9 @@ namespace Swihoni.Sessions.Items
             {
                 id = pair.Key, pool = new Pool<ItemVisualBehavior>(0, () =>
                 {
-                    ItemVisualBehavior visualsInstance = Object.Instantiate(pair.Value);
+                    ItemVisualBehavior visualsInstance = UnityObject.Instantiate(pair.Value);
                     visualsInstance.name = "Visual";
+                    visualsInstance.Setup();
                     return visualsInstance;
                 })
             }).ToDictionary(pair => pair.id, pair => pair.pool);
@@ -42,7 +43,15 @@ namespace Swihoni.Sessions.Items
         {
             Pool<ItemVisualBehavior> pool = _itemVisualPools[itemId];
             ItemVisualBehavior visual = pool.Obtain();
-            visual.SetupForPlayerAnimation(playerItemAnimator, playerGraph);
+            if (visual.IsExpired)
+            {
+                visual.Cleanup();
+                visual = pool.RemoveAndObtain(visual);
+// #if UNITY_EDITOR
+//                 Debug.Log($"Removed expired item visual with id: {itemId}");
+// #endif
+            }
+            visual.SetActiveForPlayerAnimation(playerItemAnimator, playerGraph);
             return visual;
         }
 
@@ -50,7 +59,6 @@ namespace Swihoni.Sessions.Items
         {
             Pool<ItemVisualBehavior> pool = _itemVisualPools[visual.Id];
             visual.Cleanup();
-            visual.SetActive(false);
             visual.transform.SetParent(null, true);
             pool.Return(visual);
         }

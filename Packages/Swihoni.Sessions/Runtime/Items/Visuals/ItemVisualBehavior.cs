@@ -31,6 +31,8 @@ namespace Swihoni.Sessions.Items.Visuals
     [SelectionBase, DisallowMultipleComponent]
     public class ItemVisualBehavior : MonoBehaviour
     {
+        private const float ExpirationDurationSeconds = 60.0f;
+
         [SerializeField] private byte m_Id = default; /* , m_SkinId = default; */
         [SerializeField] private ItemStatusVisualProperties[] m_StatusVisualProperties = default, m_EquipStatusVisualProperties = default;
         [SerializeField] private Transform m_IkL = default, m_IkR = default;
@@ -45,6 +47,7 @@ namespace Swihoni.Sessions.Items.Visuals
         private PlayerItemAnimatorBehavior m_PlayerItemAnimator;
         private Renderer[] m_Renders;
         private ArmIk m_ArmIk;
+        private float m_SetupTime;
 
         // protected ItemComponent _item;
         // private ItemStatusVisualProperties _properties;
@@ -53,11 +56,12 @@ namespace Swihoni.Sessions.Items.Visuals
         public Vector3 FpvOffset => m_FpvOffset;
         public Vector3 TpvOffset => m_TpvOffset;
         public Sprite Crosshair => m_Crosshair;
+        public bool IsExpired => Time.time - m_SetupTime > ExpirationDurationSeconds;
 
         public ItemModifierBase ModiferProperties { get; private set; }
         public float FovMultiplier => m_FovMultiplier;
 
-        internal void SetupForPlayerAnimation(PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
+        internal void SetActiveForPlayerAnimation(PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {
             m_PlayerItemAnimator = playerItemAnimator;
             m_PlayerGraph = playerGraph;
@@ -83,7 +87,8 @@ namespace Swihoni.Sessions.Items.Visuals
 
         internal void Cleanup()
         {
-            if (m_PlayerGraph.IsValid()) m_PlayerGraph.DestroySubgraph(m_Mixer);
+            if (m_PlayerGraph.IsValid() && m_Mixer.IsValid()) m_PlayerGraph.DestroySubgraph(m_Mixer);
+            SetActive(false);
         }
 
         private (ItemStatusVisualProperties, int) GetRealizedVisualProperties(ItemComponent item, ByteStatusComponent equipStatus)
@@ -161,8 +166,9 @@ namespace Swihoni.Sessions.Items.Visuals
 
         public void SetActive(bool isActive)
         {
-            if (m_Renders == null || isActive) return;
-            foreach (Renderer meshRenderer in m_Renders) meshRenderer.enabled = false;
+            if (!isActive && m_Renders != null)
+                foreach (Renderer meshRenderer in m_Renders)
+                    meshRenderer.enabled = false;
         }
 
         protected virtual bool IsMeshVisible(Renderer meshRenderer, bool isItemVisible /* from component only */, ItemComponent item)
@@ -171,5 +177,7 @@ namespace Swihoni.Sessions.Items.Visuals
             if (isItemVisible && !meshRenderer.enabled) return false; // Override from animator
             return isItemVisible;
         }
+
+        public void Setup() => m_SetupTime = Time.time;
     }
 }

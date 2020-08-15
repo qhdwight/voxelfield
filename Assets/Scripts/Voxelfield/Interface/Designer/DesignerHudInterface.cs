@@ -20,7 +20,11 @@ namespace Voxelfield.Interface.Designer
         [SerializeField] private Material m_Material = default;
         private SculptingItem m_SculptingItem;
 
-        private void Start() => m_SculptingItem = (SculptingItem) ItemAssetLink.GetModifier(ItemId.SuperPickaxe);
+        protected override void Start()
+        {
+            m_SculptingItem = (SculptingItem) ItemAssetLink.GetModifier(ItemId.SuperPickaxe);
+            base.Start();
+        }
 
         private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
 

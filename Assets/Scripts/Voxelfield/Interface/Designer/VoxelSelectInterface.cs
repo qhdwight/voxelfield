@@ -19,7 +19,7 @@ namespace Voxelfield.Interface.Designer
 
         private VoxelChange m_Change;
 
-        private void Start()
+        protected override void Start()
         {
             for (byte id = 0; id <= VoxelTexture.Last; id++)
             {
@@ -42,6 +42,7 @@ namespace Voxelfield.Interface.Designer
                 selector.Index = colorIndex;
                 selector.OnValueChanged.AddListener(floatValue => SelectorListener(selector.Index, floatValue));
             }
+            base.Start();
         }
 
         public override void Render(in SessionContext context)
