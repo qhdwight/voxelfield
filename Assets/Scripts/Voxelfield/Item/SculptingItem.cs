@@ -131,7 +131,7 @@ namespace Voxelfield.Item
 
         private bool NoSolution(Container player, in Position3Int position, float radius = 0.9f)
         {
-            return true || m_PreventPlacingOnSelf;
+            return false && m_PreventPlacingOnSelf;
             // if (!m_PreventPlacingOnSelf) return false;
             //
             // var move = player.Require<MoveComponent>();

@@ -12,8 +12,8 @@ namespace Swihoni.Sessions.Interfaces
         [SerializeField] private bool m_IsDuringGame = true;
 
         public bool IsDuringGame => m_IsDuringGame;
-        
-        protected virtual void Start() => SetInterfaceActive(false);
+
+        public virtual void Initialize() { }
 
         public abstract void Render(in SessionContext context);
 
@@ -23,7 +23,10 @@ namespace Swihoni.Sessions.Interfaces
 
         public virtual void SessionStateChange(bool isActive)
         {
-            if (m_IsDuringGame && !isActive) SetInterfaceActive(false);
+            if (m_IsDuringGame)
+                SetInterfaceActive(false);
+            else
+                SetInterfaceActive(!isActive);
         }
 
         protected static bool HasItemEquipped(in SessionContext context, byte modeId, byte itemId, byte? itemId2 = null)

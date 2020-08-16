@@ -50,9 +50,8 @@ namespace Swihoni.Sessions.Interfaces
             m_TimeSinceLastChat += Time.deltaTime;
         }
 
-        public override void SetInterfaceActive(bool isActive)
+        protected override void OnSetInterfaceActive(bool isActive)
         {
-            base.SetInterfaceActive(isActive);
             if (isActive)
             {
                 m_Input.enabled = true;

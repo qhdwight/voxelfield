@@ -20,7 +20,7 @@ namespace Swihoni.Sessions.Tests
         [Test]
         public void TestItemInterpolation()
         {
-            ItemAssetLink.Initialize();
+            ItemAssetLink.LoadPrefabs();
             var i1 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(0), elapsedUs = new ElapsedUsProperty(1870000u)}};
             var i2 = new ItemComponent {id = new ByteProperty(1), status = new ByteStatusComponent {id = new ByteProperty(1), elapsedUs = new ElapsedUsProperty(38000u)}};
             var id = new ItemComponent();

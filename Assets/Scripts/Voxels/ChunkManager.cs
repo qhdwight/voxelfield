@@ -275,36 +275,43 @@ namespace Voxels
 
                                 /* Evaluated Change */
                                 VoxelChange evaluatedChange = GetEvaluated(change, chunk, voxelChunkPosition, false);
+                                var changedDensity = false;
                                 if (isAdditive)
                                 {
                                     newDensity = checked((byte) (byte.MaxValue - newDensity));
                                     if (newDensity > currentDensity)
                                     {
                                         evaluatedChange.density = newDensity;
-                                        if (voxel.OnlySmooth) evaluatedChange.Merge(change);
+                                        changedDensity = true;
                                     }
                                 }
                                 else
                                 {
-                                    if (newDensity < currentDensity) evaluatedChange.density = newDensity;
+                                    if (newDensity < currentDensity)
+                                    {
+                                        evaluatedChange.density = newDensity;
+                                        changedDensity = true;
+                                    }
+                                }
+                                if (changedDensity && voxel.OnlySmooth)
+                                {
+                                    evaluatedChange.Merge(change);
+                                    if (change.color is Color32 color)
+                                        evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
+                                    evaluatedChange.natural = false;
                                 }
 
                                 bool isInside = GetDistance(form, worldPosition, voxelWorldPosition + new Vector3(0.5f, 0.5f, 0.5f)) < absoluteRadius * 1.5f;
 
-                                if (change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
+                                if (isInside && !isAdditive && change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
                                 {
-                                    if (isInside)
-                                    {
-                                        if (!isAdditive)
-                                            evaluatedChange.hasBlock = false;
-                                        if (change.color is Color32 color)
-                                            evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
-                                        if (change.texture is byte texture)
-                                            evaluatedChange.texture = texture;
-                                    }
+                                    evaluatedChange.Merge(change);
+                                    if (change.color is Color32 color)
+                                        evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
                                     evaluatedChange.natural = false;
-                                    evaluatedChange.form = VoxelVolumeForm.Single;   
+                                    evaluatedChange.hasBlock = false;
                                 }
+                                evaluatedChange.form = VoxelVolumeForm.Single;
                                 SetEvaluatedVoxel(change, evaluatedChange, chunk, voxelChunkPosition);
                             }
                             break;

@@ -143,7 +143,20 @@ namespace Swihoni.Sessions
         }
 
         [RuntimeInitializeOnLoadMethod]
-        private static void InitializeInterfaces() => _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
+        private static void InitializeInterfaces()
+        {
+            _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
+            ForEachSessionInterface(sessionInterface =>
+            {
+                sessionInterface.Initialize();                
+                sessionInterface.SessionStateChange(false);
+            });
+            Application.quitting -= Cleanup;
+            Application.quitting += Cleanup;
+        }
+
+        private static void Cleanup()
+            => ForEachSessionInterface(sessionInterface => sessionInterface.SetInterfaceActive(false));
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void Initialize()
@@ -509,6 +522,6 @@ namespace Swihoni.Sessions
         public static StringBuilder AppendRealizedUsername(this StringBuilder builder, Container player)
             => player.WithPropertyWithValue(out SteamIdProperty steamId)
                 ? builder.Append(steamId.AsFriend.Name)
-                : builder.AppendPropertyValue(player.Require<UsernameProperty>());
+                : builder.Append("<noparse>").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</noparse>");
     }
 }

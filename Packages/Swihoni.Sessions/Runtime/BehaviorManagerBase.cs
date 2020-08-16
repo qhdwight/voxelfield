@@ -27,8 +27,6 @@ namespace Swihoni.Sessions
 
         public bool IsExpired => Time.time - m_SetupTime > ExpirationDurationSeconds;
 
-        protected virtual void Expire() { }
-
         internal override void Setup(IBehaviorManager manager)
         {
             base.Setup(manager);

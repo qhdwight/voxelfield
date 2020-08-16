@@ -27,7 +27,7 @@ namespace Voxelfield.Interface
             m_AudioSource = GetComponent<AudioSource>();
         }
 
-        protected override void Start()
+        public override void Initialize()
         {
             foreach (BuyMenuButton button in m_BuyButtons)
             {
@@ -38,7 +38,7 @@ namespace Voxelfield.Interface
                 });
                 button.OnEnter.AddListener(() => Play(m_HoverClip));
             }
-            base.Start();
+            base.Initialize();
         }
 
         private void Play(AudioClip clip)
@@ -74,11 +74,7 @@ namespace Voxelfield.Interface
             SetInterfaceActive(isActive);
         }
 
-        public override void SetInterfaceActive(bool isActive)
-        {
-            base.SetInterfaceActive(isActive);
-            m_PlayerWantsVisible = isActive;
-        }
+        protected override void OnSetInterfaceActive(bool isActive) => m_PlayerWantsVisible = isActive;
 
         private static bool ShouldBeActive(in SessionContext context, out Container sessionLocalPlayer)
         {

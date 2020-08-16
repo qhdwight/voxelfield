@@ -9,6 +9,7 @@ namespace Swihoni.Util.Interface
 
         [SerializeField] protected bool m_NeedsCursor, m_InterruptsCommands, m_CanDeactivate;
 
+        private bool m_HasChangedActiveState;
         private CanvasGroup m_CanvasGroup;
 
         public bool IsActive { get; private set; }
@@ -24,13 +25,21 @@ namespace Swihoni.Util.Interface
 
         public void ToggleInterfaceActive() => SetInterfaceActive(!IsActive);
 
-        public virtual void SetInterfaceActive(bool isActive)
+        public bool SetInterfaceActive(bool isActive)
         {
-            if (IsActive == isActive) return;
+            if (m_HasChangedActiveState && IsActive == isActive) return false;
             IsActive = isActive;
             SetCanvasGroupActive(m_CanvasGroup, isActive);
             if (m_CanDeactivate)
                 m_CanvasGroup.gameObject.SetActive(isActive);
+            OnSetInterfaceActive(isActive);
+            m_HasChangedActiveState = true;
+            return true;
+        }
+
+        protected virtual void OnSetInterfaceActive(bool isActive)
+        {
+            
         }
 
         protected static void SetCanvasGroupActive(CanvasGroup group, bool isActive)

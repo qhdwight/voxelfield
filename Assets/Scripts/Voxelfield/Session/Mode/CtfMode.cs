@@ -161,8 +161,8 @@ namespace Voxelfield.Session.Mode
 
             var wantedItems = context.commands.Require<WantedItemIdArray>();
             var inventory = context.player.Require<InventoryComponent>();
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 1; i < wantedItems.Length; i++) {
+            for (var i = 1; i < wantedItems.Length; i++)
+            {
                 ByteProperty wantedId = wantedItems[i];
                 if (inventory[i].id != wantedId) PlayerItemManagerModiferBehavior.SetItemAtIndex(inventory, wantedId.AsNullable, i);
             }

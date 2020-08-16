@@ -13,14 +13,9 @@ namespace Voxelfield.Interface
 
         public override void Render(in SessionContext context) { }
 
-        private void Update() => SetInterfaceActive(SessionBase.SessionCount == 0);
-
-        public override void SetInterfaceActive(bool isActive)
+        protected override void OnSetInterfaceActive(bool isActive)
         {
-            if (IsActive == isActive) return;
             if (isActive) DiscordManager.SetActivity(InMainMenu);
-
-            base.SetInterfaceActive(isActive);
         }
 
         public async void OnPlayButton(Button button)

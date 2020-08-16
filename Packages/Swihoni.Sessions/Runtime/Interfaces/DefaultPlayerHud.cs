@@ -136,10 +136,6 @@ namespace Swihoni.Sessions.Interfaces
             SetInterfaceActive(isActive);
         }
 
-        public override void SetInterfaceActive(bool isActive)
-        {
-            base.SetInterfaceActive(isActive);
-            m_FlashOverlayImage.enabled = isActive;
-        }
+        protected override void OnSetInterfaceActive(bool isActive) => m_FlashOverlayImage.enabled = isActive;
     }
 }

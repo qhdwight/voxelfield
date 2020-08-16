@@ -82,6 +82,7 @@ namespace Voxelfield.Integration
         {
             ActivityManager?.ClearActivity(result => { });
             Client?.Dispose();
+            Client = null;
         }
     }
 }

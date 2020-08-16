@@ -42,6 +42,7 @@ namespace Swihoni.Sessions.Interfaces
         {
             // Conform with https://docs.unity3d.com/Manual/DomainReloading.html
             Application.logMessageReceived -= Singleton.Log;
+            Application.logMessageReceived += Singleton.Log;
         }
 
         protected override void Awake()
@@ -50,7 +51,6 @@ namespace Swihoni.Sessions.Interfaces
             m_AutocompleteColorHex = $"#{ColorUtility.ToHtmlStringRGBA(m_AutocompleteColor)}";
             m_ConsoleInput.onSubmit.AddListener(ConsoleInput);
             m_ConsoleInput.onValueChanged.AddListener(ConsoleInputChange);
-            Application.logMessageReceived += Log;
 //            m_ConsoleInput.onValidateInput += OnValidateInput;
         }
 
@@ -60,9 +60,8 @@ namespace Swihoni.Sessions.Interfaces
 ////            return addedChar == '`' ? '\0' : addedChar;
 //        }
 
-        public override void SetInterfaceActive(bool isActive)
+        protected override void OnSetInterfaceActive(bool isActive)
         {
-            base.SetInterfaceActive(isActive);
             if (isActive)
             {
                 m_ConsoleInput.enabled = true;

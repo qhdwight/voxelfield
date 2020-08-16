@@ -11,11 +11,7 @@ namespace Voxelfield.Interface
     {
         [SerializeField] private Camera m_Camera = default;
 
-        public override void SetInterfaceActive(bool isActive)
-        {
-            base.SetInterfaceActive(isActive);
-            m_Camera.enabled = isActive;
-        }
+        protected override void OnSetInterfaceActive(bool isActive) => m_Camera.enabled = isActive;
 
         public override void Render(in SessionContext context)
         {

@@ -5,9 +5,7 @@
 using System;
 using System.Linq;
 using System.Net;
-using System.Security.Authentication;
 using System.Threading.Tasks;
-using Amazon;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
 using Amazon.Runtime;
@@ -16,8 +14,10 @@ using Steamworks;
 using Swihoni.Sessions;
 using UnityEngine;
 using Voxelfield.Session;
-#if VOXELFIELD_RELEASE_CLIENT
 
+#if VOXELFIELD_RELEASE_CLIENT
+using Amazon;
+using System.Security.Authentication;
 #endif
 
 namespace Voxelfield.Integration
@@ -63,7 +63,8 @@ namespace Voxelfield.Integration
 
         private static async Task<Client> TryFindExistingGameSession()
         {
-            var searchRequest = new SearchGameSessionsRequest {Limit = 1, AliasId = FleetAlias, FilterExpression = "hasAvailablePlayerSessions=true", SortExpression = "creationTimeMillis ASC"};
+            var searchRequest = new SearchGameSessionsRequest
+                {Limit = 1, AliasId = FleetAlias, FilterExpression = "hasAvailablePlayerSessions=true", SortExpression = "creationTimeMillis ASC"};
             SearchGameSessionsResponse existingResponse = await Client.SearchGameSessionsAsync(searchRequest);
             if (existingResponse.GameSessions.Count == 0) return null;
 
@@ -109,7 +110,7 @@ namespace Voxelfield.Integration
                         // Check if existing game session to join - queue tries to make new game session
                         existing = await TryFindExistingGameSession();
                         if (existing != null) return existing;
-                    
+
                         Debug.Log($"[Queue] Status: {placement.Status.Value.ToLower()}");
                     } while (placement.Status == GameSessionPlacementState.PENDING);
 

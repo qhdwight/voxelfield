@@ -1,11 +1,12 @@
 using Swihoni.Sessions;
-using Swihoni.Util.Interface;
+using Swihoni.Sessions.Interfaces;
 using UnityEngine;
 
 namespace Voxelfield.Interface
 {
-    public class HelpInterface : InterfaceBehaviorBase
+    public class HelpInterface : SessionInterfaceBehavior
     {
-        private void Update() => SetInterfaceActive(!SessionBase.InterruptingInterface && Input.GetKey(KeyCode.U));
+        public override void Render(in SessionContext context)
+            => SetInterfaceActive(!SessionBase.InterruptingInterface && Input.GetKey(KeyCode.U));
     }
 }

@@ -103,13 +103,10 @@ namespace Voxelfield.Session.Mode
             }
             if (isInteracting)
             {
-                checked
+                showdownPlayer.elapsedSecuringUs.Add(sessionContext.durationUs);
+                if (showdownPlayer.elapsedSecuringUs > SecureTimeUs)
                 {
-                    showdownPlayer.elapsedSecuringUs.Add(sessionContext.durationUs);
-                    if (showdownPlayer.elapsedSecuringUs > SecureTimeUs)
-                    {
-                        Secure(showdownPlayer, stage, cure);
-                    }
+                    Secure(showdownPlayer, stage, cure);
                 }
             }
             else

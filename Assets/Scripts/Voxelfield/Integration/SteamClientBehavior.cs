@@ -7,17 +7,38 @@ using Steamworks;
 using Swihoni.Sessions.Config;
 using Swihoni.Util;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Voxelfield.Integration
 {
     [DisallowMultipleComponent]
     public class SteamClientBehavior : SingletonBehavior<SteamClientBehavior>
     {
+        public static UnityEvent steamInitialized;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void Initialize() => steamInitialized = new UnityEvent();
+
 #if VOXELFIELD_RELEASE_CLIENT
         private void Start() => TryInitialize();
 #endif
 
-        public static void InitializeOrThrow() => SteamClient.Init(480, false);
+        public static void InitializeOrThrow()
+        {
+            SteamClient.Init(480, false);
+            if (SteamClient.IsValid)
+            {
+                // Dispatch.OnDebugCallback += (type, message, isServer) => Debug.Log($"[Steam Debug] [{type}] [{(isServer ? "Server" : "Client")}] {message}");
+                steamInitialized.Invoke();
+                steamInitialized.RemoveAllListeners();
+            }
+        }
+
+        public static void RunOrWait(UnityAction listener)
+        {
+            if (SteamClient.IsValid) listener();
+            else steamInitialized.AddListener(listener);
+        }
 
         protected override void Awake()
         {
@@ -41,8 +62,9 @@ namespace Voxelfield.Integration
             {
                 return false;
             }
-            
+
             #region Testing
+
             // try
             // {
             //     if (!SteamServer.IsValid)
@@ -79,6 +101,7 @@ namespace Voxelfield.Integration
             //     Debug.LogError("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             //     Debug.LogError("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             // }
+
             #endregion
         }
 

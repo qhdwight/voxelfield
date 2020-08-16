@@ -17,7 +17,7 @@ namespace Voxelfield.Interface.Designer
         [SerializeField] private Button m_ButtonPrefab = default;
         private int? m_WantedModelId;
 
-        protected override void Start()
+        public override void Initialize()
         {
             for (var modelId = 0; modelId < MapManager.ModelPrefabs.Length; modelId++)
             {
@@ -27,7 +27,7 @@ namespace Voxelfield.Interface.Designer
                 int _modelId = modelId;
                 button.onClick.AddListener(() => m_WantedModelId = _modelId);
             }
-            base.Start();
+            base.Initialize();
         }
 
         public override void Render(in SessionContext context)

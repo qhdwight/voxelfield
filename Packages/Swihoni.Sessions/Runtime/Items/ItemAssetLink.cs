@@ -18,16 +18,20 @@ namespace Swihoni.Sessions.Items
 
         public static Dictionary<byte, ItemModifierBase> ItemVisualPrefabs { get; private set; }
 
-        [RuntimeInitializeOnLoadMethod]
-        public static void Initialize()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        public static void LoadPrefabs()
         {
             ItemVisualPrefabs = Resources.LoadAll<ItemModifierBase>("Items")
-                                      .ToDictionary(modifier => modifier.id, modifier => modifier);
+                                         .ToDictionary(modifier => modifier.id, modifier => modifier);
             _itemVisualPrefabs = Resources.LoadAll<GameObject>("Items")
                                           .Select(prefab => prefab.GetComponent<ItemVisualBehavior>())
                                           .Where(visuals => visuals != null && visuals.Id > 0)
                                           .ToDictionary(visuals => visuals.Id, visual => visual);
-            _itemVisualPools = _itemVisualPrefabs.Select(pair => new
+        }
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void InitializePools()
+            => _itemVisualPools = _itemVisualPrefabs.Select(pair => new
             {
                 id = pair.Key, pool = new Pool<ItemVisualBehavior>(0, () =>
                 {
@@ -37,7 +41,6 @@ namespace Swihoni.Sessions.Items
                     return visualsInstance;
                 })
             }).ToDictionary(pair => pair.id, pair => pair.pool);
-        }
 
         public static ItemVisualBehavior ObtainVisuals(byte itemId, PlayerItemAnimatorBehavior playerItemAnimator, in PlayableGraph playerGraph)
         {

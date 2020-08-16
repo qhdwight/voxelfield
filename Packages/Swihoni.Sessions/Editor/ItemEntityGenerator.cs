@@ -14,7 +14,7 @@ namespace Swihoni.Sessions.Editor
         [MenuItem("Session/Generate Item Entities")]
         private static void Generate()
         {
-            ItemAssetLink.Initialize();
+            ItemAssetLink.LoadPrefabs();
 
             var modifierPrefab = Resources.Load<GameObject>("Entities/Item Entity Modifier");
             // Dictionary<int, GameObject> meshToPrefab = Directory.GetFiles(Application.dataPath, "*.fbx", SearchOption.AllDirectories)

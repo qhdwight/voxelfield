@@ -15,7 +15,7 @@ namespace Voxelfield.Interface
 
         public WantedItemIdArray WantedItems { get; set; } = new WantedItemIdArray();
 
-        protected override void Start()
+        public override void Initialize()
         {
             m_LoadOutButtons = transform.Cast<Transform>()
                                         .Select((horizontal, slotIndex) => horizontal.Cast<Transform>()
@@ -34,7 +34,7 @@ namespace Voxelfield.Interface
                                                                                           }
                                                                                           return hasComponent;
                                                                                       }).ToArray()).ToArray();
-            base.Start();
+            base.Initialize();
         }
 
         public override void SessionStateChange(bool isActive)
