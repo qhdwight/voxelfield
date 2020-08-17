@@ -10,7 +10,7 @@ Material:
   m_Name: Health
   m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ShaderKeywords: _EMISSION
-  m_LightmapFlags: 2
+  m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -74,5 +74,5 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 0.109300405, g: 0.8000001, b: 0.05979672, a: 1}
-    - _EmissionColor: {r: 0.14290313, g: 0.8027793, b: 0.046233363, a: 1}
+    - _EmissionColor: {r: 0.10930038, g: 0.8000001, b: 0.0597967, a: 1}
   m_BuildTextureStacks: []

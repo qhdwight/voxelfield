@@ -22,7 +22,7 @@ namespace Voxelfield.Tests
             {
                 position = new Position3Int(2, 4, 1),
                 magnitude = 5, density = 2, color = new Color32(2, 2, 5, 1), texture = VoxelTexture.Checkered, form = VoxelVolumeForm.Prism,
-                natural = true, orientation = 4, replace = true, yaw = 321f, hasBlock = true, isBreakable = true, modifiesBlocks = true,
+                natural = true, orientation = 4, yaw = 321f, hasBlock = true, isBreakable = true, modifiesBlocks = true,
                 noRandom = true, upperBound = new Position3Int(2, 3, 4), revert = true
             };
             ordered.Append(change);

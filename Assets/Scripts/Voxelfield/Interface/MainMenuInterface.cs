@@ -15,7 +15,7 @@ namespace Voxelfield.Interface
 
         protected override void OnSetInterfaceActive(bool isActive)
         {
-            if (isActive) DiscordManager.SetActivity(InMainMenu);
+            if (isActive) VoxelfieldActivityManager.TrySetActivity(InMainMenu);
         }
 
         public async void OnPlayButton(Button button)
@@ -25,14 +25,14 @@ namespace Voxelfield.Interface
             button.interactable = false;
             try
             {
-                DiscordManager.SetActivity(Searching);
+                VoxelfieldActivityManager.TrySetActivity(Searching);
                 await GameLiftClientManager.QuickPlayAsync();
             }
             finally
             {
                 if (button) button.interactable = true;
                 if (progress) progress.SetActive(false);
-                DiscordManager.SetActivity(InMainMenu);
+                VoxelfieldActivityManager.TrySetActivity(InMainMenu);
             }
         }
 

@@ -1,3 +1,4 @@
+using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace Swihoni.Sessions.Entities
         [SerializeField] private AnimationCurve m_DistanceCurve = AnimationCurve.Linear(0.0f, 1.0f, 200.0f, 0.0f);
         [SerializeField] private LayerMask m_FlashMask = default;
 
-        protected override void JustPopped(in SessionContext context, ThrowableComponent throwable)
+        protected override void JustPopped(in SessionContext context, Container entity)
         {
             Vector3 center = transform.position;
             context.ForEachActivePlayer((in SessionContext playerContext) =>

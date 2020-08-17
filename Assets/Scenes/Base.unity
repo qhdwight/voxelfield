@@ -9665,7 +9665,7 @@ GameObject:
   - component: {fileID: 875446981}
   - component: {fileID: 875446982}
   m_Layer: 0
-  m_Name: Discord Manager
+  m_Name: Activity Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10214,6 +10214,7 @@ MonoBehaviour:
   m_NeedsCursor: 0
   m_InterruptsCommands: 0
   m_CanDeactivate: 1
+  m_IsDuringGame: 1
 --- !u!225 &929024385
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -14744,7 +14745,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22ff533082484fe9811b662bfe327a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TruncateDimension: 1
+  m_TruncateDimension: 0
 --- !u!1 &1358240562
 GameObject:
   m_ObjectHideFlags: 0

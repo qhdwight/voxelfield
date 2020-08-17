@@ -20,6 +20,7 @@ using Swihoni.Util.Math;
 using UnityEngine;
 using Voxels;
 using Voxels.Map;
+
 #if VOXELFIELD_RELEASE_SERVER
 using Amazon;
 using Amazon.DynamoDBv2.Model;
@@ -83,10 +84,10 @@ namespace Voxelfield.Session
             }
         }
 
-        public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior)
+        public override void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior, Container entity)
         {
             var center = (Position3Int) throwableBehavior.transform.position;
-            var change = new VoxelChange {position = center, magnitude = throwableBehavior.Radius * -0.4f, replace = true, modifiesBlocks = true, form = VoxelVolumeForm.Spherical};
+            var change = new VoxelChange {position = center, magnitude = Mathf.Abs(throwableBehavior.Radius) * 0.4f, modifiesBlocks = true, form = VoxelVolumeForm.Spherical};
             ApplyVoxelChanges(change);
         }
 

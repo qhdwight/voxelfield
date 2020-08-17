@@ -143,8 +143,17 @@ namespace Voxels
                 Position3Int.Serialize(upperBound, writer);
             }
 
-            if (change.isUndo) FlagUtil.SetFlag(ref flags, 12);
             /* Flags */
+            if (change.isHurting is bool isHurting)
+            {
+                FlagUtil.SetFlag(ref flags, 12);
+                if (isHurting) FlagUtil.SetFlag(ref flags, 13);
+            }
+            if (change.isSlowing is bool isSlowing)
+            {
+                FlagUtil.SetFlag(ref flags, 14);
+                if (isSlowing) FlagUtil.SetFlag(ref flags, 15);
+            }
             if (change.isBreathable is bool isBreathable)
             {
                 FlagUtil.SetFlag(ref flags, 16);
@@ -229,7 +238,8 @@ namespace Voxels
             // if (FlagUtil.HasFlag(flags, 10)) change.hasBlock = FlagUtil.HasFlag(flags, 11);
             // if (FlagUtil.HasFlag(flags, 12)) change.isBreakable = FlagUtil.HasFlag(flags, 13);
             // if (FlagUtil.HasFlag(flags, 14)) change.natural = FlagUtil.HasFlag(flags, 15);
-            change.isUndo = FlagUtil.HasFlag(flags, 12);
+            if (FlagUtil.HasFlag(flags, 12)) change.isHurting = FlagUtil.HasFlag(flags, 13);
+            if (FlagUtil.HasFlag(flags, 14)) change.isSlowing = FlagUtil.HasFlag(flags, 15);
             if (FlagUtil.HasFlag(flags, 16)) change.isBreathable = FlagUtil.HasFlag(flags, 17);
             if (FlagUtil.HasFlag(flags, 18)) change.revert = FlagUtil.HasFlag(flags, 19);
             if (FlagUtil.HasFlag(flags, 20)) change.noRandom = FlagUtil.HasFlag(flags, 21);

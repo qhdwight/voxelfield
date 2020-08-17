@@ -71,7 +71,7 @@ namespace Swihoni.Sessions
 
         public virtual bool IsLoading(in SessionContext context) => false;
 
-        public virtual void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior) { }
+        public virtual void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior, Container entity) { }
 
         public virtual void OnReceiveCode(NetPeer fromPeer, NetDataReader reader, byte code) { }
 

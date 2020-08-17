@@ -32,7 +32,9 @@ namespace Voxels
         Block = 1,
         Breakable = 2,
         Natural = 4,
-        Breathable = 8
+        Breathable = 8,
+        IsHurting = 16,
+        IsSlowing = 32
     }
 
     public struct Voxel
@@ -94,6 +96,26 @@ namespace Voxels
             {
                 if (value) flags |= VoxelFlags.Breathable;
                 else flags &= ~VoxelFlags.Breathable;
+            }
+        }
+        
+        public bool IsHurting
+        {
+            get => (flags & VoxelFlags.IsHurting) == VoxelFlags.IsHurting;
+            private set
+            {
+                if (value) flags |= VoxelFlags.IsHurting;
+                else flags &= ~VoxelFlags.IsHurting;
+            }
+        }
+        
+        public bool IsSlowing
+        {
+            get => (flags & VoxelFlags.IsSlowing) == VoxelFlags.IsSlowing;
+            private set
+            {
+                if (value) flags |= VoxelFlags.IsSlowing;
+                else flags &= ~VoxelFlags.IsSlowing;
             }
         }
         

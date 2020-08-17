@@ -47,7 +47,7 @@ namespace Voxelfield.Item
             var change = new VoxelChange
             {
                 position = position, form = VoxelVolumeForm.Spherical,
-                magnitude = -m_DestroyRadius, replace = true, color = Voxel.Dirt, texture = VoxelTexture.Checkered
+                magnitude = -m_DestroyRadius, color = Voxel.Dirt, texture = VoxelTexture.Checkered
             };
             server.ApplyVoxelChanges(change);
         }
