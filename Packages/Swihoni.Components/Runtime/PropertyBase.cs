@@ -163,7 +163,7 @@ namespace Swihoni.Components
     [Serializable]
     public abstract class PropertyBase<T> : PropertyBase where T : struct
     {
-        [CopyField] private T m_Value;
+        [CopyField, SerializeField] private T m_Value;
 
         protected const float DefaultFloatTolerance = 1e-5f;
 

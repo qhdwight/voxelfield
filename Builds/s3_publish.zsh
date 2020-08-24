@@ -5,4 +5,5 @@ BUILD_ROOT="Release/Windows/IL2CPP/Player"
 --exclude '*.zsh' \
 --exclude '*Config.vfc' \
 --exclude '.git/*' \
---exclude '.gitignore'
+--exclude '.gitignore' \
+--delete

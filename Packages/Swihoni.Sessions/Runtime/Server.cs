@@ -228,19 +228,19 @@ namespace Swihoni.Sessions
                 }
             }
 
-            SendServerSession(tick, serverSession);
+            SendServerSession(serverSession);
         }
 
         private readonly List<NetPeer> m_ConnectedPeers = new List<NetPeer>();
 
-        private void SendServerSession(uint tick, Container serverSession)
+        private void SendServerSession(Container serverSession)
         {
             m_Socket.NetworkManager.GetPeersNonAlloc(m_ConnectedPeers, ConnectionState.Connected);
             foreach (NetPeer peer in m_ConnectedPeers)
-                SendPeerLatestSession(tick, peer, serverSession);
+                SendPeerLatestSession(peer, serverSession);
         }
 
-        protected void SendPeerLatestSession(uint tick, NetPeer peer, Container serverSession)
+        protected void SendPeerLatestSession(NetPeer peer, Container serverSession)
         {
             int playerId = GetPeerPlayerId(peer);
             Container player = GetModifyingPlayerFromId(playerId, serverSession);

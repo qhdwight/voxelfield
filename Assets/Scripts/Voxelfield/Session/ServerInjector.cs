@@ -137,7 +137,7 @@ namespace Voxelfield.Session
             TableName = table,
             Key = new Dictionary<string, AttributeValue> {[pkName] = new AttributeValue(pkValue)},
             ExpressionAttributeValues = new Dictionary<string, AttributeValue> {[":n"] = new AttributeValue {N = keyValue}},
-            UpdateExpression = $"ADD {keyValue} :n"
+            UpdateExpression = $"ADD {keyName} :n"
         };
 
         public override void OnKillPlayer(in DamageContext context)

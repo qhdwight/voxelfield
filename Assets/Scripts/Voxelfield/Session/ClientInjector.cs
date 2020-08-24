@@ -45,6 +45,8 @@ namespace Voxelfield.Session
                 m_OrderedTickChanges.Add(serverTick, changes);
             }
 
+            HandleMapReload(serverSession);
+
             var tickSkipped = false;
             bool shouldApply = m_Pointer.WithoutValue || serverTick - m_Pointer == 1 || (tickSkipped = serverTick - m_Pointer > serverSession.Require<TickRateProperty>() * 3);
             if (!shouldApply) return;
@@ -52,8 +54,6 @@ namespace Voxelfield.Session
             ApplyStoredChanges();
             if (tickSkipped) Debug.LogError($"Did not receive voxel changes for {m_Pointer.Value}");
             m_Pointer.Value = serverTick;
-            
-            HandleMapReload(serverSession);
         }
 
         private void ApplyStoredChanges()
