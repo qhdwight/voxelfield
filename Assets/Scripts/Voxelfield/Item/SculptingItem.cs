@@ -29,7 +29,7 @@ namespace Voxelfield.Item
             if (!(context.session.Injector is ServerInjector server) || WithoutHit(context, m_EditDistance, out RaycastHit hit)) return;
 
             var position = (Position3Int) (hit.point - hit.normal * 0.1f);
-            if (WithoutBreakableVoxel(position, out Voxel voxel)) return;
+            if (WithoutBreakableVoxel(context, position, out Voxel voxel)) return;
 
             if (voxel.HasBlock) RemoveBlock(context, server, position);
             else RemoveVoxelRadius(context, server, position);
@@ -52,11 +52,11 @@ namespace Voxelfield.Item
             server.ApplyVoxelChanges(change);
         }
 
-        public bool WithoutBreakableVoxel(in Position3Int position, out Voxel voxel)
+        public bool WithoutBreakableVoxel(in SessionContext context, in Position3Int position, out Voxel outVoxel)
         {
-            Voxel? _voxel = ChunkManager.Singleton.GetVoxel(position);
-            voxel = _voxel ?? default;
-            return !_voxel.HasValue || !voxel.IsBreakable && !OverrideBreakable;
+            Voxel? voxel = context.GetChunkManager().GetVoxel(position);
+            outVoxel = voxel ?? default;
+            return !voxel.HasValue || !outVoxel.IsBreakable && !OverrideBreakable;
         }
 
         protected bool WithoutHit(in SessionContext context, float distance, out RaycastHit hit)
@@ -84,7 +84,7 @@ namespace Voxelfield.Item
             if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)) return;
 
             var position = (Position3Int) (hit.point - hit.normal * 0.1f);
-            if (WithoutBreakableVoxel(position, out Voxel voxel)) return;
+            if (WithoutBreakableVoxel(context, position, out Voxel voxel)) return;
 
             var designer = context.session.GetLocalCommands().Require<DesignerPlayerComponent>();
             VoxelChange pickedChange = default;
@@ -103,7 +103,7 @@ namespace Voxelfield.Item
                 return false;
             }
             var position = (Position3Int) (hit.point + hit.normal * 0.1f);
-            if (WithoutBreakableVoxel(position, out Voxel _) || NoSolution(context.player, position))
+            if (WithoutBreakableVoxel(context, position, out Voxel _) || NoSolution(context.player, position))
             {
                 m_CachedPosition = null;
                 return false;
@@ -117,7 +117,7 @@ namespace Voxelfield.Item
         protected override void SecondaryUse(in SessionContext context)
         {
             // TODO:feature add client side prediction for placing blocks
-            if (!(m_CachedPosition is Position3Int position) || !(context.session.Injector is ServerInjector server)) return;
+            if (!(m_CachedPosition is { } position) || !(context.session.Injector is ServerInjector server)) return;
 
             PlaceBlock(context, server, position);
         }
@@ -131,7 +131,7 @@ namespace Voxelfield.Item
 
         private bool NoSolution(Container player, in Position3Int position, float radius = 0.9f)
         {
-            return false && m_PreventPlacingOnSelf;
+            return !m_PreventPlacingOnSelf && m_PreventPlacingOnSelf;
             // if (!m_PreventPlacingOnSelf) return false;
             //
             // var move = player.Require<MoveComponent>();
@@ -191,7 +191,7 @@ namespace Voxelfield.Item
 
         protected override void TertiaryUse(in SessionContext context, ItemComponent item)
         {
-            if (!(m_CachedPosition is Position3Int position) || !(context.session.Injector is ServerInjector server)) return;
+            if (!(m_CachedPosition is { } position) || !(context.session.Injector is ServerInjector server)) return;
 
             var change = new VoxelChange
             {

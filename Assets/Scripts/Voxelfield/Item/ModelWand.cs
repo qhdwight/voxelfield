@@ -3,7 +3,6 @@ using Swihoni.Components;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
-using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Util.Math;
 using UnityEngine;
 using Voxelfield.Session;
@@ -31,7 +30,7 @@ namespace Voxelfield.Item
             var modelBehavior = hit.collider.GetComponentInParent<ModelBehaviorBase>();
             if (modelBehavior)
             {
-                MapManager.Singleton.RemoveModel(modelBehavior.Position);
+                context.GetMapManager().RemoveModel(modelBehavior.Position);
             }
         }
 
@@ -62,7 +61,7 @@ namespace Voxelfield.Item
                     break;
                 }
             }
-            MapManager.Singleton.AddModel(position, model);
+            context.GetMapManager().AddModel(position, model);
         }
 
         public override void ModifyChecked(in SessionContext context, ItemComponent item, InventoryComponent inventory, InputFlagProperty inputs)

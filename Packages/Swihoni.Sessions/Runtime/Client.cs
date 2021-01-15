@@ -284,7 +284,7 @@ namespace Swihoni.Sessions
                     Profiler.BeginSample("Client Overrides");
                     ElementExtensions.NavigateZipped(serverSession.GetPlayer(localPlayerId), m_CommandHistory.Peek(), (_server, _command) =>
                     {
-                        if (_server is PropertyBase serverProperty && serverProperty.IsOverride && _command is PropertyBase commandProperty)
+                        if (_server is PropertyBase {IsOverride: true} serverProperty && _command is PropertyBase commandProperty)
                         {
                             commandProperty.SetTo(serverProperty);
                             Debug.Log($"Overriding with server: {serverProperty}");

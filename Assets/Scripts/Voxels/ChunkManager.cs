@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Swihoni.Components;
-using Swihoni.Util;
 using Swihoni.Util.Math;
 using Unity.Profiling;
 using UnityEngine;
@@ -232,7 +231,7 @@ namespace Voxels
                                 evaluatedChange.form = VoxelVolumeForm.Single;
                                 if (change.density.HasValue && (x == lx || y == ly || z == lz))
                                     evaluatedChange.density = null;
-                                else if (evaluatedChange.density is byte density && !change.noRandom.GetValueOrDefault())
+                                else if (evaluatedChange.density is { } density && !change.noRandom.GetValueOrDefault())
                                     evaluatedChange.density = checked((byte) Mathf.RoundToInt(density * Random.Range(0.75f, 1.0f)));
                                 if (!change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
                                 {
@@ -261,7 +260,7 @@ namespace Voxels
                                 Position3Int voxelChunkPosition = WorldVoxelToChunkVoxel(voxelWorldPosition, chunk);
                                 ref Voxel voxel = ref chunk.GetVoxelNoCheck(voxelChunkPosition);
 
-                                float GetDistance(VoxelVolumeForm _form, in Vector3 _center, in Vector3 _voxel) => _form == VoxelVolumeForm.Cylindrical
+                                static float GetDistance(VoxelVolumeForm _form, in Vector3 _center, in Vector3 _voxel) => _form == VoxelVolumeForm.Cylindrical
                                     ? Mathf.Sqrt((_center.x - _voxel.x).Square() + (_center.z - _voxel.z).Square())
                                     : Vector3.Distance(_center, _voxel);
 
@@ -296,7 +295,7 @@ namespace Voxels
                                 if (changedDensity && voxel.OnlySmooth)
                                 {
                                     evaluatedChange.Merge(change);
-                                    if (change.color is Color32 color)
+                                    if (change.color is { } color)
                                         evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
                                     evaluatedChange.natural = false;
                                 }
@@ -306,7 +305,7 @@ namespace Voxels
                                 if (isInside && !isAdditive && change.modifiesBlocks.GetValueOrDefault() && voxel.HasBlock)
                                 {
                                     evaluatedChange.Merge(change);
-                                    if (change.color is Color32 color)
+                                    if (change.color is { } color)
                                         evaluatedChange.color = Color32.Lerp(color, voxel.color, Mathf.Clamp01(distance / absoluteRadius) * 0.1f);
                                     evaluatedChange.natural = false;
                                     evaluatedChange.hasBlock = false;

@@ -82,7 +82,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 var throwable = entity.Require<ThrowableComponent>();
                 if (fromNearby && throwable.throwerId == context.playerId && throwable.thrownElapsedUs < 2_000_000u) return;
 
-                if (!(TryAddItem(inventory, checked((byte) (itemEntityModifier.id - 100))) is byte index)) return;
+                if (!(TryAddItem(inventory, checked((byte) (itemEntityModifier.id - 100))) is { } index)) return;
 
                 var itemOnEntity = entity.Require<ItemComponent>();
                 ItemComponent item = inventory[index];
@@ -316,7 +316,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         {
             byte? openIndex;
             if (ItemAssetLink.GetModifier(itemId) is ThrowableItemModifierBase
-             && (openIndex = FindItem(inventory, item => item.id.WithoutValue || item.id == itemId)) is byte existingIndex) // Try to stack throwables if possible
+             && (openIndex = FindItem(inventory, item => item.id.WithoutValue || item.id == itemId)) is { } existingIndex) // Try to stack throwables if possible
             {
                 ItemComponent itemInIndex = inventory[existingIndex];
                 bool addingToExisting = itemInIndex.id.WithValue && itemInIndex.id == itemId;
@@ -328,7 +328,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 }
             }
             else openIndex = FindEmpty(inventory);
-            if (openIndex is byte itemIndex)
+            if (openIndex is { } itemIndex)
                 SetItemAtIndex(inventory, itemId, itemIndex, count);
             return openIndex;
         }
@@ -356,7 +356,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         public static void SetItemAtIndex(InventoryComponent inventory, byte? _itemId, int index, ushort count = 1)
         {
             ItemComponent item = inventory[index];
-            if (!(_itemId is byte itemId))
+            if (!(_itemId is { } itemId))
             {
                 item.Clear();
                 if (inventory.equippedIndex == index)

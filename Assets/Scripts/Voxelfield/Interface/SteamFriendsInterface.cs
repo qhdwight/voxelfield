@@ -77,7 +77,7 @@ namespace Voxelfield.Interface
                 
                 SteamImage? avatarNullable = await SteamFriends.GetSmallAvatarAsync(friend.Id);
                 Texture2D texture = null;
-                if (avatarNullable is SteamImage avatar)
+                if (avatarNullable is { } avatar)
                 {
                     texture = new Texture2D((int) avatar.Width, (int) avatar.Height, TextureFormat.RGBA32, false, true);
                     texture.LoadRawTextureData(avatar.Data);

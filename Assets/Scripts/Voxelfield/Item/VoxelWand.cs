@@ -21,7 +21,7 @@ namespace Voxelfield.Item
             if (WithoutClientHit(context, m_EditDistance, out RaycastHit hit)) return;
 
             var position = (Position3Int) (hit.point - hit.normal * 0.1f);
-            if (WithoutBreakableVoxel(position, out Voxel voxel) || voxel.OnlySmooth) return;
+            if (WithoutBreakableVoxel(context, position, out Voxel voxel) || voxel.OnlySmooth) return;
 
             var designer = context.session.GetLocalCommands().Require<DesignerPlayerComponent>();
             if (designer.positionOne.WithoutValue || designer.positionTwo.WithValue)

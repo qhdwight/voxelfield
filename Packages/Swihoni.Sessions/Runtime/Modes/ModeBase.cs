@@ -34,7 +34,7 @@ namespace Swihoni.Sessions.Modes
                              Container hitPlayer = null,
                              byte? damage = null, string weaponName = null, bool? isHeadShot = null, PlayerHitContext? playerHitContext = null)
         {
-            if (playerHitContext is PlayerHitContext context)
+            if (playerHitContext is { } context)
             {
                 this.sessionContext = context.sessionContext;
                 this.hitPlayerId = context.hitPlayerId;

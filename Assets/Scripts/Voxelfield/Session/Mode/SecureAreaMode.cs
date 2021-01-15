@@ -61,12 +61,13 @@ namespace Voxelfield.Session.Mode
             _randomIndices = Enumerable.Range(0, 2).Select(_ => new List<int>()).ToArray();
         }
 
-        private SiteBehavior[] GetSiteBehaviors()
+        private SiteBehavior[] GetSiteBehaviors(in SessionContext context)
         {
-            StringProperty mapName = MapManager.Singleton.Map.name;
+            MapManager mapManager = context.GetMapManager();
+            StringProperty mapName = mapManager.Map.name;
             if (m_LastMapName == mapName) return m_SiteBehaviors;
             m_LastMapName.SetTo(mapName);
-            return m_SiteBehaviors = MapManager.Singleton.Models.Values
+            return m_SiteBehaviors = mapManager.Models.Values
                                                .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Site)
                                                .Cast<SiteBehavior>().ToArray();
         }
@@ -120,7 +121,7 @@ namespace Voxelfield.Session.Mode
                     else if (team == BlueTeam) blueAlive++;
             }
 
-            SiteBehavior[] siteBehaviors = GetSiteBehaviors();
+            SiteBehavior[] siteBehaviors = GetSiteBehaviors(context);
             if (secureArea.roundTime.WithValue)
             {
                 bool runTimer = true, redJustSecured = false, endedWithKills = false;
@@ -303,13 +304,14 @@ namespace Voxelfield.Session.Mode
         {
             try
             {
-                KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
-                                                                                                                  && modelId == ModelsProperty.Spawn
-                                                                                                                  && pair.Value.With<TeamProperty>())
-                                                                             .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
-                                                                             .OrderBy(spawnGroup => spawnGroup.Key)
-                                                                             .Select(spawnGroup => spawnGroup.ToArray())
-                                                                             .ToArray();
+                Dictionary<Position3Int, Container> models = context.GetMapManager().Map.models.Map;
+                KeyValuePair<Position3Int, Container>[][] spawns = models.Where(pair => pair.Value.With(out ModelIdProperty modelId)
+                                                                                     && modelId == ModelsProperty.Spawn
+                                                                                     && pair.Value.With<TeamProperty>())
+                                                                         .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
+                                                                         .OrderBy(spawnGroup => spawnGroup.Key)
+                                                                         .Select(spawnGroup => spawnGroup.ToArray())
+                                                                         .ToArray();
                 byte team = context.player.Require<TeamProperty>();
                 KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
 
@@ -328,7 +330,7 @@ namespace Voxelfield.Session.Mode
             }
             catch (Exception)
             {
-                return GetRandomPosition();
+                return GetRandomPosition(context);
             }
         }
 
@@ -398,7 +400,7 @@ namespace Voxelfield.Session.Mode
 
             base.Render(context);
 
-            SiteBehavior[] siteBehaviors = GetSiteBehaviors();
+            SiteBehavior[] siteBehaviors = GetSiteBehaviors(context);
             var secureArea = context.sessionContainer.Require<SecureAreaComponent>();
             for (var siteIndex = 0; siteIndex < siteBehaviors.Length; siteIndex++)
                 siteBehaviors[siteIndex].Render(secureArea.sites[siteIndex]);
@@ -425,7 +427,7 @@ namespace Voxelfield.Session.Mode
 
         public ushort GetCost(int itemId) => m_ItemPrices[itemId - 1];
 
-        public override Color GetTeamColor(byte? teamId) => teamId is byte team
+        public override Color GetTeamColor(byte? teamId) => teamId is { } team
             ? team == BlueTeam ? m_BlueColor : m_RedColor
             : Color.white;
     }

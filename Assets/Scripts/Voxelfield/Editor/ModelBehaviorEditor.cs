@@ -15,7 +15,7 @@ namespace Voxelfield.Editor
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            if (target is ModelBehavior model && !(model.Container is null))
+            if (target is ModelBehavior {Container: { }} model)
             {
                 if (model.Container.With(out TeamProperty teamProperty))
                     m_Team = EditorGUILayout.IntField("Team", m_Team.GetValueOrDefault(teamProperty.Value));
@@ -25,9 +25,9 @@ namespace Voxelfield.Editor
                     m_Extents = EditorGUILayout.Vector3Field("Extents", m_Extents.GetValueOrDefault(extentsProperty.Value));
                 if (GUILayout.Button("Apply"))
                 {
-                    if (m_Team is int team) teamProperty.Value = (byte) team;
-                    if (m_ModeId is int modeId) modeIdProperty.Value = (byte) modeId;
-                    if (m_Extents is Vector3 extents) extentsProperty.Value = extents;
+                    if (m_Team is { } team) teamProperty.Value = (byte) team;
+                    if (m_ModeId is { } modeId) modeIdProperty.Value = (byte) modeId;
+                    if (m_Extents is { } extents) extentsProperty.Value = extents;
                 }
             }
         }

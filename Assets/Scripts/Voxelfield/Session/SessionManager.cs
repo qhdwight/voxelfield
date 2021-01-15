@@ -64,9 +64,10 @@ namespace Voxelfield.Session
             SetCommand("save", arguments =>
             {
                 string newFile = arguments.Length > 1 ? arguments[1] : null;
+                SessionBase session = SessionBase.SessionEnumerable.First();
                 if (newFile != null)
-                    SessionBase.SessionEnumerable.First().GetLatestSession().Require<VoxelMapNameProperty>().SetTo(newFile);
-                MapManager.Singleton.SaveCurrentMap(newFile);
+                    session.GetLatestSession().Require<VoxelMapNameProperty>().SetTo(newFile);
+                session.GetMapManager().SaveCurrentMap(newFile);
             });
             SetCommand("map_apply_custom", arguments =>
             {
@@ -88,7 +89,8 @@ namespace Voxelfield.Session
             });
             SetCommand("map_remove_singles", arguments =>
             {
-                OrderedVoxelChangesProperty c = MapManager.Singleton.Map.voxelChanges, clone = c.Clone();
+                MapManager mapManager = SessionBase.SessionEnumerable.First().GetMapManager();
+                OrderedVoxelChangesProperty c = mapManager.Map.voxelChanges, clone = c.Clone();
                 c.Clear();
 
                 foreach (VoxelChange voxel in clone.List) 
@@ -117,7 +119,7 @@ namespace Voxelfield.Session
 #endif
             SetCommand("update_chunks", arguments =>
             {
-                foreach (Chunk chunk in ChunkManager.Singleton.Chunks.Values)
+                foreach (Chunk chunk in SessionBase.SessionEnumerable.First().GetChunkManager().Chunks.Values)
                     chunk.UpdateAndApply();
             });
 

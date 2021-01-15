@@ -97,8 +97,8 @@ namespace Voxelfield.Interface
                                  .Append(isTaking ? " is taking a flag" : " has a flag");
                     }
                     int flatIndex = flagTeam * flags.Length + flagIndex;
-                    if (m_LastFlagCaptureTimesUs[flatIndex] is uint lt && captureTimeUs.TryWithValue(out uint ct)
-                                                                       && lt < CtfMode.TakeFlagDurationUs && ct > CtfMode.TakeFlagDurationUs)
+                    if (m_LastFlagCaptureTimesUs[flatIndex] is { } lt && captureTimeUs.TryWithValue(out uint ct)
+                                                                      && lt < CtfMode.TakeFlagDurationUs && ct > CtfMode.TakeFlagDurationUs)
                         m_TakeFlagAudioSource.Play();
                     m_LastFlagCaptureTimesUs[flatIndex] = captureTimeUs.AsNullable;
                 }

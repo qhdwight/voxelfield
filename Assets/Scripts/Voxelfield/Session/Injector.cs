@@ -3,6 +3,7 @@
 #endif
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Discord;
@@ -17,6 +18,7 @@ using UnityEngine.SceneManagement;
 using Voxelfield.Integration;
 using Voxels;
 using Voxels.Map;
+using Object = UnityEngine.Object;
 
 namespace Voxelfield.Session
 {
@@ -36,16 +38,16 @@ namespace Voxelfield.Session
         protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
         protected AuthTicket m_SteamAuthenticationTicket;
+        
         protected MapManager m_MapManager;
         protected ChunkManager m_ChunkManager;
-
         private Scene m_Scene;
         private long m_UnixStart;
         private bool m_IsLoading = true;
-        
+
         public MapManager MapManager => m_MapManager;
         public ChunkManager ChunkManager => m_ChunkManager;
-        
+
         [RuntimeInitializeOnLoadMethod]
         private static void Initialize() => SessionBase.RegisterSessionCommand("reload_map");
 
@@ -63,18 +65,20 @@ namespace Voxelfield.Session
             base.OnRenderMode(in context);
             if (IsLoading(context)) return;
 
-            foreach (ModelBehaviorBase modelBehavior in m_MapManager.Models.Values)
+            foreach (ModelBehaviorBase modelBehavior in MapManager.Models.Values)
                 modelBehavior.RenderContainer();
         }
 
-        protected override void OnDispose() => m_MapManager.SetMapToUnloaded();
+        protected override void OnDispose() => MapManager.SetMapToUnloaded();
 
         public override void OnPreStart()
         {
-            m_Scene = SceneManager.LoadScene(1, new LoadSceneParameters(LoadSceneMode.Additive, LocalPhysicsMode.Physics3D));
-            GameObject mapManagerInstance = m_Scene.GetRootGameObjects().First();
-            m_MapManager = mapManagerInstance.GetComponent<MapManager>();
-            m_ChunkManager = mapManagerInstance.GetComponent<ChunkManager>();
+            m_Scene = SceneManager.CreateScene(Guid.NewGuid().ToString(), new CreateSceneParameters(LocalPhysicsMode.Physics3D));
+            var mapManagerPrefab = Resources.Load<GameObject>("Map Manager");
+            GameObject mapManager = Object.Instantiate(mapManagerPrefab);
+            SceneManager.MoveGameObjectToScene(mapManager, m_Scene);
+            m_MapManager = mapManager.GetComponent<MapManager>();
+            m_ChunkManager = m_MapManager.ChunkManager;
         }
 
         public override void OnStart() => m_UnixStart = SessionExtensions.UnixNow;
@@ -90,17 +94,17 @@ namespace Voxelfield.Session
         protected override void OnPreTick(Container session)
         {
             var mapName = session.Require<VoxelMapNameProperty>();
-            if (m_MapManager.SetNamedMap(mapName)) OnMapChange();
+            if (MapManager.SetNamedMap(mapName)) OnMapChange();
 
             if (session.Require<ServerStampComponent>().tick % (session.Require<TickRateProperty>() * DiscordUpdateRate) == 0) OnModePeriodic(session);
 
-            MapLoadingStage stage = m_ChunkManager.ProgressInfo.stage;
+            MapLoadingStage stage = ChunkManager.ProgressInfo.stage;
             if (stage == MapLoadingStage.Failed) throw new Exception("Map failed to load");
 
-            m_IsLoading = mapName != m_MapManager.Map.name || stage != MapLoadingStage.Completed;
+            m_IsLoading = mapName != MapManager.Map.name || stage != MapLoadingStage.Completed;
             if (m_IsLoading) return;
 
-            foreach (ModelBehaviorBase modelBehavior in m_MapManager.Models.Values)
+            foreach (ModelBehaviorBase modelBehavior in MapManager.Models.Values)
                 modelBehavior.SetInMode(session);
         }
 
@@ -121,7 +125,7 @@ namespace Voxelfield.Session
 
         public override bool IsLoading(in SessionContext context) => m_IsLoading;
 
-        protected static void HandleMapReload(Container session)
+        protected void HandleMapReload(Container session)
         {
             var reload = session.Require<ReloadMapProperty>();
             if (reload.WithValueEqualTo(true))

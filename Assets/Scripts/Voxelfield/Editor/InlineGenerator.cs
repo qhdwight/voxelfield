@@ -55,7 +55,7 @@ namespace Voxelfield.Editor
             var vi = 0;
             ElementExtensions.NavigateZipped(element, element, element, (_e1, _e2, _e3) =>
             {
-                if (navigator?.Invoke(_e1) is Navigation navigation && navigation != Navigation.Continue)
+                if (navigator?.Invoke(_e1) is { } navigation && navigation != Navigation.Continue)
                     return navigation;
                 // if (_e1.TryAttribute(out NoSerializationAttribute attribute) && !attribute.ExceptRead) return Navigation.SkipDescendents;
                 // names.Push((GetBaseElementType(_element.GetType()).Name, breadthIndex));

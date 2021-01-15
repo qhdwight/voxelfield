@@ -22,7 +22,7 @@ namespace Swihoni.Sessions
                               Container entity = null,
                               uint? timeUs = null, uint? durationUs = null, int? tickDelta = null, in SessionContext? existing = null)
         {
-            if (existing is SessionContext context)
+            if (existing is { } context)
             {
                 this.session = session ?? context.session;
                 this.entity = entity ?? context.entity;

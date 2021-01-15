@@ -97,47 +97,47 @@ namespace Voxels
             int flagPosition = writer.Length;
             writer.Put(flags);
 
-            if (change.position is Position3Int position)
+            if (change.position is { } position)
             {
                 FlagUtil.SetFlag(ref flags, 0);
                 Position3Int.Serialize(position, writer);
             }
-            if (change.texture is byte texture)
+            if (change.texture is { } texture)
             {
                 FlagUtil.SetFlag(ref flags, 1);
                 writer.Put(texture);
             }
-            if (change.density is byte density)
+            if (change.density is { } density)
             {
                 FlagUtil.SetFlag(ref flags, 2);
                 writer.Put(density);
             }
-            if (change.orientation is byte orientation)
+            if (change.orientation is { } orientation)
             {
                 FlagUtil.SetFlag(ref flags, 3);
                 writer.Put(orientation);
             }
-            if (change.color is Color32 color)
+            if (change.color is { } color)
             {
                 FlagUtil.SetFlag(ref flags, 4);
                 writer.PutColor32(color);
             }
-            if (change.magnitude is float magnitude)
+            if (change.magnitude is { } magnitude)
             {
                 FlagUtil.SetFlag(ref flags, 5);
                 writer.Put(magnitude);
             }
-            if (change.yaw is float yaw)
+            if (change.yaw is { } yaw)
             {
                 FlagUtil.SetFlag(ref flags, 6);
                 writer.Put(yaw);
             }
-            if (change.form is VoxelVolumeForm form)
+            if (change.form is { } form)
             {
                 FlagUtil.SetFlag(ref flags, 7);
                 writer.Put((byte) form);
             }
-            if (change.upperBound is Position3Int upperBound)
+            if (change.upperBound is { } upperBound)
             {
                 FlagUtil.SetFlag(ref flags, 8);
                 Position3Int.Serialize(upperBound, writer);
@@ -145,42 +145,42 @@ namespace Voxels
 
             if (change.isUndo) FlagUtil.SetFlag(ref flags, 12);
             /* Flags */
-            if (change.isBreathable is bool isBreathable)
+            if (change.isBreathable is { } isBreathable)
             {
                 FlagUtil.SetFlag(ref flags, 16);
                 if (isBreathable) FlagUtil.SetFlag(ref flags, 17);
             }
-            if (change.revert is bool revert)
+            if (change.revert is { } revert)
             {
                 FlagUtil.SetFlag(ref flags, 18);
                 if (revert) FlagUtil.SetFlag(ref flags, 19);
             }
-            if (change.noRandom is bool noRandom)
+            if (change.noRandom is { } noRandom)
             {
                 FlagUtil.SetFlag(ref flags, 20);
                 if (noRandom) FlagUtil.SetFlag(ref flags, 21);
             }
-            if (change.modifiesBlocks is bool modifiesBlocks)
+            if (change.modifiesBlocks is { } modifiesBlocks)
             {
                 FlagUtil.SetFlag(ref flags, 22);
                 if (modifiesBlocks) FlagUtil.SetFlag(ref flags, 23);
             }
-            if (change.replace is bool replace)
+            if (change.replace is { } replace)
             {
                 FlagUtil.SetFlag(ref flags, 24);
                 if (replace) FlagUtil.SetFlag(ref flags, 25);
             }
-            if (change.hasBlock is bool hasBlock)
+            if (change.hasBlock is { } hasBlock)
             {
                 FlagUtil.SetFlag(ref flags, 26);
                 if (hasBlock) FlagUtil.SetFlag(ref flags, 27);
             }
-            if (change.isBreakable is bool isBreakable)
+            if (change.isBreakable is { } isBreakable)
             {
                 FlagUtil.SetFlag(ref flags, 28);
                 if (isBreakable) FlagUtil.SetFlag(ref flags, 29);
             }
-            if (change.natural is bool natural)
+            if (change.natural is { } natural)
             {
                 FlagUtil.SetFlag(ref flags, 30);
                 if (natural) FlagUtil.SetFlag(ref flags, 31);

@@ -20,10 +20,11 @@ namespace Voxelfield.Interface
 
         private void Update()
         {
-            bool isVisible = SessionBase.SessionEnumerable.Any(session => session.IsLoading);
+            SessionBase session = SessionBase.SessionEnumerable.FirstOrDefault(_session => _session.IsLoading);
+            bool isVisible = session != null;
             if (isVisible)
             {
-                MapProgressInfo progressInfo = ChunkManager.Singleton.ProgressInfo;
+                MapProgressInfo progressInfo = session.GetChunkManager().ProgressInfo;
                 switch (progressInfo.stage)
                 {
                     case MapLoadingStage.CleaningUp:

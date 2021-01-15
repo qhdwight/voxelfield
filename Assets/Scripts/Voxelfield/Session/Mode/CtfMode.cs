@@ -181,14 +181,14 @@ namespace Voxelfield.Session.Mode
         {
             try
             {
-                Dictionary<Position3Int, Container> modelsMap = context.GetMapManager().Map.models.Map;
-                KeyValuePair<Position3Int, Container>[][] spawns = modelsMap.Where(pair => pair.Value.With(out ModelIdProperty modelId)
-                                                                                        && modelId == ModelsProperty.Spawn
-                                                                                        && pair.Value.With<TeamProperty>())
-                                                                            .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
-                                                                            .OrderBy(spawnGroup => spawnGroup.Key)
-                                                                            .Select(spawnGroup => spawnGroup.ToArray())
-                                                                            .ToArray();
+                Dictionary<Position3Int, Container> models = context.GetMapManager().Map.models.Map;
+                KeyValuePair<Position3Int, Container>[][] spawns = models.Where(pair => pair.Value.With(out ModelIdProperty modelId)
+                                                                                     && modelId == ModelsProperty.Spawn
+                                                                                     && pair.Value.With<TeamProperty>())
+                                                                         .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
+                                                                         .OrderBy(spawnGroup => spawnGroup.Key)
+                                                                         .Select(spawnGroup => spawnGroup.ToArray())
+                                                                         .ToArray();
                 byte team = context.player.Require<TeamProperty>();
                 KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
                 int spawnIndex = Random.Range(0, teamSpawns.Length);
@@ -302,7 +302,7 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public override Color GetTeamColor(byte? teamId) => teamId is byte team
+        public override Color GetTeamColor(byte? teamId) => teamId is { } team
             ? team == BlueTeam ? m_BlueColor : m_RedColor
             : Color.white;
     }

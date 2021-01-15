@@ -149,7 +149,7 @@ namespace Voxelfield.Session.Mode
 
         private static void StartFirstStage(in SessionContext context, ShowdownSessionComponent stage)
         {
-            ModelsProperty models = MapManager.Singleton.Map.models;
+            ModelsProperty models = context.GetMapManager().Map.models;
             QueuedTeamSpawns spawns = FindSpawns(models);
             stage.number.Value = 0;
             stage.remainingUs.Value = BuyTimeUs + FightTimeUs;
@@ -221,10 +221,11 @@ namespace Voxelfield.Session.Mode
         {
             base.Render(context);
 
-            if (MapManager.Singleton.Models.Count == 0) return;
+            MapManager mapManager = context.GetMapManager();
+            if (mapManager.Models.Count == 0) return;
             ArrayElement<CurePackageComponent> cures = context.sessionContainer.Require<ShowdownSessionComponent>().curePackages;
             // TODO:performance
-            m_CurePackages = MapManager.Singleton.Models.Values
+            m_CurePackages = mapManager.Models.Values
                                        .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Cure)
                                        .Cast<CurePackageBehavior>()
                                        .ToArray();

@@ -36,6 +36,8 @@ namespace Voxels.Map
         public Dictionary<Position3Int, ModelBehaviorBase> Models { get; } = new Dictionary<Position3Int, ModelBehaviorBase>();
         public MapContainer Map { get; private set; } = new MapContainer();
 
+        public ChunkManager ChunkManager { get; private set; }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Initialize()
         {
@@ -54,6 +56,8 @@ namespace Voxels.Map
             return Path.Combine(parentFolder, folderName);
         }
 
+        private void Awake() => ChunkManager = GetComponentInChildren<ChunkManager>();
+
         private void Start()
         {
             m_WantedMapName = _emptyMapName;
@@ -66,7 +70,7 @@ namespace Voxels.Map
             IEnumerator loadMapEnumerator = null;
             while (Application.isPlaying)
             {
-                MapLoadingStage stage = ChunkManager.Singleton.ProgressInfo.stage;
+                MapLoadingStage stage = ChunkManager.ProgressInfo.stage;
                 object current = null;
                 try
                 {
@@ -79,7 +83,7 @@ namespace Voxels.Map
                 catch (Exception exception)
                 {
                     Debug.LogError($"Failed to load map: {m_WantedMapName.AsNewString()}: {exception.Message}");
-                    ChunkManager.Singleton.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Failed};
+                    ChunkManager.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Failed};
                 }
                 yield return current;
             }
@@ -150,7 +154,7 @@ namespace Voxels.Map
             // map.terrainGeneration.grassVoxel.Value = new VoxelChange {texture = VoxelTexture.Solid, color = Voxel.Grass};
             // map.terrainGeneration.upperBreakableHeight.Value = 16;
 
-            yield return ChunkManager.Singleton.LoadMap(map);
+            yield return ChunkManager.LoadMap(map);
 
             LoadModels(map);
 
@@ -215,7 +219,7 @@ namespace Voxels.Map
         //     }
         // }
 
-        public static void ReloadMap() => ChunkManager.Singleton.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Waiting};
+        public void ReloadMap() => ChunkManager.ProgressInfo = new MapProgressInfo {stage = MapLoadingStage.Waiting};
 
         public bool SetNamedMap(StringProperty mapName)
         {

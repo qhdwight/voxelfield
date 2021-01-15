@@ -14,7 +14,7 @@ namespace Swihoni.Sessions.Interfaces
 
         public override void ModifyLocalTrusted(int localPlayerId, SessionBase session, Container commands)
         {
-            if (!(m_WantedTeam is byte wantedTeam)) return;
+            if (!(m_WantedTeam is { } wantedTeam)) return;
 
             commands.Require<WantedTeamProperty>().Value = wantedTeam;
             m_WantedTeam = null;

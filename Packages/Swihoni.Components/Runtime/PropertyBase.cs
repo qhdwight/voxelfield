@@ -297,7 +297,7 @@ namespace Swihoni.Components
 
         public void SetToNullable(T? nullable)
         {
-            if (nullable is T value) Value = value;
+            if (nullable is { } value) Value = value;
             else Clear();
         }
 

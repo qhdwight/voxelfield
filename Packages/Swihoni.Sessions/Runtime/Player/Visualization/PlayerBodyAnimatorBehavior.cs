@@ -36,8 +36,7 @@ namespace Swihoni.Sessions.Player.Visualization
         private AnimationClipPlayable[] m_Animations;
         private AnimationMixerPlayable m_Mixer;
         private float m_LastNormalizedTime;
-
-        public Dictionary<Renderer, Material> m_TpvMaterials;
+        private Dictionary<Renderer, Material> m_TpvMaterials;
 
         internal override void Setup()
         {
@@ -64,7 +63,11 @@ namespace Swihoni.Sessions.Player.Visualization
 
             m_RagdollRigidbodies = GetComponentsInChildren<Rigidbody>();
             m_RagdollColliders = GetComponentsInChildren<Collider>();
-            m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r => (r.transform.localPosition, r.transform.localRotation)).ToArray();
+            m_RagdollInitialTransforms = m_RagdollRigidbodies.Select(r =>
+            {
+                Transform t = r.transform;
+                return (t.localPosition, t.localRotation);
+            }).ToArray();
 
             m_TpvMaterials = m_TpvRenders.ToDictionary(r => r, r => r.material);
         }
@@ -98,7 +101,7 @@ namespace Swihoni.Sessions.Player.Visualization
             {
                 m_Head.localRotation = Quaternion.AngleAxis(playerCamera.pitch, Vector3.right);
                 m_Animator.transform.SetPositionAndRotation(move.position, Quaternion.AngleAxis(playerCamera.yaw, Vector3.up));
-                RenderMove(move);
+                RenderMove(context, move);
             }
 
             SetColor(context.Mode.GetTeamColor(player));
@@ -173,17 +176,17 @@ namespace Swihoni.Sessions.Player.Visualization
             }
         }
 
-        private void RenderMove(MoveComponent move)
+        private void RenderMove(in SessionContext context, MoveComponent move)
         {
             RenderState(0, move, 1.0f - move.normalizedCrouch);
             RenderState(3, move, move.normalizedCrouch);
-            if (m_FootstepSource) Footsteps(move);
+            if (m_FootstepSource) Footsteps(context, move);
 
             m_Graph.Evaluate();
         }
 
         // TODO:refactor magic numbers
-        private void Footsteps(MoveComponent move)
+        private void Footsteps(in SessionContext context, MoveComponent move)
         {
             float normalizedSpeed = Mathf.Clamp01(ExtraMath.LateralMagnitude(move.velocity) / m_PrefabPlayerMovement.MaxSpeed);
 
@@ -195,13 +198,13 @@ namespace Swihoni.Sessions.Player.Visualization
                                                               1.0f, m_PrefabPlayerMovement.GroundMask) > 0;
                     m_FootstepSource.pitch = Random.Range(0.95f, 1.05f);
                     if (isGrounded)
-                        m_FootstepSource.PlayOneShot(GetFootstepAudioClip(move), normalizedSpeed);
+                        m_FootstepSource.PlayOneShot(GetFootstepAudioClip(context, move), normalizedSpeed);
                 }
             }
             m_LastNormalizedTime = move.normalizedMove;
         }
 
-        protected virtual AudioClip GetFootstepAudioClip(MoveComponent move) => m_FootstepClips[Random.Range(0, m_FootstepClips.Length)];
+        protected virtual AudioClip GetFootstepAudioClip(in SessionContext context, MoveComponent move) => m_FootstepClips[Random.Range(0, m_FootstepClips.Length)];
 
         public override void Dispose()
         {

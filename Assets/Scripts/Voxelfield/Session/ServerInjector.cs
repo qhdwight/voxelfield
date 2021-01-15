@@ -62,7 +62,7 @@ namespace Voxelfield.Session
 
         public void ApplyVoxelChanges(VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
         {
-            void Apply() => m_ChunkManager.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
+            void Apply() => ChunkManager.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
             if (change.isUndo)
             {
                 if (m_MasterChanges.TryRemoveEnd(out VoxelChange lastChange))
@@ -361,7 +361,7 @@ namespace Voxelfield.Session
                     {
                         float distance = hit.distance;
                         move.position.Value += new Vector3 {y = distance + 0.05f};
-                        if (f > 1.0f && m_ChunkManager.GetVoxel((Position3Int) origin) is Voxel voxel && !voxel.IsBreathable)
+                        if (f > 1.0f && m_ChunkManager.GetVoxel((Position3Int) origin) is {IsBreathable: false})
                             Suffocate(context, OutsideBoundDamage);
                         break;
                     }
