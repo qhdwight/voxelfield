@@ -16,12 +16,12 @@ namespace Voxelfield.Session.Mode
             return ShowdownMode.CalculateDamageWithMovement(context, baseDamage);
         }
 
-        protected override Vector3 GetSpawnPosition(in SessionContext context) => GetRandomPosition();
+        protected override Vector3 GetSpawnPosition(in SessionContext context) => GetRandomPosition(context);
 
-        public static Vector3 GetRandomPosition()
+        public static Vector3 GetRandomPosition(in SessionContext context)
         {
-            int chunkSize = ChunkManager.Singleton.ChunkSize;
-            DimensionComponent dimension = MapManager.Singleton.Map.dimension;
+            int chunkSize = context.GetChunkManager().ChunkSize;
+            DimensionComponent dimension = context.GetMapManager().Map.dimension;
             Position3Int lower = dimension.lowerBound, upper = dimension.upperBound;
             for (var _ = 0; _ < 32; _++)
             {

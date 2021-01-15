@@ -59,7 +59,7 @@ namespace Swihoni.Sessions
             m_Socket.Receiver = this;
             RegisterMessages(m_Socket);
 
-            Physics.autoSimulation = true;
+            // Physics.autoSimulation = true;
         }
 
         private void OnDisconnect(NetPeer peer, DisconnectInfo disconnect)

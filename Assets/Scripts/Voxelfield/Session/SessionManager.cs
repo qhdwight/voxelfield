@@ -135,7 +135,7 @@ namespace Voxelfield.Session
         private static IPEndPoint GetEndPoint(string[] arguments)
         {
             IPAddress address;
-            if (arguments[1] == "-l") address = IPAddress.Parse(NetUtils.GetLocalIp(LocalAddrType.IPv4));
+            if (arguments.Length > 1 && arguments[1] == "-l") address = IPAddress.Parse(NetUtils.GetLocalIp(LocalAddrType.IPv4));
             else
             {
                 string[] colonSplit = arguments.Length > 1 ? arguments[1].Split(IpSeparator, StringSplitOptions.RemoveEmptyEntries) : null;
@@ -172,21 +172,21 @@ namespace Voxelfield.Session
 
         public static Host StartHost(IPEndPoint ipEndPoint = null)
         {
-            if (ipEndPoint == null) ipEndPoint = DefaultEndPoint;
+            ipEndPoint ??= DefaultEndPoint;
             var host = new Host(VoxelfieldComponents.SessionElements, ipEndPoint, new ServerInjector());
             return StartSession(host);
         }
 
         public static Server StartServer(IPEndPoint ipEndPoint = null)
         {
-            if (ipEndPoint == null) ipEndPoint = DefaultEndPoint;
+            ipEndPoint ??= DefaultEndPoint;
             var server = new Server(VoxelfieldComponents.SessionElements, ipEndPoint, new ServerInjector());
             return StartSession(server);
         }
 
         public static Client StartClient(IPEndPoint ipEndPoint = null)
         {
-            if (ipEndPoint == null) ipEndPoint = DefaultEndPoint;
+            ipEndPoint ??= DefaultEndPoint;
             var client = new Client(VoxelfieldComponents.SessionElements, ipEndPoint, new ClientInjector());
             return StartSession(client);
         }

@@ -37,7 +37,7 @@ namespace Voxels
         UpdateMesh
     }
 
-    public class ChunkManager : SingletonBehavior<ChunkManager>
+    public class ChunkManager : MonoBehaviour
     {
         [SerializeField] private GameObject m_ChunkPrefab = default;
         [SerializeField] private int m_ChunkSize = default;

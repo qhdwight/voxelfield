@@ -62,7 +62,7 @@ namespace Voxelfield.Session
 
         public void ApplyVoxelChanges(VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
         {
-            void Apply() => ChunkManager.Singleton.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
+            void Apply() => m_ChunkManager.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
             if (change.isUndo)
             {
                 if (m_MasterChanges.TryRemoveEnd(out VoxelChange lastChange))
@@ -361,7 +361,7 @@ namespace Voxelfield.Session
                     {
                         float distance = hit.distance;
                         move.position.Value += new Vector3 {y = distance + 0.05f};
-                        if (f > 1.0f && ChunkManager.Singleton.GetVoxel((Position3Int) origin) is Voxel voxel && !voxel.IsBreathable)
+                        if (f > 1.0f && m_ChunkManager.GetVoxel((Position3Int) origin) is Voxel voxel && !voxel.IsBreathable)
                             Suffocate(context, OutsideBoundDamage);
                         break;
                     }
@@ -369,7 +369,7 @@ namespace Voxelfield.Session
             }
             Physics.queriesHitBackfaces = false;
 
-            if (MapManager.Singleton.Map.terrainGeneration.upperBreakableHeight.TryWithValue(out int upperLimit)
+            if (m_MapManager.Map.terrainGeneration.upperBreakableHeight.TryWithValue(out int upperLimit)
              && context.sessionContainer.Require<ModeIdProperty>() == ModeIdProperty.SecureArea
              && context.sessionContainer.Require<SecureAreaComponent>().roundTime.WithValue
              && move.position.Value.y > upperLimit + 5) Suffocate(context);

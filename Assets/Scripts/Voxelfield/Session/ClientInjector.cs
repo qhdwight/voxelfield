@@ -61,7 +61,7 @@ namespace Voxelfield.Session
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator - Avoid allocation
             foreach (OrderedVoxelChangesProperty changes in m_OrderedTickChanges.Values)
             foreach (VoxelChange change in changes.List)
-                ChunkManager.Singleton.ApplyVoxelChanges(change, existingTouched: m_TouchedChunks);
+                m_ChunkManager.ApplyVoxelChanges(change, existingTouched: m_TouchedChunks);
             m_TouchedChunks.UpdateMesh();
             m_OrderedTickChanges.Clear();
             m_ChangesPool.ReturnAll();

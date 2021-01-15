@@ -39,17 +39,18 @@ namespace Voxelfield.Session.Mode
 
         public override void Initialize() => m_LastMapName = new VoxelMapNameProperty();
 
-        private (PickUpBehavior[], FlagBehavior[][]) GetBehaviors()
+        private (PickUpBehavior[], FlagBehavior[][]) GetBehaviors(SessionContext context)
         {
-            StringProperty mapName = MapManager.Singleton.Map.name;
+            MapManager mapManager = context.GetMapManager();
+            StringProperty mapName = mapManager.Map.name;
             if (m_LastMapName == mapName) return m_Behaviors;
             m_LastMapName.SetTo(mapName);
-            return m_Behaviors = (MapManager.Singleton.Models.Values
+            return m_Behaviors = (mapManager.Models.Values
                                             .Where(model => model is PickUpBehavior)
                                             .Cast<PickUpBehavior>()
                                             .OrderBy(model => model.Position.GetHashCode())
                                             .ToArray(),
-                                  MapManager.Singleton.Models.Values
+                                  mapManager.Models.Values
                                             .Where(model => model is FlagBehavior)
                                             .GroupBy(model => model.Container.Require<TeamProperty>().Value)
                                             .OrderBy(group => group.Key)
@@ -67,7 +68,7 @@ namespace Voxelfield.Session.Mode
         {
             base.Render(context);
 
-            (PickUpBehavior[] pickUpBehaviors, FlagBehavior[][] flagBehaviors) = GetBehaviors();
+            (PickUpBehavior[] pickUpBehaviors, FlagBehavior[][] flagBehaviors) = GetBehaviors(context);
             var ctf = context.sessionContainer.Require<CtfComponent>();
 
             TeamFlagArray flags = ctf.teamFlags;
@@ -84,7 +85,7 @@ namespace Voxelfield.Session.Mode
             base.Modify(context);
 
             var ctf = context.sessionContainer.Require<CtfComponent>();
-            (PickUpBehavior[] pickUpBehaviors, FlagBehavior[][] flagBehaviors) = GetBehaviors();
+            (PickUpBehavior[] pickUpBehaviors, FlagBehavior[][] flagBehaviors) = GetBehaviors(context);
 
             for (byte flagTeam = 0; flagTeam < flagBehaviors.Length; flagTeam++)
             for (var flagId = 0; flagId < flagBehaviors[flagTeam].Length; flagId++)
@@ -143,7 +144,7 @@ namespace Voxelfield.Session.Mode
             if (pickupCount == 0)
             {
                 byte pickupItemId = m_PickupItemIds[Random.Range(0, m_PickupItemIds.Length)].id;
-                CreateItemEntity(context, DeathmatchMode.GetRandomPosition(), pickupItemId,
+                CreateItemEntity(context, DeathmatchMode.GetRandomPosition(context), pickupItemId,
                                  flags: ThrowableFlags.Floating | ThrowableFlags.Persistent);
             }
         }
@@ -180,13 +181,14 @@ namespace Voxelfield.Session.Mode
         {
             try
             {
-                KeyValuePair<Position3Int, Container>[][] spawns = MapManager.Singleton.Map.models.Map.Where(pair => pair.Value.With(out ModelIdProperty modelId)
-                                                                                                                  && modelId == ModelsProperty.Spawn
-                                                                                                                  && pair.Value.With<TeamProperty>())
-                                                                             .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
-                                                                             .OrderBy(spawnGroup => spawnGroup.Key)
-                                                                             .Select(spawnGroup => spawnGroup.ToArray())
-                                                                             .ToArray();
+                Dictionary<Position3Int, Container> modelsMap = context.GetMapManager().Map.models.Map;
+                KeyValuePair<Position3Int, Container>[][] spawns = modelsMap.Where(pair => pair.Value.With(out ModelIdProperty modelId)
+                                                                                        && modelId == ModelsProperty.Spawn
+                                                                                        && pair.Value.With<TeamProperty>())
+                                                                            .GroupBy(spawnPair => spawnPair.Value.Require<TeamProperty>().Value)
+                                                                            .OrderBy(spawnGroup => spawnGroup.Key)
+                                                                            .Select(spawnGroup => spawnGroup.ToArray())
+                                                                            .ToArray();
                 byte team = context.player.Require<TeamProperty>();
                 KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
                 int spawnIndex = Random.Range(0, teamSpawns.Length);
@@ -194,7 +196,7 @@ namespace Voxelfield.Session.Mode
             }
             catch (Exception)
             {
-                return DeathmatchMode.GetRandomPosition();
+                return DeathmatchMode.GetRandomPosition(context);
             }
         }
 
@@ -205,7 +207,7 @@ namespace Voxelfield.Session.Mode
 
         private void HandlePlayersNearFlag(in SessionContext context, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresArray scores)
         {
-            (_, FlagBehavior[][] flagBehaviors) = GetBehaviors();
+            (_, FlagBehavior[][] flagBehaviors) = GetBehaviors(context);
             int count = Physics.OverlapSphereNonAlloc(flagBehaviors[flagTeam][flagId].transform.position, m_CaptureRadius, m_CachedColliders, m_PlayerMask);
             Container enemyTakingIn = null;
             for (var i = 0; i < count; i++)

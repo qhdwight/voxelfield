@@ -3,6 +3,7 @@
 #endif
 
 using System;
+using System.Linq;
 using System.Text;
 using Discord;
 using LiteNetLib.Utils;
@@ -12,6 +13,7 @@ using Swihoni.Sessions;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Voxelfield.Integration;
 using Voxels;
 using Voxels.Map;
@@ -34,10 +36,16 @@ namespace Voxelfield.Session
         protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
         protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
         protected AuthTicket m_SteamAuthenticationTicket;
+        protected MapManager m_MapManager;
+        protected ChunkManager m_ChunkManager;
 
+        private Scene m_Scene;
         private long m_UnixStart;
         private bool m_IsLoading = true;
-
+        
+        public MapManager MapManager => m_MapManager;
+        public ChunkManager ChunkManager => m_ChunkManager;
+        
         [RuntimeInitializeOnLoadMethod]
         private static void Initialize() => SessionBase.RegisterSessionCommand("reload_map");
 
@@ -55,16 +63,25 @@ namespace Voxelfield.Session
             base.OnRenderMode(in context);
             if (IsLoading(context)) return;
 
-            foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
+            foreach (ModelBehaviorBase modelBehavior in m_MapManager.Models.Values)
                 modelBehavior.RenderContainer();
         }
 
-        protected override void OnDispose() => MapManager.Singleton.SetMapToUnloaded();
+        protected override void OnDispose() => m_MapManager.SetMapToUnloaded();
+
+        public override void OnPreStart()
+        {
+            m_Scene = SceneManager.LoadScene(1, new LoadSceneParameters(LoadSceneMode.Additive, LocalPhysicsMode.Physics3D));
+            GameObject mapManagerInstance = m_Scene.GetRootGameObjects().First();
+            m_MapManager = mapManagerInstance.GetComponent<MapManager>();
+            m_ChunkManager = mapManagerInstance.GetComponent<ChunkManager>();
+        }
 
         public override void OnStart() => m_UnixStart = SessionExtensions.UnixNow;
 
         public override void OnStop()
         {
+            SceneManager.UnloadSceneAsync(m_Scene);
             if (SteamClient.IsValid) m_SteamAuthenticationTicket?.Cancel();
         }
 
@@ -73,17 +90,17 @@ namespace Voxelfield.Session
         protected override void OnPreTick(Container session)
         {
             var mapName = session.Require<VoxelMapNameProperty>();
-            if (MapManager.Singleton.SetNamedMap(mapName)) OnMapChange();
+            if (m_MapManager.SetNamedMap(mapName)) OnMapChange();
 
             if (session.Require<ServerStampComponent>().tick % (session.Require<TickRateProperty>() * DiscordUpdateRate) == 0) OnModePeriodic(session);
 
-            MapLoadingStage stage = ChunkManager.Singleton.ProgressInfo.stage;
+            MapLoadingStage stage = m_ChunkManager.ProgressInfo.stage;
             if (stage == MapLoadingStage.Failed) throw new Exception("Map failed to load");
 
-            m_IsLoading = mapName != MapManager.Singleton.Map.name || stage != MapLoadingStage.Completed;
+            m_IsLoading = mapName != m_MapManager.Map.name || stage != MapLoadingStage.Completed;
             if (m_IsLoading) return;
 
-            foreach (ModelBehaviorBase modelBehavior in MapManager.Singleton.Models.Values)
+            foreach (ModelBehaviorBase modelBehavior in m_MapManager.Models.Values)
                 modelBehavior.SetInMode(session);
         }
 

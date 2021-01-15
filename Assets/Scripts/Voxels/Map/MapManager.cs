@@ -16,7 +16,7 @@ using UnityEditor;
 
 namespace Voxels.Map
 {
-    public class MapManager : SingletonBehavior<MapManager>
+    public class MapManager : MonoBehaviour
     {
         private const string MapSaveExtension = "vfm", MapSaveFolder = "Maps";
 

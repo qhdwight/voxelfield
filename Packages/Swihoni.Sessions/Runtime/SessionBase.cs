@@ -75,6 +75,8 @@ namespace Swihoni.Sessions
 
         public virtual void OnReceiveCode(NetPeer fromPeer, NetDataReader reader, byte code) { }
 
+        public virtual void OnPreStart() { }
+
         public virtual void OnStart() { }
 
         public virtual NetDataWriter GetConnectWriter()
@@ -216,6 +218,8 @@ namespace Swihoni.Sessions
         public virtual void Start()
         {
             CheckDisposed();
+
+            m_Injector.OnPreStart();
 
             m_Stopwatch = Stopwatch.StartNew();
 
@@ -472,16 +476,11 @@ namespace Swihoni.Sessions
                 processInfo.Arguments = command.Substring(firstSpace + 1);
             }
 
-            using (Process process = Process.Start(processInfo))
-            {
-                if (process != null)
-                {
-                    process.WaitForExit();
-                    if (process.ExitCode != 0) throw new Exception($"Process failed with exit code: {process.ExitCode}");
-                    return process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
-                }
-            }
-            throw new Exception("Process failed to start");
+            using Process process = Process.Start(processInfo);
+            if (process == null) throw new Exception("Process failed to start");
+            process.WaitForExit();
+            if (process.ExitCode != 0) throw new Exception($"Process failed with exit code: {process.ExitCode}");
+            return process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
         }
 
         public delegate void ModifyPlayerAction(in SessionContext playerSessionContext);
@@ -510,7 +509,7 @@ namespace Swihoni.Sessions
             var ray = new Ray(position, direction);
             return ray;
         }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float GetPlayerHeight(this MoveComponent move)
             => Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch);
