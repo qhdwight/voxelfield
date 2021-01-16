@@ -131,7 +131,7 @@ namespace Swihoni.Sessions.Modes
 
         public virtual void BeginModify(in SessionContext context)
         {
-            Navigation ClearModeElements(ElementBase _element)
+            static Navigation ClearModeElements(ElementBase _element)
             {
                 if (_element.WithAttribute<ModeElementAttribute>())
                 {
@@ -311,7 +311,7 @@ namespace Swihoni.Sessions.Modes
         {
             for (var _ = 0; _ < 16; _++, spawn.y += 2.0f)
             {
-                if (context.PhysicsScene.Raycast(spawn, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
+                if (context.PhysicsScene.Raycast(spawn, Vector3.down, out RaycastHit hit))
                     return hit.point + new Vector3 {y = 0.05f};
             }
             throw new Exception("No non-obstructed spawn points");

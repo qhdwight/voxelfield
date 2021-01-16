@@ -43,6 +43,12 @@ namespace Voxelfield.Session
             this[1].Value = first;
         }
     }
+    
+    [Serializable]
+    public class MapGenerationProperty : UIntProperty
+    {
+        public void Reload() => Value++;
+    }
 
     /* Capture the flag */
 
@@ -157,22 +163,17 @@ namespace Voxelfield.Session
     {
         public WantedItemIdArray() : base(ItemsArray.ItemsCount) { }
     }
-
+    
     [Serializable, OnlyServerTrusted, ModeElement]
     public class BrokeVoxelTickProperty : ByteProperty
     {
     }
-
+    
     [Serializable]
     public class ExtentsProperty : VectorProperty
     {
         public ExtentsProperty() { }
         public ExtentsProperty(float x, float y, float z) : base(x, y, z) { }
-    }
-
-    [Serializable]
-    public class ReloadMapProperty : BoolProperty
-    {
     }
 
     public static class VoxelfieldComponents
@@ -190,7 +191,7 @@ namespace Voxelfield.Session
             SessionElements.playerElements.AppendAll(typeof(ShowdownPlayerComponent), typeof(DesignerPlayerComponent), typeof(SecureAreaComponent), typeof(MoneyComponent),
                                                      typeof(BrokeVoxelTickProperty), typeof(SteamIdProperty), typeof(FlashProperty));
             SessionElements.commandElements.AppendAll(typeof(WantedItemComponent), typeof(WantedItemIdArray));
-            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(OrderedVoxelChangesProperty), typeof(ReloadMapProperty),
+            SessionElements.elements.AppendAll(typeof(VoxelMapNameProperty), typeof(OrderedVoxelChangesProperty), typeof(MapGenerationProperty),
                                                typeof(CtfComponent), typeof(ShowdownSessionComponent), typeof(SecureAreaComponent), typeof(DualScoresArray));
         }
     }

@@ -6,7 +6,6 @@ using System.Linq;
 using LiteNetLib.Utils;
 using Swihoni.Collections;
 using Swihoni.Components;
-using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -31,6 +30,7 @@ namespace Voxels.Map
 
         private Pool<ModelBehaviorBase>[] m_ModelsPool;
         private StringProperty m_WantedMapName;
+        private uint m_Generation;
 
         public static ModelBehaviorBase[] ModelPrefabs { get; private set; }
 
@@ -184,6 +184,15 @@ namespace Voxels.Map
             Models.Add(position, modelInstance);
         }
 
+        public void SetGeneration(uint generation)
+        {
+            if (generation > m_Generation)
+            {
+                ReloadMap();
+                m_Generation = generation;
+            }
+        }
+
         public void AddModel(in Position3Int position, Container model)
         {
             Map.models.Set(position, model);
@@ -226,7 +235,7 @@ namespace Voxels.Map
         public bool SetNamedMap(StringProperty mapName)
         {
             if (m_WantedMapName == mapName) return false;
-            
+
             m_WantedMapName = mapName;
             ReloadMap();
             return true;

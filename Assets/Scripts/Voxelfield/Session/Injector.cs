@@ -3,8 +3,6 @@
 #endif
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Discord;
 using LiteNetLib.Utils;
@@ -87,6 +85,8 @@ namespace Voxelfield.Session
 
         protected override void OnPreTick(Container session)
         {
+            session.Require<MapGenerationProperty>().SetValueIfWithout();
+            
             var mapName = session.Require<VoxelMapNameProperty>();
             if (m_MapManager.SetNamedMap(mapName)) OnMapChange();
 
@@ -119,14 +119,6 @@ namespace Voxelfield.Session
 
         public override bool IsLoading(in SessionContext context) => m_IsLoading;
 
-        protected void HandleMapReload(Container session)
-        {
-            var reload = session.Require<ReloadMapProperty>();
-            if (reload.WithValueEqualTo(true))
-            {
-                m_MapManager.ReloadMap();
-                reload.Clear();
-            }
-        }
+        protected void HandleMapReload(Container session) => m_MapManager.SetGeneration(session.Require<MapGenerationProperty>());
     }
 }

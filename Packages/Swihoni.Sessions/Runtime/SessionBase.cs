@@ -57,26 +57,26 @@ namespace Swihoni.Sessions
         protected internal SessionBase Session { get; set; }
 
         protected internal virtual void OnPreTick(Container session) { }
-
         public virtual void OnPostTick(Container session) { }
-
         protected internal virtual void OnClientReceive(ServerSessionContainer serverSession) { }
-
         protected internal virtual void OnRenderMode(in SessionContext context) { }
-
         protected internal virtual void OnSendInitialData(NetPeer peer, Container serverSession, Container sendSession) { }
-
         protected internal virtual void OnServerNewConnection(ConnectionRequest socketRequest) => socketRequest.AcceptIfKey(Application.version);
-
         protected internal virtual void OnDispose() { }
-
-        public virtual bool IsLoading(in SessionContext context) => false;
-
         public virtual void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior) { }
-
         public virtual void OnReceiveCode(NetPeer fromPeer, NetDataReader reader, byte code) { }
-
         public virtual void OnStart() { }
+        public virtual bool IsLoading(in SessionContext context) => false;
+        public virtual void OnServerLoseConnection(NetPeer peer, Container player) { }
+        public virtual void OnKillPlayer(in DamageContext context) { }
+        public virtual void OnPlayerRegisterAppend(Container player) { }
+        public virtual string GetUsername(in SessionContext context) => $"Player #{context.playerId}";
+        public virtual void OnSetupHost(in SessionContext context) { }
+        public virtual void OnStop() { }
+        public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.Health().WithoutValue;
+        public virtual void OnServerMove(in SessionContext context, MoveComponent move) { }
+        public virtual void ModifyPlayer(in SessionContext context) { }
+        public virtual void DeserializeReceived(ServerSessionContainer session, NetDataReader reader) => session.Deserialize(reader);
 
         public virtual NetDataWriter GetConnectWriter()
         {
@@ -84,26 +84,6 @@ namespace Swihoni.Sessions
             writer.Put(Application.version);
             return writer;
         }
-
-        public virtual void OnServerLoseConnection(NetPeer peer, Container player) { }
-
-        public virtual void OnKillPlayer(in DamageContext context) { }
-
-        public virtual void OnPlayerRegisterAppend(Container player) { }
-
-        public virtual string GetUsername(in SessionContext context) => $"Player #{context.playerId}";
-
-        public virtual void OnSetupHost(in SessionContext context) { }
-
-        public virtual void OnStop() { }
-
-        public virtual bool ShouldSetupPlayer(Container serverPlayer) => serverPlayer.Health().WithoutValue;
-
-        public virtual void OnServerMove(in SessionContext context, MoveComponent move) { }
-
-        public virtual void ModifyPlayer(in SessionContext context) { }
-
-        public virtual void DeserializeReceived(ServerSessionContainer session, NetDataReader reader) => session.Deserialize(reader);
 
         public virtual void UpdateCurrentSessionFromReceived(Container previousServerSession, Container serverSession, Container receivedServerSession)
             => ElementExtensions.NavigateZipped(previousServerSession, serverSession, receivedServerSession, (_previous, _current, _received) =>
@@ -156,8 +136,7 @@ namespace Swihoni.Sessions
             Application.quitting += Cleanup;
         }
 
-        private static void Cleanup()
-            => ForEachSessionInterface(sessionInterface => sessionInterface.SetInterfaceActive(false));
+        private static void Cleanup() => ForEachSessionInterface(sessionInterface => sessionInterface.SetInterfaceActive(false));
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void Initialize()
@@ -220,7 +199,7 @@ namespace Swihoni.Sessions
         {
             CheckDisposed();
 
-            var sceneName = $"{GetType().Name}-{Guid.NewGuid().ToString()}";
+            var sceneName = $"{GetType().Name}-{Guid.NewGuid().ToString()}"; // Scene name has to be unique
             Scene = SceneManager.CreateScene(sceneName, new CreateSceneParameters(LocalPhysicsMode.Physics3D));
             PhysicsScene = Scene.GetPhysicsScene();
 
@@ -510,9 +489,9 @@ namespace Swihoni.Sessions
         public static bool Linecast(this PhysicsScene scene, Vector3 start, Vector3 end, LayerMask mask)
         {
             Vector3 direction = end - start;
-            return scene.Raycast(start, direction, direction.magnitude);
+            return scene.Raycast(start, direction, direction.magnitude, mask);
         }
-        
+
         public static Ray GetRayForPlayer(this Container player)
         {
             var camera = player.Require<CameraComponent>();
@@ -522,8 +501,7 @@ namespace Swihoni.Sessions
             // TODO:refactor magic numbers
             Vector3 position = move.GetPlayerEyePosition();
 
-            var ray = new Ray(position, direction);
-            return ray;
+            return new Ray(position, direction);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

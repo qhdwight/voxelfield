@@ -32,14 +32,12 @@ namespace Swihoni.Sessions.Interfaces
         }
 
         private TEntry[] GetEntries(TArray array)
-        {
-            return m_Entries ?? (m_Entries = Enumerable.Range(0, array.Length).Select(i =>
+            => m_Entries ??= Enumerable.Range(0, array.Length).Select(i =>
             {
                 GameObject instance = Instantiate(m_EntryPrefab, m_EntryHolder);
                 var entry = instance.GetComponent<TEntry>();
                 return entry;
-            }).Reverse().ToArray());
-        }
+            }).Reverse().ToArray();
 
         protected abstract int Compare(TElement e1, TElement e2);
 

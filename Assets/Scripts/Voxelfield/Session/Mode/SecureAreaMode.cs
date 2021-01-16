@@ -372,7 +372,7 @@ namespace Voxelfield.Session.Mode
             if (isFirstRoundOfSecondHalf)
             {
                 scores.Swap();
-                context.sessionContainer.Require<ReloadMapProperty>().Set();
+                context.sessionContainer.Require<MapGenerationProperty>().Reload();
             }
         }
 

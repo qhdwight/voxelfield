@@ -394,14 +394,12 @@ namespace Voxelfield.Session
         {
             if (!context.WithServerStringCommands(out IEnumerable<string[]> commands)) return;
             foreach (string[] arguments in commands)
-            {
                 switch (arguments.First())
                 {
                     case "reload_map":
-                        context.sessionContainer.Require<ReloadMapProperty>().Set();
+                        context.sessionContainer.Require<MapGenerationProperty>().Reload();
                         break;
                 }
-            }
         }
 
         public override void OnStop()
