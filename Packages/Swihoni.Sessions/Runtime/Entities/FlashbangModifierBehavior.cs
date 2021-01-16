@@ -17,7 +17,7 @@ namespace Swihoni.Sessions.Entities
                 Vector3 direction = center - playerEye.origin;
                 float distance = direction.magnitude;
                 direction.Normalize();
-                if (!Physics.Linecast(center, playerEye.origin, m_FlashMask))
+                if (!playerContext.PhysicsScene.Linecast(center, playerEye.origin, m_FlashMask))
                 {
                     float alignment = Mathf.Clamp01(Vector3.Dot(direction, playerEye.direction)) * m_DistanceCurve.Evaluate(distance);
                     playerContext.player.Require<FlashProperty>().Value = alignment;   

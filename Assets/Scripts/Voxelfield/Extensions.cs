@@ -17,10 +17,10 @@ namespace Voxelfield
 
         public static MapManager GetMapManager(this in SessionContext context) => context.session.GetMapManager();
         
-        public static ChunkManager GetChunkManager(this in SessionContext context) => context.session.GetChunkManager();
+        public static ChunkManager GetChunkManager(this in SessionContext context) => context.GetMapManager().ChunkManager;
 
         public static MapManager GetMapManager(this SessionBase session) => ((Injector) session.Injector).MapManager;
         
-        public static ChunkManager GetChunkManager(this SessionBase session) => ((Injector) session.Injector).ChunkManager;
+        public static ChunkManager GetChunkManager(this SessionBase session) => session.GetMapManager().ChunkManager;
     }
 }

@@ -307,11 +307,11 @@ namespace Swihoni.Sessions.Modes
 
         public virtual bool ShowScoreboard(in SessionContext context) => false;
 
-        protected static Vector3 AdjustSpawn(Vector3 spawn)
+        protected static Vector3 AdjustSpawn(in SessionContext context, Vector3 spawn)
         {
             for (var _ = 0; _ < 16; _++, spawn.y += 2.0f)
             {
-                if (Physics.Raycast(spawn, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
+                if (context.PhysicsScene.Raycast(spawn, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
                     return hit.point + new Vector3 {y = 0.05f};
             }
             throw new Exception("No non-obstructed spawn points");

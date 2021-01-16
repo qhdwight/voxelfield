@@ -5,6 +5,7 @@ using Swihoni.Components;
 using Swihoni.Util.Math;
 using Unity.Profiling;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Voxels.Map;
 using Random = UnityEngine.Random;
 
@@ -137,6 +138,7 @@ namespace Voxels
                 if (totalAmountOfChunks < m_PoolSize)
                 {
                     GameObject chunkInstance = Instantiate(m_ChunkPrefab);
+                    SceneManager.MoveGameObjectToScene(chunkInstance, gameObject.scene);
                     chunkInstance.name = "DecommissionedChunk";
                     // chunkInstance.hideFlags = HideFlags.HideInHierarchy;
                     var chunk = chunkInstance.GetComponent<Chunk>();

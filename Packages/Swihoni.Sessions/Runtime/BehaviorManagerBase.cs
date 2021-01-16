@@ -5,6 +5,7 @@ using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Entities;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityObject = UnityEngine.Object;
 
 namespace Swihoni.Sessions
@@ -19,7 +20,7 @@ namespace Swihoni.Sessions
     }
 
     public abstract class VisualBehaviorBase : IdBehavior
-    { 
+    {
         private const float ExpirationDurationSeconds = 60.0f;
 
         private MeshRenderer[] m_Renders;
@@ -47,8 +48,9 @@ namespace Swihoni.Sessions
     {
         public int Index { get; protected set; }
 
-        public virtual void SetActive(bool isActive, int index)
+        public virtual void SetActive(Scene scene, bool isActive, int index)
         {
+            SceneManager.MoveGameObjectToScene(gameObject, scene);
             Index = index;
             gameObject.SetActive(isActive);
         }
@@ -128,6 +130,7 @@ namespace Swihoni.Sessions
         {
             Pool<VisualBehaviorBase> pool = m_VisualsPool[id];
             VisualBehaviorBase visual = pool.Obtain();
+            SceneManager.MoveGameObjectToScene(visual.gameObject, m_Session.Scene);
             if (visual.IsExpired)
             {
                 visual.SetActive(false);
@@ -146,6 +149,7 @@ namespace Swihoni.Sessions
             VisualBehaviorBase visual = m_Visuals[index];
             if (!visual) return;
             Pool<VisualBehaviorBase> pool = m_VisualsPool[visual.id];
+            SceneManager.MoveGameObjectToScene(visual.gameObject, SceneManager.GetActiveScene());
             visual.SetActive(false);
             visual.transform.SetParent(null, false);
             pool.Return(visual);
@@ -156,7 +160,7 @@ namespace Swihoni.Sessions
 
         public (ModifierBehaviorBase, Container) ObtainNextModifier(Container session, int id)
         {
-            void SetupModifier(Container container)
+            static void SetupModifier(Container container)
             {
                 container.Zero();
                 if (container.With(out ThrowableComponent throwable)) throwable.popTimeUs.Value = uint.MaxValue;
@@ -214,7 +218,7 @@ namespace Swihoni.Sessions
         {
             Pool<ModifierBehaviorBase> pool = m_ModifiersPool[id];
             ModifierBehaviorBase modifierBehavior = pool.Obtain();
-            modifierBehavior.SetActive(true, index);
+            modifierBehavior.SetActive(m_Session.Scene, true, index);
             m_Modifiers[index] = modifierBehavior;
             return modifierBehavior;
         }
@@ -224,7 +228,7 @@ namespace Swihoni.Sessions
             ModifierBehaviorBase modifier = m_Modifiers[index];
             if (!modifier) return;
             Pool<ModifierBehaviorBase> pool = m_ModifiersPool[modifier.id];
-            modifier.SetActive(false, index);
+            modifier.SetActive(SceneManager.GetActiveScene(), false, index);
             pool.Return(modifier);
             m_Modifiers[index] = null;
         }

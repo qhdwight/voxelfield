@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Editor
                 // GameObject modelPrefab = meshToPrefab[meshes[0].GetInstanceID()];
 
                 var visualInstance = (GameObject) PrefabUtility.InstantiatePrefab(visualPrefab.gameObject);
-                void Recurse(Transform t)
+                static void Recurse(Transform t)
                 {
                     foreach (Component c in t.GetComponents<Component>())
                     {

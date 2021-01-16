@@ -72,15 +72,13 @@ namespace Swihoni.Sessions.Items.Modifiers
 
         private static readonly HashSet<PlayerHitboxManager> HitPlayers = new HashSet<PlayerHitboxManager>();
 
-        protected virtual int FireRaycast(Ray ray)
+        protected virtual int FireRaycast(in SessionContext context, Ray ray)
         {
             if (m_RaycastThickness > Mathf.Epsilon)
-            {
-                return Physics.BoxCastNonAlloc(ray.origin,
-                                               new Vector3(m_RaycastThickness, m_RaycastThickness, m_RaycastThickness),
-                                               ray.direction, RaycastHits, Quaternion.identity, float.PositiveInfinity, m_RaycastMask);
-            }
-            return Physics.RaycastNonAlloc(ray, RaycastHits, float.PositiveInfinity, m_RaycastMask);
+                return context.PhysicsScene.BoxCast(ray.origin,
+                                                    new Vector3(m_RaycastThickness, m_RaycastThickness, m_RaycastThickness),
+                                                    ray.direction, RaycastHits, Quaternion.identity, float.PositiveInfinity, m_RaycastMask);
+            return context.PhysicsScene.Raycast(ray, RaycastHits, float.PositiveInfinity, m_RaycastMask);
         }
 
         protected virtual void Fire(in SessionContext context, InventoryComponent inventory, ItemComponent item)
@@ -93,7 +91,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             Ray ray = session.GetRayForPlayerId(context.playerId);
             session.RollbackHitboxesFor(context);
 
-            int hitCount = FireRaycast(ray);
+            int hitCount = FireRaycast(context, ray);
             for (var hitIndex = 0; hitIndex < hitCount; hitIndex++)
             {
                 RaycastHit hit = RaycastHits[hitIndex];

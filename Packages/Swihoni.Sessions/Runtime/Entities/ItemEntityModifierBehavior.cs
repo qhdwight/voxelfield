@@ -1,5 +1,6 @@
 using Swihoni.Components;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Swihoni.Sessions.Entities
 {
@@ -10,9 +11,9 @@ namespace Swihoni.Sessions.Entities
 
         private void Awake() => Rigidbody = GetComponent<Rigidbody>();
 
-        public override void SetActive(bool isActive, int index)
+        public override void SetActive(Scene scene, bool isActive, int index)
         {
-            base.SetActive(isActive, index);
+            base.SetActive(scene, isActive, index);
             Rigidbody.velocity = Vector3.zero;
             Rigidbody.angularVelocity = Vector3.zero;
             Rigidbody.constraints = isActive ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;

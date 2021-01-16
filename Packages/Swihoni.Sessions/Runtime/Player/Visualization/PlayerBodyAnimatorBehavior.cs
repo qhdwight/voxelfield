@@ -194,8 +194,8 @@ namespace Swihoni.Sessions.Player.Visualization
             {
                 if (move.normalizedMove > 0.25f && m_LastNormalizedTime <= 0.25f || move.normalizedMove > 0.75f && m_LastNormalizedTime <= 0.75f)
                 {
-                    bool isGrounded = Physics.RaycastNonAlloc(m_FootstepSource.transform.position + new Vector3 {y = 0.5f}, Vector3.down, m_CachedHits,
-                                                              1.0f, m_PrefabPlayerMovement.GroundMask) > 0;
+                    bool isGrounded = context.PhysicsScene.Raycast(m_FootstepSource.transform.position + new Vector3 {y = 0.5f}, Vector3.down, m_CachedHits,
+                                                                   1.0f, m_PrefabPlayerMovement.GroundMask) > 0;
                     m_FootstepSource.pitch = Random.Range(0.95f, 1.05f);
                     if (isGrounded)
                         m_FootstepSource.PlayOneShot(GetFootstepAudioClip(context, move), normalizedSpeed);

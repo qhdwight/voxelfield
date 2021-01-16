@@ -5,6 +5,7 @@ using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Modes;
 using Swihoni.Sessions.Player.Components;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Swihoni.Sessions
 {
@@ -16,7 +17,7 @@ namespace Swihoni.Sessions
         public readonly Container player;
         public readonly uint timeUs, durationUs;
         public readonly int tickDelta;
-
+        
         public SessionContext(SessionBase session = null, Container sessionContainer = null, Container commands = null,
                               int? playerId = null, Container player = null,
                               Container entity = null,
@@ -48,16 +49,13 @@ namespace Swihoni.Sessions
             }
         }
 
+        public PhysicsScene PhysicsScene => session.PhysicsScene;
         public Color TeamColor => Mode.GetTeamColor(player.Require<TeamProperty>());
-
         public ModeBase Mode => ModeManager.GetMode(sessionContainer.Require<ModeIdProperty>());
-
         public ModeBase ModifyingMode => session.GetModifyingMode(sessionContainer);
-
         public Container ModifyingPlayer => session.GetModifyingPlayerFromId(playerId, sessionContainer);
 
         public Container GetModifyingPlayer(int otherPlayerId) => session.GetModifyingPlayerFromId(otherPlayerId, sessionContainer);
-
         public Container GetPlayer(int otherPlayerId) => sessionContainer.GetPlayer(otherPlayerId);
 
         public bool IsValidLocalPlayer(out Container localPlayer, out byte localPlayerId, bool needsToBeAlive = true)

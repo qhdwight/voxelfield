@@ -4,6 +4,7 @@ using Swihoni.Sessions.Player;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Swihoni.Sessions.Entities
 {
@@ -58,9 +59,9 @@ namespace Swihoni.Sessions.Entities
             Rigidbody.constraints = canMove ? m_InitialConstraints : RigidbodyConstraints.FreezeAll;
         }
 
-        public override void SetActive(bool isActive, int index)
+        public override void SetActive(Scene scene, bool isActive, int index)
         {
-            base.SetActive(isActive, index);
+            base.SetActive(scene, isActive, index);
             ResetRigidbody(isActive);
             PopQueued = false;
             m_LastElapsedUs = 0u;
@@ -151,7 +152,7 @@ namespace Swihoni.Sessions.Entities
         {
             if (justPopped) JustPopped(context, throwable);
             if (m_Damage < Mathf.Epsilon) return;
-            int count = Physics.OverlapSphereNonAlloc(transform.position, m_Radius, m_OverlappingColliders, m_Mask);
+            int count = context.PhysicsScene.OverlapSphere(transform.position, m_Radius, m_OverlappingColliders, m_Mask, QueryTriggerInteraction.UseGlobal);
             for (var i = 0; i < count; i++)
             {
                 Collider hitCollider = m_OverlappingColliders[i];

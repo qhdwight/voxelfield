@@ -58,8 +58,6 @@ namespace Swihoni.Sessions
             m_Socket.Listener.PeerDisconnectedEvent += OnDisconnect;
             m_Socket.Receiver = this;
             RegisterMessages(m_Socket);
-
-            // Physics.autoSimulation = true;
         }
 
         private void OnDisconnect(NetPeer peer, DisconnectInfo disconnect)
@@ -108,6 +106,8 @@ namespace Swihoni.Sessions
         
         protected override void Tick(uint tick, uint timeUs, uint durationUs)
         {
+            PhysicsScene.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
+
             Container latestSession = GetLatestSession();
             using (ClientPredictMarker.Auto())
             {

@@ -62,7 +62,7 @@ namespace Voxelfield.Session
 
         public void ApplyVoxelChanges(VoxelChange change, TouchedChunks touchedChunks = null, bool overrideBreakable = false)
         {
-            void Apply() => ChunkManager.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
+            void Apply() => m_MapManager.ChunkManager.ApplyVoxelChanges(change, true, touchedChunks, overrideBreakable);
             if (change.isUndo)
             {
                 if (m_MasterChanges.TryRemoveEnd(out VoxelChange lastChange))
@@ -356,12 +356,12 @@ namespace Voxelfield.Session
                 for (var f = 0.1f; f < move.GetPlayerHeight(); f++)
                 {
                     Vector3 origin = move + new Vector3 {y = f};
-                    int count = Physics.RaycastNonAlloc(origin, Vector3.up, CachedHits, float.PositiveInfinity, 1 << 15);
+                    int count = context.PhysicsScene.Raycast(origin, Vector3.up, CachedHits, float.PositiveInfinity, 1 << 15);
                     if (CachedHits.TryClosest(count, out RaycastHit hit) && hit.normal.y > Mathf.Epsilon)
                     {
                         float distance = hit.distance;
                         move.position.Value += new Vector3 {y = distance + 0.05f};
-                        if (f > 1.0f && m_ChunkManager.GetVoxel((Position3Int) origin) is {IsBreathable: false})
+                        if (f > 1.0f && m_MapManager.ChunkManager.GetVoxel((Position3Int) origin) is {IsBreathable: false})
                             Suffocate(context, OutsideBoundDamage);
                         break;
                     }

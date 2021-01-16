@@ -21,7 +21,7 @@ namespace Swihoni.Sessions.Items.Modifiers
             SessionBase session = context.session;
             Ray ray = session.GetRayForPlayerId(playerId);
             session.RollbackHitboxesFor(context);
-            int count = Physics.RaycastNonAlloc(ray, RaycastHits, m_Distance, m_RaycastMask);
+            int count = context.PhysicsScene.Raycast(ray, RaycastHits, m_Distance, m_RaycastMask);
             if (!RaycastHits.TryClosest(count, out RaycastHit hit)) return;
             if (!hit.collider.TryGetComponent(out PlayerHitbox hitbox) || hitbox.Manager.PlayerId == playerId) return;
 

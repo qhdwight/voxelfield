@@ -31,7 +31,7 @@ namespace Voxelfield.Session.Mode
                     y = 1000.0f,
                     z = Random.Range(lower.z * chunkSize, (upper.z + 1) * chunkSize)
                 };
-                if (Physics.Raycast(position, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
+                if (context.PhysicsScene.Raycast(position, Vector3.down, out RaycastHit hit, float.PositiveInfinity))
                     return hit.point + new Vector3 {y = 0.1f};
             }
             return new Vector3 {y = 8.0f};

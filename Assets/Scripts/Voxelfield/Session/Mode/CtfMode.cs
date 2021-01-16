@@ -103,7 +103,7 @@ namespace Voxelfield.Session.Mode
                 if (cooldown.WithValue) continue;
 
                 PickUpBehavior pickUpBehavior = pickUpBehaviors[i];
-                int count = Physics.OverlapSphereNonAlloc(pickUpBehavior.Position, 1.25f, m_CachedColliders, m_PlayerMask);
+                int count = context.PhysicsScene.OverlapSphere(pickUpBehavior.Position, 1.25f, m_CachedColliders, m_PlayerMask, QueryTriggerInteraction.UseGlobal);
                 for (var j = 0; j < count; j++)
                 {
                     if (!m_CachedColliders[j].TryGetComponent(out PlayerTrigger playerTrigger)) continue;
@@ -192,7 +192,7 @@ namespace Voxelfield.Session.Mode
                 byte team = context.player.Require<TeamProperty>();
                 KeyValuePair<Position3Int, Container>[] teamSpawns = spawns[team];
                 int spawnIndex = Random.Range(0, teamSpawns.Length);
-                return AdjustSpawn(teamSpawns[spawnIndex].Key);
+                return AdjustSpawn(context, teamSpawns[spawnIndex].Key);
             }
             catch (Exception)
             {
@@ -208,7 +208,8 @@ namespace Voxelfield.Session.Mode
         private void HandlePlayersNearFlag(in SessionContext context, FlagComponent flag, byte flagTeam, int flagId, CtfComponent ctf, DualScoresArray scores)
         {
             (_, FlagBehavior[][] flagBehaviors) = GetBehaviors(context);
-            int count = Physics.OverlapSphereNonAlloc(flagBehaviors[flagTeam][flagId].transform.position, m_CaptureRadius, m_CachedColliders, m_PlayerMask);
+            int count = context.PhysicsScene.OverlapSphere(flagBehaviors[flagTeam][flagId].transform.position,
+                                                           m_CaptureRadius, m_CachedColliders, m_PlayerMask, QueryTriggerInteraction.UseGlobal);
             Container enemyTakingIn = null;
             for (var i = 0; i < count; i++)
             {

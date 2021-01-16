@@ -40,7 +40,7 @@ namespace Voxelfield.Interface.Designer
             }
             if (isVisible)
             {
-                int count = Physics.RaycastNonAlloc(localPlayer.GetRayForPlayer(), m_CachedHits, m_SculptingItem.EditDistance, m_SculptingItem.ChunkMask);
+                int count = context.PhysicsScene.Raycast(localPlayer.GetRayForPlayer(), m_CachedHits, m_SculptingItem.EditDistance, m_SculptingItem.ChunkMask);
                 if (m_CachedHits.TryClosest(count, out RaycastHit hit))
                 {
                     Matrix4x4 matrix = Matrix4x4.TRS(hit.point, Quaternion.identity, Vector3.one * editRadius * 1.5f);

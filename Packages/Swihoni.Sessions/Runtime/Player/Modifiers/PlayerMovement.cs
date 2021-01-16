@@ -107,10 +107,10 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             float duration = context.durationUs * TimeConversions.MicrosecondToSecond;
 
-            if (move.type == MoveType.Grounded) FullMove(player, move, inputs, duration);
+            if (move.type == MoveType.Grounded) FullMove(context.PhysicsScene, player, move, inputs, duration);
             else FlyMove(move, inputs, duration);
 
-            ModifyStatus(move, inputs, duration);
+            ModifyStatus(context.PhysicsScene, move, inputs, duration);
         }
 
         private void FlyMove(MoveComponent move, InputFlagProperty inputs, float duration)
@@ -149,14 +149,14 @@ namespace Swihoni.Sessions.Player.Modifiers
             if (InputProvider.GetInputDown(PlayerInput.Fly)) inputs.SetInput(PlayerInput.Fly);
         }
 
-        private void ModifyStatus(MoveComponent move, InputFlagProperty inputs, float duration)
+        private void ModifyStatus(PhysicsScene scene, MoveComponent move, InputFlagProperty inputs, float duration)
         {
             bool UprightBlocked()
             {
                 if (move.type == MoveType.Flying) return false;
                 m_ControllerGameObject.layer = NoDetectionLayer;
-                int count = Physics.RaycastNonAlloc(move.position.Value + new Vector3 {y = RaycastOffset}, Vector3.up,
-                                                    m_CachedGroundHits, m_ControllerHeight - RaycastOffset * 2, m_GroundMask);
+                int count = scene.Raycast(move.position.Value + new Vector3 {y = RaycastOffset}, Vector3.up,
+                                          m_CachedGroundHits, m_ControllerHeight - RaycastOffset * 2, m_GroundMask);
                 m_ControllerGameObject.layer = PlayerModifierLayer;
                 return count > 0;
             }
@@ -184,16 +184,16 @@ namespace Swihoni.Sessions.Player.Modifiers
             }
         }
 
-        private void FullMove(Container player, MoveComponent move, InputFlagProperty inputs, float duration)
+        private void FullMove(PhysicsScene scene, Container player, MoveComponent move, InputFlagProperty inputs, float duration)
         {
             Vector3 initialVelocity = move.velocity, endingVelocity = initialVelocity;
             float lateralSpeed = endingVelocity.LateralMagnitude();
 
             Vector3 position = m_MoveTransform.position;
-            int capsuleCastCount = OverlapGround(position);
+            int capsuleCastCount = OverlapGround(scene, position);
             m_ControllerGameObject.layer = NoDetectionLayer;
-            int downwardCastCount = Physics.RaycastNonAlloc(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
-                                                            float.PositiveInfinity, m_GroundMask);
+            int downwardCastCount = scene.Raycast(position + new Vector3 {y = RaycastOffset}, Vector3.down, m_CachedGroundHits,
+                                                  float.PositiveInfinity, m_GroundMask);
             m_ControllerGameObject.layer = PlayerModifierLayer;
             float floorDistance = m_CachedGroundHits.First().distance,
                   slopeAngle = Vector3.Angle(Hit.normal, Vector3.up);
@@ -242,8 +242,8 @@ namespace Swihoni.Sessions.Player.Modifiers
 
             // Prevent sticking to ceiling
             m_ControllerGameObject.layer = NoDetectionLayer;
-            if (!isGrounded && endingVelocity.y > 0.0f && Physics.RaycastNonAlloc(position + new Vector3 {y = m_Controller.height},
-                                                                                  Vector3.up, m_CachedGroundHits, RaycastOffset, m_GroundMask) > 0)
+            if (!isGrounded && endingVelocity.y > 0.0f && scene.Raycast(position + new Vector3 {y = m_Controller.height},
+                                                                        Vector3.up, m_CachedGroundHits, RaycastOffset, m_GroundMask) > 0)
                 endingVelocity.y = 0.0f;
             m_ControllerGameObject.layer = PlayerModifierLayer;
 
@@ -252,7 +252,7 @@ namespace Swihoni.Sessions.Player.Modifiers
             // Prevent player from walking off the side when crouching
             if (move.normalizedCrouch > Mathf.Epsilon && !inputs.GetInput(PlayerInput.Jump) && isGrounded)
             {
-                int projectedCount = OverlapGround(position + motion);
+                int projectedCount = OverlapGround(scene, position + motion);
                 if (projectedCount == 0)
                 {
                     move.position.Value = position;
@@ -274,13 +274,13 @@ namespace Swihoni.Sessions.Player.Modifiers
             move.velocity.Value = endingVelocity;
         }
 
-        private int OverlapGround(in Vector3 position)
+        private int OverlapGround(PhysicsScene scene, in Vector3 position)
         {
             float radius = m_Controller.radius - 0.01f;
             m_ControllerGameObject.layer = NoDetectionLayer;
-            int count = Physics.OverlapCapsuleNonAlloc(position + new Vector3 {y = radius - m_MaxStickDistance},
-                                                       position + new Vector3 {y = m_Controller.height / 2.0f},
-                                                       radius, m_CachedContactColliders, m_GroundMask);
+            int count = scene.OverlapCapsule(position + new Vector3 {y = radius - m_MaxStickDistance},
+                                             position + new Vector3 {y = m_Controller.height / 2.0f},
+                                             radius, m_CachedContactColliders, m_GroundMask);
             m_ControllerGameObject.layer = PlayerModifierLayer;
             return count;
         }

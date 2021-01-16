@@ -49,8 +49,6 @@ namespace Swihoni.Sessions
             m_Socket.Listener.NetworkLatencyUpdateEvent += OnLatencyUpdated;
             m_Socket.Receiver = this;
             RegisterMessages(m_Socket);
-
-            Physics.autoSimulation = false;
         }
 
         private void OnLatencyUpdated(NetPeer peer, int latency)
@@ -204,7 +202,7 @@ namespace Swihoni.Sessions
         {
             ServerTick(serverSession, timeUs, durationUs);
             m_Socket.PollEvents();
-            Physics.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
+            PhysicsScene.Simulate(durationUs * TimeConversions.MicrosecondToSecond);
 
             if (!IsLoading)
             {

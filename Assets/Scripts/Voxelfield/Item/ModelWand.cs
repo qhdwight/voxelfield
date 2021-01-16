@@ -25,7 +25,7 @@ namespace Voxelfield.Item
             if (context.player.Without<ServerTag>()) return;
 
             Ray ray = context.session.GetRayForPlayerId(context.playerId);
-            if (!Physics.Raycast(ray, out RaycastHit hit, m_EditDistance, m_ModelMask)) return;
+            if (!context.PhysicsScene.Raycast(ray, out RaycastHit hit, m_EditDistance, m_ModelMask)) return;
 
             var modelBehavior = hit.collider.GetComponentInParent<ModelBehaviorBase>();
             if (modelBehavior)

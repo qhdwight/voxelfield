@@ -41,7 +41,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 inventory.tracerStart.Clear();
                 inventory.tracerEnd.Clear();
             }
-            
+
             if (player.WithPropertyWithValue(out HealthProperty health) && health.IsDead) return;
 
             TryExecuteCommands(context);
@@ -89,19 +89,19 @@ namespace Swihoni.Sessions.Player.Modifiers
                 item.ammoInMag.SetTo(itemOnEntity.ammoInMag);
                 item.ammoInReserve.SetTo(itemOnEntity.ammoInReserve);
                 entity.Clear();
-                itemEntityModifier.SetActive(false, itemEntityModifier.Index); // Force update of behavior
+                itemEntityModifier.SetActive(context.session.Scene, false, itemEntityModifier.Index); // Force update of behavior
             }
 
             if (context.player.Without<ServerTag>()) return;
 
             Vector3 move = context.player.Require<MoveComponent>();
-            int nearbyCount = Physics.OverlapSphereNonAlloc(move, m_PickupRadius, CachedColliders, m_ItemEntityMask);
+            int nearbyCount = context.PhysicsScene.OverlapSphere(move, m_PickupRadius, CachedColliders, m_ItemEntityMask, QueryTriggerInteraction.UseGlobal);
             if (nearbyCount > 0) TryPickupItemFromCollider(CachedColliders.First(), true);
 
             if (!context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)) return;
 
             Ray ray = context.player.GetRayForPlayer();
-            int count = Physics.RaycastNonAlloc(ray, CachedHits, m_MaxPickupDistance, m_ItemEntityMask);
+            int count = context.PhysicsScene.Raycast(ray, CachedHits, m_MaxPickupDistance, m_ItemEntityMask);
             if (CachedHits.TryClosest(count, out RaycastHit hit))
                 TryPickupItemFromCollider(hit.collider, false);
         }

@@ -166,7 +166,7 @@ namespace Voxelfield.Session.Mode
                             Transform siteTransform = siteBehavior.transform;
                             SiteComponent site = secureArea.sites[siteIndex];
                             Vector3 bounds = siteBehavior.Container.Require<ExtentsProperty>();
-                            int playersInsideCount = Physics.OverlapBoxNonAlloc(siteTransform.position, bounds / 2, m_CachedColliders, siteTransform.rotation, m_PlayerTriggerMask);
+                            int playersInsideCount = context.PhysicsScene.OverlapBox(siteTransform.position, bounds / 2, m_CachedColliders, siteTransform.rotation, m_PlayerTriggerMask);
                             bool isRedInside = false, isBlueInside = false;
                             for (var i = 0; i < playersInsideCount; i++)
                             {
@@ -326,7 +326,7 @@ namespace Voxelfield.Session.Mode
                 int spawnIndex = indices[index];
                 indices.RemoveAt(index);
 
-                return AdjustSpawn(teamSpawns[spawnIndex].Key);
+                return AdjustSpawn(context, teamSpawns[spawnIndex].Key);
             }
             catch (Exception)
             {

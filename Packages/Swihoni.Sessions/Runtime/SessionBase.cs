@@ -19,6 +19,7 @@ using Swihoni.Sessions.Player.Visualization;
 using Swihoni.Util.Interface;
 using Unity.Profiling;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 using UnityObject = UnityEngine.Object;
 
@@ -74,8 +75,6 @@ namespace Swihoni.Sessions
         public virtual void OnThrowablePopped(ThrowableModifierBehavior throwableBehavior) { }
 
         public virtual void OnReceiveCode(NetPeer fromPeer, NetDataReader reader, byte code) { }
-
-        public virtual void OnPreStart() { }
 
         public virtual void OnStart() { }
 
@@ -150,7 +149,7 @@ namespace Swihoni.Sessions
             _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
             ForEachSessionInterface(sessionInterface =>
             {
-                sessionInterface.Initialize();                
+                sessionInterface.Initialize();
                 sessionInterface.SessionStateChange(false);
             });
             Application.quitting -= Cleanup;
@@ -178,10 +177,12 @@ namespace Swihoni.Sessions
         private ModeBase m_Mode;
         public static InterfaceBehaviorBase InterruptingInterface { get; private set; }
 
+        protected bool IsDisposed { get; private set; }
         public SessionInjectorBase Injector => m_Injector;
+        public Scene Scene { get; private set; }
+        public PhysicsScene PhysicsScene { get; private set; }
         public PlayerManager PlayerManager { get; private set; }
         public EntityManager EntityManager { get; private set; }
-        protected bool IsDisposed { get; private set; }
         public bool ShouldRender { get; set; } = true;
 
         protected SessionBase(SessionElements sessionElements, SessionInjectorBase injector)
@@ -219,7 +220,9 @@ namespace Swihoni.Sessions
         {
             CheckDisposed();
 
-            m_Injector.OnPreStart();
+            var sceneName = $"{GetType().Name}-{Guid.NewGuid().ToString()}";
+            Scene = SceneManager.CreateScene(sceneName, new CreateSceneParameters(LocalPhysicsMode.Physics3D));
+            PhysicsScene = Scene.GetPhysicsScene();
 
             m_Stopwatch = Stopwatch.StartNew();
 
@@ -243,6 +246,7 @@ namespace Swihoni.Sessions
                 try
                 {
                     m_Injector.OnStop();
+                    SceneManager.UnloadSceneAsync(Scene);
                 }
                 finally
                 {
@@ -393,7 +397,7 @@ namespace Swihoni.Sessions
         /// <param name="session">If null, return settings from most recent history. Else get from specified session.</param>
         public virtual ModeBase GetModifyingMode(Container session = null)
         {
-            session = session ?? GetLatestSession();
+            session ??= GetLatestSession();
             ModeBase mode = ModeManager.GetMode(session);
             if (!m_Mode || m_Mode != mode)
             {
@@ -497,6 +501,18 @@ namespace Swihoni.Sessions
             }
         }
 
+        public static int Raycast(this PhysicsScene scene, Ray ray, RaycastHit[] hits, float distance, LayerMask layerMask)
+            => scene.Raycast(ray.origin, ray.direction, hits, distance, layerMask);
+
+        public static bool Raycast(this PhysicsScene scene, Ray ray, out RaycastHit hit, float distance, LayerMask layerMask)
+            => scene.Raycast(ray.origin, ray.direction, out hit, distance, layerMask);
+
+        public static bool Linecast(this PhysicsScene scene, Vector3 start, Vector3 end, LayerMask mask)
+        {
+            Vector3 direction = end - start;
+            return scene.Raycast(start, direction, direction.magnitude);
+        }
+        
         public static Ray GetRayForPlayer(this Container player)
         {
             var camera = player.Require<CameraComponent>();
@@ -509,7 +525,7 @@ namespace Swihoni.Sessions
             var ray = new Ray(position, direction);
             return ray;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float GetPlayerHeight(this MoveComponent move)
             => Mathf.Lerp(1.26f, 1.8f, 1.0f - move.normalizedCrouch);

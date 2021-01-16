@@ -9,6 +9,7 @@ using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 using UnityEditor;
 
@@ -94,6 +95,7 @@ namespace Voxels.Map
                           .Select(modelBehaviorPrefab => new Pool<ModelBehaviorBase>(0, () =>
                            {
                                ModelBehaviorBase modelInstance = Instantiate(modelBehaviorPrefab);
+                               SceneManager.MoveGameObjectToScene(modelInstance.gameObject, gameObject.scene);
                                modelInstance.Setup(this);
                                modelInstance.name = modelBehaviorPrefab.name;
                                return modelInstance;

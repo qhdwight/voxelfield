@@ -81,29 +81,29 @@ namespace Voxelfield.Session.Mode
             }
         }
 
-        public bool IsLookingAt<TBehavior>(Container player, out TBehavior behavior)
+        public bool IsLookingAt<TBehavior>(in SessionContext context, out TBehavior behavior)
         {
-            Ray ray = player.GetRayForPlayer();
-            int count = Physics.RaycastNonAlloc(ray, CachedHits, 2.0f, m_ModelMask);
+            Ray ray = context.player.GetRayForPlayer();
+            int count = context.PhysicsScene.Raycast(ray, CachedHits, 2.0f, m_ModelMask);
             if (CachedHits.TryClosest(count, out RaycastHit hit) && hit.collider.TryGetComponent(out behavior))
                 return true;
             behavior = default;
             return false;
         }
 
-        private void PlayerSecuring(in SessionContext sessionContext, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage)
+        private void PlayerSecuring(in SessionContext context, ShowdownPlayerComponent showdownPlayer, ShowdownSessionComponent stage)
         {
             var isInteracting = false;
             CurePackageComponent cure = default;
-            if (sessionContext.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)
-             && IsLookingAt(sessionContext.player, out CurePackageBehavior curePackage))
+            if (context.commands.Require<InputFlagProperty>().GetInput(PlayerInput.Interact)
+             && IsLookingAt(context, out CurePackageBehavior curePackage))
             {
                 cure = stage.curePackages[curePackage.Container.Require<ByteIdProperty>()];
                 if (cure.isActive.WithValueEqualTo(true)) isInteracting = true;
             }
             if (isInteracting)
             {
-                showdownPlayer.elapsedSecuringUs.Add(sessionContext.durationUs);
+                showdownPlayer.elapsedSecuringUs.Add(context.durationUs);
                 if (showdownPlayer.elapsedSecuringUs > SecureTimeUs)
                 {
                     Secure(showdownPlayer, stage, cure);

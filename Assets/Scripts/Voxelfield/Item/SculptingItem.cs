@@ -62,7 +62,7 @@ namespace Voxelfield.Item
         protected bool WithoutHit(in SessionContext context, float distance, out RaycastHit hit)
         {
             Ray ray = context.session.GetRayForPlayerId(context.playerId);
-            int count = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask);
+            int count = context.PhysicsScene.Raycast(ray, RaycastHits, distance, m_ChunkMask);
             return !RaycastHits.TryClosest(count, out hit);
         }
 
@@ -75,7 +75,7 @@ namespace Voxelfield.Item
                 return true;
             }
             Ray ray = context.session.GetRayForPlayerId(context.playerId);
-            int count = Physics.RaycastNonAlloc(ray, RaycastHits, distance, m_ChunkMask);
+            int count = context.PhysicsScene.Raycast(ray, RaycastHits, distance, m_ChunkMask);
             return !RaycastHits.TryClosest(count, out hit);
         }
 
