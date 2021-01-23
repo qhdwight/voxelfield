@@ -290,8 +290,6 @@ namespace Swihoni.Sessions.Player.Modifiers
                 wantedItemIndex.Value = previousEquipped;
         }
 
-        private static int Clamp(int i, int min, int max) => Math.Min(Math.Max(i, min), max);
-
         private static byte? FindItem(InventoryComponent inventory, Predicate<ItemComponent> predicate)
         {
             for (byte itemIndex = 0; itemIndex < inventory.items.Length; itemIndex++)

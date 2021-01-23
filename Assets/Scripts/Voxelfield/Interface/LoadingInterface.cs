@@ -25,21 +25,14 @@ namespace Voxelfield.Interface
             if (isVisible)
             {
                 MapProgressInfo progressInfo = session.GetChunkManager().ProgressInfo;
-                switch (progressInfo.stage)
+                m_Text.SetText(progressInfo.stage switch
                 {
-                    case MapLoadingStage.CleaningUp:
-                        m_Text.SetText("Cleaning up...");
-                        break;
-                    case MapLoadingStage.SettingUp:
-                        m_Text.SetText("Setting up...");
-                        break;
-                    case MapLoadingStage.Generating:
-                        m_Text.SetText("Generating terrain from save...");
-                        break;
-                    case MapLoadingStage.UpdatingMesh:
-                        m_Text.SetText("Generating and applying mesh...");
-                        break;
-                }
+                    MapLoadingStage.CleaningUp   => "Cleaning up...",
+                    MapLoadingStage.SettingUp    => "Setting up...",
+                    MapLoadingStage.Generating   => "Generating terrain from save...",
+                    MapLoadingStage.UpdatingMesh => "Generating and applying mesh...",
+                    _                            => "..."
+                });
                 m_ProgressBar.value = progressInfo.progress;
             }
             SetInterfaceActive(isVisible);

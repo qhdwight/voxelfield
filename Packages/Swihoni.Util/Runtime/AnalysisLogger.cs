@@ -41,10 +41,7 @@ namespace Swihoni.Util
             Loggers.TryGetValue(prefix, out PrefixLogger logger);
             if (logger == null)
             {
-                logger = new PrefixLogger
-                {
-                    fileName = GetFileName(prefix)
-                };
+                logger = new PrefixLogger {fileName = GetFileName(prefix)};
                 Loggers.Add(prefix, logger);
             }
             logger.builder.Append(string.Join(",", values)).AppendLine();

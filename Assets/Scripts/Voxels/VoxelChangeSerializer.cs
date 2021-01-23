@@ -3,7 +3,6 @@ using LiteNetLib.Utils;
 using Swihoni.Components;
 using Swihoni.Util;
 using Swihoni.Util.Math;
-using UnityEngine;
 
 namespace Voxels
 {

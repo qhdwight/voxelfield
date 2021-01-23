@@ -246,13 +246,13 @@ namespace Swihoni.Components
             {
                 get
                 {
-                    switch (index)
+                    return index switch
                     {
-                        case 0:  return m_E1;
-                        case 1:  return m_E2;
-                        case 2:  return m_E3;
-                        default: throw new IndexOutOfRangeException();
-                    }
+                        0 => m_E1,
+                        1 => m_E2,
+                        2 => m_E3,
+                        _ => throw new IndexOutOfRangeException()
+                    };
                 }
                 set
                 {

@@ -7,17 +7,14 @@ namespace Voxels
     {
         public const byte Solid = 0, Checkered = 1, Striped = 2, Speckled = 3, Last = Speckled;
 
-        public static string Name(byte id)
+        public static string Name(byte id) => id switch
         {
-            switch (id)
-            {
-                case Solid:     return nameof(Solid);
-                case Checkered: return nameof(Checkered);
-                case Striped:   return nameof(Striped);
-                case Speckled:  return nameof(Speckled);
-                default:        throw new ArgumentOutOfRangeException(nameof(id), id, null);
-            }
-        }
+            Solid     => nameof(Solid),
+            Checkered => nameof(Checkered),
+            Striped   => nameof(Striped),
+            Speckled  => nameof(Speckled),
+            _         => throw new ArgumentOutOfRangeException(nameof(id), id, null)
+        };
     }
 
     public static class Orientation
@@ -74,7 +71,7 @@ namespace Voxels
                 else flags &= ~VoxelFlags.Breakable;
             }
         }
-        
+
         public bool IsUnbreakable => !IsBreakable;
 
         public bool IsNatural
@@ -86,7 +83,7 @@ namespace Voxels
                 else flags &= ~VoxelFlags.Natural;
             }
         }
-        
+
         public bool IsBreathable
         {
             get => (flags & VoxelFlags.Breathable) == VoxelFlags.Breathable;
@@ -96,7 +93,7 @@ namespace Voxels
                 else flags &= ~VoxelFlags.Breathable;
             }
         }
-        
+
         public void SetVoxelData(in VoxelChange change)
         {
             if (change.texture.HasValue) texture = change.texture.Value;
@@ -109,28 +106,14 @@ namespace Voxels
             if (change.color.HasValue) color = change.color.Value;
         }
 
-        public Vector2Int TexturePosition()
+        public Vector2Int TexturePosition() => texture switch
         {
-            Vector2Int tile;
-            switch (texture)
-            {
-                case VoxelTexture.Checkered:
-                    tile = new Vector2Int(0, 0);
-                    break;
-                case VoxelTexture.Solid:
-                    tile = new Vector2Int(1, 0);
-                    break;
-                case VoxelTexture.Striped:
-                    tile = new Vector2Int(0, 1);
-                    break;
-                case VoxelTexture.Speckled:
-                    tile = new Vector2Int(1, 1);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(texture), texture, null);
-            }
-            return tile;
-        }
+            VoxelTexture.Checkered => new Vector2Int(0, 0),
+            VoxelTexture.Solid     => new Vector2Int(1, 0),
+            VoxelTexture.Striped   => new Vector2Int(0, 1),
+            VoxelTexture.Speckled  => new Vector2Int(1, 1),
+            _                      => throw new ArgumentOutOfRangeException(nameof(texture), texture, null)
+        };
 
         public int FaceUVs(Vector2[] uvs)
         {

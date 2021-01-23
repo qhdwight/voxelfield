@@ -159,11 +159,12 @@ namespace Swihoni.Sessions.Player.Visualization
                     for (var i = 0; i < 3; i++)
                     {
                         // TODO:refactor confusing
-                        m_Mixer.SetInputWeight(baseIndex + i, i == idleOffset
-                                                   ? (1.0f - normalizedSpeed) * weight
-                                                   : i == moveOffset
-                                                       ? normalizedSpeed * weight
-                                                       : 0.0f);
+                        m_Mixer.SetInputWeight(baseIndex + i, i switch
+                        {
+                            idleOffset => (1.0f - normalizedSpeed) * weight,
+                            moveOffset => normalizedSpeed * weight,
+                            _          => 0.0f
+                        });
                     }
                     float clipTimeSeconds = move.normalizedMove * m_StatusVisualProperties[baseIndex + moveOffset].clip.length;
                     m_Animations[baseIndex + moveOffset].SetTime(clipTimeSeconds);

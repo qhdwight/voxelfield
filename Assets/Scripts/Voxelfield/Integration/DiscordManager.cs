@@ -58,7 +58,7 @@ namespace Voxelfield.Integration
 
         private static void OnLog(LogLevel level, string message)
         {
-            string logMessage = $"[Discord Hook] {message}";
+            var logMessage = $"[Discord Hook] {message}";
             switch (level)
             {
                 case LogLevel.Error:
