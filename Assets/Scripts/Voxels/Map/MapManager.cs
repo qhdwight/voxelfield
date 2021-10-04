@@ -128,7 +128,7 @@ namespace Voxels.Map
 #if UNITY_EDITOR
             string mapPath = Path.ChangeExtension(Path.Combine(Application.dataPath, "Resources", "Maps", map.name.AsNewString()), "bytes");
 #else
-            string mapPath = $@"C:\Users\qhdwi\Projects\Programming\Unity\Compound\Assets\Resources\Maps\{map.name}.bytes";
+            string mapPath = $@"";
 #endif
 #endif
             var writer = new NetDataWriter();

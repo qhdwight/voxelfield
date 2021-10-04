@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/gamelift"
 )
 
-const aliasId = "alias-860fde8f-5f40-45bb-8f17-2b10a8ed1f34"
+const aliasId = ""
 
 func HandleRequest(ctx context.Context, _ struct{}) (string, error) {
 	cfg := session.Must(session.NewSession())
