@@ -1,6 +1,6 @@
 {
   "name": "litenetlib",
-  "version": "1.9.4",
+  "version": "1.9.5",
   "displayName": "Lite Networking Library",
   "description": "UDP Networking Library",
   "type": "library"
