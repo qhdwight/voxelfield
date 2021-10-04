@@ -13,12 +13,12 @@ namespace Voxelfield
     {
         private static Lazy<PostProcessVolume> _volume;
 
-        [Config(ConfigType.Session)] public VoxelMapNameProperty mapName = new VoxelMapNameProperty("Castle");
+        [Config(ConfigType.Session)] public VoxelMapNameProperty mapName = new("Castle");
 
-        [Config] public BoolProperty enableMiniMap = new BoolProperty();
-        [Config] public BoolProperty authenticateSteam = new BoolProperty();
+        [Config] public BoolProperty enableMiniMap = new();
+        [Config] public BoolProperty authenticateSteam = new();
 
-        public SecureAreaConfig secureAreaConfig = new SecureAreaConfig();
+        public SecureAreaConfig secureAreaConfig = new();
 
         public new static Config Active => (Config) DefaultConfig.Active;
 

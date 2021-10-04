@@ -26,7 +26,7 @@ namespace Voxelfield.Item
         protected override void Swing(in SessionContext context, ItemComponent item)
         {
             base.Swing(context, item); // Melee damage
-            if (!(context.session.Injector is ServerInjector server) || WithoutHit(context, m_EditDistance, out RaycastHit hit)) return;
+            if (context.session.Injector is not ServerInjector server || WithoutHit(context, m_EditDistance, out RaycastHit hit)) return;
 
             var position = (Position3Int) (hit.point - hit.normal * 0.1f);
             if (WithoutBreakableVoxel(context, position, out Voxel voxel)) return;
@@ -117,7 +117,7 @@ namespace Voxelfield.Item
         protected override void SecondaryUse(in SessionContext context)
         {
             // TODO:feature add client side prediction for placing blocks
-            if (!(m_CachedPosition is { } position) || !(context.session.Injector is ServerInjector server)) return;
+            if (m_CachedPosition is not { } position || context.session.Injector is not ServerInjector server) return;
 
             PlaceBlock(context, server, position);
         }
@@ -191,7 +191,7 @@ namespace Voxelfield.Item
 
         protected override void TertiaryUse(in SessionContext context, ItemComponent item)
         {
-            if (!(m_CachedPosition is { } position) || !(context.session.Injector is ServerInjector server)) return;
+            if (m_CachedPosition is not { } position || context.session.Injector is not ServerInjector server) return;
 
             var change = new VoxelChange
             {

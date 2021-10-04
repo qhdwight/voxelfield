@@ -169,7 +169,7 @@ namespace Swihoni.Sessions.Player.Components
     {
         public ByteProperty equippedIndex, previousEquippedIndex;
         public ByteStatusComponent equipStatus, adsStatus;
-        public ItemsArray items = new ItemsArray();
+        public ItemsArray items = new();
 
         [ClientNonChecked] public TimeUsProperty tracerTimeUs;
         [ClientNonChecked] public VectorProperty tracerStart, tracerEnd;

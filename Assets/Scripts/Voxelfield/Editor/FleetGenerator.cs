@@ -14,9 +14,8 @@ namespace Voxelfield.Editor
 {
     public static class FleetGenerator
     {
-        private const string AccessKey = @"AKIA354QE4UEK73BYOGL", SecretKey = @"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"; // shaweewoo.jo
-        // const string accessKey = @"AKIAWKQVDVRWSC42QICS", secretKey = @"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"; // shaweewoo.codes
-        private static readonly BasicAWSCredentials Credentials = new BasicAWSCredentials(AccessKey, SecretKey);
+        private const string AccessKey = @"", SecretKey = @"";
+        private static readonly BasicAWSCredentials Credentials = new(AccessKey, SecretKey);
 
         [MenuItem("Build/Create Game Lift Fleet", priority = 300)]
         private static async void CreateFleet()
@@ -51,7 +50,7 @@ namespace Voxelfield.Editor
                 Debug.Log("Marked active fleet for termination");
             }
 
-            IpPermission CreateIpPermission(IpProtocol protocol) => new IpPermission
+            IpPermission CreateIpPermission(IpProtocol protocol) => new()
             {
                 FromPort = SessionManager.DefaultPort, IpRange = "0.0.0.0/0", Protocol = protocol, ToPort = SessionManager.DefaultPort + 1
             };
@@ -67,7 +66,7 @@ namespace Voxelfield.Editor
                 {
                     GameSessionActivationTimeoutSeconds = 600, MaxConcurrentGameSessionActivations = 1,
                     ServerProcesses = new List<ServerProcess>
-                        {new ServerProcess {ConcurrentExecutions = 1, LaunchPath = "/local/game/Voxelfield", Parameters = "-logFile /local/game/server.log"}}
+                        {new() {ConcurrentExecutions = 1, LaunchPath = "/local/game/Voxelfield", Parameters = "-logFile /local/game/server.log"}}
                 },
                 NewGameSessionProtectionPolicy = ProtectionPolicy.FullProtection
             };

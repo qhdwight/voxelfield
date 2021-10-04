@@ -13,10 +13,10 @@ namespace Voxelfield.Session
 {
     public partial class ClientInjector : Injector
     {
-        private readonly Pool<OrderedVoxelChangesProperty> m_ChangesPool = new Pool<OrderedVoxelChangesProperty>(1, () => new OrderedVoxelChangesProperty());
-        private readonly UIntProperty m_Pointer = new UIntProperty();
-        private readonly SortedDictionary<uint, OrderedVoxelChangesProperty> m_OrderedTickChanges = new SortedDictionary<uint, OrderedVoxelChangesProperty>();
-        private readonly TouchedChunks m_TouchedChunks = new TouchedChunks();
+        private readonly Pool<OrderedVoxelChangesProperty> m_ChangesPool = new(1, () => new OrderedVoxelChangesProperty());
+        private readonly UIntProperty m_Pointer = new();
+        private readonly SortedDictionary<uint, OrderedVoxelChangesProperty> m_OrderedTickChanges = new();
+        private readonly TouchedChunks m_TouchedChunks = new();
 
         public override NetDataWriter GetConnectWriter()
         {

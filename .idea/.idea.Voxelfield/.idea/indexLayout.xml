@@ -1,33 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ContentModelUserStore">
+  <component name="UserContentModel">
     <attachedFolders />
-    <explicitIncludes>
-      <Path>Library/PackageCache/com.unity.ext.nunit@1.0.6</Path>
-      <Path>Library/PackageCache/com.unity.ide.rider@2.0.7</Path>
-      <Path>Library/PackageCache/com.unity.ide.vscode@1.2.3</Path>
-      <Path>Library/PackageCache/com.unity.postprocessing@2.3.0</Path>
-      <Path>Library/PackageCache/com.unity.quicksearch@2.0.2</Path>
-      <Path>Library/PackageCache/com.unity.test-framework@1.1.20</Path>
-      <Path>Library/PackageCache/com.unity.textmeshpro@3.0.3</Path>
-      <Path>ProjectSettings</Path>
-    </explicitIncludes>
-    <explicitExcludes>
-      <Path>.git</Path>
-      <Path>.idea</Path>
-      <Path>.vs</Path>
-      <Path>.vscode</Path>
-      <Path>Adobe</Path>
-      <Path>Builds</Path>
-      <Path>Library</Path>
-      <Path>Logs</Path>
-      <Path>Maps</Path>
-      <Path>Models</Path>
-      <Path>Substance</Path>
-      <Path>Temp</Path>
-      <Path>UserSettings</Path>
-      <Path>WakeUpLambda</Path>
-      <Path>obj</Path>
-    </explicitExcludes>
+    <explicitIncludes />
+    <explicitExcludes />
   </component>
 </project>

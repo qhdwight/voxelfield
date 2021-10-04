@@ -16,7 +16,7 @@ namespace Swihoni.Sessions.Interfaces
             public LogType type;
         }
 
-        private static readonly Dictionary<LogType, string> LogColors = new Dictionary<LogType, string>
+        private static readonly Dictionary<LogType, string> LogColors = new()
         {
             [LogType.Error] = "red",
             [LogType.Assert] = "green",
@@ -31,8 +31,8 @@ namespace Swihoni.Sessions.Interfaces
         [SerializeField] private Color m_AutocompleteColor = default;
 
         private string m_AutocompleteColorHex;
-        private readonly Queue<LogItem> m_LogItems = new Queue<LogItem>();
-        private readonly StringBuilder m_LogBuilder = new StringBuilder();
+        private readonly Queue<LogItem> m_LogItems = new();
+        private readonly StringBuilder m_LogBuilder = new();
         private int m_CommandHistoryIndex;
         private string m_CurrentAutocomplete;
         private bool m_OpenedForCommand, m_NeedsTextUpdate;
@@ -167,7 +167,7 @@ namespace Swihoni.Sessions.Interfaces
         private string StripAutocomplete(string input, out int indexOfAutocomplete)
         {
             indexOfAutocomplete = input.IndexOf($"<color={m_AutocompleteColorHex}>", StringComparison.Ordinal);
-            if (indexOfAutocomplete > 0) input = input.Substring(0, indexOfAutocomplete);
+            if (indexOfAutocomplete > 0) input = input[..indexOfAutocomplete];
             return input;
         }
 

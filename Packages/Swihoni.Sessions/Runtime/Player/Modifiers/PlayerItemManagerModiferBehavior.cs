@@ -82,7 +82,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                 var throwable = entity.Require<ThrowableComponent>();
                 if (fromNearby && throwable.throwerId == context.playerId && throwable.thrownElapsedUs < 2_000_000u) return;
 
-                if (!(TryAddItem(inventory, checked((byte) (itemEntityModifier.id - 100))) is { } index)) return;
+                if (TryAddItem(inventory, checked((byte) (itemEntityModifier.id - 100))) is not { } index) return;
 
                 var itemOnEntity = entity.Require<ItemComponent>();
                 ItemComponent item = inventory[index];
@@ -205,7 +205,7 @@ namespace Swihoni.Sessions.Player.Modifiers
         private static void ModifyAdsStatus(in SessionContext context, InventoryComponent inventory, InputFlagProperty inputs)
         {
             ItemModifierBase modifier = ItemAssetLink.GetModifier(inventory.EquippedItemComponent.id);
-            if (!(modifier is GunModifierBase gunModifier)) return;
+            if (modifier is not GunModifierBase gunModifier) return;
 
             if (inputs.GetInput(PlayerInput.Ads))
             {
@@ -348,13 +348,13 @@ namespace Swihoni.Sessions.Player.Modifiers
         public static void SetAllItems(InventoryComponent inventory, params byte[] ids)
         {
             for (var i = 0; i < inventory.items.Length; i++)
-                SetItemAtIndex(inventory, i < ids.Length ? ids[i] : (byte?) null, i);
+                SetItemAtIndex(inventory, i < ids.Length ? ids[i] : null, i);
         }
 
         public static void SetItemAtIndex(InventoryComponent inventory, byte? _itemId, int index, ushort count = 1)
         {
             ItemComponent item = inventory[index];
-            if (!(_itemId is { } itemId))
+            if (_itemId is not { } itemId)
             {
                 item.Clear();
                 if (inventory.equippedIndex == index)
@@ -373,7 +373,7 @@ namespace Swihoni.Sessions.Player.Modifiers
                     item.ammoInMag.Value = gunModifier.MagSize;
                     item.ammoInReserve.Value = gunModifier.StartingAmmoInReserve;
                     break;
-                case ThrowableItemModifierBase _:
+                case ThrowableItemModifierBase:
                     item.ammoInReserve.Value = count;
                     break;
             }

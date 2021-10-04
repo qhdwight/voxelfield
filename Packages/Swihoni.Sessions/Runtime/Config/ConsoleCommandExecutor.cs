@@ -14,9 +14,9 @@ namespace Swihoni.Sessions.Config
 
         private const int MaxPreviousCommands = 48;
 
-        public static List<string> PreviousCommands { get; } = new List<string>(MaxPreviousCommands);
+        public static List<string> PreviousCommands { get; } = new(MaxPreviousCommands);
 
-        private static readonly Dictionary<string, Action<string[]>> Commands = new Dictionary<string, Action<string[]>>
+        private static readonly Dictionary<string, Action<string[]>> Commands = new()
         {
             ["clear"] = arguments => ConsoleInterface.Singleton.ClearConsole(),
             ["quit"] = _ => Application.Quit()

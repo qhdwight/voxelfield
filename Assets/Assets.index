@@ -1,5 +1,5 @@
 {
-    "name": "Assets",
+    "name": "",
     "type": "asset",
     "roots": [],
     "includes": [],
@@ -7,13 +7,12 @@
         "Temp/",
         "External/"
     ],
-    "baseScore": 100,
     "options": {
         "disabled": false,
-        "files": true,
-        "directories": false,
         "types": true,
         "properties": false,
+        "extended": false,
         "dependencies": false
-    }
+    },
+    "baseScore": 100
 }

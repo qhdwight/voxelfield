@@ -48,15 +48,16 @@ namespace Voxelfield.Session
         private const int OutsideBoundDamage = 75;
 
 #if VOXELFIELD_RELEASE_SERVER
-        private static readonly BasicAWSCredentials DynamoCredentials = new BasicAWSCredentials(@"AKIAWKQVDVRW5MFWZJMG", @"rPxMDaGjpBiaJ9OuT/he5XU4g6rft8ykzXJDgLYP");
+        private const string AccessKey = @"", SecretKey = @"";
+        private static readonly BasicAWSCredentials DynamoCredentials = new BasicAWSCredentials(AccessKey, SecretKey);
         private static readonly AmazonDynamoDBConfig DynamoConfig = new AmazonDynamoDBConfig {RegionEndpoint = RegionEndpoint.USWest1};
         private static readonly AmazonDynamoDBClient DynamoClient = new AmazonDynamoDBClient(DynamoCredentials, DynamoConfig);
 
         private readonly DualDictionary<NetPeer, string> m_GameLiftPlayerSessionIds = new DualDictionary<NetPeer, string>();
 #endif
 
-        private readonly OrderedVoxelChangesProperty m_MasterChanges = new OrderedVoxelChangesProperty();
-        private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new DualDictionary<NetPeer, SteamId>();
+        private readonly OrderedVoxelChangesProperty m_MasterChanges = new();
+        private readonly DualDictionary<NetPeer, SteamId> m_SteamPlayerIds = new();
 
         private bool m_UseSteam;
 

@@ -24,12 +24,9 @@ namespace Voxelfield.Integration
 {
     public static class GameLiftClientManager
     {
-        // private const string FleetAlias = "alias-c6bbceef-6fe9-4f60-9949-5db6b26350a1"; // shaweewoo.codes
-        // private static readonly BasicAWSCredentials Credentials = new BasicAWSCredentials(@"AKIAWKQVDVRWQMYAUBAV", @"62ixippCgELFUDKgPlGnWqtd0WEZ3w51YhEnMK8C"); // shaweewoo.codes
-
-        private const string FleetAlias = "alias-860fde8f-5f40-45bb-8f17-2b10a8ed1f34";                                                                          // shaweewoo.jo
-        private static readonly BasicAWSCredentials Credentials = new BasicAWSCredentials(@"AKIA354QE4UEBBDFV2G2", @"Az53naLwz6/PxGfCRvOMeNQv1Au1lsCGrpvfXOIB"); // shaweewoo.jo
-        private static readonly AmazonGameLiftConfig Config = new AmazonGameLiftConfig
+        private const string FleetAlias = "", AccessKey = @"", SecretKey = @"";
+        private static readonly BasicAWSCredentials Credentials = new(AccessKey, SecretKey);
+        private static readonly AmazonGameLiftConfig Config = new()
         {
 #if VOXELFIELD_RELEASE_CLIENT
             RegionEndpoint = RegionEndpoint.USWest1
@@ -38,7 +35,7 @@ namespace Voxelfield.Integration
             ServiceURL = $"http://localhost:{SessionManager.DefaultPort}"
 #endif
         };
-        private static readonly AmazonGameLiftClient Client = new AmazonGameLiftClient(Credentials, Config);
+        private static readonly AmazonGameLiftClient Client = new(Credentials, Config);
 
         public static string PlayerSessionId { get; private set; }
         public static string placementId;
