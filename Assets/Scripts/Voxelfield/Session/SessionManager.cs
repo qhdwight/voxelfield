@@ -306,10 +306,10 @@ namespace Voxelfield.Session
             {
                 StartServer();
             }
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                QuickPlayGameLift();
-            }
+            // if (Input.GetKeyDown(KeyCode.J))
+            // {
+            //     QuickPlayGameLift();
+            // }
             if (Input.GetKeyDown(KeyCode.L))
             {
                 StartClient();

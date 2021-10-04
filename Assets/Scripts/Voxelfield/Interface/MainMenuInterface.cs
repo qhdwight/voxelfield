@@ -1,9 +1,11 @@
+using System.Threading.Tasks;
 using Swihoni.Sessions;
 using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Interfaces;
 using UnityEngine;
 using UnityEngine.UI;
 using Voxelfield.Integration;
+using Voxelfield.Session;
 
 namespace Voxelfield.Interface
 {
@@ -23,6 +25,7 @@ namespace Voxelfield.Interface
             GameObject progress = button.GetComponentInChildren<Animator>(true).gameObject;
             progress.SetActive(true);
             button.interactable = false;
+#if VOXELFIELD_RELEASE_CLIENT
             try
             {
                 DiscordManager.SetActivity(Searching);
@@ -34,6 +37,12 @@ namespace Voxelfield.Interface
                 if (progress) progress.SetActive(false);
                 DiscordManager.SetActivity(InMainMenu);
             }
+#else
+            await Task.Delay(500);
+            if (progress) progress.SetActive(false);
+            if (button) button.interactable = true;
+            SessionManager.StartHost();
+#endif
         }
 
         public void OnSettingsButton() => DefaultConfig.OpenSettings();
