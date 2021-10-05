@@ -28,7 +28,7 @@ namespace Voxelfield.Session
     {
         public ByteProperty number;
         public TimeUsProperty remainingUs;
-        public CurePackagesArray curePackages = new CurePackagesArray();
+        public CurePackagesArray curePackages = new();
     }
 
     [Serializable, ModeElement]
@@ -80,7 +80,7 @@ namespace Voxelfield.Session
     {
         public TeamFlagArray teamFlags;
         public UIntProperty pickupFlags;
-        [NoSerialization] public ArrayElement<TimeUsProperty> pickupCoolDowns = new ArrayElement<TimeUsProperty>(sizeof(uint) * 8);
+        [NoSerialization] public ArrayElement<TimeUsProperty> pickupCoolDowns = new(sizeof(uint) * 8);
     }
 
     /* Secure area */
@@ -101,7 +101,7 @@ namespace Voxelfield.Session
     [Serializable, ModeElement]
     public class SecureAreaComponent : ComponentBase
     {
-        public SiteArray sites = new SiteArray();
+        public SiteArray sites = new();
         public TimeUsProperty roundTime;
         [NoSerialization] public ByteProperty lastWinningTeam;
 

@@ -13,7 +13,7 @@ namespace Swihoni.Components
     public static class ComponentExtensions
     {
         public static Vector3 GetVector3(this NetDataReader reader)
-            => new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
+            => new(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
 
         public static void Put(this NetDataWriter writer, in Vector3 vector)
         {
@@ -23,7 +23,7 @@ namespace Swihoni.Components
         }
 
         public static Quaternion GetQuaternion(this NetDataReader reader)
-            => new Quaternion(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
+            => new(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
 
         public static void Put(this NetDataWriter writer, in Quaternion quaternion)
         {
@@ -42,7 +42,7 @@ namespace Swihoni.Components
         }
 
         public static Color32 GetColor32(this NetDataReader reader)
-            => new Color32(reader.GetByte(), reader.GetByte(), reader.GetByte(), reader.GetByte());
+            => new(reader.GetByte(), reader.GetByte(), reader.GetByte(), reader.GetByte());
 
         public static void PutColor(this NetDataWriter writer, in Color color)
         {
@@ -53,7 +53,7 @@ namespace Swihoni.Components
         }
 
         public static Color GetColor(this NetDataReader reader)
-            => new Color(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
+            => new(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
 
         public static bool SameAs(this in Color32 color, in Color32 other) => color.a == other.a && color.g == other.g && color.b == other.b && color.a == other.a;
 
@@ -72,13 +72,13 @@ namespace Swihoni.Components
         public static DualDictionary<T, string> GetNameMap<T>(this Type type) => GetNameMap<T>(type, ToSnakeCase);
 
         public static DualDictionary<T, string> GetNameMap<T>(this Type type, Func<string, string> func)
-            => new DualDictionary<T, string>(type.IsEnum
-                                                 ? Enum.GetValues(type).OfType<T>().Distinct()
-                                                       .ToDictionary(@enum => @enum,
-                                                                     @enum => func(@enum.ToString()))
-                                                 : type.GetFields(BindingFlags.Static | BindingFlags.Public)
-                                                       .ToDictionary(field => (T) field.GetValue(null),
-                                                                     field => func(field.Name)));
+            => new(type.IsEnum
+                       ? Enum.GetValues(type).OfType<T>().Distinct()
+                             .ToDictionary(@enum => @enum,
+                                           @enum => func(@enum.ToString()))
+                       : type.GetFields(BindingFlags.Static | BindingFlags.Public)
+                             .ToDictionary(field => (T) field.GetValue(null),
+                                           field => func(field.Name)));
 
         public static TElement NewElement<TElement>() => (TElement) (object) typeof(TElement).NewElement();
 

@@ -22,8 +22,8 @@ namespace Swihoni.Sessions
     {
         private const int DemoWriteSize = 1 << 18, DemoTickRate = 20;
         private ComponentClientSocket m_Socket;
-        private readonly NetDataWriter m_DemoWriter = new NetDataWriter(true, DemoWriteSize);
-        private static readonly ProfilerMarker ClientPredictMarker = new ProfilerMarker("Client Prediction");
+        private readonly NetDataWriter m_DemoWriter = new(true, DemoWriteSize);
+        private static readonly ProfilerMarker ClientPredictMarker = new("Client Prediction");
 
         public override ComponentSocketBase Socket => m_Socket;
         public bool WriteDemo { get; set; }

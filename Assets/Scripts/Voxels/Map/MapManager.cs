@@ -34,8 +34,8 @@ namespace Voxels.Map
 
         public static ModelBehaviorBase[] ModelPrefabs { get; private set; }
 
-        public Dictionary<Position3Int, ModelBehaviorBase> Models { get; } = new Dictionary<Position3Int, ModelBehaviorBase>();
-        public MapContainer Map { get; private set; } = new MapContainer();
+        public Dictionary<Position3Int, ModelBehaviorBase> Models { get; } = new();
+        public MapContainer Map { get; private set; } = new();
 
         public ChunkManager ChunkManager { get; private set; }
 
@@ -171,8 +171,8 @@ namespace Voxels.Map
         {
             Models.Clear();
             foreach (Pool<ModelBehaviorBase> pool in m_ModelsPool) pool.ReturnAll();
-            foreach (KeyValuePair<Position3Int, Container> pair in map.models.Map)
-                InstantiateModel(pair.Key, pair.Value);
+            foreach ((Position3Int position, Container model) in map.models.Map)
+                InstantiateModel(position, model);
         }
 
         private void InstantiateModel(in Position3Int position, Container model)

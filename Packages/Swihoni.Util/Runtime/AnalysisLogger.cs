@@ -11,7 +11,7 @@ namespace Swihoni.Util
         private class PrefixLogger
         {
             public string fileName;
-            public readonly StringBuilder builder = new StringBuilder(WriteSize);
+            public readonly StringBuilder builder = new(WriteSize);
 
             public void Flush()
             {
@@ -23,7 +23,7 @@ namespace Swihoni.Util
 
         private const int WriteSize = 5000;
 
-        private static readonly Dictionary<string, PrefixLogger> Loggers = new Dictionary<string, PrefixLogger>();
+        private static readonly Dictionary<string, PrefixLogger> Loggers = new();
 
         [Conditional("UNITY_EDITOR")]
         public static void Reset(string prefix) => File.WriteAllText(GetFileName(prefix), string.Empty);

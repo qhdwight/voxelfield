@@ -41,7 +41,7 @@ namespace Swihoni.Sessions.Interfaces
 
         protected abstract int Compare(TElement e1, TElement e2);
 
-        private static readonly List<TElement> Sorted = new List<TElement>();
+        private static readonly List<TElement> Sorted = new();
 
         public override void Render(in SessionContext context)
         {

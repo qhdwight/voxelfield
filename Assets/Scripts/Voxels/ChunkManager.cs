@@ -41,14 +41,14 @@ namespace Voxels
     {
         [SerializeField] private GameObject m_ChunkPrefab = default;
         [SerializeField] private int m_ChunkSize = default;
-        private readonly Stack<Chunk> m_ChunkPool = new Stack<Chunk>();
+        private readonly Stack<Chunk> m_ChunkPool = new();
         private int m_PoolSize;
         private MapContainer m_LoadedMap;
 
         public int ChunkSize => m_ChunkSize;
         public MapContainer Map { get; private set; }
-        public Dictionary<Position3Int, Chunk> Chunks { get; } = new Dictionary<Position3Int, Chunk>();
-        public MapProgressInfo ProgressInfo { get; set; } = new MapProgressInfo {stage = MapLoadingStage.Completed};
+        public Dictionary<Position3Int, Chunk> Chunks { get; } = new();
+        public MapProgressInfo ProgressInfo { get; set; } = new() {stage = MapLoadingStage.Completed};
 
         public IEnumerator LoadMap(MapContainer map)
         {
@@ -155,9 +155,9 @@ namespace Voxels
             }
         }
 
-        private static readonly TouchedChunks TouchedChunks = new TouchedChunks();
+        private static readonly TouchedChunks TouchedChunks = new();
 
-        private static readonly ProfilerMarker ApplyVoxelChangeMarker = new ProfilerMarker("Apply Voxel Change");
+        private static readonly ProfilerMarker ApplyVoxelChangeMarker = new("Apply Voxel Change");
 
         /// <summary>
         /// Change the data of a chunk in the array.
@@ -384,7 +384,7 @@ namespace Voxels
             AddIfNeeded(voxelChunkPosition.z, new Position3Int {z = 1});
         }
 
-        private static readonly HashSet<Chunk> UpdateAdjacentChunks = new HashSet<Chunk>();
+        private static readonly HashSet<Chunk> UpdateAdjacentChunks = new();
 
         private void UpdateChunkMesh(Chunk chunk, in Position3Int voxelChunkPosition)
         {

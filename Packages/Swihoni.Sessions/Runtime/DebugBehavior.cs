@@ -26,7 +26,7 @@ namespace Swihoni.Sessions
                                                                          .First(gameObject => gameObject.GetComponent<PlayerDebugVisualizerBehavior>() != null);
 
         private static StrictPool<PlayerDebugVisualizerBehavior> CreatePool() =>
-            new StrictPool<PlayerDebugVisualizerBehavior>(16, () =>
+            new(16, () =>
             {
                 GameObject instance = Instantiate(_visualizerPrefab);
                 var visualizer = instance.GetComponent<PlayerDebugVisualizerBehavior>();

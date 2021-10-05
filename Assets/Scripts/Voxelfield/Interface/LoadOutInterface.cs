@@ -13,7 +13,7 @@ namespace Voxelfield.Interface
     {
         private LoadOutButton[][] m_LoadOutButtons;
 
-        public WantedItemIdArray WantedItems { get; set; } = new WantedItemIdArray();
+        public WantedItemIdArray WantedItems { get; set; } = new();
 
         public override void Initialize()
         {

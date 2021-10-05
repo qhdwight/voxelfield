@@ -33,8 +33,8 @@ namespace Voxelfield.Session
     {
         private const int DiscordUpdateRate = 10;
 
-        protected readonly RequestConnectionComponent m_RequestConnection = new RequestConnectionComponent();
-        protected readonly NetDataWriter m_RejectionWriter = new NetDataWriter();
+        protected readonly RequestConnectionComponent m_RequestConnection = new();
+        protected readonly NetDataWriter m_RejectionWriter = new();
         protected AuthTicket m_SteamAuthenticationTicket;
         
         protected MapManager m_MapManager;

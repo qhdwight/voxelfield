@@ -20,11 +20,11 @@ namespace Swihoni.Components.Networking
 
         protected readonly NetManager m_NetworkManager;
 
-        private readonly DualDictionary<Type, byte> m_Codes = new DualDictionary<Type, byte>();
-        private readonly Dictionary<byte, byte> m_CodeToChannel = new Dictionary<byte, byte>();
-        private readonly NetDataWriter m_Writer = new NetDataWriter(true, InitialBufferSize);
+        private readonly DualDictionary<Type, byte> m_Codes = new();
+        private readonly Dictionary<byte, byte> m_CodeToChannel = new();
+        private readonly NetDataWriter m_Writer = new(true, InitialBufferSize);
         private readonly float m_StartTime;
-        protected readonly EventBasedNetListener m_Listener = new EventBasedNetListener();
+        protected readonly EventBasedNetListener m_Listener = new();
         public IReceiver Receiver { get; set; }
         public NetManager NetworkManager => m_NetworkManager;
         public EventBasedNetListener Listener => m_Listener;

@@ -70,7 +70,7 @@ namespace Swihoni.Sessions.Items.Modifiers
         protected override void PrimaryUse(in SessionContext context, InventoryComponent inventory, ItemComponent item)
             => Fire(context, inventory, item);
 
-        private static readonly HashSet<PlayerHitboxManager> HitPlayers = new HashSet<PlayerHitboxManager>();
+        private static readonly HashSet<PlayerHitboxManager> HitPlayers = new();
 
         protected virtual int FireRaycast(in SessionContext context, Ray ray)
         {

@@ -36,9 +36,9 @@ namespace Voxelfield.Interface
         [SerializeField] private SteamFriendEntryInterface m_EntryPrefab = default;
         [SerializeField] private Transform m_EntryParent = default;
 
-        private readonly Dictionary<Friend, Entry> m_Entries = new Dictionary<Friend, Entry>(new FriendComparer());
-        private readonly List<SteamFriendEntryInterface> m_InterfaceEntries = new List<SteamFriendEntryInterface>();
-        private readonly Mutex m_FriendMutex = new Mutex();
+        private readonly Dictionary<Friend, Entry> m_Entries = new(new FriendComparer());
+        private readonly List<SteamFriendEntryInterface> m_InterfaceEntries = new();
+        private readonly Mutex m_FriendMutex = new();
 
         protected override void OnSetInterfaceActive(bool isActive)
         {

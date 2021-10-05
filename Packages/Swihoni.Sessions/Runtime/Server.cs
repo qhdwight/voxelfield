@@ -229,7 +229,7 @@ namespace Swihoni.Sessions
             SendServerSession(serverSession);
         }
 
-        private readonly List<NetPeer> m_ConnectedPeers = new List<NetPeer>();
+        private readonly List<NetPeer> m_ConnectedPeers = new();
 
         private void SendServerSession(Container serverSession)
         {

@@ -21,7 +21,7 @@ namespace Voxels
             }
         }
 
-        private static readonly List<byte> StandardPermutations = new List<byte>
+        private static readonly List<byte> StandardPermutations = new()
         {
             151, 160, 137, 91, 90, 15,
             131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
@@ -38,7 +38,7 @@ namespace Voxels
             138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
         };
 
-        private static List<byte> _permutations = new List<byte>();
+        private static List<byte> _permutations = new();
 
         // F2 = (sqrt(3) - 1) / 2
         // G2 = (3 - sqrt(3)) / 6   = F2 / (1 + 2 * K)

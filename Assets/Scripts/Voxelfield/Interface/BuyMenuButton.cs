@@ -17,7 +17,7 @@ namespace Voxelfield.Interface
         private Button m_Button;
 
         public byte ItemId => m_ItemId;
-        public UnityEvent OnEnter { get; } = new UnityEvent();
+        public UnityEvent OnEnter { get; } = new();
         public Button.ButtonClickedEvent OnClick => m_Button.onClick;
 
         private void Awake() => m_Button = GetComponent<Button>();

@@ -11,10 +11,10 @@ namespace Swihoni.Components
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(m_Map.Count);
-            foreach (KeyValuePair<TKey, TValue> pair in m_Map)
+            foreach ((TKey key, TValue value) in m_Map)
             {
-                pair.Key.Serialize(writer);
-                pair.Value.Serialize(writer);
+                key.Serialize(writer);
+                value.Serialize(writer);
             }
         }
 
@@ -37,7 +37,7 @@ namespace Swihoni.Components
     [Serializable]
     public abstract class DictPropertyBase<TKey, TValue> : PropertyBase
     {
-        protected Dictionary<TKey, TValue> m_Map = new Dictionary<TKey, TValue>();
+        protected Dictionary<TKey, TValue> m_Map = new();
 
         public Dictionary<TKey, TValue> Map => m_Map;
 
@@ -59,8 +59,8 @@ namespace Swihoni.Components
 
         public void AddAllFrom(DictPropertyBase<TKey, TValue> other)
         {
-            foreach (KeyValuePair<TKey, TValue> pair in other.m_Map)
-                Set(pair.Key, pair.Value);
+            foreach ((TKey key, TValue value) in other.m_Map)
+                Set(key, value);
         }
 
         public override void SetTo(PropertyBase other)

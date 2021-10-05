@@ -9,7 +9,7 @@ namespace Voxelfield.Item
 {
     public class SculptingThrowable : ThrowableModifierBehavior
     {
-        private static readonly Color32 Sand = new Color32(253, 255, 224, 255);
+        private static readonly Color32 Sand = new(253, 255, 224, 255);
 
         protected override void JustPopped(in SessionContext context, ThrowableComponent throwable)
         {

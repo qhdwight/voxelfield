@@ -38,14 +38,13 @@ namespace Voxelfield.Session.Mode
         private const byte BlueTeam = 0, RedTeam = 1;
         private const int MaxMoney = 7000;
 
-        private SiteBehavior[] m_SiteBehaviors;
-        private VoxelMapNameProperty m_LastMapName;
-        private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
-
-        [SerializeField] private Color m_BlueColor = new Color(0.1764705882f, 0.5098039216f, 0.8509803922f),
-                                       m_RedColor = new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
+        [SerializeField] private Color m_BlueColor = new(0.1764705882f, 0.5098039216f, 0.8509803922f),
+                                       m_RedColor = new(0.8196078431f, 0.2156862745f, 0.1960784314f);
         [SerializeField] private LayerMask m_PlayerTriggerMask = default;
         [SerializeField] private ushort[] m_ItemPrices = default;
+
+        private MapManager m_LastMapManager;
+        private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
         private SecureAreaConfig m_Config;
 
         public uint SecureDurationUs => m_Config.secureDurationUs;
@@ -55,7 +54,6 @@ namespace Voxelfield.Session.Mode
 
         public override void Initialize()
         {
-            m_LastMapName = new VoxelMapNameProperty();
             m_Config = Config.Active.secureAreaConfig;
             SessionBase.RegisterSessionCommand("give_money");
             _randomIndices = Enumerable.Range(0, 2).Select(_ => new List<int>()).ToArray();
@@ -64,12 +62,9 @@ namespace Voxelfield.Session.Mode
         private SiteBehavior[] GetSiteBehaviors(in SessionContext context)
         {
             MapManager mapManager = context.GetMapManager();
-            StringProperty mapName = mapManager.Map.name;
-            if (m_LastMapName == mapName) return m_SiteBehaviors;
-            m_LastMapName.SetTo(mapName);
-            return m_SiteBehaviors = mapManager.Models.Values
-                                               .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Site)
-                                               .Cast<SiteBehavior>().ToArray();
+            return mapManager.Models.Values
+                             .Where(model => model.Container.Require<ModelIdProperty>() == ModelsProperty.Site)
+                             .Cast<SiteBehavior>().ToArray();
         }
 
         public override uint GetItemEntityLifespanUs(in SessionContext context)
@@ -166,7 +161,8 @@ namespace Voxelfield.Session.Mode
                             Transform siteTransform = siteBehavior.transform;
                             SiteComponent site = secureArea.sites[siteIndex];
                             Vector3 bounds = siteBehavior.Container.Require<ExtentsProperty>();
-                            int playersInsideCount = context.PhysicsScene.OverlapBox(siteTransform.position, bounds / 2, m_CachedColliders, siteTransform.rotation, m_PlayerTriggerMask);
+                            int playersInsideCount =
+                                context.PhysicsScene.OverlapBox(siteTransform.position, bounds / 2, m_CachedColliders, siteTransform.rotation, m_PlayerTriggerMask);
                             bool isRedInside = false, isBlueInside = false;
                             for (var i = 0; i < playersInsideCount; i++)
                             {
@@ -270,10 +266,10 @@ namespace Voxelfield.Session.Mode
             var teamProperty = player.Require<TeamProperty>();
             if (begin)
             {
-                teamProperty.Value = (byte) ((context.playerId + 1) % 2);
+                teamProperty.Value = (byte)((context.playerId + 1) % 2);
                 player.ZeroIfWith<StatsComponent>();
             }
-            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds) && teamProperty.TryWithValue(out byte team)) teamProperty.Value = (byte) ((team + 1) % 2);
+            else if (AtRoundSum(secureArea, scores, m_Config.maxRounds) && teamProperty.TryWithValue(out byte team)) teamProperty.Value = (byte)((team + 1) % 2);
             if (secureArea.roundTime.WithValue)
             {
                 HealthProperty health = player.Health();

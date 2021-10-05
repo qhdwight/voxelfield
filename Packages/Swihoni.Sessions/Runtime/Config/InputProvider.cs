@@ -60,7 +60,7 @@ namespace Swihoni.Sessions.Config
                           NextSpectating = 112,
                           PreviousSpectating = 113;
 
-        public static DualDictionary<byte, string> Names { get; } = new DualDictionary<byte, string>();
+        public static DualDictionary<byte, string> Names { get; } = new();
 
         static InputType()
         {
@@ -84,8 +84,8 @@ namespace Swihoni.Sessions.Config
     {
         private const string Separator = ";";
 
-        private static ByteProperty _lookupProperty = new ByteProperty();
-        private static Dictionary<byte, KeyCode> _defaultMap = new Dictionary<byte, KeyCode>
+        private static ByteProperty _lookupProperty = new();
+        private static Dictionary<byte, KeyCode> _defaultMap = new()
         {
             [PlayerInput.Forward] = KeyCode.W,
             [PlayerInput.Backward] = KeyCode.S,
@@ -147,10 +147,10 @@ namespace Swihoni.Sessions.Config
         public override StringBuilder AppendValue(StringBuilder builder)
         {
             var afterFirst = false;
-            foreach (KeyValuePair<ByteProperty, KeyCodeProperty> pair in m_Map)
+            foreach ((ByteProperty input, KeyCodeProperty keyCode) in m_Map)
             {
                 if (afterFirst) builder.Append(Separator).Append(" ");
-                builder.Append(InputType.Names.GetForward(pair.Key)).Append("=").AppendPropertyValue(pair.Value);
+                builder.Append(InputType.Names.GetForward(input)).Append("=").AppendPropertyValue(keyCode);
                 afterFirst = true;
             }
             return builder;
@@ -170,13 +170,13 @@ namespace Swihoni.Sessions.Config
                 valueProperty.ParseValue(value);
                 Set(keyProperty, valueProperty);
             }
-            foreach (KeyValuePair<byte, KeyCode> pair in _defaultMap)
+            foreach ((byte _input, KeyCode keyCode) in _defaultMap)
             {
-                var input = new ByteProperty(pair.Key);
+                var input = new ByteProperty(_input);
                 if (!m_Map.ContainsKey(input))
                 {
-                    Set(input, new KeyCodeProperty(pair.Value));
-                    Debug.LogWarning($"Had to add default input for {InputType.Names.GetForward(pair.Key)}");
+                    Set(input, new KeyCodeProperty(keyCode));
+                    Debug.LogWarning($"Had to add default input for {InputType.Names.GetForward(input)}");
                 }
             }
         }
@@ -184,8 +184,8 @@ namespace Swihoni.Sessions.Config
         public InputBindingProperty()
         {
             m_Map = new Dictionary<ByteProperty, KeyCodeProperty>();
-            foreach (KeyValuePair<byte, KeyCode> pair in _defaultMap)
-                m_Map.Add(new ByteProperty(pair.Key), new KeyCodeProperty(pair.Value));
+            foreach ((byte input, KeyCode keyCode) in _defaultMap)
+                m_Map.Add(new ByteProperty(input), new KeyCodeProperty(keyCode));
             WithValue = true;
         }
     }

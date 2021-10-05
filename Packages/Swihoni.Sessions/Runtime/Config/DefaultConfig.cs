@@ -53,7 +53,7 @@ namespace Swihoni.Sessions.Config
 
         public static DefaultConfig Active { get; private set; }
 
-        private static readonly Lazy<DefaultConfig> Default = new Lazy<DefaultConfig>(LoadDefault);
+        private static readonly Lazy<DefaultConfig> Default = new(LoadDefault);
         private static string _logTag;
 
         private static DefaultConfig LoadDefault()
@@ -66,29 +66,29 @@ namespace Swihoni.Sessions.Config
         private Dictionary<Type, (PropertyBase, ConfigAttribute)> m_TypeToConfig;
         private Dictionary<string, (PropertyBase, ConfigAttribute)> m_NameToConfig;
 
-        [Config(ConfigType.Session)] public TickRateProperty tickRate = new TickRateProperty(60);
-        [Config(ConfigType.Session)] public AllowCheatsProperty allowCheats = new AllowCheatsProperty();
-        [Config(ConfigType.Session)] public ModeIdProperty modeId = new ModeIdProperty();
+        [Config(ConfigType.Session)] public TickRateProperty tickRate = new(60);
+        [Config(ConfigType.Session)] public AllowCheatsProperty allowCheats = new();
+        [Config(ConfigType.Session)] public ModeIdProperty modeId = new();
 
-        [Config(ConfigType.Session)] public TimeUsProperty respawnDuration = new TimeUsProperty();
-        [Config(ConfigType.Session)] public ByteProperty respawnHealth = new ByteProperty(100);
+        [Config(ConfigType.Session)] public TimeUsProperty respawnDuration = new();
+        [Config(ConfigType.Session)] public ByteProperty respawnHealth = new(100);
 
-        [Config] public ByteProperty fov = new ByteProperty(60);
-        [Config] public UShortProperty targetFps = new UShortProperty(200);
-        [Config] public FloatProperty volume = new FloatProperty(0.5f);
-        [Config] public FloatProperty sensitivity = new FloatProperty(2.0f);
-        [Config] public FloatProperty adsMultiplier = new FloatProperty(1.0f);
-        [Config] public FloatProperty crosshairThickness = new FloatProperty(1.0f);
-        [Config] public InputBindingProperty inputBindings = new InputBindingProperty();
-        [Config] public BoolProperty invertScrollWheel = new BoolProperty(false);
-        [Config] public FloatProperty fpsUpdateRate = new FloatProperty(0.4f);
-        [Config] public BoolProperty logPredictionErrors = new BoolProperty();
-        [Config] public ListProperty<StringProperty> consoleHistory = new ListProperty<StringProperty>(32);
-        [Config] public BoolProperty showDebugInterface = new BoolProperty(true);
+        [Config] public ByteProperty fov = new(60);
+        [Config] public UShortProperty targetFps = new(200);
+        [Config] public FloatProperty volume = new(0.5f);
+        [Config] public FloatProperty sensitivity = new(2.0f);
+        [Config] public FloatProperty adsMultiplier = new(1.0f);
+        [Config] public FloatProperty crosshairThickness = new(1.0f);
+        [Config] public InputBindingProperty inputBindings = new();
+        [Config] public BoolProperty invertScrollWheel = new(false);
+        [Config] public FloatProperty fpsUpdateRate = new(0.4f);
+        [Config] public BoolProperty logPredictionErrors = new();
+        [Config] public ListProperty<StringProperty> consoleHistory = new(32);
+        [Config] public BoolProperty showDebugInterface = new(true);
 
-        [Config] public IntProperty qualityLevel = new IntProperty();
-        [Config] public ResolutionProperty resolution = new ResolutionProperty();
-        [Config] public BoxedEnumProperty<FullScreenMode> fullScreenMode = new BoxedEnumProperty<FullScreenMode>();
+        [Config] public IntProperty qualityLevel = new();
+        [Config] public ResolutionProperty resolution = new();
+        [Config] public BoxedEnumProperty<FullScreenMode> fullScreenMode = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
@@ -244,8 +244,8 @@ namespace Swihoni.Sessions.Config
         private static void Write(DefaultConfig config)
         {
             var builder = new StringBuilder();
-            foreach (KeyValuePair<string, (PropertyBase, ConfigAttribute)> pair in config.m_NameToConfig.OrderBy(key => key.Key))
-                builder.Append(pair.Key).Append(Separator).Append(" ").AppendProperty(pair.Value.Item1).Append("\n");
+            foreach ((string name, (PropertyBase, ConfigAttribute) configEntry) in config.m_NameToConfig.OrderBy(key => key.Key))
+                builder.Append(name).Append(Separator).Append(" ").AppendProperty(configEntry.Item1).Append("\n");
             string configPath = GetConfigFile();
             File.WriteAllText(configPath, builder.ToString());
 #if UNITY_EDITOR
@@ -303,8 +303,8 @@ namespace Swihoni.Sessions.Config
 
         private static void SetActiveToDefault()
         {
-            foreach (KeyValuePair<string, (PropertyBase, ConfigAttribute)> pair in Default.Value.m_NameToConfig)
-                Active.m_NameToConfig[pair.Key].Item1.SetTo(pair.Value.Item1);
+            foreach ((string name, (PropertyBase, ConfigAttribute) config) in Default.Value.m_NameToConfig)
+                Active.m_NameToConfig[name].Item1.SetTo(config.Item1);
         }
 
         public static void OnCommand(string command)

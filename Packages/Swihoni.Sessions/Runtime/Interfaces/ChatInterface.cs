@@ -21,7 +21,7 @@ namespace Swihoni.Sessions.Interfaces
         private string m_WantedInput;
         private float m_TimeSinceLastChat;
 
-        private readonly Queue<string> m_Chats = new Queue<string>();
+        private readonly Queue<string> m_Chats = new();
 
         protected override void Awake()
         {

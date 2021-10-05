@@ -8,7 +8,7 @@ namespace Swihoni.Collections
     public class DurationAverage : CyclicArray<double>
     {
         private readonly string m_Tag;
-        private readonly Stopwatch m_Stopwatch = new Stopwatch();
+        private readonly Stopwatch m_Stopwatch = new();
         
         public DurationAverage(int size, string tag) : base(size, () => default) => m_Tag = tag;
 

@@ -9,7 +9,7 @@ namespace Swihoni.Components
     [Serializable]
     public abstract class ListPropertyBase<TElement> : PropertyBase
     {
-        [SerializeField] protected List<TElement> m_List = new List<TElement>();
+        [SerializeField] protected List<TElement> m_List = new();
         [SerializeField] private int m_MaxSize;
 
         public IReadOnlyList<TElement> List => m_List;

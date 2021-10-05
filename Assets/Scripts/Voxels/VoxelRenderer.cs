@@ -21,17 +21,17 @@ namespace Voxels
 
         private static readonly Position3Int[] Positions =
         {
-            new Position3Int(0, 0, 1),
-            new Position3Int(1, 0, 1),
-            new Position3Int(1, 0, 0),
-            new Position3Int(0, 0, 0),
-            new Position3Int(0, 1, 1),
-            new Position3Int(1, 1, 1),
-            new Position3Int(1, 1, 0),
-            new Position3Int(0, 1, 0)
+            new(0, 0, 1),
+            new(1, 0, 1),
+            new(1, 0, 0),
+            new(0, 0, 0),
+            new(0, 1, 1),
+            new(1, 1, 1),
+            new(1, 1, 0),
+            new(0, 1, 0)
         };
 
-        private static readonly Dictionary<byte, Position3Int> Adjacents = new Dictionary<byte, Position3Int>
+        private static readonly Dictionary<byte, Position3Int> Adjacents = new()
         {
             {Orientation.East, new Position3Int(1, 0, 0)},
             {Orientation.West, new Position3Int(-1, 0, 0)},
@@ -44,7 +44,7 @@ namespace Voxels
         private static readonly int[] VertIdx1 = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3};
         private static readonly int[] VertIdx2 = {1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7};
 
-        private static readonly Vector3 Offset = new Vector3(0.5f, 0.5f, 0.5f);
+        private static readonly Vector3 Offset = new(0.5f, 0.5f, 0.5f);
 
         #endregion
 
@@ -352,53 +352,53 @@ namespace Voxels
 
         private static readonly Vector3[] EastBlockFaceVerts =
         {
-            new Vector3(0.5f, -0.5f, -0.5f),
-            new Vector3(0.5f, 0.5f, -0.5f),
-            new Vector3(0.5f, 0.5f, 0.5f),
-            new Vector3(0.5f, -0.5f, 0.5f)
+            new(0.5f, -0.5f, -0.5f),
+            new(0.5f, 0.5f, -0.5f),
+            new(0.5f, 0.5f, 0.5f),
+            new(0.5f, -0.5f, 0.5f)
         };
 
         private static readonly Vector3[] WestBlockFaceVerts =
         {
-            new Vector3(-0.5f, -0.5f, 0.5f),
-            new Vector3(-0.5f, 0.5f, 0.5f),
-            new Vector3(-0.5f, 0.5f, -0.5f),
-            new Vector3(-0.5f, -0.5f, -0.5f)
+            new(-0.5f, -0.5f, 0.5f),
+            new(-0.5f, 0.5f, 0.5f),
+            new(-0.5f, 0.5f, -0.5f),
+            new(-0.5f, -0.5f, -0.5f)
         };
 
         private static readonly Vector3[] UpBlockFaceVerts =
         {
-            new Vector3(-0.5f, 0.5f, 0.5f),
-            new Vector3(0.5f, 0.5f, 0.5f),
-            new Vector3(0.5f, 0.5f, -0.5f),
-            new Vector3(-0.5f, 0.5f, -0.5f)
+            new(-0.5f, 0.5f, 0.5f),
+            new(0.5f, 0.5f, 0.5f),
+            new(0.5f, 0.5f, -0.5f),
+            new(-0.5f, 0.5f, -0.5f)
         };
 
         private static readonly Vector3[] DownBlockFaceVerts =
         {
-            new Vector3(-0.5f, -0.5f, -0.5f),
-            new Vector3(0.5f, -0.5f, -0.5f),
-            new Vector3(0.5f, -0.5f, 0.5f),
-            new Vector3(-0.5f, -0.5f, 0.5f)
+            new(-0.5f, -0.5f, -0.5f),
+            new(0.5f, -0.5f, -0.5f),
+            new(0.5f, -0.5f, 0.5f),
+            new(-0.5f, -0.5f, 0.5f)
         };
 
         private static readonly Vector3[] NorthBlockFaceVerts =
         {
-            new Vector3(0.5f, -0.5f, 0.5f),
-            new Vector3(0.5f, 0.5f, 0.5f),
-            new Vector3(-0.5f, 0.5f, 0.5f),
-            new Vector3(-0.5f, -0.5f, 0.5f)
+            new(0.5f, -0.5f, 0.5f),
+            new(0.5f, 0.5f, 0.5f),
+            new(-0.5f, 0.5f, 0.5f),
+            new(-0.5f, -0.5f, 0.5f)
         };
 
         private static readonly Vector3[] SouthBlockFaceVerts =
         {
-            new Vector3(-0.5f, -0.5f, -0.5f),
-            new Vector3(-0.5f, 0.5f, -0.5f),
-            new Vector3(0.5f, 0.5f, -0.5f),
-            new Vector3(0.5f, -0.5f, -0.5f)
+            new(-0.5f, -0.5f, -0.5f),
+            new(-0.5f, 0.5f, -0.5f),
+            new(0.5f, 0.5f, -0.5f),
+            new(0.5f, -0.5f, -0.5f)
         };
 
-        private static readonly Dictionary<byte, Vector3[]> BlockVerts = new Dictionary<byte, Vector3[]>
+        private static readonly Dictionary<byte, Vector3[]> BlockVerts = new()
         {
             {Orientation.East, EastBlockFaceVerts},
             {Orientation.West, WestBlockFaceVerts},
@@ -415,10 +415,10 @@ namespace Voxels
         private static readonly float[] CachedDensities = new float[8];
 
         private static readonly ProfilerMarker
-            GenerateBlockMarker = new ProfilerMarker("Generate Block"),
-            GetDensitiesMarker = new ProfilerMarker("Get Densities"),
-            GenerateVerticesMarker = new ProfilerMarker("Generate Vertices"),
-            AddToMeshMarker = new ProfilerMarker("Add to Mesh");
+            GenerateBlockMarker = new("Generate Block"),
+            GetDensitiesMarker = new("Get Densities"),
+            GenerateVerticesMarker = new("Generate Vertices"),
+            AddToMeshMarker = new("Add to Mesh");
 
         public static void RenderVoxels(ChunkManager manager, Chunk chunk, MeshData solidMesh, MeshData foliageMesh)
         {
@@ -469,7 +469,7 @@ namespace Voxels
                             CachedPositions[i] = new Vector3(x, y, z) + Positions[i];
                         }
                     }
-                    if (cubeIndex == 0 || cubeIndex == 255) continue;
+                    if (cubeIndex is 0 or 255) continue;
                     using (GenerateVerticesMarker.Auto())
                     {
                         for (var i = 0; i < 12; i++)

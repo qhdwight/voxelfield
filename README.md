@@ -33,7 +33,7 @@ C#                             218           3221           4791          19558
 - Deagle
 - Sniper
 - Grenade Launcher
-- Missile Launcher
+  - Missile Launcher
 - Sand Bomb
 - C4
 - Grenade

@@ -9,9 +9,9 @@ namespace Swihoni.Components.Tests
         public InnerComponent inner;
 
         public UIntProperty @uint;
-        public ArrayElement<UIntProperty> intArray = new ArrayElement<UIntProperty>(2);
+        public ArrayElement<UIntProperty> intArray = new(2);
         public VectorProperty vector;
-        public Container container = new Container(typeof(ByteProperty));
+        public Container container = new(typeof(ByteProperty));
 
         internal static OuterComponent Arbitrary
         {

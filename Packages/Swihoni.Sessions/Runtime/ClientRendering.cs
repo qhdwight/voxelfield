@@ -13,10 +13,10 @@ namespace Swihoni.Sessions
 {
     public partial class Client
     {
-        private static readonly ProfilerMarker ClientRenderPlayers = new ProfilerMarker("Client Render Players"),
-                                               ClientRenderInterfaces = new ProfilerMarker("Client Render Interfaces"),
-                                               ClientRenderEntities = new ProfilerMarker("Client Render Entities"),
-                                               ClientRenderMode = new ProfilerMarker("Client Render Mode");
+        private static readonly ProfilerMarker ClientRenderPlayers = new("Client Render Players"),
+                                               ClientRenderInterfaces = new("Client Render Interfaces"),
+                                               ClientRenderEntities = new("Client Render Entities"),
+                                               ClientRenderMode = new("Client Render Mode");
 
         protected override void Render(uint renderTimeUs)
         {

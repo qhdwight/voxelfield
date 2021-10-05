@@ -37,7 +37,7 @@ namespace Voxelfield.Session
     {
         private static IPAddress DefaultAddress => IPAddress.Loopback;
         public static int DefaultPort => 27015;
-        private static readonly IPEndPoint DefaultEndPoint = new IPEndPoint(DefaultAddress, DefaultPort);
+        private static readonly IPEndPoint DefaultEndPoint = new(DefaultAddress, DefaultPort);
         private static readonly string[] IpSeparator = {":"};
 
         public static bool WantsApplicationQuit { get; set; }

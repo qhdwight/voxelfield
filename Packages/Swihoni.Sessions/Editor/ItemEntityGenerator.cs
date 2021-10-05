@@ -22,10 +22,10 @@ namespace Swihoni.Sessions.Editor
             //                                                     .SelectMany(gameObject => gameObject.GetComponentsInChildren<MeshFilter>().ToArray())
             //                                                     .ToDictionary(filter => filter.sharedMesh.GetInstanceID(),
             //                                                                   filter => filter.transform.root.gameObject);
-            foreach (KeyValuePair<byte, ItemModifierBase> pair in ItemAssetLink.ItemVisualPrefabs)
+            foreach ((byte _, ItemModifierBase itemModifier) in ItemAssetLink.ItemVisualPrefabs)
             {
-                var modelId = (byte) (100 + pair.Value.id);
-                ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisualPrefab(pair.Value.id);
+                var modelId = (byte) (100 + itemModifier.id);
+                ItemVisualBehavior visualPrefab = ItemAssetLink.GetVisualPrefab(itemModifier.id);
                 // Mesh[] meshes = visualPrefab.GetComponentsInChildren<MeshFilter>().Select(filter => filter.sharedMesh).ToArray();
                 Mesh[] meshes = visualPrefab.GetComponentsInChildren<MeshFilter>().Select(filter => filter.sharedMesh).ToArray();
                 // GameObject modelPrefab = meshToPrefab[meshes[0].GetInstanceID()];
@@ -35,7 +35,7 @@ namespace Swihoni.Sessions.Editor
                 {
                     foreach (Component c in t.GetComponents<Component>())
                     {
-                        if (c is MeshFilter || c is Renderer || c is Transform) continue;
+                        if (c is MeshFilter or Renderer or Transform) continue;
                         Object.DestroyImmediate(c);
                     }
                     foreach (Transform ct in t)
@@ -43,7 +43,7 @@ namespace Swihoni.Sessions.Editor
                 }
                 Recurse(visualInstance.transform);
 
-                visualInstance.name = $"{pair.Value.itemName} Entity Visual Variant";
+                visualInstance.name = $"{itemModifier.itemName} Entity Visual Variant";
                 var visual = visualInstance.AddComponent<EntityVisualBehavior>();
                 visual.id = modelId;
                 PrefabUtility.SaveAsPrefabAsset(visualInstance, $"Assets/Resources/Entities/Items/{visualInstance.name}.prefab");
@@ -54,7 +54,7 @@ namespace Swihoni.Sessions.Editor
                     bounds.Encapsulate(meshes[i].bounds);
 
                 var modifierInstance = (GameObject) PrefabUtility.InstantiatePrefab(modifierPrefab);
-                modifierInstance.name = $"{pair.Value.itemName} Entity Modifier Variant";
+                modifierInstance.name = $"{itemModifier.itemName} Entity Modifier Variant";
                 modifierInstance.layer = LayerMask.NameToLayer("Item Entity");
                 var modifier = modifierInstance.GetComponent<ItemEntityModifierBehavior>();
                 modifier.id = modelId;

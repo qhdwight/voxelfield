@@ -10,7 +10,7 @@ namespace Swihoni.Components
     [Serializable]
     public class Container : ComponentBase, IEnumerable<(Type, ElementBase)>
     {
-        private Dictionary<Type, int> m_TypeToIndex = new Dictionary<Type, int>();
+        private Dictionary<Type, int> m_TypeToIndex = new();
 
         public IEnumerable<Type> ElementTypes => m_TypeToIndex.Keys;
 

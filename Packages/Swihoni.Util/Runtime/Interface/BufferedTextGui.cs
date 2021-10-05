@@ -5,7 +5,7 @@ namespace Swihoni.Util.Interface
 {
     public class BufferedTextGui : TextMeshProUGUI
     {
-        public StringBuilder Builder { get; } = new StringBuilder(1 << 5);
+        public StringBuilder Builder { get; } = new(1 << 5);
 
         public StringBuilder StartBuild()
         {

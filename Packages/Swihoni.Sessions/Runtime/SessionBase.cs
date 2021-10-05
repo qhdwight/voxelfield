@@ -29,7 +29,7 @@ namespace Swihoni.Sessions
     {
         public List<Type> elements, playerElements, commandElements;
 
-        public static SessionElements NewStandardSessionElements() => new SessionElements
+        public static SessionElements NewStandardSessionElements() => new()
         {
             elements = new List<Type>
             {
@@ -109,7 +109,7 @@ namespace Swihoni.Sessions
 
         private static List<SessionBase> _sessions, _sessionList;
         private static InterfaceBehaviorBase[] _interfaces;
-        private static readonly ProfilerMarker InterpolatePlayerMarker = new ProfilerMarker("Interpolate Player");
+        private static readonly ProfilerMarker InterpolatePlayerMarker = new("Interpolate Player");
 
         public static int SessionCount => _sessions.Count;
 

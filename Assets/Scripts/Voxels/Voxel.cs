@@ -34,11 +34,11 @@ namespace Voxels
 
     public struct Voxel
     {
-        public static readonly Color32 Dirt = new Color32(39, 25, 10, 255),
-                                       Stone = new Color32(39, 39, 39, 255),
+        public static readonly Color32 Dirt = new(39, 25, 10, 255),
+                                       Stone = new(39, 39, 39, 255),
                                        // Grass = new Color32(68, 144, 71, 255),
-                                       Grass = new Color32(68, 144, 71, 255),
-                                       Wood = new Color32(132, 83, 40, 255);
+                                       Grass = new(68, 144, 71, 255),
+                                       Wood = new(132, 83, 40, 255);
 
         public const float
             TileSize = 256.0f,

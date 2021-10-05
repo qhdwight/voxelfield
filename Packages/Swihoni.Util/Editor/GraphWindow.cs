@@ -5,7 +5,7 @@ namespace Swihoni.Util.Editor
 {
     public class GraphWindow : EditorWindow
     {
-        private AnimationCurve m_Curve = new AnimationCurve();
+        private AnimationCurve m_Curve = new();
 
         [MenuItem("Window/Graph")]
         private static void ShowWindow() => GetWindow<GraphWindow>("Graph");

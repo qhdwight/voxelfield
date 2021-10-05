@@ -222,6 +222,6 @@ namespace Swihoni.Sessions.Player.Components
     [Serializable, TakeSecondForInterpolation]
     public class SteamIdProperty : ULongProperty
     {
-        public Friend AsFriend => new Friend(Value);
+        public Friend AsFriend => new(Value);
     }
 }

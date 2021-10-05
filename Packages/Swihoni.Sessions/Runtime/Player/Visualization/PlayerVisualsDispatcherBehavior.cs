@@ -31,7 +31,7 @@ namespace Swihoni.Sessions.Player.Visualization
         private AudioListener m_AudioListener;
         private Camera m_Camera;
         private PlayerVisualsBehaviorBase[] m_Visuals;
-        private readonly StringBuilder m_UsernameBuilder = new StringBuilder();
+        private readonly StringBuilder m_UsernameBuilder = new();
 
         private Container m_RecentRender;
 
@@ -46,7 +46,7 @@ namespace Swihoni.Sessions.Player.Visualization
             m_AudioListener = GetComponentInChildren<AudioListener>();
         }
 
-        private readonly StringBuilder m_DamageNotifierBuilder = new StringBuilder();
+        private readonly StringBuilder m_DamageNotifierBuilder = new();
 
         public void Render(in SessionContext context, bool isLocalPlayer)
         {

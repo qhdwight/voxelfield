@@ -45,9 +45,9 @@ namespace Swihoni.Util.Math
             writer.Put(position.z);
         }
 
-        public static Position3Int Deserialize(NetDataReader reader) => new Position3Int(reader.GetInt(),
-                                                                                         reader.GetInt(),
-                                                                                         reader.GetInt());
+        public static Position3Int Deserialize(NetDataReader reader) => new(reader.GetInt(),
+                                                                            reader.GetInt(),
+                                                                            reader.GetInt());
 
         // public bool InsideDimension(Dimension dimension) =>
         //     x >= dimension.lowerBound.x && y >= dimension.lowerBound.y && z >= dimension.lowerBound.z
@@ -65,18 +65,18 @@ namespace Swihoni.Util.Math
 
         public static bool operator !=(Position3Int p1, Position3Int p2) => p1.x != p2.x || p1.y != p2.y || p1.z != p2.z;
 
-        public static Position3Int operator +(Position3Int p1, Position3Int p2) => new Position3Int(p1.x + p2.x, p1.y + p2.y, p1.z + p2.z);
+        public static Position3Int operator +(Position3Int p1, Position3Int p2) => new(p1.x + p2.x, p1.y + p2.y, p1.z + p2.z);
 
-        public static Position3Int operator -(Position3Int p1, Position3Int p2) => new Position3Int(p1.x - p2.x, p1.y - p2.y, p1.z - p2.z);
+        public static Position3Int operator -(Position3Int p1, Position3Int p2) => new(p1.x - p2.x, p1.y - p2.y, p1.z - p2.z);
 
-        public static Position3Int operator *(Position3Int p, int s) => new Position3Int(p.x * s, p.y * s, p.z * s);
+        public static Position3Int operator *(Position3Int p, int s) => new(p.x * s, p.y * s, p.z * s);
 
-        public static Position3Int operator /(Position3Int p, int s) => new Position3Int(p.x / s, p.y / s, p.z / s);
+        public static Position3Int operator /(Position3Int p, int s) => new(p.x / s, p.y / s, p.z / s);
 
-        public static Position3Int operator -(Position3Int p) => new Position3Int(-p.x, -p.y, -p.z);
+        public static Position3Int operator -(Position3Int p) => new(-p.x, -p.y, -p.z);
 
-        public static implicit operator Vector3(Position3Int p) => new Vector3(p.x, p.y, p.z);
+        public static implicit operator Vector3(Position3Int p) => new(p.x, p.y, p.z);
 
-        public static explicit operator Position3Int(Vector3 v) => new Position3Int(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y), Mathf.RoundToInt(v.z));
+        public static explicit operator Position3Int(Vector3 v) => new(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y), Mathf.RoundToInt(v.z));
     }
 }

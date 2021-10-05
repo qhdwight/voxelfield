@@ -79,7 +79,7 @@ namespace Swihoni.Sessions.Modes
     {
         private const uint DefaultItemEntityLifespanUs = 20_000_000u;
         
-        private static readonly Dictionary<Color, string> CachedHex = new Dictionary<Color, string>();
+        private static readonly Dictionary<Color, string> CachedHex = new();
 
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeCommands() => SessionBase.RegisterSessionCommand("restart_mode", "force_start");
@@ -127,7 +127,7 @@ namespace Swihoni.Sessions.Modes
 
         public virtual bool IsSpectating(Container session, Container actualLocalPlayer) => false;
 
-        protected virtual Vector3 GetSpawnPosition(in SessionContext context) => new Vector3 {y = 8.0f};
+        protected virtual Vector3 GetSpawnPosition(in SessionContext context) => new() {y = 8.0f};
 
         public virtual void BeginModify(in SessionContext context)
         {

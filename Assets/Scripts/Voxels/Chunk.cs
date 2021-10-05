@@ -15,7 +15,7 @@ namespace Voxels
         [SerializeField] private Material m_FoliageMaterial = default;
         [SerializeField, Layer] private int m_Layer = default;
 
-        private readonly MeshData m_SolidMeshData = new MeshData(), m_FoliageMeshData = new MeshData();
+        private readonly MeshData m_SolidMeshData = new(), m_FoliageMeshData = new();
 
         private ChunkManager m_ChunkManager;
         private Mesh m_SolidMesh, m_FoliageMesh;

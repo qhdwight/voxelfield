@@ -21,12 +21,12 @@ namespace Voxels.Map
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(m_Map.Count);
-            foreach (KeyValuePair<Position3Int, Container> pair in m_Map)
+            foreach ((Position3Int position, Container container) in m_Map)
             {
-                Position3Int.Serialize(pair.Key, writer);
-                var typeCount = (byte) pair.Value.Elements.Count;
+                Position3Int.Serialize(position, writer);
+                var typeCount = (byte) container.Elements.Count;
                 writer.Put(typeCount);
-                SerializeContainer(pair.Value, writer);
+                SerializeContainer(container, writer);
             }
         }
 

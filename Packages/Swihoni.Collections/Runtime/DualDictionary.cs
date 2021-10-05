@@ -22,10 +22,10 @@ namespace Swihoni.Collections
         {
             m_Forward = new Dictionary<TKey, TValue>(original.Count);
             m_Reverse = new Dictionary<TValue, TKey>(original.Count);
-            foreach (KeyValuePair<TKey, TValue> pair in original)
+            foreach ((TKey key, TValue value) in original)
             {
-                m_Forward.Add(pair.Key, pair.Value);
-                m_Reverse.Add(pair.Value, pair.Key);
+                m_Forward.Add(key, value);
+                m_Reverse.Add(value, key);
             }
         }
 

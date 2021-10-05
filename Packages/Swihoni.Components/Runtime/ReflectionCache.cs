@@ -7,9 +7,9 @@ namespace Swihoni.Components
 {
     public static class ReflectionCache
     {
-        private static readonly Dictionary<Type, FieldInfo[]> FieldCache = new Dictionary<Type, FieldInfo[]>();
-        private static readonly Dictionary<MemberInfo, Dictionary<Type, Attribute>> AttributeCache = new Dictionary<MemberInfo, Dictionary<Type, Attribute>>();
-        private static readonly Dictionary<MemberInfo, HashSet<Type>> AttributeTypeCache = new Dictionary<MemberInfo, HashSet<Type>>();
+        private static readonly Dictionary<Type, FieldInfo[]> FieldCache = new();
+        private static readonly Dictionary<MemberInfo, Dictionary<Type, Attribute>> AttributeCache = new();
+        private static readonly Dictionary<MemberInfo, HashSet<Type>> AttributeTypeCache = new();
 
         /// <returns>Ordered list by declaring type of fields. This places fields belonging to base classes first.</returns>
         public static IReadOnlyList<FieldInfo> GetFieldInfo(Type type)

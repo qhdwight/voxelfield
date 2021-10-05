@@ -27,34 +27,27 @@ namespace Voxelfield.Session.Mode
 
         [SerializeField] private LayerMask m_PlayerMask = default;
         [SerializeField] private float m_CaptureRadius = 3.0f;
-        [SerializeField] private Color m_BlueColor = new Color(0.1764705882f, 0.5098039216f, 0.8509803922f),
-                                       m_RedColor = new Color(0.8196078431f, 0.2156862745f, 0.1960784314f);
+        [SerializeField] private Color m_BlueColor = new(0.1764705882f, 0.5098039216f, 0.8509803922f),
+                                       m_RedColor = new(0.8196078431f, 0.2156862745f, 0.1960784314f);
         [SerializeField] private ItemModifierBase[] m_PickupItemIds = default;
         [SerializeField] private byte m_HealthPackBonus = 75;
 
         // private readonly RaycastHit[] m_CachedHits = new RaycastHit[1];
         private readonly Collider[] m_CachedColliders = new Collider[SessionBase.MaxPlayers];
-        private (PickUpBehavior[], FlagBehavior[][]) m_Behaviors;
-        private VoxelMapNameProperty m_LastMapName;
-
-        public override void Initialize() => m_LastMapName = new VoxelMapNameProperty();
 
         private (PickUpBehavior[], FlagBehavior[][]) GetBehaviors(SessionContext context)
         {
             MapManager mapManager = context.GetMapManager();
-            StringProperty mapName = mapManager.Map.name;
-            if (m_LastMapName == mapName) return m_Behaviors;
-            m_LastMapName.SetTo(mapName);
-            return m_Behaviors = (mapManager.Models.Values
-                                            .Where(model => model is PickUpBehavior)
-                                            .Cast<PickUpBehavior>()
-                                            .OrderBy(model => model.Position.GetHashCode())
-                                            .ToArray(),
-                                  mapManager.Models.Values
-                                            .Where(model => model is FlagBehavior)
-                                            .GroupBy(model => model.Container.Require<TeamProperty>().Value)
-                                            .OrderBy(group => group.Key)
-                                            .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray());
+            return (mapManager.Models.Values
+                              .Where(model => model is PickUpBehavior)
+                              .Cast<PickUpBehavior>()
+                              .OrderBy(model => model.Position.GetHashCode())
+                              .ToArray(),
+                    mapManager.Models.Values
+                              .Where(model => model is FlagBehavior)
+                              .GroupBy(model => model.Container.Require<TeamProperty>().Value)
+                              .OrderBy(group => group.Key)
+                              .Select(group => group.Cast<FlagBehavior>().ToArray()).ToArray());
         }
 
         public override void BeginModify(in SessionContext context)
@@ -215,7 +208,7 @@ namespace Voxelfield.Session.Mode
             {
                 if (!m_CachedColliders[i].TryGetComponent(out PlayerTrigger playerTrigger)) continue;
 
-                var playerIdInFlag = (byte) playerTrigger.PlayerId;
+                var playerIdInFlag = (byte)playerTrigger.PlayerId;
                 Container player = context.GetModifyingPlayer(playerIdInFlag);
                 if (player.Require<TeamProperty>() == flagTeam)
                 {
@@ -264,7 +257,7 @@ namespace Voxelfield.Session.Mode
                 for (var i = 0; i < enemyFlags.Length; i++)
                 {
                     FlagComponent enemyFlag = enemyFlags[i];
-                    if (enemyFlag.capturingPlayerId.WithValueEqualTo((byte) player.PlayerId)
+                    if (enemyFlag.capturingPlayerId.WithValueEqualTo((byte)player.PlayerId)
                      && enemyFlag.captureElapsedTimeUs > TakeFlagDurationUs) // Test if friendly returning enemy flag
                     {
                         enemyFlag.Clear();
@@ -279,12 +272,12 @@ namespace Voxelfield.Session.Mode
             Container player = context.player;
             if (begin)
             {
-                player.Require<TeamProperty>().Value = (byte) (context.playerId % 2);
+                player.Require<TeamProperty>().Value = (byte)(context.playerId % 2);
                 player.ZeroIfWith<StatsComponent>();
             }
             player.Require<ByteIdProperty>().Value = 1;
             player.ZeroIfWith<CameraComponent>();
-            if (player.With(out HealthProperty health)) health.Value = begin ? (byte) 0 : DefaultConfig.Active.respawnHealth;
+            if (player.With(out HealthProperty health)) health.Value = begin ? (byte)0 : DefaultConfig.Active.respawnHealth;
             player.ZeroIfWith<RespawnTimerProperty>();
             if (player.With(out InventoryComponent inventory))
             {

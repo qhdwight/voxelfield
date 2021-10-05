@@ -117,7 +117,7 @@ namespace Swihoni.Sessions.Components
         public TimeUsProperty timeUs;
         public ByteProperty killingPlayerId, killedPlayerId;
         public BoolProperty isHeadShot;
-        public StringProperty weaponName = new StringProperty(32);
+        public StringProperty weaponName = new(32);
     }
 
     [Serializable, ModeElement]
