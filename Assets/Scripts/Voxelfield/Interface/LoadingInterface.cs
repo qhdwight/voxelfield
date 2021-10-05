@@ -27,6 +27,7 @@ namespace Voxelfield.Interface
                 MapProgressInfo progressInfo = session.GetChunkManager().ProgressInfo;
                 m_Text.SetText(progressInfo.stage switch
                 {
+                    MapLoadingStage.Waiting      => "Waiting...",
                     MapLoadingStage.CleaningUp   => "Cleaning up...",
                     MapLoadingStage.SettingUp    => "Setting up...",
                     MapLoadingStage.Generating   => "Generating terrain from save...",

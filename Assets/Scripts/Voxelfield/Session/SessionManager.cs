@@ -38,7 +38,7 @@ namespace Voxelfield.Session
         private static IPAddress DefaultAddress => IPAddress.Loopback;
         public static int DefaultPort => 27015;
         private static readonly IPEndPoint DefaultEndPoint = new(DefaultAddress, DefaultPort);
-        private static readonly string[] IpSeparator = {":"};
+        private static readonly string[] IpSeparator = { ":" };
 
         public static bool WantsApplicationQuit { get; set; }
 
@@ -73,7 +73,7 @@ namespace Voxelfield.Session
             {
                 // OrderedVoxelChangesProperty c = MapManager.Singleton.Map.voxelChanges, clone = c.Clone();
                 // c.Clear();
-                
+
                 // foreach (VoxelChange change in clone.List)
                 // {
                 //     VoxelChange v = change;
@@ -93,11 +93,11 @@ namespace Voxelfield.Session
                 OrderedVoxelChangesProperty c = mapManager.Map.voxelChanges, clone = c.Clone();
                 c.Clear();
 
-                foreach (VoxelChange voxel in clone.List) 
+                foreach (VoxelChange voxel in clone.List)
                     if (voxel.form != VoxelVolumeForm.Single)
                         c.Append(voxel);
             });
-            
+
             SetCommand("serve", arguments =>
             {
                 Server server = StartServer(GetEndPoint(arguments));
@@ -368,7 +368,7 @@ namespace Voxelfield.Session
             {
                 name = new StringProperty("Fort"),
                 terrainHeight = new IntProperty(9),
-                dimension = new DimensionComponent {lowerBound = new Position3IntProperty(-2, 0, -2), upperBound = new Position3IntProperty(2, 1, 2)},
+                dimension = new DimensionComponent { lowerBound = new Position3IntProperty(-2, 0, -2), upperBound = new Position3IntProperty(2, 1, 2) },
                 terrainGeneration = new TerrainGenerationComponent
                 {
                     seed = new IntProperty(1337),
@@ -377,8 +377,8 @@ namespace Voxelfield.Session
                     verticalScale = new FloatProperty(1.5f),
                     persistence = new FloatProperty(0.5f),
                     lacunarity = new FloatProperty(0.5f),
-                    grassVoxel = new VoxelChangeProperty(new VoxelChange {texture = VoxelTexture.Solid, color = new Color32(255, 172, 7, 255)}),
-                    stoneVoxel = new VoxelChangeProperty(new VoxelChange {texture = VoxelTexture.Checkered, color = new Color32(28, 28, 28, 255)}),
+                    grassVoxel = new VoxelChangeProperty(new VoxelChange { texture = VoxelTexture.Solid, color = new Color32(255, 172, 7, 255) }),
+                    stoneVoxel = new VoxelChangeProperty(new VoxelChange { texture = VoxelTexture.Checkered, color = new Color32(28, 28, 28, 255) }),
                 },
                 models = models,
                 breakableEdges = new BoolProperty(false)
@@ -449,18 +449,18 @@ namespace Voxelfield.Session
                                                     scripting == ScriptingImplementation.Mono2x ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.Low);
             var buildPlayerOptions = new BuildPlayerOptions
             {
-                scenes = new[] {"Assets/Scenes/Base.unity"},
+                scenes = new[] { "Assets/Scenes/Base.unity" },
                 locationPathName = executablePath,
-                target = target,
-                options = isServer ? BuildOptions.EnableHeadlessMode : BuildOptions.AutoRunPlayer
+                target = target
             };
+            EditorUserBuildSettings.standaloneBuildSubtarget = isServer ? StandaloneBuildSubtarget.Server : StandaloneBuildSubtarget.Player;
             if (defines != null) buildPlayerOptions.extraScriptingDefines = defines;
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"{name} build succeeded: {summary.totalSize / 1_000_000:F1} mb in {summary.totalTime:mm:ss}");
+                    Debug.Log($"{name} build succeeded: {summary.totalSize / 1_000_000} mb in {summary.totalTime:mm\\:ss}");
                     break;
                 case BuildResult.Unknown:
                 case BuildResult.Failed:
