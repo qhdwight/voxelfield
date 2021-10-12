@@ -84,7 +84,7 @@ namespace Swihoni.Components
         /// </summary>
         public static TElement Clone<TElement>(this TElement element) where TElement : ElementBase
         {
-            var clone = (TElement) element.GetType().NewElement();
+            var clone = (TElement)element.GetType().NewElement();
             NavigateZipped(element, clone, (_e1, _e2) =>
             {
                 if (_e1 is Container p1 && _e2 is Container p2)
@@ -118,16 +118,16 @@ namespace Swihoni.Components
         /// <summary>See: <see cref="Navigate"/></summary>
         public static ElementBase NavigateProperties(this ElementBase e, Action<PropertyBase> visit)
         {
-            var zip = new TriArray<ElementBase> {[0] = e};
-            Navigate(new VisitPropsAction {action = visit}, zip, 1);
+            var zip = new TriArray<ElementBase> { [0] = e };
+            Navigate(new VisitPropsAction { action = visit }, zip, 1);
             return e;
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
         public static ElementBase Navigate(this ElementBase e, Func<ElementBase, Navigation> visit, Func<ElementBase, Navigation> endVisit = null)
         {
-            var zip = new TriArray<ElementBase> {[0] = e};
-            Navigate(new VisitFunc {function = visit}, zip, 1, new VisitFunc {function = endVisit});
+            var zip = new TriArray<ElementBase> { [0] = e };
+            Navigate(new VisitFunc { function = visit }, zip, 1, new VisitFunc { function = endVisit });
             return e;
         }
 
@@ -135,16 +135,16 @@ namespace Swihoni.Components
         public static void NavigateZipped(ElementBase e1, ElementBase e2, Func<ElementBase, ElementBase, Navigation> visit,
                                           Func<ElementBase, ElementBase, Navigation> endVisit = null)
         {
-            var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2};
-            Navigate(new DualVisitFunc {function = visit}, zip, 2, new DualVisitFunc {function = endVisit});
+            var zip = new TriArray<ElementBase> { [0] = e1, [1] = e2 };
+            Navigate(new DualVisitFunc { function = visit }, zip, 2, new DualVisitFunc { function = endVisit });
         }
 
         /// <summary>See: <see cref="Navigate"/></summary>
         public static void NavigateZipped(ElementBase e1, ElementBase e2, ElementBase e3, Func<ElementBase, ElementBase, ElementBase, Navigation> visit,
                                           Func<ElementBase, ElementBase, ElementBase, Navigation> endVisit = null)
         {
-            var zip = new TriArray<ElementBase> {[0] = e1, [1] = e2, [2] = e3};
-            Navigate(new TriVisitFunc {function = visit}, zip, 3, new TriVisitFunc {function = endVisit});
+            var zip = new TriArray<ElementBase> { [0] = e1, [1] = e2, [2] = e3 };
+            Navigate(new TriVisitFunc { function = visit }, zip, 3, new TriVisitFunc { function = endVisit });
         }
 
         /// <summary>
@@ -170,14 +170,14 @@ namespace Swihoni.Components
 
                 switch (_zip[0])
                 {
-                    case Container _:
+                    case Container:
                     {
                         var zippedContainers = new TriArray<Container>();
                         // Truncate iteration to count of smallest elements collection
                         var elementSize = int.MaxValue;
                         for (var i = 0; i < size; i++)
                         {
-                            zippedContainers[i] = (Container) _zip[i];
+                            zippedContainers[i] = (Container)_zip[i];
                             int count = zippedContainers[i].Elements.Count;
                             if (count < elementSize) elementSize = count;
                         }
@@ -207,7 +207,7 @@ namespace Swihoni.Components
                         for (var j = 0; j < a1.Length; j++)
                         {
                             var zippedElements = new TriArray<ElementBase>();
-                            for (var i = 0; i < size; i++) zippedElements[i] = ((ArrayElementBase) _zip[i])[j];
+                            for (var i = 0; i < size; i++) zippedElements[i] = ((ArrayElementBase)_zip[i])[j];
                             NavigateRecursively(zippedElements);
                         }
                         break;
@@ -217,14 +217,14 @@ namespace Swihoni.Components
                         for (var j = 0; j < c1.Elements.Count; j++)
                         {
                             var zippedChildren = new TriArray<ElementBase>();
-                            for (var i = 0; i < size; i++) zippedChildren[i] = ((ComponentBase) _zip[i])[j];
+                            for (var i = 0; i < size; i++) zippedChildren[i] = ((ComponentBase)_zip[i])[j];
                             NavigateRecursively(zippedChildren);
                         }
                         break;
                     }
                     default:
                     {
-                        if (!(_zip[0] is PropertyBase)) throw new ArgumentException("Expected component or array");
+                        if (_zip[0] is not PropertyBase) throw new ArgumentException("Expected component or array");
                         break;
                     }
                 }
@@ -256,7 +256,6 @@ namespace Swihoni.Components
                 }
                 set
                 {
-                    // @formatter:off
                     switch (index)
                     {
                         case 0:  m_E1 = value; break;
@@ -264,7 +263,6 @@ namespace Swihoni.Components
                         case 2:  m_E3 = value; break;
                         default: throw new IndexOutOfRangeException();
                     }
-                    // @formatter:on
                 }
             }
         }

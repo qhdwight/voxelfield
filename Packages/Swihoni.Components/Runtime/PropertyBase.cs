@@ -275,7 +275,7 @@ namespace Swihoni.Components
         /// <exception cref="ArgumentException">If types are different.</exception>
         public override void SetFromIfWith(PropertyBase other)
         {
-            if (!(other is PropertyBase<T> otherProperty))
+            if (other is not PropertyBase<T> otherProperty)
                 throw new ArgumentException("Other property is not of the same type");
             if (otherProperty.WithValue)
                 Value = otherProperty.m_Value;
@@ -283,7 +283,7 @@ namespace Swihoni.Components
 
         public override void SetTo(PropertyBase other)
         {
-            if (!(other is PropertyBase<T> otherProperty))
+            if (other is not PropertyBase<T> otherProperty)
                 throw new ArgumentException("Other property is not of the same type");
             SetTo(otherProperty);
         }
@@ -304,7 +304,7 @@ namespace Swihoni.Components
         /// <exception cref="ArgumentException">If types are different.</exception>
         public sealed override void InterpolateFrom(PropertyBase p1, PropertyBase p2, float interpolation)
         {
-            if (!(p1 is PropertyBase<T> pt1) || !(p2 is PropertyBase<T> pt2))
+            if (p1 is not PropertyBase<T> pt1 || p2 is not PropertyBase<T> pt2)
                 throw new ArgumentException("Properties are not the proper type!");
             if (pt1.WithoutValue || pt2.WithoutValue || WithAttribute<TakeSecondForInterpolationAttribute>())
             {

@@ -15,9 +15,7 @@ namespace Voxels
             {
                 n--;
                 int k = Random.Range(0, n);
-                byte value = _permutations[k];
-                _permutations[k] = _permutations[n];
-                _permutations[n] = value;
+                (_permutations[k], _permutations[n]) = (_permutations[n], _permutations[k]);
             }
         }
 

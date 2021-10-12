@@ -49,9 +49,6 @@ namespace Swihoni.Sessions.Items.Visuals
         private ArmIk m_ArmIk;
         private float m_SetupTime;
 
-        // protected ItemComponent _item;
-        // private ItemStatusVisualProperties _properties;
-
         public byte Id => m_Id;
         public Vector3 FpvOffset => m_FpvOffset;
         public Vector3 TpvOffset => m_TpvOffset;

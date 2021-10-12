@@ -23,6 +23,30 @@ C#                             218           3221           4791          19558
 -------------------------------------------------------------------------------
 ```
 
+### Code Layout
+Modularity is achieved using Unity packages and assembly definitions
+
+Voxelfield Specific Scripts:
+- [Voxels](Assets/Scripts/Voxels)
+  - [Chunk](Assets/Scripts/Voxels/Chunk.cs)
+  - [ChunkManager](Assets/Scripts/Voxels/ChunkManager.cs)
+  - [MapManager](Assets/Scripts/Voxels/Map/MapManager.cs)
+  - [Rendering](Assets/Scripts/Voxels/VoxelRenderer.cs)
+- [Voxelfield](Assets/Scripts/Voxelfield)
+  - [Components](Assets/Scripts/Voxelfield/Session/Components.cs)
+
+FPS General Packages:
+- [Session](Packages/Swihoni.Sessions) - Modifying the game, clients, servers
+  - [Server](Packages/Swihoni.Sessions/Runtime/Server.cs)
+  - [Client](Packages/Swihoni.Sessions/Runtime/Client.cs)
+  - [Client Prediction](Packages/Swihoni.Sessions/Runtime/ClientPrediction.cs)
+  - [Common Session Components](Packages/Swihoni.Sessions/Runtime/Components/SessionComponents.cs)
+  - [Common Player Components](Packages/Swihoni.Sessions/Runtime/Player/Components/PlayerComponents.cs)
+- [Component](Packages/Swihoni.Components) - Defining game data
+- [LiteNetLib](Packages/LiteNetLib) - Forked networking library by [RevenantX](https://github.com/RevenantX/LiteNetLib)
+
+
+
 ### Gamemodes
 - CTF (Capture the Flag)
 - Secure Area

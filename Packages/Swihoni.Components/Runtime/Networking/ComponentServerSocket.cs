@@ -7,7 +7,7 @@ namespace Swihoni.Components.Networking
     {
         public ComponentServerSocket(IPEndPoint ip, EventBasedNetListener.OnConnectionRequest acceptConnection = null)
         {
-            if (acceptConnection == null) acceptConnection = DefaultAcceptConnection;
+            acceptConnection ??= DefaultAcceptConnection;
             m_NetworkManager.Start(ip.Address, null, ip.Port);
             m_Listener.ConnectionRequestEvent += acceptConnection;
         }
