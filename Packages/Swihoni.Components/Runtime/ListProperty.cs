@@ -28,7 +28,7 @@ namespace Swihoni.Components
 
         public override void SetTo(PropertyBase other)
         {
-            if (!(other is ListPropertyBase<TElement> otherList)) throw new ArgumentException("Other was not same type list");
+            if (other is not ListPropertyBase<TElement> otherList) throw new ArgumentException("Other was not same type list");
             Clear();
             AddAllFrom(otherList);
         }
@@ -98,7 +98,7 @@ namespace Swihoni.Components
 
         public override bool Equals(PropertyBase other)
         {
-            if (!(other is ListProperty<TElement> otherList)) throw new ArgumentException("Other was not same type list");
+            if (other is not ListProperty<TElement> otherList) throw new ArgumentException("Other was not same type list");
             if (otherList.Count != Count) return false;
             for (var i = 0; i < Count; i++)
                 if (!Equals(m_List[i], otherList.m_List[i]))

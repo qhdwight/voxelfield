@@ -31,7 +31,7 @@ namespace Swihoni.Util.Animation
             for (var boneIndex = 0; boneIndex < BoneCount; boneIndex++)
             {
                 if (current == null) return false;
-                if (arm.bones == null) arm.bones = new Transform[BoneCount];
+                arm.bones ??= new Transform[BoneCount];
                 arm.bones[boneIndex] = current;
                 current = current.parent;
             }

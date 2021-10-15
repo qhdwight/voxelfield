@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using Swihoni.Sessions.Entities;
 using Swihoni.Sessions.Items;

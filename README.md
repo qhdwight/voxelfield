@@ -3,6 +3,7 @@
 Voxelfield is a multiplayer shooter game where the terrain is completely destructible.
 
 Video: https://youtu.be/m-gB7DvBCo4
+Itch.io: https://shaweewoo.itch.io/voxelfield
 
 ![Screenshot 1](screenshot_1.jpg)
 ![Screenshot 2](screenshot_2.jpg)

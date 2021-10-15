@@ -111,7 +111,7 @@ namespace Swihoni.Components
 
         public override void SetTo(PropertyBase other)
         {
-            if (!(other is StringProperty otherString)) throw new ArgumentException("Other property is not a string!");
+            if (other is not StringProperty otherString) throw new ArgumentException("Other property is not a string!");
             if (otherString.WithValue)
             {
                 ThrowIfOverMaxSize(otherString.Builder.Length);

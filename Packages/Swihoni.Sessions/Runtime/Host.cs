@@ -4,7 +4,6 @@ using System.Net;
 using LiteNetLib;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
-using Swihoni.Sessions.Player.Components;
 using Swihoni.Sessions.Player.Modifiers;
 using Swihoni.Sessions.Player.Visualization;
 using Swihoni.Util;

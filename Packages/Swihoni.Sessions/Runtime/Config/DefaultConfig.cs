@@ -124,7 +124,7 @@ namespace Swihoni.Sessions.Config
                 bool isConfig = element.TryAttribute(out ConfigAttribute config);
                 if (isConfig)
                 {
-                    if (config.Name == null) config.Name = element.Field.Name.ToSnakeCase();
+                    config.Name ??= element.Field.Name.ToSnakeCase();
                     switch (element)
                     {
                         case ComponentBase component:

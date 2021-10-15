@@ -65,7 +65,7 @@ namespace Swihoni.Components
 
         public override void SetTo(PropertyBase other)
         {
-            if (!(other is DictPropertyBase<TKey, TValue> otherMap)) throw new ArgumentException("Other was not same type map");
+            if (other is not DictPropertyBase<TKey, TValue> otherMap) throw new ArgumentException("Other was not same type map");
             Clear();
             AddAllFrom(otherMap);
         }
