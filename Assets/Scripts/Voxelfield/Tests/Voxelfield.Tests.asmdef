@@ -1,12 +1,13 @@
 {
     "name": "Voxelfield.Tests",
+    "rootNamespace": "",
     "references": [
-        "GUID:a42ffc10e96ce774ba65e36fa3c97ebb",
-        "GUID:41ae8d015f0f51041807bae5ccc13017",
-        "GUID:b39737e480a94dd48ac62c0be48da42b",
-        "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7",
-        "GUID:f3a68b7e3f7640a4d8d06a2fdadbcd13",
-        "GUID:8c2c1bb806174fcea513b9e57e22e763"
+        "Voxelfield",
+        "Voxels",
+        "Swihoni.Util",
+        "Swihoni.Components",
+        "Voxelfield.Editor",
+        "LiteNetLib"
     ],
     "includePlatforms": [
         "Editor"

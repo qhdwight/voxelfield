@@ -1,7 +1,8 @@
 {
     "name": "Swihoni.Util.Editor",
+    "rootNamespace": "",
     "references": [
-        "GUID:0a05a84ad8fe9e54caaa2b60d19b02b7"
+        "Swihoni.Util"
     ],
     "includePlatforms": [
         "Editor"

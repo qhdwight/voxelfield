@@ -181,7 +181,7 @@ namespace Voxelfield.Session
             }
             try
             {
-                int nextPeerId = ((NetworkedSessionBase) Session).Socket.NetworkManager.PeekNextId();
+                int nextPeerId = ((NetworkedSessionBase) Session).Socket.NetworkManager.PeekNextPeerId();
                 if (nextPeerId >= SessionBase.MaxPlayers - 1)
                 {
                     Reject("Too many players are already connected to the server!");

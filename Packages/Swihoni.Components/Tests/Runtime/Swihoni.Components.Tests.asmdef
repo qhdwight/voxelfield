@@ -1,19 +1,20 @@
 {
     "name": "Swihoni.Components.Tests",
+    "rootNamespace": "",
     "references": [
-        "GUID:27619889b8ba8c24980f49ee34dbb44a",
-        "GUID:0acc523941302664db1f4e527237feb3",
-        "GUID:f3a68b7e3f7640a4d8d06a2fdadbcd13",
-        "GUID:41ae8d015f0f51041807bae5ccc13017"
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Swihoni.Components",
+        "LiteNetLib"
     ],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": true,
+    "overrideReferences": false,
     "precompiledReferences": [
-        "nunit.framework.dll"
+        "Facepunch.Steamworks.Posix.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [
