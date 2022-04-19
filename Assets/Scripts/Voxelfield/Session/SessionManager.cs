@@ -404,6 +404,10 @@ namespace Voxelfield.Session
         public static void BuildLinuxMonoServer()
             => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Debug Linux Mono Server", true);
 
+        [MenuItem("Build/Linux IL2CPP Player", priority = 100)]
+        public static void BuildLinuxIl2CppPlayer()
+            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneLinux64, "Debug Linux IL2CPP Player");
+
 // [MenuItem("Build/Release Windows Player")]
 // private static void BuildWindowsRelease()
 //     => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneWindows64, "Release Windows Mono Player", defines: new[] {"VOXELFIELD_RELEASE_CLIENT"});
@@ -451,7 +455,8 @@ namespace Voxelfield.Session
             {
                 scenes = new[] { "Assets/Scenes/Base.unity" },
                 locationPathName = executablePath,
-                target = target
+                target = target,
+                options = BuildOptions.CompressWithLz4
             };
             EditorUserBuildSettings.standaloneBuildSubtarget = isServer ? StandaloneBuildSubtarget.Server : StandaloneBuildSubtarget.Player;
             if (defines != null) buildPlayerOptions.extraScriptingDefines = defines;

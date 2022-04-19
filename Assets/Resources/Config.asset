@@ -78,7 +78,7 @@ MonoBehaviour:
     m_Value: 0
   authenticateSteam:
     m_Flags: 1
-    m_Value: 1
+    m_Value: 0
   secureAreaConfig:
     roundEndDurationUs:
       m_Flags: 1

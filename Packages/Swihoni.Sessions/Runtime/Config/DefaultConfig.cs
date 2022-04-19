@@ -34,16 +34,18 @@ namespace Swihoni.Sessions.Config
     [Serializable]
     public class ResolutionProperty : PropertyBase<Resolution>
     {
-        private const char Separator = ';';
+        private const char Separator = ',';
 
         public override StringBuilder AppendValue(StringBuilder builder)
             => builder.Append(Value.width).Append(Separator).Append(" ").Append(Value.height).Append(Separator).Append(" ").Append(Value.refreshRate);
 
         public override void ParseValue(string stringValue)
         {
-            string[] split = stringValue.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
-            Value = new Resolution {width = int.Parse(split[0]), height = int.Parse(split[1]), refreshRate = int.Parse(split[2])};
+            string[] split = stringValue.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
+            Value = new Resolution { width = int.Parse(split[0]), height = int.Parse(split[1]), refreshRate = int.Parse(split[2]) };
         }
+
+        public override string GetParseFormat() => "<width>,<height>,<refresh rate hz>";
     }
 
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
@@ -95,7 +97,7 @@ namespace Swihoni.Sessions.Config
         {
             _logTag = Default.Value.GetType().Name;
 
-            Active = ((DefaultConfig) CreateInstance(Default.Value.GetType())).Introspect();
+            Active = ((DefaultConfig)CreateInstance(Default.Value.GetType())).Introspect();
 // #if UNITY_EDITOR
 //             SetActiveToDefault();
 // #else
@@ -103,14 +105,14 @@ namespace Swihoni.Sessions.Config
 // #endif
             ReadActive();
 
-            ConsoleCommandExecutor.SetCommand("restore_default_config", arguments =>
+            ConsoleCommandExecutor.SetCommand("restore_default_config", _ =>
             {
                 WriteDefaults();
                 SetActiveToDefault();
             });
-            ConsoleCommandExecutor.SetCommand("write_config", arguments => WriteActive());
-            ConsoleCommandExecutor.SetCommand("read_config", arguments => ReadActive());
-            ConsoleCommandExecutor.SetCommand("open_config", arguments => Application.OpenURL($"file://{GetConfigFile()}"));
+            ConsoleCommandExecutor.SetCommand("write_config", _ => WriteActive());
+            ConsoleCommandExecutor.SetCommand("read_config", _ => ReadActive());
+            ConsoleCommandExecutor.SetCommand("open_config", _ => Application.OpenURL($"file://{GetConfigFile()}"));
         }
 
         private DefaultConfig Introspect()
@@ -122,37 +124,36 @@ namespace Swihoni.Sessions.Config
             void Recurse(ElementBase element)
             {
                 bool isConfig = element.TryAttribute(out ConfigAttribute config);
-                if (isConfig)
+                if (!isConfig) return;
+
+                config.Name ??= element.Field.Name.ToSnakeCase();
+                switch (element)
                 {
-                    config.Name ??= element.Field.Name.ToSnakeCase();
-                    switch (element)
-                    {
-                        case ComponentBase component:
-                            names.Push(config.Name);
-                            foreach (ElementBase childElement in component)
-                                Recurse(childElement);
-                            names.Pop();
-                            break;
-                        case PropertyBase property:
-                            string fullName = string.Join(".", names.Append(config.Name));
-                            m_NameToConfig.Add(fullName, (property, config));
-                            if (config.Type == ConfigType.Client)
-                            {
-                                ConsoleCommandExecutor.SetCommand(fullName, TryHandleArguments);
-                            }
-                            else
-                            {
-                                if (config.Type == ConfigType.Session)
-                                    m_TypeToConfig.Add(property.GetType(), (property, config));
-                                SessionBase.RegisterSessionCommand(fullName);
-                            }
-                            break;
-                    }
+                    case ComponentBase component:
+                        names.Push(config.Name);
+                        foreach (ElementBase childElement in component)
+                            Recurse(childElement);
+                        names.Pop();
+                        break;
+                    case PropertyBase property:
+                        string fullName = string.Join(".", names.Append(config.Name));
+                        m_NameToConfig.Add(fullName, (property, config));
+                        if (config.Type == ConfigType.Client)
+                        {
+                            ConsoleCommandExecutor.SetCommand(fullName, TryHandleArguments);
+                        }
+                        else
+                        {
+                            if (config.Type == ConfigType.Session)
+                                m_TypeToConfig.Add(property.GetType(), (property, config));
+                            SessionBase.RegisterSessionCommand(fullName);
+                        }
+                        break;
                 }
             }
             foreach (FieldInfo field in GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
-                var element = (ElementBase) field.GetValue(this);
+                var element = (ElementBase)field.GetValue(this);
                 element.Field = field;
                 Recurse(element);
             }
@@ -183,8 +184,16 @@ namespace Swihoni.Sessions.Config
                         }
                         else
                         {
-                            property.TryParseValue(split[1]);
-                            Debug.Log($"[{_logTag}] Set {split[0]} to {split[1]}");
+                            if (property.TryParseValue(split[1]))
+                            {
+                                Debug.Log($"[{_logTag}] Set {split[0]} to {split[1]}");
+                            }
+                            else
+                            {
+                                string parseFormat = property.GetParseFormat();
+                                string hint = string.IsNullOrEmpty(parseFormat) ? string.Empty : $", expected: {parseFormat}";
+                                Debug.LogWarning($"[{_logTag}] Could not set {split[0]} to {split[1]}{hint}");
+                            }
                         }
                         Active.OnConfigUpdated(property, attribute);
                         break;
@@ -226,8 +235,8 @@ namespace Swihoni.Sessions.Config
 
         public static string GetConfigFile()
         {
-            string parentFolder = Directory.GetParent(Application.dataPath).FullName;
-            if (Application.platform == RuntimePlatform.OSXPlayer) parentFolder = Directory.GetParent(parentFolder).FullName;
+            string parentFolder = Directory.GetParent(Application.dataPath)!.FullName;
+            if (Application.platform == RuntimePlatform.OSXPlayer) parentFolder = Directory.GetParent(parentFolder)!.FullName;
             return Path.ChangeExtension(Path.Combine(parentFolder, "Config"), "vfc");
         }
 
@@ -263,7 +272,7 @@ namespace Swihoni.Sessions.Config
                     string[] lines = File.ReadAllLines(configPath);
                     foreach (string line in lines)
                     {
-                        string[] cells = line.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
+                        string[] cells = line.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
                         if (cells.Length == 0) continue;
 
                         string configName = cells[0], stringValue = cells.Length == 1 ? string.Empty : cells[1].Trim();

@@ -55,8 +55,8 @@ namespace Swihoni.Components
 
         public override void Serialize(NetDataWriter writer)
         {
-            if (m_MaxSize <= byte.MaxValue) writer.Put((byte) Builder.Length);
-            else writer.Put((ushort) Builder.Length);
+            if (m_MaxSize <= byte.MaxValue) writer.Put((byte)Builder.Length);
+            else writer.Put((ushort)Builder.Length);
             for (var i = 0; i < Builder.Length; i++) writer.Put(Builder[i]);
         }
 
@@ -82,17 +82,17 @@ namespace Swihoni.Components
 
         public bool Equals(string @string) => this == @string;
 
-        public override bool Equals(object other) => this == (StringProperty) other;
+        public override bool Equals(object other) => this == (StringProperty)other;
 
-        public override bool Equals(PropertyBase other) => this == (StringProperty) other;
+        public override bool Equals(PropertyBase other) => this == (StringProperty)other;
 
-        public static bool operator ==(StringProperty s1, string s2) => s1.Builder.ToString() == s2;
+        public static bool operator ==(StringProperty s1, string s2) => s1!.Builder.ToString() == s2;
 
         public static bool operator !=(StringProperty s1, string s2) => !(s1 == s2);
 
         public static bool operator ==(StringProperty s1, StringProperty s2)
         {
-            if (s1.Builder.Length != s2.Builder.Length) return false;
+            if (s1!.Builder.Length != s2!.Builder.Length) return false;
             for (var i = 0; i < s1.Builder.Length; i++)
                 if (s1.Builder[i] != s2.Builder[i])
                     return false;

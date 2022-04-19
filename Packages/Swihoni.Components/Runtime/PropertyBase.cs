@@ -26,11 +26,7 @@ namespace Swihoni.Components
     {
         [SerializeField] private ElementFlags m_Flags = ElementFlags.None;
 
-        public byte RawFlags
-        {
-            get => (byte) m_Flags;
-            set => m_Flags = (ElementFlags) value;
-        }
+        public byte RawFlags { get => (byte)m_Flags; set => m_Flags = (ElementFlags)value; }
 
         public bool WithValue
         {
@@ -80,7 +76,7 @@ namespace Swihoni.Components
         {
             unchecked
             {
-                return (base.GetHashCode() * 397) ^ (int) m_Flags;
+                return (base.GetHashCode() * 397) ^ (int)m_Flags;
             }
         }
 
@@ -118,6 +114,8 @@ namespace Swihoni.Components
             }
         }
 
+        public virtual string GetParseFormat() => null;
+
         public virtual void Clear() => WithValue = false;
 
         public virtual void SetFromIfWith(PropertyBase other)
@@ -144,10 +142,11 @@ namespace Swihoni.Components
         public BoxedEnumProperty() { }
         public BoxedEnumProperty(TEnum value) : base(value) { }
         public override bool ValueEquals(in TEnum value) => Equals(Value, value);
-        public override void SerializeValue(NetDataWriter writer) => writer.Put((int) (object) Value);
-        public override void DeserializeValue(NetDataReader reader) => Value = (TEnum) (object) reader.GetInt();
+        public override void SerializeValue(NetDataWriter writer) => writer.Put((int)(object)Value);
+        public override void DeserializeValue(NetDataReader reader) => Value = (TEnum)(object)reader.GetInt();
         public override StringBuilder AppendValue(StringBuilder builder) => builder.Append(Names.GetForward(Value));
         public override void ParseValue(string stringValue) => Value = Names.GetReverse(stringValue);
+        public override string GetParseFormat() => string.Join(", ", Names.Backwards);
     }
 
     /// <summary>
@@ -200,7 +199,7 @@ namespace Swihoni.Components
 
         public ref T DirectValue => ref m_Value;
 
-        public T? AsNullable => WithValue ? m_Value : (T?) null;
+        public T? AsNullable => WithValue ? m_Value : null;
 
         protected PropertyBase() { }
 
@@ -215,7 +214,7 @@ namespace Swihoni.Components
             }
         }
 
-        public override bool Equals(object other) => this == (PropertyBase<T>) other;
+        public override bool Equals(object other) => this == (PropertyBase<T>)other;
 
         public static implicit operator T(PropertyBase<T> property) => property.Value;
 
@@ -261,7 +260,7 @@ namespace Swihoni.Components
         public T Else(T @default = default) => WithValue ? m_Value : @default;
 
         /// <returns>False if types are different. Equal if both values are the same, or if both do not have values.</returns>
-        public sealed override bool Equals(PropertyBase other) => this == (PropertyBase<T>) other;
+        public sealed override bool Equals(PropertyBase other) => this == (PropertyBase<T>)other;
 
         /// <summary>Use on two properties that are known to have values.</summary>
         /// <returns>False if types are different. Equal if both values are the same.</returns>

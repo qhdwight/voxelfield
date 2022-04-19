@@ -64,8 +64,8 @@ namespace Swihoni.Sessions.Config
 
         static InputType()
         {
-            foreach (FieldInfo field in new[] {typeof(InputType), typeof(PlayerInput)}.SelectMany(t => t.GetFields(BindingFlags.Static | BindingFlags.Public)))
-                Names.Add((byte) field.GetValue(null), field.Name.ToSnakeCase());
+            foreach (FieldInfo field in new[] { typeof(InputType), typeof(PlayerInput) }.SelectMany(t => t.GetFields(BindingFlags.Static | BindingFlags.Public)))
+                Names.Add((byte)field.GetValue(null), field.Name.ToSnakeCase());
         }
 
         public static StringBuilder AppendInputKey(this StringBuilder builder, byte input)
@@ -82,7 +82,7 @@ namespace Swihoni.Sessions.Config
     [Serializable]
     public class InputBindingProperty : DictProperty<ByteProperty, KeyCodeProperty>
     {
-        private const string Separator = ";";
+        private const string Separator = ", ";
 
         private static ByteProperty _lookupProperty = new();
         private static Dictionary<byte, KeyCode> _defaultMap = new()
@@ -149,7 +149,7 @@ namespace Swihoni.Sessions.Config
             var afterFirst = false;
             foreach ((ByteProperty input, KeyCodeProperty keyCode) in m_Map)
             {
-                if (afterFirst) builder.Append(Separator).Append(" ");
+                if (afterFirst) builder.Append(Separator);
                 builder.Append(InputType.Names.GetForward(input)).Append("=").AppendPropertyValue(keyCode);
                 afterFirst = true;
             }
@@ -159,12 +159,12 @@ namespace Swihoni.Sessions.Config
         public override void ParseValue(string stringValue)
         {
             Zero();
-            string[] pairs = stringValue.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
+            string[] pairs = stringValue.Split(new[] { Separator}, StringSplitOptions.RemoveEmptyEntries);
             foreach (string pair in pairs)
             {
                 var keyProperty = new ByteProperty();
                 var valueProperty = new KeyCodeProperty();
-                string[] keyAndValue = pair.Split(new[] {"="}, StringSplitOptions.RemoveEmptyEntries);
+                string[] keyAndValue = pair.Split(new[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
                 string key = keyAndValue[0].Trim(), value = keyAndValue[1];
                 keyProperty.Value = InputType.Names.GetReverse(key);
                 valueProperty.ParseValue(value);
@@ -173,11 +173,10 @@ namespace Swihoni.Sessions.Config
             foreach ((byte _input, KeyCode keyCode) in _defaultMap)
             {
                 var input = new ByteProperty(_input);
-                if (!m_Map.ContainsKey(input))
-                {
-                    Set(input, new KeyCodeProperty(keyCode));
-                    Debug.LogWarning($"Had to add default input for {InputType.Names.GetForward(input)}");
-                }
+                if (m_Map.ContainsKey(input)) continue;
+
+                Set(input, new KeyCodeProperty(keyCode));
+                Debug.LogWarning($"Had to add default input for {InputType.Names.GetForward(input)}");
             }
         }
 

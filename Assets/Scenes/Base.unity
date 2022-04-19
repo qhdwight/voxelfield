@@ -1197,7 +1197,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1571494958}
   m_HandleRect: {fileID: 1571494957}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -10091,7 +10091,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.6
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -12720,7 +12720,7 @@ MonoBehaviour:
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 6
-  m_RegexValue: ^[\w \.:&;]+$
+  m_RegexValue: ^[\w \.:&;,]+$
   m_GlobalPointSize: 14
   m_CharacterLimit: 0
   m_OnEndEdit:
@@ -18539,7 +18539,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.6
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -19942,7 +19942,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.6
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -24095,7 +24095,7 @@ PrefabInstance:
     - target: {fileID: 7936714082184610991, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7936714082184610991, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
@@ -24105,27 +24105,27 @@ PrefabInstance:
     - target: {fileID: 7936714082184610991, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7936714082184610991, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 271.45248
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7936714082184610991, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7936714082184610991, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 135.72624
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7936714082184610991, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -20
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ec2d5468a4c30524d85166d333868ddd, type: 3}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using LiteNetLib.Utils;
 using UnityEngine;
 
@@ -71,7 +72,7 @@ namespace Swihoni.Components
     [Serializable]
     public class ListProperty<TElement> : ListPropertyBase<TElement> where TElement : ElementBase
     {
-        private const string Separator = ";";
+        private const string Separator = ", ";
 
         public ListProperty() { }
         public ListProperty(int maxSize) : base(maxSize) { }
@@ -111,8 +112,9 @@ namespace Swihoni.Components
             var afterFirst = false;
             foreach (TElement element in m_List)
             {
-                if (afterFirst) builder.Append(Separator).Append(" ");
+                if (afterFirst) builder.Append(Separator);
                 builder.Stringify(element);
+                // builder.Append(new StringBuilder().Stringify(element).ToString().Replace(Separator, $"\\{Separator}"));
                 afterFirst = true;
             }
             return builder;
@@ -121,7 +123,7 @@ namespace Swihoni.Components
         public override void ParseValue(string stringValue)
         {
             Zero();
-            string[] elementStrings = stringValue.Split(new[] {Separator}, StringSplitOptions.RemoveEmptyEntries);
+            string[] elementStrings = stringValue.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string elementString in elementStrings)
             {
                 var element = ComponentExtensions.NewElement<TElement>();
