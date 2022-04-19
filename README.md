@@ -8,6 +8,14 @@ Itch.io: https://shaweewoo.itch.io/voxelfield
 ![Screenshot 1](screenshot_1.jpg)
 ![Screenshot 2](screenshot_2.jpg)
 
+
+### Development
+
+- Clone this repository and run `git submodule update --init --recursive`
+- Open in Unity, all packages should resolve automatically
+- To build use the Menu item Build/(Type and Arch Here)
+- Steam authentication is turned on by default, to disable execute `authenticate_steam false` in console (open with `~`)
+
 ### Technical details
 - Written in C# using the Unity game engine and LiteNetLib networking library
 - Authoritative network model supporting 16 players with 120 packets per second

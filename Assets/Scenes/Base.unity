@@ -1197,7 +1197,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1571494958}
   m_HandleRect: {fileID: 1571494957}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2839,7 +2839,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1358240564}
   m_HandleRect: {fileID: 1358240563}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -3660,6 +3660,12 @@ PrefabInstance:
       propertyPath: m_text
       value: <sprite=2> Quit
       objectReference: {fileID: 0}
+    - target: {fileID: 7936714082184610990, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_spriteAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 86e3ec4079aab487ead21d069ce55e90,
+        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ec2d5468a4c30524d85166d333868ddd, type: 3}
 --- !u!224 &337347978 stripped
@@ -12524,6 +12530,12 @@ PrefabInstance:
       propertyPath: m_text
       value: <sprite=3> Settings
       objectReference: {fileID: 0}
+    - target: {fileID: 7936714082184610990, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_spriteAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 86e3ec4079aab487ead21d069ce55e90,
+        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ec2d5468a4c30524d85166d333868ddd, type: 3}
 --- !u!224 &1119109338 stripped
@@ -24074,6 +24086,12 @@ PrefabInstance:
       propertyPath: m_text
       value: <sprite=1> Play
       objectReference: {fileID: 0}
+    - target: {fileID: 7936714082184610990, guid: ec2d5468a4c30524d85166d333868ddd,
+        type: 3}
+      propertyPath: m_spriteAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 86e3ec4079aab487ead21d069ce55e90,
+        type: 2}
     - target: {fileID: 7936714082184610991, guid: ec2d5468a4c30524d85166d333868ddd,
         type: 3}
       propertyPath: m_AnchorMax.x
