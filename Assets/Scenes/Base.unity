@@ -2839,7 +2839,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1358240564}
   m_HandleRect: {fileID: 1358240563}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -12720,7 +12720,7 @@ MonoBehaviour:
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 6
-  m_RegexValue: ^[\w \.:&;,]+$
+  m_RegexValue: ^[\w \.:&;|]+$
   m_GlobalPointSize: 14
   m_CharacterLimit: 0
   m_OnEndEdit:

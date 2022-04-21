@@ -34,7 +34,7 @@ namespace Swihoni.Sessions.Config
     [Serializable]
     public class ResolutionProperty : PropertyBase<Resolution>
     {
-        private const char Separator = ',';
+        private const char Separator = '|';
 
         public override StringBuilder AppendValue(StringBuilder builder)
             => builder.Append(Value.width).Append(Separator).Append(" ").Append(Value.height).Append(Separator).Append(" ").Append(Value.refreshRate);
@@ -45,7 +45,7 @@ namespace Swihoni.Sessions.Config
             Value = new Resolution { width = int.Parse(split[0]), height = int.Parse(split[1]), refreshRate = int.Parse(split[2]) };
         }
 
-        public override string GetParseFormat() => "<width>,<height>,<refresh rate hz>";
+        public override string GetParseFormat() => $"<width>{Separator}<height>{Separator}<refresh rate hz>";
     }
 
     [CreateAssetMenu(fileName = "Config", menuName = "Session/Config", order = 0)]
