@@ -34,7 +34,7 @@ PluginImporter:
       settings:
         CPU: AnyCPU
         DefaultValueInitialized: true
-        OS: Linux
+        OS: OSX
   - first:
       Facebook: Win
     second:

@@ -21,6 +21,7 @@ using static Swihoni.Sessions.Config.ConsoleCommandExecutor;
 #if UNITY_EDITOR
 using System.IO;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 
 #else
@@ -230,12 +231,13 @@ namespace Voxelfield.Session
             SessionBase.HandleCursorLockState();
             if (SessionBase.SessionCount == 0)
             {
-                Application.targetFrameRate = Screen.currentResolution.refreshRate + 1;
+                var rate = Screen.currentResolution.refreshRateRatio;
+                Application.targetFrameRate = (int)(rate.numerator / rate.denominator + 1);
             }
             else
             {
                 int targetFps = DefaultConfig.Active.targetFps;
-                if (targetFps > 0 && targetFps < 10) targetFps = 10;
+                if (targetFps is > 0 and < 10) targetFps = 10;
                 Application.targetFrameRate = targetFps;
             }
             AudioListener.volume = DefaultConfig.Active.volume;
@@ -388,6 +390,10 @@ namespace Voxelfield.Session
             Debug.Log("Saved Custom Map");
         }
 
+        [MenuItem("Build/Mac Universal Mono Player", priority = 100)]
+        public static void BuildMacMonoPlayer()
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneOSX, "Debug Mac Mono Player");
+
         [MenuItem("Build/Windows IL2CPP Player", priority = 100)]
         public static void BuildWindowsIl2CppPlayer()
             => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Debug Windows IL2CPP Player");
@@ -437,7 +443,7 @@ namespace Voxelfield.Session
 
         private static void Build(ScriptingImplementation scripting, BuildTarget target, string name, bool isServer = false, string[] defines = null)
         {
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, scripting);
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, scripting);
             string executablePath = Path.Combine("Builds", name.Replace(' ', Path.DirectorySeparatorChar), Application.productName);
             switch (target)
             {
@@ -449,7 +455,7 @@ namespace Voxelfield.Session
                     break;
             }
 
-            PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Standalone,
+            PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.Standalone,
                                                     scripting == ScriptingImplementation.Mono2x ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.Low);
             var buildPlayerOptions = new BuildPlayerOptions
             {

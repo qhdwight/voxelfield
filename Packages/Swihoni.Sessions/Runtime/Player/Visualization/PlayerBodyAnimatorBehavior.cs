@@ -129,11 +129,10 @@ namespace Swihoni.Sessions.Player.Visualization
                 part.isKinematic = !isActive;
                 if (justSwitched) part.AddForce(velocity, ForceMode.VelocityChange);
                 if (isActive) continue;
+                
                 Transform partTransform = part.transform;
                 partTransform.localPosition = m_RagdollInitialTransforms[i].position;
                 partTransform.localRotation = m_RagdollInitialTransforms[i].rotation;
-                part.velocity = Vector3.zero;
-                part.angularVelocity = Vector3.zero;
             }
             foreach (Collider partCollider in m_RagdollColliders)
                 partCollider.enabled = isActive;
