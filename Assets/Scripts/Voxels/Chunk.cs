@@ -87,7 +87,7 @@ namespace Voxels
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool InsideChunk(in Position3Int pos) => pos.x < m_ChunkSize && pos.y < m_ChunkSize && pos.z < m_ChunkSize
-                                                     && pos.x >= 0 && pos.y >= 0 && pos.z >= 0;
+                                                        && pos is { x: >= 0 , y: >= 0, z: >= 0 };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetVoxelDataNoCheck(in Position3Int position, in VoxelChange change)

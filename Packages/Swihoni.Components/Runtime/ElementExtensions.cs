@@ -162,6 +162,9 @@ namespace Swihoni.Components
         {
             if (size <= 0) throw new ArgumentException("Size needs to be greater than zero");
             var exitAll = false;
+            NavigateRecursively(zip);
+            return;
+
             void NavigateRecursively(in TriArray<ElementBase> _zip)
             {
                 Navigation navigation = visit.Invoke(_zip);
@@ -230,7 +233,6 @@ namespace Swihoni.Components
                 }
                 if (exitVisit.CanInvoke()) exitVisit.Invoke(_zip);
             }
-            NavigateRecursively(zip);
         }
 
         /// <summary>

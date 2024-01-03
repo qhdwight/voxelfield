@@ -489,7 +489,7 @@ namespace Voxels
                                 solidMesh.colors.Add(voxel.color);
                                 solidMesh.triangleIndices.Add(index);
                             }
-                            if (voxel.texture == VoxelTexture.Solid && voxel.IsNatural)
+                            if (voxel is { texture: VoxelTexture.Solid, IsNatural: true })
                                 GenerateFoliage(solidMesh, foliageMesh, ref voxel);
                             int length = voxel.FaceUVs(CachedUvs);
                             for (var j = 0; j < length; j++) solidMesh.uvs.Add(CachedUvs[j]);
