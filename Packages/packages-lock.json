@@ -38,24 +38,15 @@
       "source": "builtin",
       "dependencies": {}
     },
-    "com.unity.ai.navigation": {
-      "version": "2.0.0",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.modules.ai": "1.0.0"
-      },
-      "url": "https://packages.unity.com"
-    },
     "com.unity.ext.nunit": {
-      "version": "2.0.5",
+      "version": "2.0.3",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "3.0.27",
+      "version": "3.0.28",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -64,7 +55,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.postprocessing": {
-      "version": "3.3.0",
+      "version": "3.4.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -73,18 +64,18 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.sysroot": {
-      "version": "2.0.7",
+      "version": "2.0.10",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
     "com.unity.sysroot.linux-x86_64": {
-      "version": "2.0.6",
+      "version": "2.0.9",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.sysroot": "2.0.7"
+        "com.unity.sysroot": "2.0.10"
       },
       "url": "https://packages.unity.com"
     },
@@ -99,13 +90,22 @@
       },
       "url": "https://packages.unity.com"
     },
-    "com.unity.toolchain.linux-x86_64": {
-      "version": "2.0.6",
+    "com.unity.textmeshpro": {
+      "version": "3.0.9",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.sysroot": "2.0.7",
-        "com.unity.sysroot.linux-x86_64": "2.0.6"
+        "com.unity.ugui": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.toolchain.linux-x86_64": {
+      "version": "2.0.9",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.sysroot": "2.0.10",
+        "com.unity.sysroot.linux-x86_64": "2.0.9"
       },
       "url": "https://packages.unity.com"
     },
@@ -122,12 +122,6 @@
       "version": "file:LiteNetLib",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {}
-    },
-    "com.unity.modules.accessibility": {
-      "version": "1.0.0",
-      "depth": 0,
-      "source": "builtin",
       "dependencies": {}
     },
     "com.unity.modules.ai": {
@@ -176,12 +170,6 @@
         "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.animation": "1.0.0"
       }
-    },
-    "com.unity.modules.hierarchycore": {
-      "version": "1.0.0",
-      "depth": 1,
-      "source": "builtin",
-      "dependencies": {}
     },
     "com.unity.modules.imageconversion": {
       "version": "1.0.0",
@@ -271,8 +259,7 @@
       "dependencies": {
         "com.unity.modules.ui": "1.0.0",
         "com.unity.modules.imgui": "1.0.0",
-        "com.unity.modules.jsonserialize": "1.0.0",
-        "com.unity.modules.hierarchycore": "1.0.0"
+        "com.unity.modules.jsonserialize": "1.0.0"
       }
     },
     "com.unity.modules.umbra": {
