@@ -37,12 +37,17 @@ namespace Swihoni.Sessions.Config
         private const char Separator = '|';
 
         public override StringBuilder AppendValue(StringBuilder builder)
-            => builder.Append(Value.width).Append(Separator).Append(" ").Append(Value.height).Append(Separator).Append(" ").Append(Value.refreshRate);
+            => builder.Append(Value.width).Append(Separator).Append(" ").Append(Value.height).Append(Separator)
+                .Append(" ").Append(Value.refreshRateRatio.numerator / Value.refreshRateRatio.denominator);
 
         public override void ParseValue(string stringValue)
         {
             string[] split = stringValue.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
-            Value = new Resolution { width = int.Parse(split[0]), height = int.Parse(split[1]), refreshRate = int.Parse(split[2]) };
+            Value = new Resolution
+            {
+                width = int.Parse(split[0]), height = int.Parse(split[1]),
+                refreshRateRatio = new RefreshRate { numerator = uint.Parse(split[2]), denominator = 1 }
+            };
         }
 
         public override string GetParseFormat() => $"<width>{Separator}<height>{Separator}<refresh rate hz>";
@@ -121,6 +126,7 @@ namespace Swihoni.Sessions.Config
             m_TypeToConfig = new Dictionary<Type, (PropertyBase, ConfigAttribute)>();
 
             var names = new Stack<string>();
+
             void Recurse(ElementBase element)
             {
                 bool isConfig = element.TryAttribute(out ConfigAttribute config);
@@ -148,9 +154,11 @@ namespace Swihoni.Sessions.Config
                                 m_TypeToConfig.Add(property.GetType(), (property, config));
                             SessionBase.RegisterSessionCommand(fullName);
                         }
+
                         break;
                 }
             }
+
             foreach (FieldInfo field in GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
                 var element = (ElementBase)field.GetValue(this);
@@ -191,10 +199,13 @@ namespace Swihoni.Sessions.Config
                             else
                             {
                                 string parseFormat = property.GetParseFormat();
-                                string hint = string.IsNullOrEmpty(parseFormat) ? string.Empty : $", expected: {parseFormat}";
+                                string hint = string.IsNullOrEmpty(parseFormat)
+                                    ? string.Empty
+                                    : $", expected: {parseFormat}";
                                 Debug.LogWarning($"[{_logTag}] Could not set {split[0]} to {split[1]}{hint}");
                             }
                         }
+
                         Active.OnConfigUpdated(property, attribute);
                         break;
                     case 1 when property is BoolProperty boolProperty:
@@ -212,10 +223,12 @@ namespace Swihoni.Sessions.Config
             if (!Application.isBatchMode && !Application.isEditor)
             {
                 if (ReferenceEquals(property, resolution) && resolution.TryWithValue(out Resolution r))
-                    Screen.SetResolution(r.width, r.height, fullScreenMode.Else(Screen.fullScreenMode), r.refreshRate);
+                    Screen.SetResolution(r.width, r.height, fullScreenMode.Else(Screen.fullScreenMode),
+                        r.refreshRateRatio);
                 if (ReferenceEquals(property, fullScreenMode) && fullScreenMode.TryWithValue(out FullScreenMode mode))
                     Screen.fullScreenMode = mode;
             }
+
             if (ReferenceEquals(property, qualityLevel) && qualityLevel.TryWithValue(out int level))
                 SetQualityLevel(level);
             if (write) WriteActive();
@@ -228,7 +241,8 @@ namespace Swihoni.Sessions.Config
             // ReSharper disable once ForCanBeConvertedToForeach - Avoid allocation of getting enumerator
             for (var i = 0; i < session.Count; i++)
             {
-                if (session[i] is PropertyBase property && Active.m_TypeToConfig.TryGetValue(property.GetType(), out (PropertyBase, ConfigAttribute) tuple))
+                if (session[i] is PropertyBase property &&
+                    Active.m_TypeToConfig.TryGetValue(property.GetType(), out (PropertyBase, ConfigAttribute) tuple))
                     property.SetFromIfWith(tuple.Item1);
             }
         }
@@ -236,7 +250,8 @@ namespace Swihoni.Sessions.Config
         public static string GetConfigFile()
         {
             string parentFolder = Directory.GetParent(Application.dataPath)!.FullName;
-            if (Application.platform == RuntimePlatform.OSXPlayer) parentFolder = Directory.GetParent(parentFolder)!.FullName;
+            if (Application.platform == RuntimePlatform.OSXPlayer)
+                parentFolder = Directory.GetParent(parentFolder)!.FullName;
             return Path.ChangeExtension(Path.Combine(parentFolder, "Config"), "vfc");
         }
 
@@ -253,7 +268,8 @@ namespace Swihoni.Sessions.Config
         private static void Write(DefaultConfig config)
         {
             var builder = new StringBuilder();
-            foreach ((string name, (PropertyBase, ConfigAttribute) configEntry) in config.m_NameToConfig.OrderBy(key => key.Key))
+            foreach ((string name, (PropertyBase, ConfigAttribute) configEntry) in config.m_NameToConfig.OrderBy(key =>
+                         key.Key))
                 builder.Append(name).Append(Separator).Append(" ").AppendProperty(configEntry.Item1).Append("\n");
             string configPath = GetConfigFile();
             File.WriteAllText(configPath, builder.ToString());
@@ -280,11 +296,15 @@ namespace Swihoni.Sessions.Config
                         {
                             (PropertyBase property, ConfigAttribute attribute) = tuple;
                             if (stringValue == "none") property.Clear();
-                            else if (property.TryParseValue(stringValue)) Active.OnConfigUpdated(property, attribute, false);
-                            else Debug.LogWarning($"[{_logTag}] Failed to parse config {configName} with value: {stringValue}");
+                            else if (property.TryParseValue(stringValue))
+                                Active.OnConfigUpdated(property, attribute, false);
+                            else
+                                Debug.LogWarning(
+                                    $"[{_logTag}] Failed to parse config {configName} with value: {stringValue}");
                         }
                         else Debug.LogWarning($"[{_logTag}] Unrecognized config with name: {configName}");
                     }
+
                     OnActiveLoaded();
                 }
                 else

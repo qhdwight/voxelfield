@@ -126,7 +126,7 @@ namespace Swihoni.Sessions
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeInterfaces()
         {
-            _interfaces = UnityObject.FindObjectsOfType<InterfaceBehaviorBase>();
+            _interfaces = UnityObject.FindObjectsByType<InterfaceBehaviorBase>(FindObjectsSortMode.None);
             ForEachSessionInterface(sessionInterface =>
             {
                 sessionInterface.Initialize();
@@ -513,8 +513,6 @@ namespace Swihoni.Sessions
             => move.position + new Vector3 {y = move.GetPlayerHeight()};
 
         public static StringBuilder AppendRealizedUsername(this StringBuilder builder, Container player)
-            => player.WithPropertyWithValue(out SteamIdProperty steamId)
-                ? builder.Append(steamId.AsFriend.Name)
-                : builder.Append("<noparse>").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</noparse>");
+            => builder.Append("<noparse>").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</noparse>");
     }
 }

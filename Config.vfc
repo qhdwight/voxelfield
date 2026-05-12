@@ -1,0 +1,31 @@
+ads_multiplier: 1
+allow_cheats: true
+console_history: 
+crosshair_thickness: 1
+enable_mini_map: false
+fov: 60
+fps_update_rate: 0.4
+full_screen_mode: none
+input_bindings: forward=w, backward=s, left=a, right=d, jump=space, crouch=left_control, sprint=left_shift, walk=left_alt, suicide=end, interact=e, map=m, use_one=mouse_0, use_two=mouse_1, use_three=mouse_2, use_four=mouse_3, reload=r, item_one=alpha_1, item_two=alpha_2, item_three=alpha_3, item_four=alpha_4, item_five=alpha_5, item_six=alpha_6, item_seven=alpha_7, item_eight=alpha_8, item_nine=alpha_9, item_ten=alpha_0, item_last=q, drop_item=g, ads=mouse_1, toggle_console=back_quote, console_command=slash, switch_teams=period, open_scoreboard=tab, autocomplete_console=tab, previous_console_command=up_arrow, next_console_command=down_arrow, fly=f, buy=b, throw=g, open_context=v, toggle_pause_menu=escape, toggle_chat=t, respawn=return, next_spectating=mouse_1, previous_spectating=mouse_0
+invert_scroll_wheel: false
+log_prediction_errors: false
+map_name: Castle
+mode_id: ctf
+quality_level: 2
+resolution: none
+respawn_duration: 5000000
+respawn_health: 100
+sa.buy_duration: 20000000
+sa.duration: 105000000
+sa.end_duration: 7000000
+sa.kill_bonus: 800
+sa.lose_bonus: 2000
+sa.max_rounds: 9
+sa.player_count: 4
+sa.secure_duration: 30000000
+sa.win_bonus: 3000
+sensitivity: 2
+show_debug_interface: true
+target_fps: 200
+tick_rate: 60
+volume: 0.5

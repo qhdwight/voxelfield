@@ -14,13 +14,11 @@ Itch.io: https://shaweewoo.itch.io/voxelfield
 - Clone this repository and run `git submodule update --init --recursive`
 - Open in Unity, all packages should resolve automatically
 - To build use the Menu item Build/(Type and Arch Here)
-- Steam authentication is turned on by default, to disable execute `authenticate_steam false` in console (open with `~`)
 
 ### Technical details
 - Written in C# using the Unity game engine and LiteNetLib networking library
 - Authoritative network model supporting 16 players with 120 packets per second
 - Custom hybrid ECS system to ensure determinism
-- Integration with AWS GameLift, authentication with Steam API, stat tracking with AWS DynamoDB
 
 This is by far my biggest project, `cloc` output (counts lines of code):
 

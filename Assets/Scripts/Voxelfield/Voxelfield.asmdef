@@ -9,7 +9,6 @@
         "Unity.TextMeshPro",
         "Swihoni.Collections",
         "Unity.Postprocessing.Runtime",
-        "Discord",
         "LiteNetLib"
     ],
     "includePlatforms": [],

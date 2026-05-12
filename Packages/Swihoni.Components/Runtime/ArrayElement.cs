@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Linq;
 using LiteNetLib.Utils;
 using UnityEngine;
 
@@ -36,7 +36,7 @@ namespace Swihoni.Components
 
         public void SetContainerTypes(IEnumerable<Type> types)
         {
-            ImmutableArray<Type> typesArray = types.ToImmutableArray();
+            Type[] typesArray = types.ToArray();
             foreach (TElement element in m_Elements)
             {
                 var container = (Container) (object) element;

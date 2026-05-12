@@ -157,12 +157,10 @@ namespace Swihoni.Sessions
                     }
                     case DebugClientViewCode:
                     {
-#if !VOXELFIELD_RELEASE_SERVER
                         var clientView = new ClientCommandsContainer(m_EmptyDebugClientView.ElementTypes);
                         clientView.Deserialize(reader);
                         var context = new SessionContext(this, playerId: clientId, player: clientView);
                         DebugBehavior.Singleton.Render(context, new Color(1.0f, 0.0f, 0.0f, 0.3f));
-#endif
                         break;
                     }
                     default:
@@ -342,9 +340,7 @@ namespace Swihoni.Sessions
                         }
                         MergeTrustedFromCommands(serverPlayer, receivedClientCommands);
                     }
-#if !VOXELFIELD_RELEASE_SERVER
                     else Debug.LogWarning($"[{GetType().Name}] Received out of order command from client: {clientId}");
-#endif
 
                     var context = new SessionContext(this, serverSession, receivedClientCommands, clientId, serverPlayer,
                                                      durationUs: clientStamp.durationUs, tickDelta: tickDelta);

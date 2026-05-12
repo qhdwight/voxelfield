@@ -54,7 +54,7 @@ namespace Swihoni.Sessions.Entities
 
         private void ResetRigidbody(bool canMove)
         {
-            Rigidbody.velocity = Vector3.zero;
+            Rigidbody.linearVelocity = Vector3.zero;
             Rigidbody.angularVelocity = Vector3.zero;
             Rigidbody.constraints = canMove ? m_InitialConstraints : RigidbodyConstraints.FreezeAll;
         }
@@ -131,10 +131,10 @@ namespace Swihoni.Sessions.Entities
                         }
                         else
                         {
-                            Rigidbody.velocity *= m_CollisionVelocityMultiplier;
+                            Rigidbody.linearVelocity *= m_CollisionVelocityMultiplier;
                         }
                     }
-                    else if (throwable.thrownElapsedUs > 100_000u) Rigidbody.velocity = Vector3.zero; // Stop on hitting player. Delay to prevent hitting self
+                    else if (throwable.thrownElapsedUs > 100_000u) Rigidbody.linearVelocity = Vector3.zero; // Stop on hitting player. Delay to prevent hitting self
                     if (resetContact) throwable.contactElapsedUs.Value = 0u;
                 }
             }
