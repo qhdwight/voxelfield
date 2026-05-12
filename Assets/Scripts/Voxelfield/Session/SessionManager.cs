@@ -1,7 +1,3 @@
-#if UNITY_EDITOR
-// #define VOXELFIELD_RELEASE_SERVER
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +10,6 @@ using Swihoni.Sessions.Config;
 using Swihoni.Sessions.Player.Components;
 using Swihoni.Util;
 using UnityEngine;
-using Voxelfield.Integration;
 using Voxels;
 using Voxels.Map;
 using static Swihoni.Sessions.Config.ConsoleCommandExecutor;
@@ -23,13 +18,6 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
-
-#else
-#endif
-#if VOXELFIELD_RELEASE_SERVER
-using Aws.GameLift;
-using Aws.GameLift.Server;
-
 #endif
 
 namespace Voxelfield.Session
@@ -43,18 +31,10 @@ namespace Voxelfield.Session
 
         public static bool WantsApplicationQuit { get; set; }
 
-#if VOXELFIELD_RELEASE_SERVER
-        public static bool GameLiftReady { get; set; }
-        private float m_InactiveServerElapsedSeconds;
-#endif
-
         [RuntimeInitializeOnLoadMethod]
         private static void Initialize()
         {
             WantsApplicationQuit = false;
-#if VOXELFIELD_RELEASE_SERVER
-            GameLiftReady = false;
-#endif
         }
 
         private void Start()
@@ -111,12 +91,13 @@ namespace Voxelfield.Session
             });
 #if ENABLE_MONO
             SetCommand("wsl_connect",
-                       arguments => ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I").TrimEnd('\n')}"));
+                arguments =>
+                    ExecuteCommand($"connect {SessionExtensions.ExecuteProcess("wsl -- hostname -I").TrimEnd('\n')}"));
 #endif
-            SetCommand("online_quick_play", arguments => QuickPlayGameLift());
             SetCommand("disconnect", arguments => DisconnectAll());
 #if UNITY_EDITOR
-            SetCommand("disconnect_client", arguments => SessionBase.SessionEnumerable.First(session => session is Client).Stop());
+            SetCommand("disconnect_client",
+                arguments => SessionBase.SessionEnumerable.First(session => session is Client).Stop());
 #endif
             SetCommand("update_chunks", arguments =>
             {
@@ -129,7 +110,8 @@ namespace Voxelfield.Session
                 if (arguments.Length > 1 && byte.TryParse(arguments[1], out byte team))
                     SessionBase.SessionEnumerable.First().GetLocalCommands().Require<WantedTeamProperty>().Value = team;
             });
-            SetCommand("rollback_override", arguments => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(arguments[1]));
+            SetCommand("rollback_override",
+                arguments => DebugBehavior.Singleton.RollbackOverrideUs.Value = uint.Parse(arguments[1]));
             SetCommand("open_log", arguments => Application.OpenURL($"file://{Application.consoleLogPath}"));
             Debug.Log($"[{GetType().Name}] Started session manager");
             AnalysisLogger.Reset(string.Empty);
@@ -138,13 +120,17 @@ namespace Voxelfield.Session
         private static IPEndPoint GetEndPoint(string[] arguments)
         {
             IPAddress address;
-            if (arguments.Length > 1 && arguments[1] == "-l") address = IPAddress.Parse(NetUtils.GetLocalIp(LocalAddrType.IPv4));
+            if (arguments.Length > 1 && arguments[1] == "-l")
+                address = IPAddress.Parse(NetUtils.GetLocalIp(LocalAddrType.IPv4));
             else
             {
-                string[] colonSplit = arguments.Length > 1 ? arguments[1].Split(IpSeparator, StringSplitOptions.RemoveEmptyEntries) : null;
+                string[] colonSplit = arguments.Length > 1
+                    ? arguments[1].Split(IpSeparator, StringSplitOptions.RemoveEmptyEntries)
+                    : null;
                 if (colonSplit?.Length == 2) arguments = arguments.Take(1).Concat(colonSplit).ToArray();
                 address = arguments.Length > 1 ? IPAddress.Parse(arguments[1]) : DefaultAddress;
             }
+
             int port = arguments.Length > 2 ? int.Parse(arguments[2]) : DefaultPort;
             return new IPEndPoint(address, port);
         }
@@ -240,54 +226,8 @@ namespace Voxelfield.Session
                 if (targetFps is > 0 and < 10) targetFps = 10;
                 Application.targetFrameRate = targetFps;
             }
-            AudioListener.volume = DefaultConfig.Active.volume;
-#if VOXELFIELD_RELEASE_SERVER
-            if (GameLiftReady)
-            {
-#if UNITY_EDITOR
-                IPEndPoint endPoint = DefaultEndPoint;
-#else
-                IPEndPoint endPoint = NetUtils.MakeEndPoint(NetUtils.GetLocalIp(LocalAddrType.IPv4), DefaultPort);
-#endif
-                StartServer(endPoint);
-                Debug.Log($"Started server on private IP: {endPoint}");
-                GameLiftReady = false;
-            }
 
-            /* Handle timeout */
-            {
-                float maxIdleTimeSeconds = Application.isEditor ? 5.0f : 60.0f;
-                void AddTime()
-                {
-                    if (Mathf.Approximately(m_InactiveServerElapsedSeconds, 0.0f))
-                        Debug.LogWarning($"Stopping server in {maxIdleTimeSeconds} seconds due to inactivity...");
-                    m_InactiveServerElapsedSeconds += Time.deltaTime;
-                }
-                try
-                {
-                    if (SessionBase.SessionEnumerable.FirstOrDefault(session => session is Server) is Server server)
-                    {
-                        // TODO:refactor use session and count number of player session id's?
-                        int activePlayerSessionCount = server.Socket.NetworkManager.ConnectedPeersCount;
-                        if (activePlayerSessionCount == 0) AddTime();
-                        else m_InactiveServerElapsedSeconds = 0.0f;
-                    }
-                    else AddTime();
-                }
-                catch (Exception)
-                {
-                    AddTime();
-                }
-                if (m_InactiveServerElapsedSeconds > maxIdleTimeSeconds)
-                {
-                    DisconnectAll();
-                    GenericOutcome outcome = GameLiftServerAPI.ProcessEnding();
-                    if (outcome.Success) Debug.Log("Processed ending");
-                    else Debug.LogError($"Failed to process ending graciously: {outcome.Error}");
-                    WantsApplicationQuit = true;
-                }
-            }
-#endif
+            AudioListener.volume = DefaultConfig.Active.volume;
             try
             {
                 foreach (SessionBase session in SessionBase.SessionEnumerable)
@@ -304,25 +244,22 @@ namespace Voxelfield.Session
             {
                 StartHost();
             }
+
             if (Input.GetKeyDown(KeyCode.Y))
             {
                 StartServer();
             }
-            // if (Input.GetKeyDown(KeyCode.J))
-            // {
-            //     QuickPlayGameLift();
-            // }
+            
             if (Input.GetKeyDown(KeyCode.L))
             {
                 StartClient();
             }
+
             if (Input.GetKeyDown(KeyCode.K))
             {
                 DisconnectAll();
             }
         }
-
-        private static async void QuickPlayGameLift() => await GameLiftClientManager.QuickPlayAsync();
 
         private void FixedUpdate()
         {
@@ -370,7 +307,10 @@ namespace Voxelfield.Session
             {
                 name = new StringProperty("Fort"),
                 terrainHeight = new IntProperty(9),
-                dimension = new DimensionComponent { lowerBound = new Position3IntProperty(-2, 0, -2), upperBound = new Position3IntProperty(2, 1, 2) },
+                dimension = new DimensionComponent
+                {
+                    lowerBound = new Position3IntProperty(-2, 0, -2), upperBound = new Position3IntProperty(2, 1, 2)
+                },
                 terrainGeneration = new TerrainGenerationComponent
                 {
                     seed = new IntProperty(1337),
@@ -379,8 +319,10 @@ namespace Voxelfield.Session
                     verticalScale = new FloatProperty(1.5f),
                     persistence = new FloatProperty(0.5f),
                     lacunarity = new FloatProperty(0.5f),
-                    grassVoxel = new VoxelChangeProperty(new VoxelChange { texture = VoxelTexture.Solid, color = new Color32(255, 172, 7, 255) }),
-                    stoneVoxel = new VoxelChangeProperty(new VoxelChange { texture = VoxelTexture.Checkered, color = new Color32(28, 28, 28, 255) }),
+                    grassVoxel = new VoxelChangeProperty(new VoxelChange
+                        { texture = VoxelTexture.Solid, color = new Color32(255, 172, 7, 255) }),
+                    stoneVoxel = new VoxelChangeProperty(new VoxelChange
+                        { texture = VoxelTexture.Checkered, color = new Color32(28, 28, 28, 255) }),
                 },
                 models = models,
                 breakableEdges = new BoolProperty(false)
@@ -392,59 +334,22 @@ namespace Voxelfield.Session
 
         [MenuItem("Build/Mac Universal Mono Player", priority = 100)]
         public static void BuildMacMonoPlayer()
-            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneOSX, "Debug Mac Mono Player");
-
-        [MenuItem("Build/Windows IL2CPP Player", priority = 100)]
-        public static void BuildWindowsIl2CppPlayer()
-            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Debug Windows IL2CPP Player");
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneOSX, "Mac Mono Player");
 
         [MenuItem("Build/Windows Mono Player", priority = 100)]
         public static void BuildWindowsMonoPlayer()
-            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneWindows64, "Debug Windows Mono Player");
-
-        [MenuItem("Build/Windows IL2CPP Server", priority = 100)]
-        public static void BuildWindowsIl2CppServer()
-            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Debug Windows IL2CPP Server", true);
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneWindows64, "Windows Mono Player");
 
         [MenuItem("Build/Linux Mono Server", priority = 100)]
         public static void BuildLinuxMonoServer()
-            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Debug Linux Mono Server", true);
-
-        [MenuItem("Build/Linux IL2CPP Player", priority = 100)]
-        public static void BuildLinuxIl2CppPlayer()
-            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneLinux64, "Debug Linux IL2CPP Player");
-
-// [MenuItem("Build/Release Windows Player")]
-// private static void BuildWindowsRelease()
-//     => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneWindows64, "Release Windows Mono Player", defines: new[] {"VOXELFIELD_RELEASE_CLIENT"});
-
-        [MenuItem("Build/Release Windows Player", priority = 200)]
-        private static void BuildWindowsRelease()
-            => Build(ScriptingImplementation.IL2CPP, BuildTarget.StandaloneWindows64, "Release Windows IL2CPP Player",
-                     defines: new[]
-                     {
-                         "VOXELFIELD_RELEASE_CLIENT", "VOXELFIELD_RELEASE"
-                     });
-
-        [MenuItem("Build/Release Server", priority = 200)]
-        private static void BuildReleaseServer()
-            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Release Linux Mono Server", true,
-                     new[]
-                     {
-                         "VOXELFIELD_RELEASE_SERVER", "VOXELFIELD_RELEASE"
-                     });
-
-        [MenuItem("Build/Release All", priority = 200)]
-        public static void BuildRelease()
-        {
-            BuildWindowsRelease();
-            BuildReleaseServer();
-        }
-
-        private static void Build(ScriptingImplementation scripting, BuildTarget target, string name, bool isServer = false, string[] defines = null)
+            => Build(ScriptingImplementation.Mono2x, BuildTarget.StandaloneLinux64, "Linux Mono Server", true);
+        
+        private static void Build(ScriptingImplementation scripting, BuildTarget target, string name,
+            bool isServer = false, string[] defines = null)
         {
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, scripting);
-            string executablePath = Path.Combine("Builds", name.Replace(' ', Path.DirectorySeparatorChar), Application.productName);
+            string executablePath = Path.Combine("Builds", name.Replace(' ', Path.DirectorySeparatorChar),
+                Application.productName);
             switch (target)
             {
                 case BuildTarget.StandaloneWindows64:
@@ -456,7 +361,9 @@ namespace Voxelfield.Session
             }
 
             PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.Standalone,
-                                                    scripting == ScriptingImplementation.Mono2x ? ManagedStrippingLevel.Disabled : ManagedStrippingLevel.Low);
+                scripting == ScriptingImplementation.Mono2x
+                    ? ManagedStrippingLevel.Disabled
+                    : ManagedStrippingLevel.Low);
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = new[] { "Assets/Scenes/Base.unity" },
@@ -464,14 +371,16 @@ namespace Voxelfield.Session
                 target = target,
                 options = BuildOptions.CompressWithLz4
             };
-            EditorUserBuildSettings.standaloneBuildSubtarget = isServer ? StandaloneBuildSubtarget.Server : StandaloneBuildSubtarget.Player;
+            EditorUserBuildSettings.standaloneBuildSubtarget =
+                isServer ? StandaloneBuildSubtarget.Server : StandaloneBuildSubtarget.Player;
             if (defines != null) buildPlayerOptions.extraScriptingDefines = defines;
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;
             switch (summary.result)
             {
                 case BuildResult.Succeeded:
-                    Debug.Log($"{name} build succeeded: {summary.totalSize / 1_000_000} mb in {summary.totalTime:mm\\:ss}");
+                    Debug.Log(
+                        $"{name} build succeeded: {summary.totalSize / 1_000_000} mb in {summary.totalTime:mm\\:ss}");
                     break;
                 case BuildResult.Unknown:
                 case BuildResult.Failed:

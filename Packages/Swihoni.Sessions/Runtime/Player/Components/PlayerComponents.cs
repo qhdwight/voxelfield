@@ -1,5 +1,4 @@
 using System;
-using Steamworks;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using Swihoni.Sessions.Items;
@@ -217,11 +216,5 @@ namespace Swihoni.Sessions.Player.Components
         public new ItemComponent this[int index] => items[index];
 
         public static uint VisualDuration(ItemStatusModiferProperties m) => m.isPersistent ? uint.MaxValue : m.durationUs;
-    }
-
-    [Serializable, TakeSecondForInterpolation]
-    public class SteamIdProperty : ULongProperty
-    {
-        public Friend AsFriend => new(Value);
     }
 }

@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using LiteNetLib.Utils;
-using Steamworks;
 using Swihoni.Collections;
 using Swihoni.Components;
 using Swihoni.Sessions.Components;
 using UnityEngine;
-using Voxelfield.Integration;
 using Voxels;
 
 namespace Voxelfield.Session
@@ -23,12 +21,6 @@ namespace Voxelfield.Session
             var writer = new NetDataWriter();
             RequestConnectionComponent request = m_RequestConnection;
             request.version.SetTo(Application.version);
-            if (TryGetSteamAuthTicket())
-            {
-                request.steamAuthenticationToken.SetTo(Convert.ToBase64String(m_SteamAuthenticationTicket.Data));
-                request.steamPlayerId.Value = SteamClient.SteamId;
-            }
-            request.gameLiftPlayerSessionId.SetTo(GameLiftClientManager.PlayerSessionId);
             request.Serialize(writer);
             return writer;
         }

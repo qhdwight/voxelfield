@@ -16,7 +16,6 @@ namespace Voxelfield
         [Config(ConfigType.Session)] public VoxelMapNameProperty mapName = new("Castle");
 
         [Config] public BoolProperty enableMiniMap = new();
-        [Config] public BoolProperty authenticateSteam = new();
 
         public SecureAreaConfig secureAreaConfig = new();
 

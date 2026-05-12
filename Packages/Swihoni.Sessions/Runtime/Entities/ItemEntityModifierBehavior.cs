@@ -14,7 +14,7 @@ namespace Swihoni.Sessions.Entities
         public override void SetActive(Scene scene, bool isActive, int index)
         {
             base.SetActive(scene, isActive, index);
-            Rigidbody.velocity = Vector3.zero;
+            Rigidbody.linearVelocity = Vector3.zero;
             Rigidbody.angularVelocity = Vector3.zero;
             Rigidbody.constraints = isActive ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;
         }

@@ -122,14 +122,10 @@ namespace Voxels.Map
         {
             if (fileName != null) map.name.SetTo(fileName);
             map.version.SetTo(Application.version);
-#if VOXELFIELD_RELEASE_CLIENT
-            string mapPath = GetMapPath(map.name);
-#else
 #if UNITY_EDITOR
             string mapPath = Path.ChangeExtension(Path.Combine(Application.dataPath, "Resources", "Maps", map.name.AsNewString()), "bytes");
 #else
             string mapPath = $@"";
-#endif
 #endif
             var writer = new NetDataWriter();
             map.Serialize(writer);

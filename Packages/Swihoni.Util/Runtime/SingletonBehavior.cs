@@ -12,7 +12,7 @@ namespace Swihoni.Util
             if (Singleton)
                 Destroy(gameObject);
             else
-                Singleton = FindObjectOfType<TSingleton>();
+                Singleton = FindFirstObjectByType<TSingleton>();
         }
     }
 }
