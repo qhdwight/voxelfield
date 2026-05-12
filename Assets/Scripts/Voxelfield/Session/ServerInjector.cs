@@ -103,8 +103,6 @@ namespace Voxelfield.Session
         
         protected override void OnMapChange() => m_MasterChanges.Zero();
 
-        public override string GetUsername(in SessionContext context) => null;
-
         private static readonly RaycastHit[] CachedHits = new RaycastHit[2];
 
         private static void Suffocate(in SessionContext context, byte damage = 1)
