@@ -13,6 +13,7 @@ namespace Swihoni.Components
         public SingleTickAttribute(bool zero = false) => Zero = zero;
     }
 
+    [Serializable]
     public abstract class ElementBase
     {
         public FieldInfo Field { get; set; }
@@ -43,6 +44,7 @@ namespace Swihoni.Components
     /// A conscious choice was made to use classes instead of structs, so proper responsibility has to be taken.
     /// What this means in practice is, unless you know exactly what you are doing, once you <see cref="Append"/>
     /// </summary>
+    [Serializable]
     public abstract class ComponentBase : ElementBase, IEnumerable<ElementBase>
     {
         public List<ElementBase> m_Elements;

@@ -18,6 +18,7 @@ namespace Voxelfield.Session
         public VoxelMapNameProperty() : base(16) { }
     }
 
+    [Serializable]
     public class CurePackagesArray : ArrayElement<CurePackageComponent>
     {
         public CurePackagesArray() : base(9) { }

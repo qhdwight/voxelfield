@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace Swihoni.Components
 {
+    [Serializable]
     public abstract class ArrayElementBase : ElementBase
     {
         public abstract int Length { get; }

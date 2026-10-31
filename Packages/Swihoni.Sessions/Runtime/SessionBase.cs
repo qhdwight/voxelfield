@@ -33,20 +33,19 @@ namespace Swihoni.Sessions
         {
             elements = new List<Type>
             {
-                typeof(TickRateProperty), typeof(ModeIdProperty), typeof(AllowCheatsProperty),
-                typeof(PlayerArray), typeof(LocalPlayerId), typeof(EntityArray),
-                typeof(StampComponent), typeof(KillFeedArray), typeof(ChatList)
+                typeof(TickRateProperty), typeof(ModeIdProperty), typeof(AllowCheatsProperty), typeof(PlayerArray),
+                typeof(LocalPlayerId), typeof(EntityArray), typeof(StampComponent), typeof(KillFeedArray),
+                typeof(ChatList)
             },
             playerElements = new List<Type>
             {
-                typeof(HealthProperty), typeof(ByteIdProperty), typeof(MoveComponent), typeof(FrozenProperty), typeof(InventoryComponent),
-                typeof(CameraComponent), typeof(RespawnTimerProperty),
-                typeof(TeamProperty), typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameProperty)
+                typeof(HealthProperty), typeof(ByteIdProperty), typeof(MoveComponent), typeof(FrozenProperty),
+                typeof(InventoryComponent), typeof(CameraComponent), typeof(RespawnTimerProperty), typeof(TeamProperty),
+                typeof(StatsComponent), typeof(HitMarkerComponent), typeof(DamageNotifierComponent), typeof(UsernameProperty)
             },
             commandElements = new List<Type>
             {
-                typeof(InputFlagProperty), typeof(MouseComponent),
-                typeof(WantedTeamProperty), typeof(WantedItemIndexProperty),
+                typeof(InputFlagProperty), typeof(MouseComponent), typeof(WantedTeamProperty), typeof(WantedItemIndexProperty),
                 typeof(ChatEntryProperty), typeof(StringCommandProperty)
             }
         };
@@ -126,7 +125,7 @@ namespace Swihoni.Sessions
         [RuntimeInitializeOnLoadMethod]
         private static void InitializeInterfaces()
         {
-            _interfaces = UnityObject.FindObjectsByType<InterfaceBehaviorBase>(FindObjectsSortMode.None);
+            _interfaces = UnityObject.FindObjectsByType<InterfaceBehaviorBase>(FindObjectsSortMode.InstanceID);
             ForEachSessionInterface(sessionInterface =>
             {
                 sessionInterface.Initialize();
@@ -450,7 +449,10 @@ namespace Swihoni.Sessions
         public static string ExecuteProcess(string command, string workingDirectory = null)
         {
             int firstSpace = command.IndexOf(" ", StringComparison.Ordinal);
-            var processInfo = new ProcessStartInfo {CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true};
+            var processInfo = new ProcessStartInfo
+            {
+                CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true
+            };
             if (workingDirectory != null) processInfo.WorkingDirectory = workingDirectory;
             if (firstSpace == -1) processInfo.FileName = command;
             else
@@ -510,7 +512,10 @@ namespace Swihoni.Sessions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 GetPlayerEyePosition(this MoveComponent move)
-            => move.position + new Vector3 {y = move.GetPlayerHeight()};
+            => move.position + new Vector3
+            {
+                y = move.GetPlayerHeight()
+            };
 
         public static StringBuilder AppendRealizedUsername(this StringBuilder builder, Container player)
             => builder.Append("<noparse>").AppendPropertyValue(player.Require<UsernameProperty>()).Append("</noparse>");

@@ -156,6 +156,7 @@ namespace Swihoni.Sessions.Player.Components
         }
     }
 
+    [Serializable]
     public class ItemsArray : ArrayElement<ItemComponent>
     {
         public const int ItemsCount = 10;

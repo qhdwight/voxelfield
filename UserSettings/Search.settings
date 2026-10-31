@@ -75,6 +75,11 @@ providers = {
 		priority = -10
 		defaultAction = null
 	}
+	lightmaps = {
+		active = true
+		priority = 100
+		defaultAction = null
+	}
 }
 objectSelectors = {
 }
@@ -90,7 +95,7 @@ logIndexingPerformanceReport = false
 expandedQueries = [
 ]
 queryBuilder = false
-ignoredProperties = "id;name;classname;imagecontentshash"
+ignoredProperties = "addedobjectfileids;classname;correspondingsourceobject;editorclassidentifier;editorhideflags;fileid;gameobject;id;imagecontentshash;isprefabvariant;name;objecthideflags;pathid;prefabasset;prefabinstance;script"
 helperWidgetCurrentArea = "all"
 disabledIndexers = ""
 minIndexVariations = 2

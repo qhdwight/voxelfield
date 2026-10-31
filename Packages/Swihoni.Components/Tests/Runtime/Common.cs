@@ -28,6 +28,7 @@ namespace Swihoni.Components.Tests
             }
         }
 
+        [Serializable]
         internal class InnerComponent : ComponentBase
         {
             public UIntProperty @uint;
